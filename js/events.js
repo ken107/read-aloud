@@ -1,5 +1,5 @@
 
-var wordLimit = 40;
+var wordLimit = 36;
 
 chrome.browserAction.onClicked.addListener(function() {
   chrome.storage.sync.get("voiceName", function(settings) {
