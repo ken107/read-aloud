@@ -13,19 +13,27 @@
   <div class="label">Voice</div>
   <select id="voices"></select>
 
+  <div class="label">Rate</div>
+  <input type="text" id="rate" />
+  <div class="explain">
+    .5 is half speed, 2 is double speed.
+  </div>
+
+  <div class="label">Pitch</div>
+  <div id="pitch" class="slider" data-min="0" data-max="2">
+    <div></div>
+  </div>
+
+  <div class="label">Volume</div>
+  <div id="volume" class="slider" data-min="0" data-max="1">
+    <div></div>
+  </div>
+
   <div class="label">Max Length of Speechlet</div>
   <input type="text" id="spchletMaxLen" /> (words)
   <div class="explain">
     If reading sometimes ends abruptly in the middle of a long sentence, try reducing this number.
     This setting causes longer paragraphs to be broken up into smaller speechlets.
-  </div>
-
-  <div class="label">Min Length of Last Paragraph</div>
-  <input type="text" id="lastParaMinLen" /> (words)
-  <div class="explain">
-    Instructs Chrome to stop reading when there are no more paragraphs that meet the specified length.
-    If a lot of irrelevant stuff is read at the end of the article, try increasing this number.
-    If the end of the article is cut off, try reducing it.
   </div>
 
   <div class="label"></div>

@@ -6,8 +6,10 @@
     texts.push($(node).text().trim());
     node = findNext(node);
   }
-  //TODO: trim tail until encounter paragraph longer than lastParaMinLen
-  return texts;
+  return {
+    texts: texts,
+    lang: document.documentElement.lang
+  };
 })();
 
 function findFirst() {

@@ -1,6 +1,6 @@
 
 chrome.browserAction.onClicked.addListener(function() {
-  chrome.storage.sync.get(["voiceName", "spchletMaxLen", "lastParaMinLen"], function(settings) {
+  chrome.storage.sync.get(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], function(settings) {
     chrome.tabs.executeScript({ file: "js/jquery-3.1.1.min.js" }, function() {
       chrome.tabs.executeScript({ file: "js/content.js" }, function(results) {
         speak(results[0], settings);
@@ -9,8 +9,14 @@ chrome.browserAction.onClicked.addListener(function() {
   });
 });
 
-function speak(texts, settings) {
-    if (!texts.length) return;
+function speak(speech, settings) {
+  if (!speech.active) speech.active = speech.texts.slice();
+  if (!speech.active.length) {
+    speech.active = null;
+    return;
+  }
+
+    var texts = speech.active;
     var text = texts.shift();
     var sentences = getSentences(text);
     var group = {
@@ -42,8 +48,12 @@ function speak(texts, settings) {
     text = group.sentences.join("");
     chrome.tts.speak(text, {
       voiceName: settings.voiceName || defaults.voiceName,
+      lang: speech.lang,
+      rate: settings.rate || defaults.rate,
+      pitch: settings.pitch || defaults.pitch,
+      volume: settings.volume || defaults.volume,
       onEvent: function(event) {
-        if (event.type == "end") speak(texts, settings);
+        if (event.type == "end") speak(speech, settings);
       }
     });
 }

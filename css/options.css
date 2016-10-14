@@ -14,12 +14,21 @@
   max-width: 350px;
   border-radius: 5px;
 }
+.slider {
+  width: 150px;
+  overflow: auto;
+}
+.slider div {
+  width: 1500px;
+  height: 1px;
+}
 #save {
   font-weight: bold;
 }
 #status {
   margin-top: 20px;
   font-weight: bold;
+  display: none;
 }
 #status.success {
   color: #080;

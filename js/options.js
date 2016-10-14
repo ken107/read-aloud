@@ -1,6 +1,12 @@
 
+$.fn.slider = function() {
+  var slider = this.data("slider");
+  if (!slider) this.data("slider", slider = new Slider(this.get(0)));
+  return slider;
+};
+
 $(function() {
-  chrome.storage.sync.get(["voiceName", "spchletMaxLen", "lastParaMinLen"], function(settings) {
+  chrome.storage.sync.get(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], function(settings) {
     chrome.tts.getVoices(function(voices) {
       voices.forEach(function(voice) {
         $("<option>")
@@ -10,17 +16,21 @@ $(function() {
           .appendTo($("#voices"));
       });
     });
+    $("#rate").val(settings.rate || defaults.rate);
+    $("#pitch").slider().setValue(settings.pitch || defaults.pitch);
+    $("#volume").slider().setValue(settings.volume || defaults.volume);
     $("#spchletMaxLen").val(settings.spchletMaxLen || defaults.spchletMaxLen);
-    $("#lastParaMinLen").val(settings.lastParaMinLen || defaults.lastParaMinLen);
   });
   $("#save").click(function() {
     chrome.storage.sync.set({
       voiceName: $("#voices").val(),
-      spchletMaxLen: $("#spchletMaxLen").val(),
-      lastParaMinLen: $("#lastParaMinLen").val()
+      rate: Number($("#rate").val()),
+      pitch: $("#pitch").slider().getValue(),
+      volume: $("#volume").slider().getValue(),
+      spchletMaxLen: $("#spchletMaxLen").val()
     },
     function() {
-      $("#status").removeClass("error").addClass("success").text("Saved.");
+      $("#status").removeClass("error").addClass("success").text("Saved.").show().delay(3000).fadeOut();
     });
   });
   $("#reset").click(function() {
