@@ -1,17 +1,15 @@
 
-var wordLimit = 36;
-
 chrome.browserAction.onClicked.addListener(function() {
-  chrome.storage.sync.get("voiceName", function(settings) {
+  chrome.storage.sync.get(["voiceName", "spchletMaxLen", "lastParaMinLen"], function(settings) {
     chrome.tabs.executeScript({ file: "js/jquery-3.1.1.min.js" }, function() {
       chrome.tabs.executeScript({ file: "js/content.js" }, function(results) {
-        speak(results[0], settings.voiceName);
+        speak(results[0], settings);
       });
     });
   });
 });
 
-function speak(texts, voiceName) {
+function speak(texts, settings) {
     if (!texts.length) return;
     var text = texts.shift();
     var sentences = getSentences(text);
@@ -19,6 +17,7 @@ function speak(texts, voiceName) {
       sentences: [],
       wordCount: 0
     };
+    var wordLimit = settings.spchletMaxLen || defaults.spchletMaxLen;
     var wordCount = getWords(sentences[0]).length;
     if (wordCount > wordLimit) {
       sentences = getPhrases(sentences[0]).concat(sentences.slice(1));
@@ -42,9 +41,9 @@ function speak(texts, voiceName) {
     }
     text = group.sentences.join("");
     chrome.tts.speak(text, {
-      voiceName: voiceName || "Google US English",
+      voiceName: settings.voiceName || defaults.voiceName,
       onEvent: function(event) {
-        if (event.type == "end") speak(texts, voiceName);
+        if (event.type == "end") speak(texts, settings);
       }
     });
 }

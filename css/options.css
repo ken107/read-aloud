@@ -1,0 +1,29 @@
+
+.label {
+  color: red;
+  font-size: 1em;
+  margin-top: 20px;
+  margin-bottom: 3px;
+}
+.explain {
+  margin-top: 5px;
+  color: #888;
+  font-size: .9em;
+  padding: 10px;
+  background: #eee;
+  max-width: 350px;
+  border-radius: 5px;
+}
+#save {
+  font-weight: bold;
+}
+#status {
+  margin-top: 20px;
+  font-weight: bold;
+}
+#status.success {
+  color: #080;
+}
+#status.error {
+  color: red;
+}

@@ -4,14 +4,33 @@
   <title>Read Aloud Options</title>
   <link rel="stylesheet" type="text/css" href="css/options.css">
   <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/defaults.js"></script>
   <script src="js/options.js"></script>
 </head>
 <body>
-  Voice:
-  <select id="voices">
-  </select>
+  <h1>Read Aloud Options</h1>
+
+  <div class="label">Voice</div>
+  <select id="voices"></select>
+
+  <div class="label">Max Length of Speechlet</div>
+  <input type="text" id="spchletMaxLen" /> (words)
+  <div class="explain">
+    If reading sometimes ends abruptly in the middle of a long sentence, try reducing this number.
+    This setting causes longer paragraphs to be broken up into smaller speechlets.
+  </div>
+
+  <div class="label">Min Length of Last Paragraph</div>
+  <input type="text" id="lastParaMinLen" /> (words)
+  <div class="explain">
+    If a lot of irrelevant stuff is read at the end of the article, try increasing this number.
+    If the end of the article is cut off, try reducing it.
+  </div>
+
+  <div class="label"></div>
+  <button id="save">Save</button>
+  <button id="reset">Reset</button>
 
   <div id="status"></div>
-  <button id="save">Save</button>
 </body>
 </html>
