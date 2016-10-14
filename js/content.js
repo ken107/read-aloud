@@ -15,7 +15,7 @@
 function findFirst() {
   var tags = ["H1","H2","H3","H4","H5","H6","P"];
   for (var i=0; i<tags.length; i++) {
-    var elem = $(tags[i] + ":first");
+    var elem = $(tags[i] + ":visible:first");
     if (elem.length) return elem.get(0);
   }
 }
