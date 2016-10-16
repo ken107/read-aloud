@@ -1,0 +1,36 @@
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(MaterialIcons-Regular.woff) format('woff');
+}
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  cursor: pointer;
+}
+.md-36 {
+  font-size: 36px;
+}
+.md-dark {
+  color: #757575;
+}
+
+#buttons {
+  text-align: center;
+}
+#playlist {
+  width: 250px;
+  overflow: hidden;
+}
