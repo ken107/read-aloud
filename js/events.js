@@ -10,52 +10,64 @@ chrome.browserAction.onClicked.addListener(function() {
 });
 
 function speak(speech, settings) {
-  if (!speech.active) speech.active = speech.texts.slice();
-  if (!speech.active.length) {
-    speech.active = null;
-    return;
-  }
-
-    var texts = speech.active;
-    var text = texts.shift();
-    var sentences = getSentences(text);
-    var group = {
-      sentences: [],
-      wordCount: 0
-    };
-    var wordLimit = settings.spchletMaxLen || defaults.spchletMaxLen;
-    var wordCount = getWords(sentences[0]).length;
-    if (wordCount > wordLimit) {
-      sentences = getPhrases(sentences[0]).concat(sentences.slice(1));
-      wordCount = getWords(sentences[0]).length;
-    }
-    do {
-      group.sentences.push(sentences.shift());
-      group.wordCount += wordCount;
-      if (!sentences.length) break;
-      wordCount = getWords(sentences[0]).length;
-    }
-    while (group.wordCount + wordCount <= wordLimit);
-    if (sentences.length) texts.unshift(sentences.join(""));
-
-    if (group.wordCount > wordLimit) {
-      if (group.sentences.length > 1) throw new Error("This should never happen");
-      var words = getWords(group.sentences[0]);
-      var splitPoint = Math.min(words.length/2, wordLimit);
-      group.sentences[0] = words.slice(0, splitPoint).join(" ");
-      texts.unshift(words.slice(splitPoint).join(" "));
-    }
-    text = group.sentences.join("");
+  [].concat.apply([], speech.texts.map(function(text) {
+    return breakText(text, settings.spchletMaxLen || defaults.spchletMaxLen);
+  }))
+  .forEach(function(text) {
     chrome.tts.speak(text, {
+      enqueue: true,
       voiceName: settings.voiceName || defaults.voiceName,
       lang: speech.lang,
       rate: settings.rate || defaults.rate,
       pitch: settings.pitch || defaults.pitch,
-      volume: settings.volume || defaults.volume,
-      onEvent: function(event) {
-        if (event.type == "end") speak(speech, settings);
-      }
+      volume: settings.volume || defaults.volume
     });
+  });
+}
+
+function breakText(text, wordLimit) {
+  return merge(getSentences(text), wordLimit, breakSentence);
+}
+
+function breakSentence(sentence, wordLimit) {
+  return merge(getPhrases(sentence), wordLimit, breakPhrase);
+}
+
+function breakPhrase(phrase, wordLimit) {
+  var words = getWords(phrase);
+  var splitPoint = Math.min(Math.ceil(words.length/2), wordLimit);
+  var result = [];
+  while (words.length) {
+    result.push(words.slice(0, splitPoint).join(" "));
+    words = words.slice(splitPoint);
+  }
+  return result;
+}
+
+function merge(parts, wordLimit, breakPart) {
+  var result = [];
+  var group = {parts: [], wordCount: 0};
+  var flush = function() {
+    if (group.parts.length) {
+      result.push(group.parts.join(""));
+      group = {parts: [], wordCount: 0};
+    }
+  };
+  parts.forEach(function(part) {
+    var wordCount = getWords(part).length;
+    if (wordCount > wordLimit) {
+      flush();
+      var subParts = breakPart(part, wordLimit);
+      for (var i=0; i<subParts.length; i++) result.push(subParts[i]);
+    }
+    else {
+      if (group.wordCount + wordCount > wordLimit) flush();
+      group.parts.push(part);
+      group.wordCount += wordCount;
+    }
+  });
+  flush();
+  return result;
 }
 
 function getSentences(text) {
@@ -68,8 +80,8 @@ function getSentences(text) {
   return result;
 }
 
-function getPhrases(text) {
-  var tokens = text.split(/([,;:\u2014]|\s-+\s)/);
+function getPhrases(sentence) {
+  var tokens = sentence.split(/([,;:]\s|\s-+\s|\u2014)/);
   var result = [];
   for (var i=0; i<tokens.length; i+=2) {
     if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
