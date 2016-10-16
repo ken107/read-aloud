@@ -6,7 +6,7 @@ $.fn.slider = function() {
 };
 
 $(function() {
-  chrome.storage.sync.get(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], function(settings) {
+  getSettings(function(settings) {
     chrome.tts.getVoices(function(voices) {
       voices.forEach(function(voice) {
         $("<option>")
@@ -22,7 +22,7 @@ $(function() {
     $("#spchletMaxLen").val(settings.spchletMaxLen || defaults.spchletMaxLen);
   });
   $("#save").click(function() {
-    chrome.storage.sync.set({
+    updateSettings({
       voiceName: $("#voices").val(),
       rate: Number($("#rate").val()),
       pitch: $("#pitch").slider().getValue(),
@@ -34,7 +34,8 @@ $(function() {
     });
   });
   $("#reset").click(function() {
-    chrome.storage.sync.clear();
-    location.reload();
+    clearSettings(function() {
+      location.reload();
+    });
   });
 });

@@ -27,3 +27,27 @@ function Slider(elem) {
     return max;
   }
 }
+
+function getSettings(callback) {
+  chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], callback);
+}
+
+function updateSettings(items, callback) {
+  chrome.storage.local.set(items, callback);
+}
+
+function clearSettings(callback) {
+  chrome.storage.local.remove(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], callback);
+}
+
+function getState(key, callback) {
+  chrome.storage.local.get(key, function(items) {
+    callback(items[key]);
+  });
+}
+
+function setState(key, value, callback) {
+  var items = {};
+  items[key] = value;
+  chrome.storage.local.set(items, callback);
+}

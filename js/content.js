@@ -7,6 +7,7 @@
     node = findNext(node);
   }
   return {
+    title: document.title,
     texts: texts,
     lang: document.documentElement.lang
   };

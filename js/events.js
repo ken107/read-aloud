@@ -1,27 +1,80 @@
 
-chrome.browserAction.onClicked.addListener(function() {
-  chrome.storage.sync.get(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], function(settings) {
-    chrome.tabs.executeScript({ file: "js/jquery-3.1.1.min.js" }, function() {
-      chrome.tabs.executeScript({ file: "js/content.js" }, function(results) {
-        speak(results[0], settings);
-      });
+function play(callback) {
+  getState("isPaused", function(isPaused) {
+    if (isPaused) resume(callback);
+    else parseDoc(function(speech) {speak(speech, callback)});
+  });
+}
+
+function playNow() {
+
+}
+
+function stop(callback) {
+  chrome.tts.stop();
+  callback();
+}
+
+function pause(callback) {
+  chrome.tts.pause();
+  setState("isPaused", true, callback);
+}
+
+function resume(callback) {
+  chrome.tts.resume();
+  setState("isPaused", false, callback);
+}
+
+function getPlaybackState(callback) {
+  chrome.tts.isSpeaking(function(isSpeaking) {
+    getState("isPaused", function(isPaused) {
+      if (isSpeaking) {
+        if (isPaused) callback("PAUSED");
+        else callback("PLAYING");
+      }
+      else {
+        if (isPaused) setState("isPaused", false);
+        else callback("STOPPED");
+      }
     });
   });
-});
+}
 
-function speak(speech, settings) {
+function parseDoc(callback) {
+  chrome.tabs.executeScript({ file: "js/jquery-3.1.1.min.js" }, function() {
+    chrome.tabs.executeScript({ file: "js/content.js" }, function(results) {
+      callback(results[0]);
+    });
+  });
+}
+
+function speak(speech, callback) {
+  getSettings(function(settings) {
+    speak2(speech, callback, settings);
+  });
+}
+
+function speak2(speech, callback, settings) {
   [].concat.apply([], speech.texts.map(function(text) {
     return breakText(text, settings.spchletMaxLen || defaults.spchletMaxLen);
   }))
-  .forEach(function(text) {
-    chrome.tts.speak(text, {
+  .forEach(function(text, index) {
+    var options = {
       enqueue: true,
       voiceName: settings.voiceName || defaults.voiceName,
       lang: speech.lang,
       rate: settings.rate || defaults.rate,
       pitch: settings.pitch || defaults.pitch,
       volume: settings.volume || defaults.volume
-    });
+    };
+    if (index == 0) {
+      options.requiredEventTypes =
+      options.desiredEventTypes = ["start"];
+      options.onEvent = function(event) {
+        if (event.type == "start") callback();
+      };
+    }
+    chrome.tts.speak(text, options);
   });
 }
 
