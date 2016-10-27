@@ -9,7 +9,7 @@ var paragraphTags = ["P", "BLOCKQUOTE"];
   $(tags.map(function(tag) {return tag + " > div"}).join(", ")).remove();
 
   //find text blocks with at least 1 paragraphs
-  var textBlocks = $("p").not("blockquote > p").parent().get();
+  var textBlocks = $("p").not("blockquote > p").parent().filter(":visible").get().filter(notOutOfView);
   $.uniqueSort(textBlocks);
 
   //extract texts
@@ -18,11 +18,14 @@ var paragraphTags = ["P", "BLOCKQUOTE"];
     for (var i=0; i<textBlocks.length; i++) {
       var headings = findHeadingsBetween(textBlocks[i-1], textBlocks[i]);
       texts.push.apply(texts, headings.map(getText));
-      var elems = $(textBlocks[i]).children(tags.join(", ")).get();
+      var elems = $(textBlocks[i]).children(tags.join(", ")).filter(":visible").get();
       texts.push.apply(texts, elems.map(getText).filter(isNotEmpty));
     }
   }
   else texts = ["This article has no text content"];
+
+  //post process
+  texts = texts.map(removeLinks);
 
   //return
   console.log(texts.join("\n\n"));
@@ -38,7 +41,7 @@ function findHeadingsBetween(start, end) {
   var headings = [];
   var node = start ? nextNode(start, true) : document.body;
   while (node && node != end) {
-    if (node.nodeType == 1) {
+    if (node.nodeType == 1 && $(node).is(":visible")) {
       var index = headingTags.indexOf(node.tagName);
       if (index != -1) headings.push({node: node, weight: 100-index});
     }
@@ -72,4 +75,12 @@ function getText(elem) {
 
 function isNotEmpty(text) {
   return text;
+}
+
+function notOutOfView(elem) {
+  return $(elem).offset().left >= 0;
+}
+
+function removeLinks(text) {
+  return text.replace(/https?:\/\/\S+/g, "this link.");
 }
