@@ -18,27 +18,26 @@
   direction: ltr;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  cursor: pointer;
-  border: 2px outset;
-  border-radius: 10px;
-  background: #f3f3f3;
-}
-.material-icons:hover {
-  background: #f7f7f7;
-}
-.material-icons:active {
-  border: 2px inset;
-}
-.md-36 {
-  font-size: 36px;
-}
-.md-dark {
-  color: #757575;
 }
 
 #buttons {
   text-align: center;
 }
+#buttons > i {
+  cursor: pointer;
+  border: 2px outset;
+  border-radius: 5px;
+  background-color: #e4e4e4;
+  color: #757575;
+  padding: 3px;
+}
+#buttons > i:active {
+  border: 2px inset;
+}
+#buttons > i:hover {
+  color: #606060;
+}
+
 #playlist {
   width: 100px;
 }
