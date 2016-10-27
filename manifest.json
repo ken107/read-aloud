@@ -13,7 +13,7 @@
     "activeTab", "tts", "storage"
   ],
   "background": {
-    "scripts": ["js/defaults.js", "js/events.js"],
+    "scripts": ["js/es6-promise.auto.min.js", "js/defaults.js", "js/events.js"],
     "persistent": false
   },
   "options_page": "options.html"

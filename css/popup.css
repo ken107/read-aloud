@@ -19,6 +19,15 @@
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   cursor: pointer;
+  border: 2px outset;
+  border-radius: 10px;
+  background: #f3f3f3;
+}
+.material-icons:hover {
+  background: #f7f7f7;
+}
+.material-icons:active {
+  border: 2px inset;
 }
 .md-36 {
   font-size: 36px;
@@ -31,6 +40,5 @@
   text-align: center;
 }
 #playlist {
-  width: 250px;
-  overflow: hidden;
+  width: 100px;
 }

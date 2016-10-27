@@ -1,33 +1,29 @@
 
 $(function() {
   $("#btnPlay, #btnPause, #btnStop, #btnSettings").hide();
-  chrome.runtime.getBackgroundPage(function(master) {
-    master.getPlaybackState(updateButtons);
-  });
+  getBackgroundPage()
+    .then(function(master) {return master.getPlaybackState()})
+    .then(updateButtons);
+
   $("#btnPlay").click(function() {
-    chrome.runtime.getBackgroundPage(function(master) {
-      master.play(function() {
-        master.getPlaybackState(updateButtons);
-      });
-    });
+    getBackgroundPage()
+      .then(function(master) {return master.play().then(master.getPlaybackState)})
+      .then(updateButtons);
   });
   $("#btnPause").click(function() {
-    chrome.runtime.getBackgroundPage(function(master) {
-      master.pause(function() {
-        master.getPlaybackState(updateButtons);
-      });
-    });
+    getBackgroundPage()
+      .then(function(master) {return master.pause().then(master.getPlaybackState)})
+      .then(updateButtons);
   });
   $("#btnStop").click(function() {
-    chrome.runtime.getBackgroundPage(function(master) {
-      master.stop(function() {
-        master.getPlaybackState(updateButtons);
-      });
-    });
+    getBackgroundPage()
+      .then(function(master) {return master.stop().then(master.getPlaybackState)})
+      .then(updateButtons);
   });
   $("#btnSettings").click(function() {
     location.href = "options.html";
   });
+  $("#btnPlay").click();
 });
 
 function updateButtons(state) {

@@ -28,26 +28,72 @@ function Slider(elem) {
   }
 }
 
-function getSettings(callback) {
-  chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], callback);
-}
-
-function updateSettings(items, callback) {
-  chrome.storage.local.set(items, callback);
-}
-
-function clearSettings(callback) {
-  chrome.storage.local.remove(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], callback);
-}
-
-function getState(key, callback) {
-  chrome.storage.local.get(key, function(items) {
-    callback(items[key]);
+function getSettings() {
+  return new Promise(function(fulfill) {
+    chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], fulfill);
   });
 }
 
-function setState(key, value, callback) {
+function updateSettings(items) {
+  return new Promise(function(fulfill) {
+    chrome.storage.local.set(items, fulfill);
+  });
+}
+
+function clearSettings() {
+  return new Promise(function(fulfill) {
+    chrome.storage.local.remove(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], fulfill);
+  });
+}
+
+function getState(key) {
+  return new Promise(function(fulfill) {
+    chrome.storage.local.get(key, function(items) {
+      fulfill(items[key]);
+    });
+  });
+}
+
+function setState(key, value) {
   var items = {};
   items[key] = value;
-  chrome.storage.local.set(items, callback);
+  return new Promise(function(fulfill) {
+    chrome.storage.local.set(items, fulfill);
+  });
+}
+
+function isSpeaking() {
+  return new Promise(function(fulfill) {
+    chrome.tts.isSpeaking(fulfill);
+  });
+}
+
+function getVoices() {
+  return new Promise(function(fulfill) {
+    chrome.tts.getVoices(fulfill);
+  });
+}
+
+function executeScript(file) {
+  return new Promise(function(fulfill) {
+    chrome.tabs.executeScript({file: file}, fulfill);
+  });
+}
+
+function getBackgroundPage() {
+  return new Promise(function(fulfill) {
+    chrome.runtime.getBackgroundPage(fulfill);
+  });
+}
+
+function spread(f, self) {
+  return function(args) {
+    return f.apply(self, args);
+  };
+}
+
+function waitMillis(millis) {
+  return new Promise(function(fulfill) {
+    setTimeout(fulfill, millis);
+  });
 }

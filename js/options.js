@@ -6,21 +6,19 @@ $.fn.slider = function() {
 };
 
 $(function() {
-  getSettings(function(settings) {
-    chrome.tts.getVoices(function(voices) {
-      voices.forEach(function(voice) {
-        $("<option>")
-          .val(voice.voiceName)
-          .text(voice.voiceName)
-          .prop("selected", voice.voiceName == (settings.voiceName || defaults.voiceName))
-          .appendTo($("#voices"));
-      });
+  Promise.all([getSettings(), getVoices()]).then(spread(function(settings, voices) {
+    voices.forEach(function(voice) {
+      $("<option>")
+        .val(voice.voiceName)
+        .text(voice.voiceName)
+        .prop("selected", voice.voiceName == (settings.voiceName || defaults.voiceName))
+        .appendTo($("#voices"));
     });
     $("#rate").val(settings.rate || defaults.rate);
     $("#pitch").slider().setValue(settings.pitch || defaults.pitch);
     $("#volume").slider().setValue(settings.volume || defaults.volume);
     $("#spchletMaxLen").val(settings.spchletMaxLen || defaults.spchletMaxLen);
-  });
+  }));
   $("#save").click(function() {
     updateSettings({
       voiceName: $("#voices").val(),
@@ -28,14 +26,12 @@ $(function() {
       pitch: $("#pitch").slider().getValue(),
       volume: $("#volume").slider().getValue(),
       spchletMaxLen: $("#spchletMaxLen").val()
-    },
-    function() {
+    })
+    .then(function() {
       $("#status").removeClass("error").addClass("success").text("Saved.").show().delay(3000).fadeOut();
     });
   });
   $("#reset").click(function() {
-    clearSettings(function() {
-      location.reload();
-    });
+    clearSettings().then(location.reload);
   });
 });

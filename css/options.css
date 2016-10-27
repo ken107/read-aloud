@@ -1,4 +1,7 @@
 
+body {
+  width: 250px;
+}
 .label {
   color: red;
   font-size: 1em;

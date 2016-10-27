@@ -1,80 +1,85 @@
 
-function play(callback) {
-  getState("isPaused", function(isPaused) {
-    if (isPaused) resume(callback);
-    else parseDoc(function(speech) {speak(speech, callback)});
-  });
+function play() {
+  return getState("isPaused")
+    .then(function(isPaused) {
+      if (isPaused) return resume();
+      else return parseDoc().then(speak);
+    })
 }
 
-function playNow() {
-
-}
-
-function stop(callback) {
+function stop() {
   chrome.tts.stop();
-  callback();
+  return checkStopped();
 }
 
-function pause(callback) {
+function checkStopped() {
+  return isSpeaking()
+    .then(function(isSpeaking) {
+      if (!isSpeaking) return;
+      else return waitMillis(500).then(checkStopped);
+    });
+}
+
+function pause() {
   chrome.tts.pause();
-  setState("isPaused", true, callback);
+  return setState("isPaused", true);
 }
 
-function resume(callback) {
+function resume() {
   chrome.tts.resume();
-  setState("isPaused", false, callback);
+  return setState("isPaused", false);
 }
 
-function getPlaybackState(callback) {
-  chrome.tts.isSpeaking(function(isSpeaking) {
-    getState("isPaused", function(isPaused) {
+function getPlaybackState() {
+  return Promise.all([
+      isSpeaking(),
+      getState("isPaused")
+    ])
+    .then(spread(function(isSpeaking, isPaused) {
       if (isSpeaking) {
-        if (isPaused) callback("PAUSED");
-        else callback("PLAYING");
+        if (isPaused) return "PAUSED";
+        else return "PLAYING";
       }
       else {
-        if (isPaused) setState("isPaused", false);
-        else callback("STOPPED");
+        if (isPaused) return setState("isPaused", false).then(function() {return "STOPPED"});
+        else return "STOPPED";
       }
-    });
-  });
+    }));
 }
 
-function parseDoc(callback) {
-  chrome.tabs.executeScript({ file: "js/jquery-3.1.1.min.js" }, function() {
-    chrome.tabs.executeScript({ file: "js/content.js" }, function(results) {
-      callback(results[0]);
-    });
-  });
+function parseDoc() {
+  return executeScript("js/jquery-3.1.1.min.js")
+    .then(executeScript.bind(null, "js/content.js"))
+    .then(function(results) {return results[0]});
 }
 
-function speak(speech, callback) {
-  getSettings(function(settings) {
-    speak2(speech, callback, settings);
-  });
+function speak(speech) {
+  return getSettings().then(speak2.bind(null, speech));
 }
 
-function speak2(speech, callback, settings) {
-  [].concat.apply([], speech.texts.map(function(text) {
-    return breakText(text, settings.spchletMaxLen || defaults.spchletMaxLen);
-  }))
-  .forEach(function(text, index) {
-    var options = {
-      enqueue: true,
-      voiceName: settings.voiceName || defaults.voiceName,
-      lang: speech.lang,
-      rate: settings.rate || defaults.rate,
-      pitch: settings.pitch || defaults.pitch,
-      volume: settings.volume || defaults.volume
-    };
-    if (index == 0) {
-      options.requiredEventTypes =
-      options.desiredEventTypes = ["start"];
-      options.onEvent = function(event) {
-        if (event.type == "start") callback();
+function speak2(speech, settings) {
+  return new Promise(function(fulfill) {
+    [].concat.apply([], speech.texts.map(function(text) {
+      return breakText(text, settings.spchletMaxLen || defaults.spchletMaxLen);
+    }))
+    .forEach(function(text, index) {
+      var options = {
+        enqueue: true,
+        voiceName: settings.voiceName || defaults.voiceName,
+        lang: speech.lang,
+        rate: settings.rate || defaults.rate,
+        pitch: settings.pitch || defaults.pitch,
+        volume: settings.volume || defaults.volume
       };
-    }
-    chrome.tts.speak(text, options);
+      if (index == 0) {
+        options.requiredEventTypes =
+        options.desiredEventTypes = ["start"];
+        options.onEvent = function(event) {
+          if (event.type == "start") fulfill();
+        };
+      }
+      chrome.tts.speak(text, options);
+    });
   });
 }
 
