@@ -1,47 +1,31 @@
 
-var headings = ["H1","H2","H3","H4","H5","H6"];
-var textBlocks = ["P","BLOCKQUOTE"];
+var headingTags = ["H1", "H2", "H3", "H4", "H5", "H6"];
+var paragraphTags = ["P", "BLOCKQUOTE"];
 
 (function() {
+  var tags = headingTags.concat(paragraphTags);
+
+  //remove unwanted elems
+  $(tags.map(function(tag) {return tag + " > div"}).join(", ")).remove();
+
+  //find text blocks with at least 1 paragraphs
+  var textBlocks = $("p").not("blockquote > p").parent().get();
+  $.uniqueSort(textBlocks);
+
+  //extract texts
   var texts = [];
-  var state = ["IDLE"];
-  var elem = findFirst();
-  while (elem) {
-    switch (state[0]) {
-      case "IDLE":
-        if (isHeading(elem) && !startsWithLink(elem)) state = ["FOUND_TEXT_HEADING"];
-        break;
-      case "FOUND_TEXT_HEADING":
-        if (isTextBlock(elem)) state = ["FOUND_TEXT_BLOCK_1"];
-        else state = ["IDLE"];
-        break;
-      case "FOUND_TEXT_BLOCK_1":
-        if (isTextBlock(elem)) state = ["FOUND_TEXT_BLOCK_2"];
-        else state = ["IDLE"];
-        break;
-      case "FOUND_TEXT_BLOCK_2":
-        if (isTextBlock(elem)) state = ["FOUND_TEXT_SECTION"];
-        else state = ["IDLE"];
-        break;
-      case "FOUND_TEXT_SECTION":
-        if (isHeading(elem)) state = ["FOUND_HEADING_AFTER_TEXT_SECTION", elem.tagName, 1];
-        break;
-      case "FOUND_HEADING_AFTER_TEXT_SECTION":
-        if (isHeading(elem)) {
-          if (elem.tagName == state[1]) state[2]++;
-          else state = ["FOUND_HEADING_AFTER_TEXT_SECTION", elem.tagName, 1];
-        }
-        else state = ["FOUND_TEXT_SECTION"];
-        break;
+  if (textBlocks.length) {
+    for (var i=0; i<textBlocks.length; i++) {
+      var headings = findHeadingsBetween(textBlocks[i-1], textBlocks[i]);
+      texts.push.apply(texts, headings.map(getText));
+      var elems = $(textBlocks[i]).children(tags.join(", ")).get();
+      texts.push.apply(texts, elems.map(getText).filter(isNotEmpty));
     }
-    if (state[0] == "FOUND_HEADING_AFTER_TEXT_SECTION" && state[2] >= 3) {
-      for (var i=0; i<state[2]-1; i++) texts.pop();
-      break;
-    }
-    texts.push($(elem).text().trim());
-    elem = findNext(elem);
   }
-  for (var i=0; i<texts.length; i++) console.log(texts[i]);
+  else texts = ["This article has no text content"];
+
+  //return
+  console.log(texts.join("\n\n"));
   return {
     title: document.title,
     texts: texts,
@@ -49,22 +33,26 @@ var textBlocks = ["P","BLOCKQUOTE"];
   };
 })();
 
-function findFirst() {
-  var tags = headings.concat(textBlocks);
-  for (var i=0; i<tags.length; i++) {
-    var elem = $(tags[i] + ":visible:first");
-    if (elem.length) return elem.get(0);
-  }
-  return null;
-}
-
-function findNext(current) {
-  var node = nextNode(current, true);
-  while (node) {
-    if (node.nodeType == 1 && (isHeading(node) || isTextBlock(node))) return node;
+function findHeadingsBetween(start, end) {
+  //enumerate headings
+  var headings = [];
+  var node = start ? nextNode(start, true) : document.body;
+  while (node && node != end) {
+    if (node.nodeType == 1) {
+      var index = headingTags.indexOf(node.tagName);
+      if (index != -1) headings.push({node: node, weight: 100-index});
+    }
     node = nextNode(node);
   }
-  return null;
+
+  //retain only the relevant sequence of headings (increasing weights from the bottom)
+  headings.reverse();
+  var result = [];
+  for (var i=0; i<headings.length; i++) {
+    if (!result.length) result.push(headings[i]);
+    else if (headings[i].weight > result[result.length-1].weight) result.push(headings[i]);
+  }
+  return result.reverse().map(function(item) {return item.node});
 }
 
 function nextNode(node, skipChildren) {
@@ -74,16 +62,14 @@ function nextNode(node, skipChildren) {
   return nextNode(node.parentNode, true);
 }
 
-function isHeading(elem) {
-  return headings.indexOf(elem.tagName) != -1;
+function hasMultipleParas(block) {
+  return $(block).children("p").length > 1;
 }
 
-function isTextBlock(elem) {
-  return textBlocks.indexOf(elem.tagName) != -1;
+function getText(elem) {
+  return $(elem).text().trim();
 }
 
-function startsWithLink(elem) {
-  var child = elem.firstChild;
-  while (child && child.nodeType == 3 && child.nodeValue.trim() == "") child = child.nextSibling;
-  return child && child.nodeType == 1 && child.tagName == "A";
+function isNotEmpty(text) {
+  return text;
 }
