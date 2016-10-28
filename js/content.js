@@ -9,26 +9,37 @@ var paragraphTags = ["P", "BLOCKQUOTE"];
   $(tags.map(function(tag) {return tag + " > div"}).join(", ")).remove();
 
   //find text blocks with at least 1 paragraphs
-  var textBlocks = $("p").not("blockquote > p").parent().filter(":visible").get().filter(notOutOfView);
+  var textBlocks = $("p").not("blockquote > p").parent().get();
   $.uniqueSort(textBlocks);
+  textBlocks = $(textBlocks).filter(":visible").filter(notOutOfView).get();
+  if (!textBlocks.length) {
+    return {
+      title: document.title,
+      texts: ["This article has no text content"],
+      lang: "en"
+    };
+  }
+
+  //remove all blocks 7x smaller than the longest
+  var lengths = textBlocks.map(function(block) {
+    return $(block).children(paragraphTags.join(", ")).text().length;
+  });
+  var longest = Math.max.apply(null, lengths);
+  textBlocks = textBlocks.filter(function(block, index) {
+    return lengths[index] > longest/7;
+  });
+
+  //mark for reading
+  for (var i=0; i<textBlocks.length; i++) {
+    findHeadingsBetween(textBlocks[i-1], textBlocks[i]).forEach(markForReading);
+    $(textBlocks[i]).children(tags.join(", ")).filter(":visible").get().forEach(markForReading);
+  }
 
   //extract texts
-  var texts = [];
-  if (textBlocks.length) {
-    for (var i=0; i<textBlocks.length; i++) {
-      var headings = findHeadingsBetween(textBlocks[i-1], textBlocks[i]);
-      texts.push.apply(texts, headings.map(getText));
-      var elems = $(textBlocks[i]).children(tags.join(", ")).filter(":visible").get();
-      texts.push.apply(texts, elems.map(getText).filter(isNotEmpty));
-    }
-  }
-  else texts = ["This article has no text content"];
-
-  //post process
-  texts = texts.map(removeLinks);
+  var texts = $(".read-aloud").get().map(getText).filter(isNotEmpty).map(removeLinks);
+  console.log(texts.join("\n\n"));
 
   //return
-  console.log(texts.join("\n\n"));
   return {
     title: document.title,
     texts: texts,
@@ -65,8 +76,12 @@ function nextNode(node, skipChildren) {
   return nextNode(node.parentNode, true);
 }
 
-function hasMultipleParas(block) {
-  return $(block).children("p").length > 1;
+function notOutOfView() {
+  return $(this).offset().left >= 0;
+}
+
+function markForReading(elem) {
+  $(elem).addClass("read-aloud");
 }
 
 function getText(elem) {
@@ -75,10 +90,6 @@ function getText(elem) {
 
 function isNotEmpty(text) {
   return text;
-}
-
-function notOutOfView(elem) {
-  return $(elem).offset().left >= 0;
 }
 
 function removeLinks(text) {
