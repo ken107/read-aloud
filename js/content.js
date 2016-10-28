@@ -41,9 +41,9 @@ function findHeadingsBetween(start, end) {
   var headings = [];
   var node = start ? nextNode(start, true) : document.body;
   while (node && node != end) {
-    if (node.nodeType == 1 && $(node).is(":visible")) {
+    if (node.nodeType == 1) {
       var index = headingTags.indexOf(node.tagName);
-      if (index != -1) headings.push({node: node, weight: 100-index});
+      if (index != -1 && $(node).is(":visible")) headings.push({node: node, weight: 100-index});
     }
     node = nextNode(node);
   }
