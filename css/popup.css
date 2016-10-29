@@ -30,6 +30,7 @@
   background-color: #e4e4e4;
   color: #757575;
   padding: 3px;
+  text-shadow: 1px 1px white;
 }
 #buttons > i:active {
   border: 2px inset;
@@ -40,4 +41,13 @@
 
 #playlist {
   width: 100px;
+}
+
+#footer {
+  margin-top: 10px;
+  text-align: center;
+  font-size: smaller;
+}
+#footer a {
+  color: #aaa;
 }

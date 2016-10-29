@@ -1,10 +1,6 @@
 
 $(function() {
   $("#btnPlay, #btnPause, #btnStop, #btnSettings").hide();
-  getBackgroundPage()
-    .then(function(master) {return master.getPlaybackState()})
-    .then(updateButtons);
-
   $("#btnPlay").click(function() {
     getBackgroundPage()
       .then(function(master) {return master.play().then(master.getPlaybackState)})

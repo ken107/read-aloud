@@ -1,9 +1,9 @@
 
 function play() {
-  return getState("isPaused")
-    .then(function(isPaused) {
-      if (isPaused) return resume();
-      else return parseDoc().then(speak);
+  return getPlaybackState()
+    .then(function(state) {
+      if (state == "PAUSED") return resume();
+      else if (state == "STOPPED") return parseDoc().then(speak);
     })
 }
 
