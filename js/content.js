@@ -1,9 +1,12 @@
 
 var headingTags = ["H1", "H2", "H3", "H4", "H5", "H6"];
-var paragraphTags = ["P", "BLOCKQUOTE"];
+var paragraphTags = ["P", "BLOCKQUOTE", "PRE"];
 
 (function() {
   var tags = headingTags.concat(paragraphTags);
+
+  //clear markers
+  $(".read-aloud").removeClass("read-aloud");
 
   //remove unwanted elems
   $(tags.map(function(tag) {return tag + " > div"}).join(", ")).remove();
@@ -11,28 +14,29 @@ var paragraphTags = ["P", "BLOCKQUOTE"];
   //find text blocks with at least 1 paragraphs
   var textBlocks = $("p").not("blockquote > p").parent().get();
   $.uniqueSort(textBlocks);
+
+  //visible only
   textBlocks = $(textBlocks).filter(":visible").filter(notOutOfView).get();
-  if (!textBlocks.length) {
-    return {
-      title: document.title,
-      texts: ["This article has no text content"],
-      lang: "en"
-    };
+
+  if (textBlocks.length) {
+    //remove any block less than 1/7 the length of the longest block
+    var lengths = textBlocks.map(function(block) {
+      return $(block).children(paragraphTags.join(", ")).text().length;
+    });
+    var longest = Math.max.apply(null, lengths);
+    textBlocks = textBlocks.filter(function(block, index) {
+      return lengths[index] > longest/7;
+    });
+
+    //mark the elements to be read
+    textBlocks.forEach(function(block) {
+      $(findHeadingsFor(block)).addClass("read-aloud");
+      $(block).children(tags.join(", ")).addClass("read-aloud");
+    });
   }
-
-  //remove all blocks 7x smaller than the longest
-  var lengths = textBlocks.map(function(block) {
-    return $(block).children(paragraphTags.join(", ")).text().length;
-  });
-  var longest = Math.max.apply(null, lengths);
-  textBlocks = textBlocks.filter(function(block, index) {
-    return lengths[index] > longest/7;
-  });
-
-  //mark for reading
-  for (var i=0; i<textBlocks.length; i++) {
-    findHeadingsBetween(textBlocks[i-1], textBlocks[i]).forEach(markForReading);
-    $(textBlocks[i]).children(tags.join(", ")).filter(":visible").get().forEach(markForReading);
+  else {
+    //if no text blocks found, read all headings
+    $(tags.join(", ")).filter(":visible").addClass("read-aloud");
   }
 
   //extract texts
@@ -47,41 +51,8 @@ var paragraphTags = ["P", "BLOCKQUOTE"];
   };
 })();
 
-function findHeadingsBetween(start, end) {
-  //enumerate headings
-  var headings = [];
-  var node = start ? nextNode(start, true) : document.body;
-  while (node && node != end) {
-    if (node.nodeType == 1) {
-      var index = headingTags.indexOf(node.tagName);
-      if (index != -1 && $(node).is(":visible")) headings.push({node: node, weight: 100-index});
-    }
-    node = nextNode(node);
-  }
-
-  //retain only the relevant sequence of headings (increasing weights from the bottom)
-  headings.reverse();
-  var result = [];
-  for (var i=0; i<headings.length; i++) {
-    if (!result.length) result.push(headings[i]);
-    else if (headings[i].weight > result[result.length-1].weight) result.push(headings[i]);
-  }
-  return result.reverse().map(function(item) {return item.node});
-}
-
-function nextNode(node, skipChildren) {
-  if (node == document.body && skipChildren) return null;
-  if (node.nodeType == 1 && $(node).is(":visible") && !skipChildren && node.firstChild) return node.firstChild;
-  if (node.nextSibling) return node.nextSibling;
-  return nextNode(node.parentNode, true);
-}
-
 function notOutOfView() {
   return $(this).offset().left >= 0;
-}
-
-function markForReading(elem) {
-  $(elem).addClass("read-aloud");
 }
 
 function getText(elem) {
@@ -94,4 +65,34 @@ function isNotEmpty(text) {
 
 function removeLinks(text) {
   return text.replace(/https?:\/\/\S+/g, "this link.");
+}
+
+function findHeadingsFor(block) {
+  var result = [];
+  var firstInnerElem = $(block).children(headingTags.concat(paragraphTags).join(", ")).get(0);
+  var currentLevel = getHeadingLevel(firstInnerElem);
+  var node = previousNode(block, true);
+  while (node && !$(node).hasClass("read-aloud")) {
+    if (node.nodeType == 1) {
+      var level = getHeadingLevel(node);
+      if (level < currentLevel) {
+        result.push(node);
+        currentLevel = level;
+      }
+    }
+    node = previousNode(node);
+  }
+  return result.reverse();
+}
+
+function getHeadingLevel(elem) {
+  var index = elem ? headingTags.indexOf(elem.tagName) : -1;
+  return index == -1 ? 100 : index + 1;
+}
+
+function previousNode(node, skipChildren) {
+  if (node == document.body) return null;
+  if (node.nodeType == 1 && !skipChildren && node.lastChild) return node.lastChild;
+  if (node.previousSibling) return node.previousSibling;
+  return previousNode(node.parentNode, true);
 }
