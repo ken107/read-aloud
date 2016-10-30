@@ -1,11 +1,17 @@
 
 var defaults = {
-  voiceName: "Google US English",
+  voiceName: "",
   rate: 1.0,
   pitch: 1.0,
   volume: 1.0,
   spchletMaxLen: 36
 };
+
+function noHackRequired(voiceName) {
+  return chrome.runtime.getManifest().tts_engine.voices.some(function(voice) {
+    return voice.voice_name == voiceName;
+  });
+}
 
 function Slider(elem) {
   var min = $(elem).data("min");

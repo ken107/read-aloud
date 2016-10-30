@@ -53,34 +53,40 @@ function parseDoc() {
     .then(function(results) {return results[0]});
 }
 
-function speak(speech) {
-  return getSettings().then(speak2.bind(null, speech));
-}
+function speak(speech, enqueue, settings) {
+  if (!settings) return getSettings().then(speak.bind(null, speech, enqueue));
 
-function speak2(speech, settings) {
-  return new Promise(function(fulfill) {
-    [].concat.apply([], speech.texts.map(function(text) {
-      return breakText(text, settings.spchletMaxLen || defaults.spchletMaxLen);
-    }))
-    .forEach(function(text, index) {
-      var options = {
-        enqueue: true,
-        voiceName: settings.voiceName || defaults.voiceName,
-        lang: speech.lang,
-        rate: settings.rate || defaults.rate,
-        pitch: settings.pitch || defaults.pitch,
-        volume: settings.volume || defaults.volume
-      };
-      if (index == 0) {
-        options.requiredEventTypes =
-        options.desiredEventTypes = ["start"];
-        options.onEvent = function(event) {
-          if (event.type == "start") fulfill();
-        };
+  var texts = [].concat.apply([], speech.texts.map(function(text) {
+    return breakText(text, settings.spchletMaxLen || defaults.spchletMaxLen);
+  }));
+  return getVoices().then(chooseVoice).then(function(voice) {
+    return new Promise(function(fulfill) {
+      if (noHackRequired(voiceName)) {
+        next(texts.join("\n\n"), enqueue, fulfill);
       }
-      chrome.tts.speak(text, options);
+      else {
+        texts.forEach(function(text, index) {
+          if (index == 0) next(text, enqueue, fulfill);
+          else next(text, true, null);
+        });
+      }
     });
   });
+
+  function next(text, enqueue, onStart) {
+    chrome.tts.speak(text, {
+      enqueue: enqueue,
+      voiceName: voiceName,
+      rate: settings.rate || defaults.rate,
+      pitch: settings.pitch || defaults.pitch,
+      volume: settings.volume || defaults.volume,
+      requiredEventTypes: ["start"],
+      desiredEventTypes: ["start"],
+      onEvent: function(event) {
+        if (event.type == "start") onStart && onStart();
+      }
+    });
+  }
 }
 
 function breakText(text, wordLimit) {

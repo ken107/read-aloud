@@ -47,7 +47,7 @@ var paragraphTags = ["P", "BLOCKQUOTE", "PRE"];
   return {
     title: document.title,
     texts: texts,
-    lang: document.documentElement.lang
+    lang: document.documentElement.lang || $("meta[http-equiv=content-language]").attr("content")
   };
 })();
 

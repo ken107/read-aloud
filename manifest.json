@@ -10,11 +10,30 @@
     "default_popup": "popup.html"
   },
   "permissions": [
-    "activeTab", "tts", "storage"
+    "activeTab", "tts", "storage", "ttsEngine"
   ],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "background": {
-    "scripts": ["js/es6-promise.auto.min.js", "js/defaults.js", "js/events.js"],
+    "scripts": [
+      "js/es6-promise.auto.min.js",
+      "js/responsivevoice.js",
+      "js/defaults.js",
+      "js/vietnamese.js",
+      "js/events.js"
+    ],
     "persistent": false
   },
-  "options_page": "options.html"
+  "options_page": "options.html",
+
+  "tts_engine": {
+    "voices": [
+      {
+        "voice_name": "ResponsiveVoice Vietnamese Female",
+        "lang": "vi",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      }
+    ]
+  }
 }
