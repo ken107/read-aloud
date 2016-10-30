@@ -59,24 +59,49 @@ function speak(speech, enqueue, settings) {
   var texts = [].concat.apply([], speech.texts.map(function(text) {
     return breakText(text, settings.spchletMaxLen || defaults.spchletMaxLen);
   }));
-  return getVoices().then(chooseVoice).then(function(voice) {
+  return getVoices().then(findVoice).then(function(voiceName) {
+    console.log("lang", speech.lang, "voice", voiceName);
     return new Promise(function(fulfill) {
       if (noHackRequired(voiceName)) {
-        next(texts.join("\n\n"), enqueue, fulfill);
+        next(texts.join("\n\n"), voiceName, enqueue, fulfill);
       }
       else {
         texts.forEach(function(text, index) {
-          if (index == 0) next(text, enqueue, fulfill);
-          else next(text, true, null);
+          if (index == 0) next(text, voiceName, enqueue, fulfill);
+          else next(text, voiceName, true, null);
         });
       }
     });
   });
 
-  function next(text, enqueue, onStart) {
+  function findVoice(voices) {
+    if (settings.voiceName) return settings.voiceName;
+    else if (!speech.lang) return null;
+    else {
+      var speechLang = parseLang(speech.lang);
+      var match = {};
+      voices.forEach(function(voice) {
+        if (voice.lang) {
+          var voiceLang = parseLang(voice.lang);
+          if (voiceLang.lang == speechLang.lang) {
+            if (voiceLang.rest == speechLang.rest) {
+              if (voice.gender == "female") match.first = voice.voiceName;
+              else match.second = voice.voiceName;
+            }
+            else if (!voiceLang.rest) match.third = voice.voiceName;
+            else if (!match.fourth) match.fourth = voice.voiceName;
+          }
+        }
+      });
+      return match.first || match.second || match.third || match.fourth || null;
+    }
+  }
+
+  function next(text, voiceName, enqueue, onStart) {
     chrome.tts.speak(text, {
       enqueue: enqueue,
       voiceName: voiceName,
+      lang: speech.lang,
       rate: settings.rate || defaults.rate,
       pitch: settings.pitch || defaults.pitch,
       volume: settings.volume || defaults.volume,

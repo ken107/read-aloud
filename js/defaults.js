@@ -1,6 +1,5 @@
 
 var defaults = {
-  voiceName: "",
   rate: 1.0,
   pitch: 1.0,
   volume: 1.0,
@@ -102,4 +101,12 @@ function waitMillis(millis) {
   return new Promise(function(fulfill) {
     setTimeout(fulfill, millis);
   });
+}
+
+function parseLang(lang) {
+  var tokens = lang.toLowerCase().split("-", 2);
+  return {
+    lang: tokens[0],
+    rest: tokens[1]
+  };
 }

@@ -28,9 +28,9 @@
   "tts_engine": {
     "voices": [
       {
-        "voice_name": "ResponsiveVoice Vietnamese Female",
+        "voice_name": "RspVoice Vietnamese Male",
         "lang": "vi",
-        "gender": "female",
+        "gender": "male",
         "event_types": ["start", "end"],
         "remote": true
       }

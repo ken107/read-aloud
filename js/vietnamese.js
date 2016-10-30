@@ -12,14 +12,14 @@ chrome.ttsEngine.onSpeak.addListener(speakListener);
 chrome.ttsEngine.onStop.addListener(stopListener);
 
 function speakListener(utterance, options, sendTtsEvent) {
-  var voiceName = options.voiceName.replace(/^ResponseVoice /, '');
-  isReady.then(function() {
+  var voiceName = options.voiceName.replace(/^\S+\s+/, '');
+  isReady().then(function() {
     responsiveVoice.speak(utterance, voiceName, {
       onstart: function() {
-        sendTtsEvent({event_type: 'start', charIndex: 0});
+        sendTtsEvent({type: 'start', charIndex: 0});
       },
       onend: function() {
-        sendTtsEvent({event_type: 'end', charIndex: utterance.length});
+        sendTtsEvent({type: 'end', charIndex: utterance.length});
       }
     });
   });
