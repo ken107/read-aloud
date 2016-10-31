@@ -11,7 +11,7 @@ $(function() {
       $("<option>")
         .val(voice.voiceName)
         .text(voice.voiceName)
-        .prop("selected", voice.voiceName == (settings.voiceName || defaults.voiceName))
+        .prop("selected", voice.voiceName == settings.voiceName)
         .appendTo($("#voices"));
     });
     $("#rate").val(settings.rate || defaults.rate);

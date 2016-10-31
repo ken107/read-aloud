@@ -76,7 +76,7 @@ function speak(speech, enqueue, settings) {
 
   function findVoice(voices) {
     if (settings.voiceName) return settings.voiceName;
-    else if (!speech.lang) return null;
+    else if (!speech.lang) return "Google US English";
     else {
       var speechLang = parseLang(speech.lang);
       var match = {};

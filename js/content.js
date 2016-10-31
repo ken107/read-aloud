@@ -40,7 +40,7 @@ var paragraphTags = ["P", "BLOCKQUOTE", "PRE"];
   }
 
   //extract texts
-  var texts = $(".read-aloud").get().map(getText).filter(isNotEmpty).map(removeLinks);
+  var texts = $(".read-aloud").get().map(getText).filter(isNotEmpty).map(removeLinks).map(addMissingPunctuation);
   console.log(texts.join("\n\n"));
 
   //return
@@ -65,6 +65,11 @@ function isNotEmpty(text) {
 
 function removeLinks(text) {
   return text.replace(/https?:\/\/\S+/g, "this link.");
+}
+
+function addMissingPunctuation(text) {
+  if (!/([,;:.!?]$)/.test(text)) text += ".";
+  return text;
 }
 
 function findHeadingsFor(block) {
