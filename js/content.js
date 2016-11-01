@@ -68,15 +68,18 @@ function removeLinks(text) {
 }
 
 function addMissingPunctuation(text) {
-  if (!/([,;:.!?]$)/.test(text)) text += ".";
-  return text;
+  return text.split(/ *\n */).map(function(line) {
+    if (/[^,;:.!?]$/.test(line)) line += ".";
+    return line;
+  })
+  .join("\n");
 }
 
 function findHeadingsFor(block) {
   var result = [];
   var firstInnerElem = $(block).children(headingTags.concat(paragraphTags).join(", ")).get(0);
   var currentLevel = getHeadingLevel(firstInnerElem);
-  var node = previousNode(block, true);
+  var node = previousNode(firstInnerElem, true);
   while (node && !$(node).hasClass("read-aloud")) {
     if (node.nodeType == 1) {
       var level = getHeadingLevel(node);

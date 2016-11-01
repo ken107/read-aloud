@@ -3,7 +3,7 @@ function play() {
   return getPlaybackState()
     .then(function(state) {
       if (state == "PAUSED") return resume();
-      else if (state == "STOPPED") return parseDoc().then(speak);
+      else if (state == "STOPPED") return parseDoc().then(speak).catch(console.error.bind(console));
     })
 }
 
@@ -18,6 +18,12 @@ function checkStopped() {
       if (!isSpeaking) return;
       else return waitMillis(500).then(checkStopped);
     });
+}
+
+function isSpeaking() {
+  return new Promise(function(fulfill) {
+    chrome.tts.isSpeaking(fulfill);
+  });
 }
 
 function pause() {
@@ -53,65 +59,137 @@ function parseDoc() {
     .then(function(results) {return results[0]});
 }
 
-function speak(speech, enqueue, settings) {
-  if (!settings) return getSettings().then(speak.bind(null, speech, enqueue));
-
-  var texts = [].concat.apply([], speech.texts.map(function(text) {
-    return breakText(text, settings.spchletMaxLen || defaults.spchletMaxLen);
-  }));
-  return getVoices().then(findVoice).then(function(voiceName) {
-    console.log("lang", speech.lang, "voice", voiceName);
-    return new Promise(function(fulfill) {
-      if (noHackRequired(voiceName)) {
-        next(texts.join("\n\n"), voiceName, enqueue, fulfill);
-      }
-      else {
-        texts.forEach(function(text, index) {
-          if (index == 0) next(text, voiceName, enqueue, fulfill);
-          else next(text, voiceName, true, null);
-        });
-      }
-    });
-  });
-
-  function findVoice(voices) {
-    if (settings.voiceName) return settings.voiceName;
-    else if (!speech.lang) return "Google US English";
-    else {
-      var speechLang = parseLang(speech.lang);
-      var match = {};
-      voices.forEach(function(voice) {
-        if (voice.lang) {
-          var voiceLang = parseLang(voice.lang);
-          if (voiceLang.lang == speechLang.lang) {
-            if (voiceLang.rest == speechLang.rest) {
-              if (voice.gender == "female") match.first = voice.voiceName;
-              else match.second = voice.voiceName;
-            }
-            else if (!voiceLang.rest) match.third = voice.voiceName;
-            else if (!match.fourth) match.fourth = voice.voiceName;
-          }
-        }
-      });
-      return match.first || match.second || match.third || match.fourth || null;
-    }
-  }
-
-  function next(text, voiceName, enqueue, onStart) {
-    chrome.tts.speak(text, {
-      enqueue: enqueue,
-      voiceName: voiceName,
-      lang: speech.lang,
+function speak(speech, enqueue) {
+  return getSettings().then(function(settings) {
+    return speakSpeech(speech, enqueue, {
+      voiceName: settings.voiceName,
       rate: settings.rate || defaults.rate,
       pitch: settings.pitch || defaults.pitch,
       volume: settings.volume || defaults.volume,
+      spchletMaxLen: settings.spchletMaxLen || defaults.spchletMaxLen
+    });
+  });
+}
+
+function speakSpeech(speech, enqueue, options) {
+  return getVoices()
+    .then(function(voices) {
+      return findSuitableVoice(voices, speech, options);
+    })
+    .then(function(voice) {
+      console.log("voice", voice);
+      options.voiceName = voice.voiceName;
+      setState("activeVoice", voice);
+      return isCustomVoice(voice.voiceName);
+    })
+    .then(function(isCustomVoice) {
+      if (isCustomVoice) {
+        return speakText(speech.texts.join("\n\n"), enqueue, options);
+      }
+      else {
+        var texts = breakTexts(speech.texts, options.spchletMaxLen);
+        var promise = speakText(texts[0], enqueue, options);
+        for (var i=1; i<texts.length; i++) speakText(texts[i], true, options);
+        return promise;
+      }
+    });
+}
+
+function speakText(text, enqueue, options) {
+  return new Promise(function(fulfill) {
+    chrome.tts.speak(text, {
+      enqueue: enqueue,
+      voiceName: options.voiceName,
+      lang: options.lang,
+      rate: options.rate,
+      pitch: options.pitch,
+      volume: options.volume,
       requiredEventTypes: ["start"],
       desiredEventTypes: ["start"],
       onEvent: function(event) {
-        if (event.type == "start") onStart && onStart();
+        if (event.type == "start") fulfill();
       }
     });
-  }
+  });
+}
+
+function findSuitableVoice(voices, speech, options) {
+  if (options.voiceName)
+    return findVoiceByName(voices, options.voiceName);
+  else
+    return Promise.resolve()
+      .then(function() {
+        if (speech.lang) return speech.lang;
+        else return detectLanguage(speech);
+      })
+      .then(function(lang) {
+        options.lang = lang;
+        return findVoiceByLang(voices, lang);
+      });
+}
+
+function findVoiceByName(voices, name) {
+  for (var i=0; i<voices.length; i++) if (voices[i].name == name) return voices[i];
+  return null;
+}
+
+function findVoiceByLang(voices, lang) {
+  var speechLang = parseLang(lang);
+  var match = {};
+  voices.forEach(function(voice) {
+    if (voice.lang) {
+      var voiceLang = parseLang(voice.lang);
+      if (voiceLang.lang == speechLang.lang) {
+        if (voiceLang.rest == speechLang.rest) {
+          if (voice.gender == "female") match.first = match.first || voice;
+          else match.second = match.second || voice;
+        }
+        else if (!voiceLang.rest) match.third = match.third || voice;
+        else {
+          if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = voice;
+          else match.fourth = match.fourth || voice;
+        }
+      }
+    }
+    if (voice.voiceName == "Google US English") match.default = match.default || voice;
+  });
+  return match.first || match.second || match.third || match.fourth || match.default;
+}
+
+function parseLang(lang) {
+  var tokens = lang.toLowerCase().split("-", 2);
+  return {
+    lang: tokens[0],
+    rest: tokens[1]
+  };
+}
+
+function detectLanguage(speech) {
+  var sentences = getSentences(speech.texts.join("\n\n"));
+  return request("GET", "http://ws.detectlanguage.com/0.2/detect", {
+    q: sentences.slice(0,5).join(" "),
+    key: "d49ef20f88bd3f33a0983eda351bf4a8"
+  })
+  .then(function(text) {
+    var result = JSON.parse(text);
+    result.data.detections.sort(function(a,b) {
+      if (a.isReliable == b.isReliable) {
+        if (a.confidence < b.confidence) return -1;
+        else if (a.confidence > b.confidence) return 1;
+        else return 0;
+      }
+      else if (a.isReliable) return 1;
+      else return -1;
+    });
+    var best = result.data.detections.pop();
+    return best && best.language;
+  });
+}
+
+function breakTexts(texts, wordLimit) {
+  return [].concat.apply([], texts.map(function(text) {
+    return breakText(text, wordLimit);
+  }));
 }
 
 function breakText(text, wordLimit) {

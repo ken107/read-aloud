@@ -10,7 +10,7 @@
     "default_popup": "popup.html"
   },
   "permissions": [
-    "activeTab", "tts", "storage", "ttsEngine"
+    "activeTab", "tts", "storage", "ttsEngine", "http://ws.detectlanguage.com/"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "background": {

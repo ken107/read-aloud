@@ -27,4 +27,8 @@ function updateButtons(state) {
   $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
   $("#btnPause").toggle(state == "PLAYING");
   $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING");
+
+  getState("activeVoice").then(function(voice) {
+    $("#attribution").toggle(isCustomVoice(voice.voiceName));
+  });
 }

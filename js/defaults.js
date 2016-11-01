@@ -6,8 +6,9 @@ var defaults = {
   spchletMaxLen: 36
 };
 
-function noHackRequired(voiceName) {
-  return chrome.runtime.getManifest().tts_engine.voices.some(function(voice) {
+function isCustomVoice(voiceName) {
+  var customVoices = chrome.runtime.getManifest().tts_engine.voices;
+  return customVoices.some(function(voice) {
     return voice.voice_name == voiceName;
   });
 }
@@ -67,12 +68,6 @@ function setState(key, value) {
   });
 }
 
-function isSpeaking() {
-  return new Promise(function(fulfill) {
-    chrome.tts.isSpeaking(fulfill);
-  });
-}
-
 function getVoices() {
   return new Promise(function(fulfill) {
     chrome.tts.getVoices(fulfill);
@@ -103,10 +98,35 @@ function waitMillis(millis) {
   });
 }
 
-function parseLang(lang) {
-  var tokens = lang.toLowerCase().split("-", 2);
-  return {
-    lang: tokens[0],
-    rest: tokens[1]
-  };
+function request(method, url, params, headers) {
+  return new Promise(function (resolve, reject) {
+    if (params) {
+      if (typeof params === 'object') {
+        params = Object.keys(params).map(function (key) {
+          return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
+        }).join('&');
+      }
+      if (method == "GET") {
+        var index = url.indexOf('?');
+        if (index != -1) url += '&' + params;
+        else url += '?' + params;
+      }
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) resolve(xhr.response);
+      else reject(new Error("HTTP " + this.status));
+    };
+    xhr.onerror = function () {
+      reject(new Error(this.status || xhr.statusText));
+    };
+    if (headers) {
+      Object.keys(headers).forEach(function (key) {
+        xhr.setRequestHeader(key, headers[key]);
+      });
+    }
+    if (method == "POST") xhr.send(params);
+    else xhr.send();
+  });
 }
