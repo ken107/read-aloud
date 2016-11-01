@@ -3,7 +3,7 @@
 
   "name": "Read Aloud",
   "description": "Read aloud the current webpage article with one click.",
-  "version": "0.0.0.2",
+  "version": "0.0.0.3",
 
   "browser_action": {
     "default_icon": "img/icon.png",
