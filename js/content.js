@@ -8,9 +8,6 @@ var paragraphTags = ["P", "BLOCKQUOTE", "PRE"];
   //clear markers
   $(".read-aloud").removeClass("read-aloud");
 
-  //remove unwanted elems
-  $(tags.map(function(tag) {return tag + " > div"}).join(", ")).remove();
-
   //find text blocks with at least 1 paragraphs
   var textBlocks = $("p").not("blockquote > p").parent().get();
   $.uniqueSort(textBlocks);
@@ -56,6 +53,7 @@ function notOutOfView() {
 }
 
 function getText(elem) {
+  $(elem).find(":hidden").remove();
   return $(elem).text().trim();
 }
 
