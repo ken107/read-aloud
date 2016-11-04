@@ -129,7 +129,7 @@ function findSuitableVoice(voices, speech, options) {
 }
 
 function findVoiceByName(voices, name) {
-  for (var i=0; i<voices.length; i++) if (voices[i].name == name) return voices[i];
+  for (var i=0; i<voices.length; i++) if (voices[i].voiceName == name) return voices[i];
   return null;
 }
 
