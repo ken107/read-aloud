@@ -2,8 +2,8 @@
   "manifest_version": 2,
 
   "name": "Read Aloud",
-  "description": "Read aloud the current webpage article with one click.",
-  "version": "0.0.0.3",
+  "description": "Read aloud the current webpage article with one click. A text-to-speech voice extension that actually works. Currently supports English and Vietnamese.",
+  "version": "0.0.0.5",
 
   "browser_action": {
     "default_icon": "img/icon.png",
