@@ -1,9 +1,12 @@
 {
   "extension_name": {
+    "message": "Read Aloud: A Text-to-Speech Voice Reader"
+  },
+  "extension_short_name": {
     "message": "Read Aloud"
   },
   "extension_description": {
-    "message": "Read aloud the current web-page article with one click; a text-to-speech voice extension that actually works. English and Vietnamese"
+    "message": "Read out loud the current web-page article with one click. Supports English, Vietnamese, and other languages."
   },
   "options_heading": {
     "message": "Options"

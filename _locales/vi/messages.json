@@ -2,8 +2,11 @@
   "extension_name": {
     "message": "Đọc Cho Tôi Nghe"
   },
+  "extension_short_name": {
+    "message": "Đọc Tui Nghe"
+  },
   "extension_description": {
-    "message": "Đọc nghe nội dung trang web - tiếng Anh và Việt. Dùng nghe đọc tin tức."
+    "message": "Đọc nghe nội dung trang web - tiếng Anh và Việt. Dùng nghe đọc tin tức, truyện online. Giọng đọc hay, tiện ích dễ xài."
   },
   "options_heading": {
     "message": "Tùy Chọn"
