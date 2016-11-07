@@ -29,7 +29,7 @@
   "tts_engine": {
     "voices": [
       {
-        "voice_name": "RspVoice Tiếng Việt (Nam)",
+        "voice_name": "RspVoice Vietnamese Male",
         "lang": "vi",
         "gender": "male",
         "event_types": ["start", "end"],
