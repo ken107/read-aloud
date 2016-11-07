@@ -28,14 +28,14 @@ body {
 #save {
   font-weight: bold;
 }
-#status {
+.status {
   margin-top: 20px;
   font-weight: bold;
   display: none;
 }
-#status.success {
+.status.success {
   color: #080;
 }
-#status.error {
+.status.error {
   color: red;
 }

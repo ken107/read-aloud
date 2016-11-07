@@ -6,6 +6,10 @@ $.fn.slider = function() {
 };
 
 $(function() {
+  $("[data-i18n]").each(function() {
+    var key = $(this).data("i18n");
+    $(this).text(chrome.i18n.getMessage(key));
+  });
   Promise.all([getSettings(), getVoices()]).then(spread(function(settings, voices) {
     voices.forEach(function(voice) {
       $("<option>")
@@ -28,7 +32,7 @@ $(function() {
       spchletMaxLen: $("#spchletMaxLen").val()
     })
     .then(function() {
-      $("#status").removeClass("error").addClass("success").text("Saved.").show().delay(3000).fadeOut();
+      $(".status.success").show().delay(3000).fadeOut();
     });
   });
   $("#reset").click(function() {

@@ -1,9 +1,10 @@
 {
   "manifest_version": 2,
 
-  "name": "Read Aloud",
-  "description": "Read aloud the current webpage article with one click. A text-to-speech voice extension that actually works. Currently supports English and Vietnamese.",
+  "name": "__MSG_extension_name__",
+  "description": "__MSG_extension_description__",
   "version": "0.0.0.5",
+  "default_locale": "en",
 
   "browser_action": {
     "default_icon": "img/icon.png",
@@ -28,7 +29,7 @@
   "tts_engine": {
     "voices": [
       {
-        "voice_name": "RspVoice Vietnamese Male",
+        "voice_name": "RspVoice Tiếng Việt (Nam)",
         "lang": "vi",
         "gender": "male",
         "event_types": ["start", "end"],

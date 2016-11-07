@@ -9,40 +9,36 @@
   <script src="js/options.js"></script>
 </head>
 <body>
-  <h1>Options</h1>
+  <h1 data-i18n="options_heading"></h1>
 
-  <div class="label">Voice</div>
+  <div class="label" data-i18n="options_voice_label"></div>
   <select id="voices">
     <option value="">Auto select</option>
   </select>
 
-  <div class="label">Rate</div>
+  <div class="label" data-i18n="options_rate_label"></div>
   <input type="text" id="rate" />
-  <div class="explain">
-    .5 is half speed, 2 is double speed.
-  </div>
+  <div class="explain" data-i18n="options_rate_explain"></div>
 
-  <div class="label">Pitch</div>
+  <div class="label" data-i18n="options_pitch_label"></div>
   <div id="pitch" class="slider" data-min="0" data-max="2">
     <div></div>
   </div>
 
-  <div class="label">Volume</div>
+  <div class="label" data-i18n="options_volume_label"></div>
   <div id="volume" class="slider" data-min="0" data-max="1">
     <div></div>
   </div>
 
-  <div class="label">Max Length of Speechlet</div>
-  <input type="text" id="spchletMaxLen" /> (words)
-  <div class="explain">
-    If reading sometimes stops abruptly in the middle of a long sentence, try reducing this number.
-    This setting causes longer paragraphs to be broken up into smaller speechlets.
-  </div>
+  <div class="label" data-i18n="options_spchlet_label"></div>
+  <input type="text" id="spchletMaxLen" />
+  <span data-i18n="options_spchlet_label2"></span>
+  <div class="explain" data-i18n="options_spchlet_explain"></div>
 
   <div class="label"></div>
-  <button id="save">Save</button>
-  <button id="reset">Reset</button>
+  <button id="save" data-i18n="options_save_button"></button>
+  <button id="reset" data-i18n="options_reset_button"></button>
 
-  <div id="status"></div>
+  <div class="status success" data-i18n="options_success_status"></div>
 </body>
 </html>

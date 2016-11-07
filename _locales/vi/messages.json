@@ -1,0 +1,44 @@
+{
+  "extension_name": {
+    "message": "Đọc Cho Tôi Nghe"
+  },
+  "extension_description": {
+    "message": "Đọc nghe nội dung trang web - tiếng Anh và Việt. Dùng nghe đọc tin tức."
+  },
+  "options_heading": {
+    "message": "Tùy Chọn"
+  },
+  "options_voice_label": {
+    "message": "Giọng đọc"
+  },
+  "options_rate_label": {
+    "message": "Tốc độ đọc"
+  },
+  "options_rate_explain": {
+    "message": "2 nghĩa là nhanh gấp hai lần, .5 nghĩa là chậm lại một nửa."
+  },
+  "options_pitch_label": {
+    "message": "Giọng cao/thấp"
+  },
+  "options_volume_label": {
+    "message": "Volume"
+  },
+  "options_spchlet_label": {
+    "message": "Ngắt câu"
+  },
+  "options_spchlet_label2": {
+    "message": "(từ)"
+  },
+  "options_spchlet_explain": {
+    "message": "Nếu máy đọc thường hay bị ngưng giữa chừng khi đang đọc những đoạn văn dài, hãy thử giảm thông số này xuống. Thông số này sẽ làm những câu văn dài bị ngắt ra làm nhiều đoạn."
+  },
+  "options_save_button": {
+    "message": "Lưu"
+  },
+  "options_reset_button": {
+    "message": "Reset"
+  },
+  "options_success_status": {
+    "message": "Đã lưu lại."
+  }
+}
