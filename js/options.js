@@ -36,6 +36,6 @@ $(function() {
     });
   });
   $("#reset").click(function() {
-    clearSettings().then(location.reload);
+    clearSettings().then(() => location.reload());
   });
 });
