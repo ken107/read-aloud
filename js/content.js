@@ -2,7 +2,7 @@
 var headingTags = ["H1", "H2", "H3", "H4", "H5", "H6"];
 var paragraphTags = ["P", "BLOCKQUOTE", "PRE"];
 
-(function() {
+function parseDocument() {
   var tags = headingTags.concat(paragraphTags);
 
   //clear markers
@@ -38,6 +38,12 @@ var paragraphTags = ["P", "BLOCKQUOTE", "PRE"];
 
   //extract texts
   var texts = $(".read-aloud").get().map(getText).filter(isNotEmpty).map(removeLinks).map(addMissingPunctuation);
+  return texts;
+}
+
+(function() {
+  var selectedText = window.getSelection().toString();
+  var texts = selectedText ? [selectedText] : parseDocument();
   console.log(texts.join("\n\n"));
 
   //return
