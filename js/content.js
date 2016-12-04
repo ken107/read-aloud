@@ -48,6 +48,7 @@ function parseDocument() {
 
   //return
   return {
+    domain: location.hostname,
     title: document.title,
     texts: texts,
     lang: document.documentElement.lang || $("meta[http-equiv=content-language]").attr("content")

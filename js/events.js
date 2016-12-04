@@ -1,9 +1,14 @@
 
-function play() {
+function play(detectLang) {
   return getPlaybackState()
     .then(function(state) {
       if (state == "PAUSED") return resume();
-      else if (state == "STOPPED") return parseDoc().then(speak).catch(console.error.bind(console));
+      else if (state == "STOPPED") {
+        return parseDoc()
+          .then(function(speech) {
+            return speak(speech, false, detectLang);
+          });
+      }
     })
 }
 
@@ -59,31 +64,28 @@ function parseDoc() {
     .then(function(results) {return results[0]});
 }
 
-function speak(speech, enqueue) {
-  return getSettings().then(function(settings) {
-    return speakSpeech(speech, enqueue, {
-      voiceName: settings.voiceName,
-      rate: settings.rate || defaults.rate,
-      pitch: settings.pitch || defaults.pitch,
-      volume: settings.volume || defaults.volume,
-      spchletMaxLen: settings.spchletMaxLen || defaults.spchletMaxLen
-    });
-  });
-}
-
-function speakSpeech(speech, enqueue, options) {
-  return getVoices()
-    .then(function(voices) {
-      return findSuitableVoice(voices, speech, options);
+function speak(speech, enqueue, detectLang) {
+  return getSettings()
+    .then(function(settings) {
+      var options = {
+        rate: settings.rate || defaults.rate,
+        pitch: settings.pitch || defaults.pitch,
+        volume: settings.volume || defaults.volume,
+        spchletMaxLen: settings.spchletMaxLen || defaults.spchletMaxLen
+      }
+      return getSpeechLang(speech, detectLang)
+        .then(function(lang) {options.lang = lang})
+        .then(function() {return getSpeechVoice(speech, settings.voiceName, options.lang)})
+        .then(function(voiceName) {options.voiceName = voiceName})
+        .then(function() {return options})
     })
-    .then(function(voice) {
-      console.log("voice", voice);
-      options.voiceName = voice.voiceName;
-      setState("activeVoice", voice);
-      return isCustomVoice(voice.voiceName);
+    .then(function(options) {
+      speech.options = options;
+      return setState("activeSpeech", speech)
+        .then(function() {return options})
     })
-    .then(function(isCustomVoice) {
-      if (isCustomVoice) {
+    .then(function(options) {
+      if (isCustomVoice(options.voiceName)) {
         return speakText(speech.texts.join("\n\n"), enqueue, options);
       }
       else {
@@ -113,19 +115,30 @@ function speakText(text, enqueue, options) {
   });
 }
 
-function findSuitableVoice(voices, speech, options) {
-  if (options.voiceName)
-    return findVoiceByName(voices, options.voiceName);
-  else
-    return Promise.resolve()
-      .then(function() {
-        if (speech.lang) return speech.lang;
-        else return detectLanguage(speech);
-      })
-      .then(function(lang) {
-        options.lang = lang;
-        return findVoiceByLang(voices, lang);
-      });
+function getSpeechLang(speech, detectLang) {
+  return getDomainLang(speech.domain)
+    .then(function(domainLang) {
+      if (!detectLang && domainLang) return domainLang;
+      else if (!detectLang && speech.lang) return speech.lang;
+      else {
+        return detectLanguage(speech)
+          .then(function(lang) {
+            return setDomainLang(speech.domain, lang)
+              .then(function() {return lang});
+          })
+      }
+    })
+}
+
+function getSpeechVoice(speech, voiceName, lang) {
+  return getVoices()
+    .then(function(voices) {
+      if (voiceName) return findVoiceByName(voices, voiceName);
+      else return findVoiceByLang(voices, lang);
+    })
+    .then(function(voice) {
+      return voice ? voice.voiceName : voiceName;
+    })
 }
 
 function findVoiceByName(voices, name) {
@@ -154,14 +167,6 @@ function findVoiceByLang(voices, lang) {
     if (voice.voiceName == "Google US English") match.default = match.default || voice;
   });
   return match.first || match.second || match.third || match.fourth || match.default;
-}
-
-function parseLang(lang) {
-  var tokens = lang.toLowerCase().split("-", 2);
-  return {
-    lang: tokens[0],
-    rest: tokens[1]
-  };
 }
 
 function detectLanguage(speech) {

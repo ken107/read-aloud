@@ -20,8 +20,13 @@
   text-rendering: optimizeLegibility;
 }
 
+#speech-info {
+  text-align: center;
+}
+
 #buttons {
   text-align: center;
+  margin-top: 15px;
 }
 #buttons > i {
   cursor: pointer;
