@@ -37,7 +37,7 @@ function parseDocument() {
   }
 
   //extract texts
-  var texts = $(".read-aloud").get().map(getText).filter(isNotEmpty).map(removeLinks).map(addMissingPunctuation);
+  var texts = $(".read-aloud").get().map(getText).filter(isNotEmpty).map(removeLinks);
   return texts;
 }
 
@@ -61,7 +61,9 @@ function notOutOfView() {
 
 function getText(elem) {
   $(elem).find(":hidden").remove();
-  return $(elem).text().trim();
+  var text = $(elem).text().trim();
+  if (elem.tagName == "LI") return ($(elem).index() + 1) + ". " + text;
+  else return text;
 }
 
 function isNotEmpty(text) {
@@ -70,14 +72,6 @@ function isNotEmpty(text) {
 
 function removeLinks(text) {
   return text.replace(/https?:\/\/\S+/g, "this link.");
-}
-
-function addMissingPunctuation(text) {
-  return text.split(/ *\n */).map(function(line) {
-    if (/[^,;:.!?]$/.test(line)) line += ".";
-    return line;
-  })
-  .join("\n");
 }
 
 function findHeadingsFor(block) {
