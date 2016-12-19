@@ -1,10 +1,9 @@
 
 var headingTags = ["H1", "H2", "H3", "H4", "H5", "H6"];
 var paragraphTags = ["P", "BLOCKQUOTE", "PRE"];
+var listTags = ["OL", "UL"];
 
 function parseDocument() {
-  var tags = headingTags.concat(paragraphTags);
-
   //clear markers
   $(".read-aloud").removeClass("read-aloud");
 
@@ -28,12 +27,13 @@ function parseDocument() {
     //mark the elements to be read
     textBlocks.forEach(function(block) {
       $(findHeadingsFor(block)).addClass("read-aloud");
-      $(block).children(tags.join(", ")).addClass("read-aloud");
+      $(block).children(headingTags.concat(paragraphTags).join(", ")).addClass("read-aloud");
+      $(block).children(listTags.join(", ")).children("li").addClass("read-aloud");
     });
   }
   else {
     //if no text blocks found, read all headings
-    $(tags.join(", ")).filter(":visible").addClass("read-aloud");
+    $(headingTags.concat(paragraphTags).join(", ")).filter(":visible").addClass("read-aloud");
   }
 
   //extract texts
