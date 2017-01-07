@@ -210,7 +210,7 @@ function breakPhrase(phrase, wordLimit) {
   var splitPoint = Math.min(Math.ceil(words.length/2), wordLimit);
   var result = [];
   while (words.length) {
-    result.push(words.slice(0, splitPoint).join(" "));
+    result.push(words.slice(0, splitPoint).join(""));
     words = words.slice(splitPoint);
   }
   return result;
@@ -253,7 +253,7 @@ function getSentences(text) {
 }
 
 function getPhrases(sentence) {
-  var tokens = sentence.split(/([,;:]\s|\s-+\s|\u2014)/);
+  var tokens = sentence.split(/([,;:]\s|\s-+\s|—)/);
   var result = [];
   for (var i=0; i<tokens.length; i+=2) {
     if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
@@ -263,5 +263,14 @@ function getPhrases(sentence) {
 }
 
 function getWords(sentence) {
-  return sentence.trim().split(/\s+/);
+  var tokens = sentence.trim().split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
+  var result = [];
+  for (var i=0; i<tokens.length; i+=2) {
+    if (tokens[i]) result.push(tokens[i]);
+    if (i+1 < tokens.length) {
+      if (/^[~@#%^*_+=<>]$/.test(tokens[i+1])) result.push(tokens[i+1]);
+      else if (result.length) result[result.length-1] += tokens[i+1];
+    }
+  }
+  return result;
 }

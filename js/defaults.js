@@ -155,7 +155,7 @@ var defaults = {
   rate: 1.0,
   pitch: 1.0,
   volume: 1.0,
-  spchletMaxLen: 36
+  spchletMaxLen: 38
 };
 
 function isCustomVoice(voiceName) {

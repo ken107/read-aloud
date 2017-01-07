@@ -37,13 +37,14 @@ function parseDocument() {
   }
 
   //extract texts
-  var texts = $(".read-aloud").get().map(getText).filter(isNotEmpty).map(removeLinks);
+  var texts = $(".read-aloud").get().map(getText).filter(isNotEmpty);
   return texts;
 }
 
 (function() {
   var selectedText = window.getSelection().toString();
   var texts = selectedText ? [selectedText] : parseDocument();
+  texts = texts.map(removeLinks);
   console.log(texts.join("\n\n"));
 
   //return
@@ -71,7 +72,7 @@ function isNotEmpty(text) {
 }
 
 function removeLinks(text) {
-  return text.replace(/https?:\/\/\S+/g, "this link.");
+  return text.replace(/https?:\/\/\S+/g, "this URL.");
 }
 
 function findHeadingsFor(block) {
