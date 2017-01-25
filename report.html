@@ -1,0 +1,27 @@
+<!DOCTYPE>
+<html>
+<head>
+  <title>Report Issues</title>
+  <link rel="stylesheet" type="text/css" href="css/report.css">
+  <script src="js/es6-promise.auto.min.js"></script>
+  <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/defaults.js"></script>
+  <script src="js/report.js"></script>
+</head>
+<body>
+  <h1>Report Issue</h1>
+
+  <div class="label">URL</div>
+  <input id="txt-url" type="text" maxlength="500" />
+
+  <div class="label">Comment</div>
+  <textarea id="txt-comment" rows="3" maxlength="1000"></textarea>
+
+  <div class="label"></div>
+  <input id="btn-submit" type="button" value="Submit" />
+  <img id="img-spinner" src="img/loading.gif" />
+
+  <div class="label"></div>
+  <div id="lbl-status"></div>
+</body>
+</html>

@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "0.0.0.13",
+  "version": "0.0.0.14",
   "default_locale": "en",
 
   "browser_action": {
@@ -12,7 +12,7 @@
     "default_popup": "popup.html"
   },
   "permissions": [
-    "activeTab", "tts", "storage", "ttsEngine", "http://ws.detectlanguage.com/"
+    "activeTab", "tts", "storage", "ttsEngine", "http://ws.detectlanguage.com/", "http://app.diepkhuc.com/"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "background": {

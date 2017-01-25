@@ -49,6 +49,7 @@ function parseDocument() {
 
   //return
   return {
+    url: location.href,
     domain: location.hostname,
     title: document.title,
     texts: texts,

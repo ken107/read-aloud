@@ -1,0 +1,27 @@
+.label {
+  color: red;
+  font-size: 1em;
+  margin-top: 15px;
+  margin-bottom: 3px;
+}
+
+#txt-url {
+  width: 250px;
+}
+
+#txt-comment {
+  width: 250px;
+}
+
+#img-spinner {
+  width: 24px;
+  display: none;
+}
+
+#lbl-status {
+  font-weight: bold;
+  color: #060;
+}
+#lbl-status.error {
+  color: red;
+}
