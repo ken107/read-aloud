@@ -43,5 +43,11 @@
   },
   "options_success_status": {
     "message": "Đã lưu lại."
+  },
+  "context_read_selection": {
+    "message": "Đọc"
+  },
+  "context_read_here": {
+    "message": "Đọc từ chỗ này"
   }
 }

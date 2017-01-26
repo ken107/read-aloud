@@ -1,3 +1,14 @@
+chrome.runtime.onInstalled.addListener(function() {
+  chrome.contextMenus.create({
+    id: "read-selection",
+    title: chrome.i18n.getMessage("context_read_selection"),
+    contexts: ["selection"]
+  });
+})
+
+chrome.contextMenus.onClicked.addListener(function(info, tab) {
+  if (info.menuItemId == "read-selection") play();
+})
 
 function play(detectLang) {
   return getPlaybackState()
@@ -171,23 +182,11 @@ function findVoiceByLang(voices, lang) {
 
 function detectLanguage(speech) {
   var sentences = getSentences(speech.texts.join("\n\n"));
-  return request("GET", "http://ws.detectlanguage.com/0.2/detect", {
-    q: sentences.slice(0,5).join(" "),
-    key: "d49ef20f88bd3f33a0983eda351bf4a8"
-  })
-  .then(function(text) {
-    var result = JSON.parse(text);
-    result.data.detections.sort(function(a,b) {
-      if (a.isReliable == b.isReliable) {
-        if (a.confidence < b.confidence) return -1;
-        else if (a.confidence > b.confidence) return 1;
-        else return 0;
-      }
-      else if (a.isReliable) return 1;
-      else return -1;
+  return new Promise(function(fulfill) {
+    chrome.i18n.detectLanguage(sentences.slice(0,5).join(" "), function(result) {
+      result.languages.sort(function(a,b) {return b.percentage-a.percentage});
+      fulfill(result.languages[0].language);
     });
-    var best = result.data.detections.pop();
-    return best && best.language;
   });
 }
 

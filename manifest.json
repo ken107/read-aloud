@@ -4,15 +4,25 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "0.0.0.14",
+  "version": "0.0.0.15",
   "default_locale": "en",
 
   "browser_action": {
     "default_icon": "img/icon.png",
     "default_popup": "popup.html"
   },
+  "icons": {
+    "16": "img/icon.png",
+    "48": "img/icon.png",
+    "128": "img/icon.png"
+  },
   "permissions": [
-    "activeTab", "tts", "storage", "ttsEngine", "http://ws.detectlanguage.com/", "http://app.diepkhuc.com/"
+    "activeTab",
+    "tts",
+    "storage",
+    "ttsEngine",
+    "contextMenus",
+    "http://app.diepkhuc.com/"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "background": {
@@ -26,6 +36,13 @@
     "persistent": false
   },
   "options_page": "options.html",
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Alt+R"
+      }
+    }
+  },
 
   "tts_engine": {
     "voices": [
