@@ -1,11 +1,5 @@
 
 $(function() {
-  $("#speech-language").click(function() {
-    getBackgroundPage()
-      .then(function(master) {return master.play({detectLang: true})})
-      .then(updateButtons)
-      .catch(console.error.bind(console));
-  });
   $("#btnPlay, #btnPause, #btnStop, #btnSettings").hide();
   $("#btnPlay").click(function() {
     getBackgroundPage()
@@ -53,14 +47,7 @@ function updateButtons() {
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING");
-
-    if (speech) {
-      $("#speech-language").text(languageCodes[parseLang(speech.options.lang).lang] || speech.options.lang).show();
-      $("#attribution").toggle(isCustomVoice(speech.options.voiceName) && (!lastShown || new Date().getTime()-lastShown > 3600*1000));
-      if ($("#attribution").is(":visible")) setState("attributionLastShown", new Date().getTime());
-    }
-    else {
-      $("#speech-language, #attribution").hide();
-    }
+    $("#attribution").toggle(speech != null && isCustomVoice(speech.options.voiceName) && (!lastShown || new Date().getTime()-lastShown > 3600*1000));
+    if ($("#attribution").is(":visible")) setState("attributionLastShown", new Date().getTime());
   }));
 }

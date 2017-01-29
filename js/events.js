@@ -13,16 +13,13 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection") play();
 })
 
-function play(options) {
+function play() {
   return Promise.resolve()
     .then(function() {
-      if (!options) options = {};
       if (activeSpeech) return stop();
     })
     .then(parseDoc)
-    .then(function(doc) {
-      return speak(doc, options.detectLang);
-    });
+    .then(speak);
 }
 
 function stop() {
@@ -61,7 +58,7 @@ function parseDoc() {
     .then(function(results) {return results[0]});
 }
 
-function speak(doc, detectLang) {
+function speak(doc) {
   return getSettings()
     .then(function(settings) {
       var options = {
@@ -71,12 +68,14 @@ function speak(doc, detectLang) {
         spchletMaxLen: settings.spchletMaxLen || defaults.spchletMaxLen
       }
       options.spchletMaxLen *= options.rate;
-      return getSpeechLang(doc, detectLang)
+      return getSpeechLang(doc)
         .then(function(lang) {options.lang = lang})
         .then(function() {return getSpeechVoice(doc, settings.voiceName, options.lang)})
         .then(function(voiceName) {
           options.voiceName = voiceName;
           options.hack = !isCustomVoice(options.voiceName);
+        })
+        .then(function() {
           options.onEnd = function() {
             activeSpeech = null;
           };
@@ -86,18 +85,10 @@ function speak(doc, detectLang) {
     });
 }
 
-function getSpeechLang(doc, detectLang) {
-  return getDomainLang(doc.domain)
-    .then(function(domainLang) {
-      if (!detectLang && domainLang) return domainLang;
-      else if (!detectLang && doc.lang) return doc.lang;
-      else {
-        return detectLanguage(doc)
-          .then(function(lang) {
-            return setDomainLang(doc.domain, lang)
-              .then(function() {return lang});
-          })
-      }
+function getSpeechLang(doc) {
+  return detectLanguage(doc)
+    .then(function(lang) {
+      return lang || doc.lang;
     })
 }
 
@@ -146,7 +137,7 @@ function detectLanguage(doc) {
   return new Promise(function(fulfill) {
     chrome.i18n.detectLanguage(text, function(result) {
       result.languages.sort(function(a,b) {return b.percentage-a.percentage});
-      fulfill(result.languages[0].language);
+      fulfill(result.languages[0] && result.languages[0].language);
     });
   });
 }
