@@ -62,7 +62,7 @@ function notOutOfView() {
 }
 
 function getText(elem) {
-  $(elem).find(":hidden").remove();
+  $(elem).find(":hidden, sup").remove();
   var text = $(elem).text().trim();
   if (elem.tagName == "LI") return ($(elem).index() + 1) + ". " + text;
   else return text;

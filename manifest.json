@@ -30,6 +30,7 @@
       "js/es6-promise.auto.min.js",
       "js/responsivevoice.js",
       "js/defaults.js",
+      "js/speech.js",
       "js/vietnamese.js",
       "js/events.js"
     ],

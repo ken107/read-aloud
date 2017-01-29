@@ -1,3 +1,6 @@
+
+var activeSpeech = null;
+
 chrome.runtime.onInstalled.addListener(function() {
   chrome.contextMenus.create({
     id: "read-selection",
@@ -10,30 +13,30 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection") play();
 })
 
-function play(detectLang) {
-  return getPlaybackState()
-    .then(function(state) {
-      if (state == "PAUSED") return resume();
-      else if (state == "STOPPED") {
-        return parseDoc()
-          .then(function(speech) {
-            return speak(speech, false, detectLang);
-          });
-      }
+function play(options) {
+  return Promise.resolve()
+    .then(function() {
+      if (!options) options = {};
+      if (activeSpeech) return stop();
     })
+    .then(parseDoc)
+    .then(function(doc) {
+      return speak(doc, options.detectLang);
+    });
 }
 
 function stop() {
-  chrome.tts.stop();
-  return checkStopped();
+  var promise = activeSpeech.pause();
+  activeSpeech = null;
+  return promise;
 }
 
-function checkStopped() {
-  return isSpeaking()
-    .then(function(isSpeaking) {
-      if (!isSpeaking) return;
-      else return waitMillis(500).then(checkStopped);
-    });
+function pause() {
+  return activeSpeech.pause();
+}
+
+function resume() {
+  return activeSpeech.play();
 }
 
 function isSpeaking() {
@@ -42,31 +45,14 @@ function isSpeaking() {
   });
 }
 
-function pause() {
-  chrome.tts.pause();
-  return setState("isPaused", true);
-}
-
-function resume() {
-  chrome.tts.resume();
-  return setState("isPaused", false);
-}
-
 function getPlaybackState() {
-  return Promise.all([
-      isSpeaking(),
-      getState("isPaused")
-    ])
-    .then(spread(function(isSpeaking, isPaused) {
-      if (isSpeaking) {
-        if (isPaused) return "PAUSED";
-        else return "PLAYING";
-      }
-      else {
-        if (isPaused) return setState("isPaused", false).then(function() {return "STOPPED"});
-        else return "STOPPED";
-      }
-    }));
+  return isSpeaking().then(function(isSpeaking) {
+    if (activeSpeech) {
+      if (isSpeaking) return "PLAYING";
+      else return "PAUSED";
+    }
+    else return "STOPPED";
+  });
 }
 
 function parseDoc() {
@@ -75,7 +61,7 @@ function parseDoc() {
     .then(function(results) {return results[0]});
 }
 
-function speak(speech, enqueue, detectLang) {
+function speak(doc, detectLang) {
   return getSettings()
     .then(function(settings) {
       var options = {
@@ -84,64 +70,38 @@ function speak(speech, enqueue, detectLang) {
         volume: settings.volume || defaults.volume,
         spchletMaxLen: settings.spchletMaxLen || defaults.spchletMaxLen
       }
-      return getSpeechLang(speech, detectLang)
+      options.spchletMaxLen *= options.rate;
+      return getSpeechLang(doc, detectLang)
         .then(function(lang) {options.lang = lang})
-        .then(function() {return getSpeechVoice(speech, settings.voiceName, options.lang)})
-        .then(function(voiceName) {options.voiceName = voiceName})
-        .then(function() {return options})
-    })
-    .then(function(options) {
-      speech.options = options;
-      return setState("activeSpeech", speech)
-        .then(function() {return options})
-    })
-    .then(function(options) {
-      if (isCustomVoice(options.voiceName)) {
-        return speakText(speech.texts.join("\n\n"), enqueue, options);
-      }
-      else {
-        var texts = breakTexts(speech.texts, options.spchletMaxLen);
-        var promise = speakText(texts[0], enqueue, options);
-        for (var i=1; i<texts.length; i++) speakText(texts[i], true, options);
-        return promise;
-      }
+        .then(function() {return getSpeechVoice(doc, settings.voiceName, options.lang)})
+        .then(function(voiceName) {
+          options.voiceName = voiceName;
+          options.hack = !isCustomVoice(options.voiceName);
+          options.onEnd = function() {
+            activeSpeech = null;
+          };
+          activeSpeech = new Speech(doc.texts, options);
+          return activeSpeech.play();
+        })
     });
 }
 
-function speakText(text, enqueue, options) {
-  return new Promise(function(fulfill) {
-    chrome.tts.speak(text, {
-      enqueue: enqueue,
-      voiceName: options.voiceName,
-      lang: options.lang,
-      rate: options.rate,
-      pitch: options.pitch,
-      volume: options.volume,
-      requiredEventTypes: ["start"],
-      desiredEventTypes: ["start"],
-      onEvent: function(event) {
-        if (event.type == "start") fulfill();
-      }
-    });
-  });
-}
-
-function getSpeechLang(speech, detectLang) {
-  return getDomainLang(speech.domain)
+function getSpeechLang(doc, detectLang) {
+  return getDomainLang(doc.domain)
     .then(function(domainLang) {
       if (!detectLang && domainLang) return domainLang;
-      else if (!detectLang && speech.lang) return speech.lang;
+      else if (!detectLang && doc.lang) return doc.lang;
       else {
-        return detectLanguage(speech)
+        return detectLanguage(doc)
           .then(function(lang) {
-            return setDomainLang(speech.domain, lang)
+            return setDomainLang(doc.domain, lang)
               .then(function() {return lang});
           })
       }
     })
 }
 
-function getSpeechVoice(speech, voiceName, lang) {
+function getSpeechVoice(doc, voiceName, lang) {
   return getVoices()
     .then(function(voices) {
       if (voiceName) return findVoiceByName(voices, voiceName);
@@ -180,96 +140,13 @@ function findVoiceByLang(voices, lang) {
   return match.first || match.second || match.third || match.fourth || match.default;
 }
 
-function detectLanguage(speech) {
-  var sentences = getSentences(speech.texts.join("\n\n"));
+function detectLanguage(doc) {
+  var index = Math.floor(doc.texts.length /2);
+  var text = doc.texts.slice(index, index+2).join(" ");
   return new Promise(function(fulfill) {
-    chrome.i18n.detectLanguage(sentences.slice(0,5).join(" "), function(result) {
+    chrome.i18n.detectLanguage(text, function(result) {
       result.languages.sort(function(a,b) {return b.percentage-a.percentage});
       fulfill(result.languages[0].language);
     });
   });
-}
-
-function breakTexts(texts, wordLimit) {
-  return [].concat.apply([], texts.map(function(text) {
-    return breakText(text, wordLimit);
-  }));
-}
-
-function breakText(text, wordLimit) {
-  return merge(getSentences(text), wordLimit, breakSentence);
-}
-
-function breakSentence(sentence, wordLimit) {
-  return merge(getPhrases(sentence), wordLimit, breakPhrase);
-}
-
-function breakPhrase(phrase, wordLimit) {
-  var words = getWords(phrase);
-  var splitPoint = Math.min(Math.ceil(words.length/2), wordLimit);
-  var result = [];
-  while (words.length) {
-    result.push(words.slice(0, splitPoint).join(""));
-    words = words.slice(splitPoint);
-  }
-  return result;
-}
-
-function merge(parts, wordLimit, breakPart) {
-  var result = [];
-  var group = {parts: [], wordCount: 0};
-  var flush = function() {
-    if (group.parts.length) {
-      result.push(group.parts.join(""));
-      group = {parts: [], wordCount: 0};
-    }
-  };
-  parts.forEach(function(part) {
-    var wordCount = getWords(part).length;
-    if (wordCount > wordLimit) {
-      flush();
-      var subParts = breakPart(part, wordLimit);
-      for (var i=0; i<subParts.length; i++) result.push(subParts[i]);
-    }
-    else {
-      if (group.wordCount + wordCount > wordLimit) flush();
-      group.parts.push(part);
-      group.wordCount += wordCount;
-    }
-  });
-  flush();
-  return result;
-}
-
-function getSentences(text) {
-  var tokens = text.split(/([.!?]+\s)/);
-  var result = [];
-  for (var i=0; i<tokens.length; i+=2) {
-    if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
-    else result.push(tokens[i]);
-  }
-  return result;
-}
-
-function getPhrases(sentence) {
-  var tokens = sentence.split(/([,;:]\s|\s-+\s|—)/);
-  var result = [];
-  for (var i=0; i<tokens.length; i+=2) {
-    if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
-    else result.push(tokens[i]);
-  }
-  return result;
-}
-
-function getWords(sentence) {
-  var tokens = sentence.trim().split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
-  var result = [];
-  for (var i=0; i<tokens.length; i+=2) {
-    if (tokens[i]) result.push(tokens[i]);
-    if (i+1 < tokens.length) {
-      if (/^[~@#%^*_+=<>]$/.test(tokens[i+1])) result.push(tokens[i+1]);
-      else if (result.length) result[result.length-1] += tokens[i+1];
-    }
-  }
-  return result;
 }
