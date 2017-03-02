@@ -1,7 +1,5 @@
 $(function() {
-  getState("activeSpeech").then(function(speech) {
-    if (speech) $("#txt-url").val(speech.url);
-  });
+  getState("lastUrl").then(function(url) {$("#txt-url").val(url)});
   $("#txt-comment").focus();
   $("#btn-submit").click(submit);
 });

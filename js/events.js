@@ -19,7 +19,15 @@ function play() {
       if (activeSpeech) return stop();
     })
     .then(parseDoc)
-    .then(speak);
+    .then(function(doc) {
+      setState("lastUrl", doc.url);
+      return getSpeech(doc);
+    })
+    .then(function(speech) {
+      activeSpeech = speech;
+      activeSpeech.options.onEnd = function() {activeSpeech = null};
+      return activeSpeech.play();
+    });
 }
 
 function stop() {
@@ -58,7 +66,7 @@ function parseDoc() {
     .then(function(results) {return results[0]});
 }
 
-function speak(doc) {
+function getSpeech(doc) {
   return getSettings()
     .then(function(settings) {
       var options = {
@@ -76,11 +84,7 @@ function speak(doc) {
           options.hack = !isCustomVoice(options.voiceName);
         })
         .then(function() {
-          options.onEnd = function() {
-            activeSpeech = null;
-          };
-          activeSpeech = new Speech(doc.texts, options);
-          return activeSpeech.play();
+          return new Speech(doc.texts, options);
         })
     });
 }
