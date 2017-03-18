@@ -61,9 +61,18 @@ function getPlaybackState() {
 }
 
 function parseDoc() {
-  return executeScript("js/jquery-3.1.1.min.js")
-    .then(executeScript.bind(null, "js/content.js"))
-    .then(function(results) {return results[0]});
+  return getActiveTab()
+    .then(function(tab) {
+      return sendMessage(tab.id, {method: "readAloudCheck"})
+        .then(function(ready) {return ready || injectScripts(tab.id)})
+        .then(sendMessage.bind(null, tab.id, {method: "readAloudGet"}));
+    });
+  function injectScripts(tabId) {
+    return executeScript(tabId, "js/jquery-3.1.1.min.js")
+      .then(executeScript.bind(null, tabId, "js/es6-promise.auto.min.js"))
+      .then(executeScript.bind(null, tabId, "js/defaults.js"))
+      .then(executeScript.bind(null, tabId, "js/content.js"));
+  }
 }
 
 function getSpeech(doc) {

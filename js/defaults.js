@@ -73,9 +73,23 @@ function getVoices() {
   });
 }
 
-function executeScript(file) {
+function executeScript(tabId, file) {
   return new Promise(function(fulfill) {
-    chrome.tabs.executeScript({file: file}, fulfill);
+    chrome.tabs.executeScript(tabId, {file: file}, fulfill);
+  });
+}
+
+function sendMessage(tabId, message) {
+  return new Promise(function(fulfill) {
+    chrome.tabs.sendMessage(tabId, message, fulfill);
+  });
+}
+
+function getActiveTab() {
+  return new Promise(function(fulfill) {
+    return chrome.tabs.query({active: true}, function(tabs) {
+      fulfill(tabs[0]);
+    });
   });
 }
 

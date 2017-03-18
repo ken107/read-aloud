@@ -4,6 +4,29 @@ var paragraphTags = ["P", "BLOCKQUOTE", "PRE"];
 var listTags = ["OL", "UL"];
 
 function parseDocument() {
+  if (location.hostname == "docs.google.com") return parseGoogleDocument();
+  else return parseHtmlDocument();
+}
+
+function parseGoogleDocument() {
+  var editor = $(".kix-appview-editor").get(0);
+  var pages = $(".kix-page").get();
+  return loadPages().then(waitMillis.bind(null, 1000)).then(parse);
+
+  function loadPages() {
+    if (!pages.length) return Promise.resolve();
+    else {
+      var page = pages.pop();
+      editor.scrollTop = $(page).position().top;
+      return waitMillis(0).then(loadPages);
+    }
+  }
+  function parse() {
+    return $(".kix-paragraphrenderer").get().map(getText).filter(isNotEmpty);
+  }
+}
+
+function parseHtmlDocument() {
   //clear markers
   $(".read-aloud").removeClass("read-aloud");
 
@@ -41,21 +64,36 @@ function parseDocument() {
   return texts;
 }
 
-(function() {
-  var selectedText = window.getSelection().toString();
-  var texts = selectedText ? [selectedText] : parseDocument();
-  texts = texts.map(removeLinks);
-  console.log(texts.join("\n\n"));
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  switch (request.method) {
+    case "readAloudCheck":
+      sendResponse(true);
+      break;
+    case "readAloudGet":
+      getDocument().then(sendResponse);
+      return true;
+  }
+});
 
-  //return
-  return {
-    url: location.href,
-    domain: location.hostname,
-    title: document.title,
-    texts: texts,
-    lang: document.documentElement.lang || $("html").attr("xml:lang") || $("meta[http-equiv=content-language]").attr("content")
-  };
-})();
+function getDocument() {
+  return Promise.resolve(window.getSelection().toString().trim())
+    .then(function(selectedText) {
+      return selectedText ? [selectedText] : parseDocument();
+    })
+    .then(function(texts) {
+      return texts.map(removeLinks);
+    })
+    .then(function(texts) {
+      console.log(texts.join("\n\n"));
+      return {
+        url: location.href,
+        domain: location.hostname,
+        title: document.title,
+        texts: texts,
+        lang: document.documentElement.lang || $("html").attr("xml:lang") || $("meta[http-equiv=content-language]").attr("content")
+      };
+    });
+}
 
 function notOutOfView() {
   return $(this).offset().left >= 0;
