@@ -84,18 +84,18 @@ var docProvider = new function() {
 
 
 function GoogleDoc() {
-  var container = $(".kix-appview-editor").get(0);
+  var viewport = $(".kix-appview-editor").get(0);
   var pages = $(".kix-page");
 
   this.getCurrentIndex = function() {
-    for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > container.scrollTop+$(container).height()/2) break;
+    for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > viewport.scrollTop+$(viewport).height()/2) break;
     return i-1;
   }
 
   this.getTexts = function(index) {
     var page = pages.get(index);
     if (page) {
-      container.scrollTop = $(page).position().top;
+      viewport.scrollTop = $(page).position().top;
       return tryGetTexts(page, 2);
     }
     else return null;
@@ -115,18 +115,18 @@ function GoogleDoc() {
 
 
 function GDriveDoc() {
-  var container = $(".drive-viewer-paginated-scrollable").get(0);
+  var viewport = $(".drive-viewer-paginated-scrollable").get(0);
   var pages = $(".drive-viewer-paginated-page");
 
   this.getCurrentIndex = function() {
-    for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > container.scrollTop+$(container).height()/2) break;
+    for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > viewport.scrollTop+$(viewport).height()/2) break;
     return i-1;
   }
 
   this.getTexts = function(index) {
     var page = pages.get(index);
     if (page) {
-      container.scrollTop = $(page).position().top;
+      viewport.scrollTop = $(page).position().top;
       return tryGetTexts(page, 3);
     }
     else return null;
@@ -150,7 +150,7 @@ function GDriveDoc() {
     for (var i=0; i<texts.length; i++) {
       if (para) para += " ";
       para += texts[i];
-      if (texts[i].match(/[.!?]$/)) {
+      if (!texts[i].match(/\w$/)) {
         out.push(para);
         para = "";
       }
@@ -172,6 +172,7 @@ function KindleBook() {
     mainDoc.getElementById("column_1_frame_1")
   ];
   var currentIndex = 0;
+  var lastText;
 
   this.getCurrentIndex = function() {
     return currentIndex = 0;
@@ -201,10 +202,16 @@ function KindleBook() {
       var frameHeight = $(frame).height();
       $("h1, h2, h3, h4, h5, h6, .was-a-p", frame.contentDocument).each(function() {
         var top = $(this).offset().top;
-        if (top >= 0 && top < frameHeight) texts.push($(this).text());
+        var bottom = top + $(this).height();
+        if (top < frameHeight && bottom > 0) texts.push($(this).text());
       })
     })
-    return texts;
+    var out = [];
+    for (var i=0; i<texts.length; i++) {
+      if (texts[i] != (out.length ? out[out.length-1] : lastText)) out.push(texts[i]);
+    }
+    lastText = out[out.length-1];
+    return out;
   }
 }
 

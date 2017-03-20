@@ -105,7 +105,7 @@ function Speech(texts, options) {
   }
 
   function getSentences(text) {
-    var tokens = text.split(/([.!?]+\s)/);
+    var tokens = text.split(/([.!?]+[\s\u200b])/);
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
       if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
