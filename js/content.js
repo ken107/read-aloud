@@ -77,6 +77,7 @@ var docProvider = new function() {
       else return new HtmlDoc();
     }
     else if (location.hostname == "drive.google.com") return new GDriveDoc();
+    else if (location.hostname == "read.amazon.com") return new KindleBook();
     else return new HtmlDoc();
   }
 }
@@ -95,12 +96,20 @@ function GoogleDoc() {
     var page = pages.get(index);
     if (page) {
       container.scrollTop = $(page).position().top;
-      return waitMillis(1000)
-        .then(function() {
-          return $(".kix-paragraphrenderer", page).get().map(getText).filter(isNotEmpty);
-        })
+      return tryGetTexts(2);
     }
     else return null;
+  }
+
+  function tryGetTexts(count) {
+    return waitMillis(1000)
+      .then(function() {
+        return $(".kix-paragraphrenderer", page).get().map(getText).filter(isNotEmpty);
+      })
+      .then(function(texts) {
+        if (texts && !texts.length && count > 1) return tryGetTexts(count-1);
+        else return texts;
+      })
   }
 }
 
@@ -118,13 +127,21 @@ function GDriveDoc() {
     var page = pages.get(index);
     if (page) {
       container.scrollTop = $(page).position().top;
-      return waitMillis(2000)
-        .then(function() {
-          return $("p", page).get().map(getText).filter(isNotEmpty);
-        })
-        .then(fixParagraphs)
+      return tryGetTexts(3);
     }
     else return null;
+  }
+
+  function tryGetTexts(count) {
+    return waitMillis(1000)
+      .then(function() {
+        return $("p", page).get().map(getText).filter(isNotEmpty);
+      })
+      .then(fixParagraphs)
+      .then(function(texts) {
+        if (texts && !texts.length && count > 1) return tryGetTexts(count-1);
+        else return texts;
+      })
   }
 
   function fixParagraphs(texts) {
@@ -140,6 +157,54 @@ function GDriveDoc() {
     }
     if (para) out.push(para);
     return out;
+  }
+}
+
+
+function KindleBook() {
+  var mainDoc = document.getElementById("KindleReaderIFrame").contentDocument;
+  var btnNext = mainDoc.getElementById("kindleReader_pageTurnAreaRight");
+  var btnPrev = mainDoc.getElementById("kindleReader_pageTurnAreaLeft");
+  var contentFrames = [
+    mainDoc.getElementById("column_0_frame_0"),
+    mainDoc.getElementById("column_0_frame_1"),
+    mainDoc.getElementById("column_1_frame_0"),
+    mainDoc.getElementById("column_1_frame_1")
+  ];
+  var currentIndex = 0;
+
+  this.getCurrentIndex = function() {
+    return currentIndex = 0;
+  }
+
+  this.getTexts = function(index) {
+    for (; currentIndex<index; currentIndex++) $(btnNext).click();
+    for (; currentIndex>index; currentIndex--) $(btnPrev).click();
+    return tryGetTexts(4);
+  }
+
+  function tryGetTexts(count) {
+    return waitMillis(1000)
+      .then(getTexts)
+      .then(function(texts) {
+        if (texts && !texts.length && count > 1) return tryGetTexts(count-1);
+        else return texts;
+      })
+  }
+
+  function getTexts() {
+    var texts = [];
+    contentFrames.filter(function(frame) {
+      return frame.style.visibility != "hidden";
+    })
+    .forEach(function(frame) {
+      var frameHeight = $(frame).height();
+      $("h1, h2, h3, h4, h5, h6, .was-a-p", frame.contentDocument).each(function() {
+        var top = $(this).offset().top;
+        if (top >= 0 && top < frameHeight) texts.push($(this).text());
+      })
+    })
+    return texts;
   }
 }
 
