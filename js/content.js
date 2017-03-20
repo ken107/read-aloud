@@ -118,7 +118,7 @@ function GDriveDoc() {
     var page = pages.get(index);
     if (page) {
       container.scrollTop = $(page).position().top;
-      return waitMillis(1000)
+      return waitMillis(2000)
         .then(function() {
           return $("p", page).get().map(getText).filter(isNotEmpty);
         })
@@ -138,6 +138,7 @@ function GDriveDoc() {
         para = "";
       }
     }
+    if (para) out.push(para);
     return out;
   }
 }

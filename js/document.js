@@ -88,7 +88,8 @@ function Doc(tabId) {
     return getVoices()
       .then(function(voices) {
         if (voiceName) return findVoiceByName(voices, voiceName);
-        else return findVoiceByLang(voices, lang);
+        else if (lang) return findVoiceByLang(voices, lang);
+        else return null;
       })
       .then(function(voice) {
         return voice ? voice.voiceName : voiceName;
