@@ -31,6 +31,7 @@
       "js/responsivevoice.js",
       "js/defaults.js",
       "js/speech.js",
+      "js/document.js",
       "js/vietnamese.js",
       "js/events.js"
     ],

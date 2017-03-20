@@ -1,5 +1,5 @@
 
-var activeSpeech = null;
+var activeDoc;
 
 chrome.runtime.onInstalled.addListener(function() {
   chrome.contextMenus.create({
@@ -14,143 +14,38 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
 })
 
 function play() {
-  return Promise.resolve()
-    .then(function() {
-      if (activeSpeech) return stop();
-    })
-    .then(parseDoc)
-    .then(function(doc) {
-      setState("lastUrl", doc.url);
-      return getSpeech(doc);
-    })
-    .then(function(speech) {
-      activeSpeech = speech;
-      activeSpeech.options.onEnd = function() {activeSpeech = null};
-      return activeSpeech.play();
-    });
-}
-
-function stop() {
-  var promise = activeSpeech.pause();
-  activeSpeech = null;
-  return promise;
-}
-
-function pause() {
-  return activeSpeech.pause();
-}
-
-function resume() {
-  return activeSpeech.play();
-}
-
-function isSpeaking() {
-  return new Promise(function(fulfill) {
-    chrome.tts.isSpeaking(fulfill);
-  });
-}
-
-function getPlaybackState() {
-  return isSpeaking().then(function(isSpeaking) {
-    if (activeSpeech) {
-      if (isSpeaking) return "PLAYING";
-      else return "PAUSED";
-    }
-    else return "STOPPED";
-  });
-}
-
-function parseDoc() {
-  return getActiveTab()
-    .then(function(tab) {
-      return sendMessage(tab.id, {method: "readAloudCheck"})
-        .then(function(ready) {return ready || injectScripts(tab.id)})
-        .then(sendMessage.bind(null, tab.id, {method: "readAloudGet"}));
-    });
-  function injectScripts(tabId) {
-    return executeScript(tabId, "js/jquery-3.1.1.min.js")
-      .then(executeScript.bind(null, tabId, "js/es6-promise.auto.min.js"))
-      .then(executeScript.bind(null, tabId, "js/defaults.js"))
-      .then(executeScript.bind(null, tabId, "js/content.js"));
+  if (activeDoc) return activeDoc.play();
+  else {
+    return getActiveTab()
+      .then(function(tab) {
+        activeDoc = new Doc(tab.id);
+        activeDoc.onEnd = function() {activeDoc = null};
+        return activeDoc.init();
+      })
+      .then(function() {
+        setState("lastUrl", activeDoc.url);
+        return activeDoc.play();
+      })
   }
 }
 
-function getSpeech(doc) {
-  return getSettings()
-    .then(function(settings) {
-      var options = {
-        rate: settings.rate || defaults.rate,
-        pitch: settings.pitch || defaults.pitch,
-        volume: settings.volume || defaults.volume,
-        spchletMaxLen: settings.spchletMaxLen || defaults.spchletMaxLen
+function stop() {
+  if (activeDoc) return activeDoc.stop().then(function() {activeDoc = null});
+  else return Promise.resolve();
+}
+
+function pause() {
+  if (activeDoc) return activeDoc.pause();
+  else return Promise.resolve();
+}
+
+function getPlaybackState() {
+  return new Promise(function(fulfill) {chrome.tts.isSpeaking(fulfill)})
+    .then(function(isSpeaking) {
+      if (activeDoc) {
+        if (isSpeaking) return "PLAYING";
+        else return "PAUSED";
       }
-      options.spchletMaxLen *= options.rate;
-      return getSpeechLang(doc)
-        .then(function(lang) {options.lang = lang})
-        .then(function() {return getSpeechVoice(doc, settings.voiceName, options.lang)})
-        .then(function(voiceName) {
-          options.voiceName = voiceName;
-          options.hack = !isCustomVoice(options.voiceName);
-        })
-        .then(function() {
-          return new Speech(doc.texts, options);
-        })
-    });
-}
-
-function getSpeechLang(doc) {
-  return detectLanguage(doc)
-    .then(function(lang) {
-      return lang || doc.lang;
+      else return "STOPPED";
     })
-}
-
-function getSpeechVoice(doc, voiceName, lang) {
-  return getVoices()
-    .then(function(voices) {
-      if (voiceName) return findVoiceByName(voices, voiceName);
-      else return findVoiceByLang(voices, lang);
-    })
-    .then(function(voice) {
-      return voice ? voice.voiceName : voiceName;
-    })
-}
-
-function findVoiceByName(voices, name) {
-  for (var i=0; i<voices.length; i++) if (voices[i].voiceName == name) return voices[i];
-  return null;
-}
-
-function findVoiceByLang(voices, lang) {
-  var speechLang = parseLang(lang);
-  var match = {};
-  voices.forEach(function(voice) {
-    if (voice.lang) {
-      var voiceLang = parseLang(voice.lang);
-      if (voiceLang.lang == speechLang.lang) {
-        if (voiceLang.rest == speechLang.rest) {
-          if (voice.gender == "female") match.first = match.first || voice;
-          else match.second = match.second || voice;
-        }
-        else if (!voiceLang.rest) match.third = match.third || voice;
-        else {
-          if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = voice;
-          else match.fourth = match.fourth || voice;
-        }
-      }
-    }
-    if (voice.voiceName == "Google US English") match.default = match.default || voice;
-  });
-  return match.first || match.second || match.third || match.fourth || match.default;
-}
-
-function detectLanguage(doc) {
-  var index = Math.floor(doc.texts.length /2);
-  var text = doc.texts.slice(index, index+2).join(" ");
-  return new Promise(function(fulfill) {
-    chrome.i18n.detectLanguage(text, function(result) {
-      result.languages.sort(function(a,b) {return b.percentage-a.percentage});
-      fulfill(result.languages[0] && result.languages[0].language);
-    });
-  });
 }

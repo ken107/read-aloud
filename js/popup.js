@@ -6,7 +6,7 @@ $(function() {
       .then(function(master) {
         return master.getPlaybackState()
           .then(function(state) {
-            if (state == "PAUSED") return master.resume();
+            if (state == "PAUSED") return master.play();
             else return master.play();
           })
       })
