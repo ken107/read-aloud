@@ -96,18 +96,18 @@ function GoogleDoc() {
     var page = pages.get(index);
     if (page) {
       container.scrollTop = $(page).position().top;
-      return tryGetTexts(2);
+      return tryGetTexts(page, 2);
     }
     else return null;
   }
 
-  function tryGetTexts(count) {
+  function tryGetTexts(page, count) {
     return waitMillis(1000)
       .then(function() {
         return $(".kix-paragraphrenderer", page).get().map(getText).filter(isNotEmpty);
       })
       .then(function(texts) {
-        if (texts && !texts.length && count > 1) return tryGetTexts(count-1);
+        if (texts && !texts.length && count > 1) return tryGetTexts(page, count-1);
         else return texts;
       })
   }
@@ -127,19 +127,19 @@ function GDriveDoc() {
     var page = pages.get(index);
     if (page) {
       container.scrollTop = $(page).position().top;
-      return tryGetTexts(3);
+      return tryGetTexts(page, 3);
     }
     else return null;
   }
 
-  function tryGetTexts(count) {
+  function tryGetTexts(page, count) {
     return waitMillis(1000)
       .then(function() {
         return $("p", page).get().map(getText).filter(isNotEmpty);
       })
       .then(fixParagraphs)
       .then(function(texts) {
-        if (texts && !texts.length && count > 1) return tryGetTexts(count-1);
+        if (texts && !texts.length && count > 1) return tryGetTexts(page, count-1);
         else return texts;
       })
   }
