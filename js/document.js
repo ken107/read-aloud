@@ -10,7 +10,10 @@ function Doc(tabId) {
     return send({method: "raCheck"})
       .then(function(result) {return result || injectScripts()})
       .then(send.bind(null, {method: "raGetInfo"}))
-      .then(function(result) {info = result})
+      .then(function(result) {
+        info = result;
+        self.url = info.url;
+      })
   }
 
   function injectScripts() {

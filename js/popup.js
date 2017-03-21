@@ -3,15 +3,18 @@ $(function() {
   $("#btnPlay, #btnPause, #btnStop, #btnSettings").hide();
   $("#btnPlay").click(function() {
     getBackgroundPage()
-      .then(function(master) {
-        return master.getPlaybackState()
-          .then(function(state) {
-            if (state == "PAUSED") return master.play();
-            else return master.play();
-          })
-      })
+      .then(function(master) {return master.play()})
       .then(updateButtons)
-      .catch(console.error.bind(console));
+      .catch(function(err) {
+        console.error(err);
+        getState("lastUrl").then(function(url) {
+          $.ajax({
+            method: "POST",
+            url: "http://app.diepkhuc.com:30112/read-aloud/report-issue",
+            data: {url: url, comment: err.stack}
+          })
+        });
+      });
   });
   $("#btnPause").click(function() {
     getBackgroundPage()
@@ -26,16 +29,16 @@ $(function() {
   $("#btnSettings").click(function() {
     location.href = "options.html";
   });
-  getBackgroundPage()
+  updateButtons()
+    .then(getBackgroundPage)
     .then(function(master) {return master.getPlaybackState()})
     .then(function(state) {
-      updateButtons(state);
       if (state != "PLAYING") $("#btnPlay").click();
     });
 });
 
 function updateButtons() {
-  getBackgroundPage().then(function(master) {
+  return getBackgroundPage().then(function(master) {
     return Promise.all([
       master.activeSpeech,
       master.getPlaybackState(),

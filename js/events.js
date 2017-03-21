@@ -23,7 +23,9 @@ function play() {
         return activeDoc.init();
       })
       .then(function() {
-        setState("lastUrl", activeDoc.url);
+        return setState("lastUrl", activeDoc.url);
+      })
+      .then(function() {
         return activeDoc.play();
       })
   }
