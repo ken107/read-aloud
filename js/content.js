@@ -34,7 +34,7 @@ var handlers = new function() {
 
   this.raGetTexts = function(request) {
     if (request.index < 0) {
-      if (request.index == -100) return getSelectedText();
+      if (request.index == -100) return [getSelectedText()];
       else return null;
     }
     else {
