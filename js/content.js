@@ -1,10 +1,12 @@
 
 var port = chrome.runtime.connect();
-port.onMessage.addListener(function(request) {
+port.onMessage.addListener(function(message) {
+  var request = message.request;
   if (handlers[request.method]) {
     var result = handlers[request.method](request);
-    if (typeof result.then == "function") result.then(port.postMessage.bind(port));
-    else port.postMessage(result);
+    Promise.resolve(result).then(function(response) {
+      port.postMessage({id: message.id, response: response});
+    });
   }
 })
 

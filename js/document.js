@@ -9,10 +9,7 @@ function Doc() {
   //method open
   this.open = function() {
     return connect()
-      .then(function(result) {
-        port = result;
-        return send({method: "raGetInfo"});
-      })
+      .then(send.bind(null, {method: "raGetInfo"}))
       .then(function(result) {
         info = result;
         self.url = info.url;
@@ -23,10 +20,34 @@ function Doc() {
     return new Promise(function(fulfill) {
       function onConnect(result) {
         chrome.runtime.onConnect.removeListener(onConnect);
-        fulfill(result);
+        setPort(result);
+        fulfill();
       }
       chrome.runtime.onConnect.addListener(onConnect);
       injectScripts();
+    })
+  }
+
+  function setPort(p) {
+    port = p;
+    port.requestIdGen = 0;
+    port.requestMap = {};
+    port.onMessage.addListener(onMessage);
+  }
+
+  function onMessage(message) {
+    var callback = port.requestMap[message.id];
+    if (callback) {
+      delete port.requestMap[message.id];
+      callback(message.response);
+    }
+  }
+
+  function send(request) {
+    return new Promise(function(fulfill) {
+      var id = ++port.requestIdGen;
+      port.requestMap[id] = fulfill;
+      port.postMessage({id: id, request: request});
     })
   }
 
@@ -165,17 +186,5 @@ function Doc() {
   //method isActive
   this.isActive = function() {
     return !!activeSpeech;
-  }
-
-  //helper functions
-  function send(request) {
-    return new Promise(function(fulfill) {
-      function onResponse(response) {
-        port.onMessage.removeListener(onResponse);
-        fulfill(response);
-      }
-      port.onMessage.addListener(onResponse);
-      port.postMessage(request);
-    })
   }
 }

@@ -10,7 +10,7 @@ chrome.runtime.onInstalled.addListener(function() {
 })
 
 chrome.contextMenus.onClicked.addListener(function(info, tab) {
-  if (info.menuItemId == "read-selection") play();
+  if (info.menuItemId == "read-selection") stop().then(play);
 })
 
 function play() {
