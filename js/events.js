@@ -16,12 +16,9 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
 function play() {
   if (activeDoc) return activeDoc.play();
   else {
-    return getActiveTab()
-      .then(function(tab) {
-        activeDoc = new Doc(tab.id);
-        activeDoc.onEnd = function() {activeDoc = null};
-        return activeDoc.init();
-      })
+    activeDoc = new Doc();
+    activeDoc.onEnd = function() {activeDoc.close(); activeDoc = null};
+    return activeDoc.open()
       .then(function() {
         return setState("lastUrl", activeDoc.url);
       })
@@ -32,7 +29,7 @@ function play() {
 }
 
 function stop() {
-  if (activeDoc) return activeDoc.stop().then(function() {activeDoc = null});
+  if (activeDoc) return activeDoc.stop().then(function() {activeDoc.close(); activeDoc = null});
   else return Promise.resolve();
 }
 

@@ -1,26 +1,46 @@
 
-function Doc(tabId) {
+function Doc() {
   var self = this;
   var info;
   var currentIndex;
   var activeSpeech;
+  var port;
 
-  //method init
-  this.init = function() {
-    return send({method: "raCheck"})
-      .then(function(result) {return result || injectScripts()})
-      .then(send.bind(null, {method: "raGetInfo"}))
+  //method open
+  this.open = function() {
+    return connect()
+      .then(function(result) {
+        port = result;
+        return send({method: "raGetInfo"});
+      })
       .then(function(result) {
         info = result;
         self.url = info.url;
       })
   }
 
+  function connect() {
+    return new Promise(function(fulfill) {
+      function onConnect(result) {
+        chrome.runtime.onConnect.removeListener(onConnect);
+        fulfill(result);
+      }
+      chrome.runtime.onConnect.addListener(onConnect);
+      injectScripts();
+    })
+  }
+
   function injectScripts() {
-    return executeScript(tabId, "js/jquery-3.1.1.min.js")
-      .then(executeScript.bind(null, tabId, "js/es6-promise.auto.min.js"))
-      .then(executeScript.bind(null, tabId, "js/defaults.js"))
-      .then(executeScript.bind(null, tabId, "js/content.js"))
+    return executeScript("js/jquery-3.1.1.min.js")
+      .then(executeScript.bind(null, "js/es6-promise.auto.min.js"))
+      .then(executeScript.bind(null, "js/defaults.js"))
+      .then(executeScript.bind(null, "js/content.js"))
+  }
+
+  //method close
+  this.close = function() {
+    if (port) port.disconnect();
+    if (activeSpeech) activeSpeech.pause();
   }
 
   //method play
@@ -35,6 +55,9 @@ function Doc(tabId) {
 
   function readCurrent() {
     return send({method: "raGetTexts", index: currentIndex})
+      .catch(function() {
+        return null;
+      })
       .then(function(texts) {
         if (texts) return read(texts);
         else if (self.onEnd) self.onEnd();
@@ -145,7 +168,14 @@ function Doc(tabId) {
   }
 
   //helper functions
-  function send(message) {
-    return sendMessage(tabId, message);
+  function send(request) {
+    return new Promise(function(fulfill) {
+      function onResponse(response) {
+        port.onMessage.removeListener(onResponse);
+        fulfill(response);
+      }
+      port.onMessage.addListener(onResponse);
+      port.postMessage(request);
+    })
   }
 }

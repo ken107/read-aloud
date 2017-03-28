@@ -1,21 +1,15 @@
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+var port = chrome.runtime.connect();
+port.onMessage.addListener(function(request) {
   if (handlers[request.method]) {
     var result = handlers[request.method](request);
-    if (typeof result.then == "function") {
-      result.then(sendResponse);
-      return true;
-    }
-    else sendResponse(result);
+    if (typeof result.then == "function") result.then(port.postMessage.bind(port));
+    else port.postMessage(result);
   }
 })
 
 
 var handlers = new function() {
-  this.raCheck = function(request) {
-    return true;
-  }
-
   this.raGetInfo = function(request) {
     return {
       url: location.href,
