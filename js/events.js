@@ -14,22 +14,19 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
 })
 
 function play() {
-  if (activeDoc) return activeDoc.play();
-  else {
-    activeDoc = new Doc();
-    activeDoc.onEnd = function() {activeDoc.close(); activeDoc = null};
-    return activeDoc.open()
-      .then(function() {
-        return setState("lastUrl", activeDoc.url);
-      })
-      .then(function() {
-        return activeDoc.play();
-      })
-  }
+  if (!activeDoc) activeDoc = new Doc(closeDoc);
+  return activeDoc.getUrl()
+    .then(setState.bind(null, "lastUrl"))
+    .then(activeDoc.play)
+    .catch(function(err) {closeDoc(); throw err})
 }
 
 function stop() {
-  if (activeDoc) return activeDoc.stop().then(function() {activeDoc.close(); activeDoc = null});
+  if (activeDoc) {
+    return activeDoc.stop()
+      .then(closeDoc)
+      .catch(function(err) {closeDoc(); throw err})
+  }
   else return Promise.resolve();
 }
 
@@ -47,4 +44,11 @@ function getPlaybackState() {
       }
       else return "STOPPED";
     })
+}
+
+function closeDoc() {
+  if (activeDoc) {
+    activeDoc.close();
+    activeDoc = null;
+  }
 }

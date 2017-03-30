@@ -1,9 +1,18 @@
 var defaults = {
   rate: 1.0,
+  minRate: 0.1,
+  maxRate: 2,
   pitch: 1.0,
   volume: 1.0,
-  spchletMaxLen: 36
+  spchletMaxLen: 36,
+  minSpchletMaxLen: 10,
+  maxSpchletMaxLen: 500,
 };
+
+function restrictValue(value, min, max, def) {
+  if (isNaN(value)) return def;
+  else return Math.min(Math.max(value, min), max);
+}
 
 function isCustomVoice(voiceName) {
   var customVoices = chrome.runtime.getManifest().tts_engine.voices;
@@ -73,9 +82,23 @@ function getVoices() {
   });
 }
 
-function executeScript(file) {
+function executeFile(file) {
+  return new Promise(function(fulfill, reject) {
+    chrome.runtime.lastError = null;
+    chrome.tabs.executeScript({file: file}, function(result) {
+      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+      else fulfill(result);
+    });
+  });
+}
+
+function executeScript(code) {
   return new Promise(function(fulfill) {
-    chrome.tabs.executeScript({file: file}, fulfill);
+    chrome.runtime.lastError = null;
+    chrome.tabs.executeScript({code: code}, function(result) {
+      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+      else fulfill(result);
+    });
   });
 }
 
@@ -94,39 +117,6 @@ function spread(f, self) {
 function waitMillis(millis) {
   return new Promise(function(fulfill) {
     setTimeout(fulfill, millis);
-  });
-}
-
-function request(method, url, params, headers) {
-  return new Promise(function (resolve, reject) {
-    if (params) {
-      if (typeof params === 'object') {
-        params = Object.keys(params).map(function (key) {
-          return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
-        }).join('&');
-      }
-      if (method == "GET") {
-        var index = url.indexOf('?');
-        if (index != -1) url += '&' + params;
-        else url += '?' + params;
-      }
-    }
-    var xhr = new XMLHttpRequest();
-    xhr.open(method, url);
-    xhr.onload = function () {
-      if (this.status >= 200 && this.status < 300) resolve(xhr.response);
-      else reject(new Error("HTTP " + this.status));
-    };
-    xhr.onerror = function () {
-      reject(new Error(this.status || xhr.statusText));
-    };
-    if (headers) {
-      Object.keys(headers).forEach(function (key) {
-        xhr.setRequestHeader(key, headers[key]);
-      });
-    }
-    if (method == "POST") xhr.send(params);
-    else xhr.send();
   });
 }
 

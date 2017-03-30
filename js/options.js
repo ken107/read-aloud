@@ -10,6 +10,7 @@ $(function() {
     var key = $(this).data("i18n");
     $(this).text(chrome.i18n.getMessage(key));
   });
+
   Promise.all([getSettings(), getVoices()]).then(spread(function(settings, voices) {
     voices.forEach(function(voice) {
       $("<option>")
@@ -23,7 +24,9 @@ $(function() {
     $("#volume").slider().setValue(settings.volume || defaults.volume);
     $("#spchletMaxLen").val(settings.spchletMaxLen || defaults.spchletMaxLen);
   }));
+
   $("#save").click(function() {
+    validate();
     updateSettings({
       voiceName: $("#voices").val(),
       rate: Number($("#rate").val()),
@@ -35,7 +38,16 @@ $(function() {
       $(".status.success").show().delay(3000).fadeOut();
     });
   });
+
   $("#reset").click(function() {
     clearSettings().then(() => location.reload());
   });
 });
+
+function validate() {
+  var rate = restrictValue($("#rate").val(), defaults.minRate, defaults.maxRate, defaults.rate);
+  $("#rate").val(rate);
+
+  var spchletMaxLen = restrictValue($("#spchletMaxLen").val(), defaults.minSpchletMaxLen, defaults.maxSpchletMaxLen, defaults.spchletMaxLen);
+  $("#spchletMaxLen").val(spchletMaxLen);
+}

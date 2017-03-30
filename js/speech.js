@@ -41,7 +41,7 @@ function Speech(texts, options) {
     chrome.tts.speak(text, {
       voiceName: options.voiceName,
       lang: options.lang,
-      rate: options.rate,
+      rate: Math.min(options.rate, 2),
       pitch: options.pitch,
       volume: options.volume,
       requiredEventTypes: ["start", "end"],

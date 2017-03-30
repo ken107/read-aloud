@@ -1,17 +1,20 @@
 
-var port = chrome.runtime.connect();
-port.onMessage.addListener(function(message) {
-  var request = message.request;
-  if (handlers[request.method]) {
-    var result = handlers[request.method](request);
-    Promise.resolve(result).then(function(response) {
-      port.postMessage({id: message.id, response: response});
-    });
-  }
-})
+function connect(name) {
+  var handlers = new Handlers(new DocProvider());
+  var port = chrome.runtime.connect({name: name});
+  port.onMessage.addListener(function(message) {
+    var request = message.request;
+    if (handlers[request.method]) {
+      var result = handlers[request.method](request);
+      Promise.resolve(result).then(function(response) {
+        port.postMessage({id: message.id, response: response});
+      });
+    }
+  })
+}
 
 
-var handlers = new function() {
+function Handlers(docProvider) {
   this.raGetInfo = function(request) {
     return {
       url: location.href,
@@ -52,7 +55,7 @@ var handlers = new function() {
 }
 
 
-var docProvider = new function() {
+function DocProvider() {
   var doc;
 
   this.getDoc = function() {
@@ -313,4 +316,10 @@ function isNotEmpty(text) {
 
 function removeLinks(text) {
   return text.replace(/https?:\/\/\S+/g, "this URL.");
+}
+
+function waitMillis(millis) {
+  return new Promise(function(fulfill) {
+    setTimeout(fulfill, millis);
+  });
 }

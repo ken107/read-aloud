@@ -1,30 +1,25 @@
 
-function Doc() {
-  var self = this;
+function Doc(onEnd) {
   var info;
   var currentIndex;
   var activeSpeech;
   var port;
-
-  //method open
-  this.open = function() {
-    return connect()
-      .then(send.bind(null, {method: "raGetInfo"}))
-      .then(function(result) {
-        info = result;
-        self.url = info.url;
-      })
-  }
+  var ready = connect()
+    .then(send.bind(null, {method: "raGetInfo"}))
+    .then(function(result) {info = result})
 
   function connect() {
-    return new Promise(function(fulfill) {
+    var name = String(Math.random());
+    return new Promise(function(fulfill, reject) {
       function onConnect(result) {
-        chrome.runtime.onConnect.removeListener(onConnect);
-        setPort(result);
-        fulfill();
+        if (result.name == name) {
+          chrome.runtime.onConnect.removeListener(onConnect);
+          setPort(result);
+          fulfill();
+        }
       }
       chrome.runtime.onConnect.addListener(onConnect);
-      injectScripts();
+      injectScripts(name).catch(reject);
     })
   }
 
@@ -51,27 +46,34 @@ function Doc() {
     })
   }
 
-  function injectScripts() {
-    return executeScript("js/jquery-3.1.1.min.js")
-      .then(executeScript.bind(null, "js/es6-promise.auto.min.js"))
-      .then(executeScript.bind(null, "js/defaults.js"))
-      .then(executeScript.bind(null, "js/content.js"))
+  function injectScripts(name) {
+    return executeFile("js/jquery-3.1.1.min.js")
+      .then(executeFile.bind(null, "js/es6-promise.auto.min.js"))
+      .then(executeFile.bind(null, "js/content.js"))
+      .then(executeScript.bind(null, "connect('" + name + "')"))
   }
 
   //method close
   this.close = function() {
-    if (port) port.disconnect();
-    if (activeSpeech) activeSpeech.pause();
+    return ready
+      .catch(function() {})
+      .then(function() {
+        if (activeSpeech) activeSpeech.pause();
+        if (port) port.disconnect();
+      })
   }
 
   //method play
   this.play = function() {
-    if (activeSpeech) return activeSpeech.play();
-    else {
-      return send({method: "raGetCurrentIndex"})
-        .then(function(index) {currentIndex = index})
-        .then(readCurrent)
-    }
+    return ready
+      .then(function() {
+        if (activeSpeech) return activeSpeech.play();
+        else {
+          return send({method: "raGetCurrentIndex"})
+            .then(function(index) {currentIndex = index})
+            .then(readCurrent)
+        }
+      })
   }
 
   function readCurrent() {
@@ -81,7 +83,7 @@ function Doc() {
       })
       .then(function(texts) {
         if (texts) return read(texts);
-        else if (self.onEnd) self.onEnd();
+        else if (onEnd) onEnd();
       });
     function read(texts) {
       return Promise.resolve()
@@ -91,6 +93,7 @@ function Doc() {
         })
         .then(function() {return getSpeech(texts)})
         .then(function(speech) {
+          if (activeSpeech) return;
           activeSpeech = speech;
           activeSpeech.options.onEnd = function() {activeSpeech = null; currentIndex++; readCurrent()};
           return activeSpeech.play();
@@ -173,18 +176,22 @@ function Doc() {
 
   //method stop
   this.stop = function() {
-    if (activeSpeech) return activeSpeech.pause().then(function() {activeSpeech = null});
-    else return Promise.resolve();
+    return ready
+      .then(function() {
+        if (activeSpeech) return activeSpeech.pause().then(function() {activeSpeech = null});
+      })
   }
 
   //method pause
   this.pause = function() {
-    if (activeSpeech) return activeSpeech.pause();
-    else return Promise.resolve();
+    return ready
+      .then(function() {
+        if (activeSpeech) return activeSpeech.pause();
+      })
   }
 
-  //method isActive
-  this.isActive = function() {
-    return !!activeSpeech;
+  //method getUrl
+  this.getUrl = function() {
+    return ready.then(function() {return info.url});
   }
 }
