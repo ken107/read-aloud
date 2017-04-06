@@ -49,6 +49,7 @@ function Doc(onEnd) {
   function injectScripts(name) {
     return executeFile("js/jquery-3.1.1.min.js")
       .then(executeFile.bind(null, "js/es6-promise.auto.min.js"))
+      .then(executeFile.bind(null, "js/pdf.js"))
       .then(executeFile.bind(null, "js/content.js"))
       .then(executeScript.bind(null, "connect('" + name + "')"))
   }
@@ -193,5 +194,12 @@ function Doc(onEnd) {
   //method getUrl
   this.getUrl = function() {
     return ready.then(function() {return info.url});
+  }
+
+  //method getState
+  this.getState = function() {
+    console.log('document', activeSpeech != null, info != null);
+    if (activeSpeech) return activeSpeech.getState();
+    else return Promise.resolve(info ? "STOPPED" : "LOADING");
   }
 }

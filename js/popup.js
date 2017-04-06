@@ -6,14 +6,7 @@ $(function() {
       .then(function(master) {return master.play()})
       .then(updateButtons)
       .catch(function(err) {
-        console.error(err);
-        getState("lastUrl").then(function(url) {
-          $.ajax({
-            method: "POST",
-            url: "http://app.diepkhuc.com:30112/read-aloud/report-issue",
-            data: {url: url, comment: err.stack}
-          })
-        });
+        return reportIssue(err).then(window.close.bind(window));
       });
   });
   $("#btnPause").click(function() {
@@ -35,6 +28,7 @@ $(function() {
     .then(function(state) {
       if (state != "PLAYING") $("#btnPlay").click();
     });
+  setInterval(updateButtons, 500);
 });
 
 function updateButtons() {
@@ -46,11 +40,22 @@ function updateButtons() {
     ])
   })
   .then(spread(function(speech, state, lastShown) {
+    $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
     $("#btnPause").toggle(state == "PLAYING");
-    $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING");
+    $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#attribution").toggle(speech != null && isCustomVoice(speech.options.voiceName) && (!lastShown || new Date().getTime()-lastShown > 3600*1000));
     if ($("#attribution").is(":visible")) setState("attributionLastShown", new Date().getTime());
   }));
+}
+
+function reportIssue(err) {
+  return getState("lastUrl").then(function(url) {
+    $.ajax({
+      method: "POST",
+      url: "http://app.diepkhuc.com:30112/read-aloud/report-issue",
+      data: {url: url, comment: err.stack}
+    })
+  })
 }

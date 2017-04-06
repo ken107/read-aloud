@@ -36,14 +36,9 @@ function pause() {
 }
 
 function getPlaybackState() {
-  return new Promise(function(fulfill) {chrome.tts.isSpeaking(fulfill)})
-    .then(function(isSpeaking) {
-      if (activeDoc) {
-        if (isSpeaking) return "PLAYING";
-        else return "PAUSED";
-      }
-      else return "STOPPED";
-    })
+  console.log('events', activeDoc != null);
+  if (activeDoc) return activeDoc.getState();
+  else return Promise.resolve("STOPPED");
 }
 
 function closeDoc() {

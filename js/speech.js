@@ -1,5 +1,6 @@
 
 function Speech(texts, options) {
+  var isPlaying = false;
   var index = 0;
   var hackTimer = 0;
   if (options.hack) texts = breakTexts(texts, options.spchletMaxLen);
@@ -8,16 +9,33 @@ function Speech(texts, options) {
   this.play = play;
   this.pause = pause;
 
-  function play() {
-    if (options.hack) clearTimeout(hackTimer);
-    if (index >= texts.length) {
-      if (options.onEnd) options.onEnd();
-      return;
-    }
-    if (options.hack) hackTimer = setTimeout(hack, 16*1000);
+  this.getState = function() {
     return new Promise(function(fulfill) {
-      speak(texts[index], fulfill, playNext);
-    });
+      chrome.tts.isSpeaking(function(isSpeaking) {
+        console.log('speech', isPlaying, isSpeaking);
+        if (isPlaying) fulfill(isSpeaking ? "PLAYING" : "LOADING");
+        else fulfill("PAUSED");
+      })
+    })
+  }
+
+  function play() {
+    if (index >= texts.length) {
+      if (options.hack) clearTimeout(hackTimer);
+      isPlaying = false;
+      if (options.onEnd) options.onEnd();
+      return Promise.resolve();
+    }
+    else {
+      if (options.hack) {
+        clearTimeout(hackTimer);
+        hackTimer = setTimeout(hack, 16*1000);
+      }
+      isPlaying = true;
+      return new Promise(function(fulfill) {
+        speak(texts[index], fulfill, playNext);
+      });
+    }
   }
 
   function hack() {
@@ -34,6 +52,7 @@ function Speech(texts, options) {
   function pause() {
     if (options.hack) clearTimeout(hackTimer);
     chrome.tts.stop();
+    isPlaying = false;
     return Promise.resolve();
   }
 

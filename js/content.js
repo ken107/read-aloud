@@ -1,8 +1,19 @@
 
 function connect(name) {
-  var handlers = new Handlers(new DocProvider());
+  if (!window.docReady) window.docReady = makeDoc();
+  window.docReady.then(function(doc) {startService(name, doc)});
+}
+
+
+function startService(name, doc) {
   var port = chrome.runtime.connect({name: name});
-  port.onMessage.addListener(function(message) {
+  port.onMessage.addListener(dispatch.bind(null, {
+    raGetInfo: getInfo,
+    raGetCurrentIndex: getCurrentIndex,
+    raGetTexts: getTexts,
+  }))
+
+  function dispatch(handlers, message) {
     var request = message.request;
     if (handlers[request.method]) {
       var result = handlers[request.method](request);
@@ -10,12 +21,9 @@ function connect(name) {
         port.postMessage({id: message.id, response: response});
       });
     }
-  })
-}
+  }
 
-
-function Handlers(docProvider) {
-  this.raGetInfo = function(request) {
+  function getInfo(request) {
     return {
       url: location.href,
       title: document.title,
@@ -23,22 +31,18 @@ function Handlers(docProvider) {
     }
   }
 
-  this.raGetCurrentIndex = function(request) {
+  function getCurrentIndex(request) {
     if (getSelectedText()) return -100;
-    else {
-      return docProvider.getDoc()
-        .then(function(doc) {return doc.getCurrentIndex()});
-    }
+    else return doc.getCurrentIndex();
   }
 
-  this.raGetTexts = function(request) {
+  function getTexts(request) {
     if (request.index < 0) {
       if (request.index == -100) return [getSelectedText()];
       else return null;
     }
     else {
-      return docProvider.getDoc()
-        .then(function(doc) {return doc.getTexts(request.index)})
+      return Promise.resolve(doc.getTexts(request.index))
         .then(function(texts) {
           if (texts) {
             texts = texts.map(removeLinks);
@@ -55,17 +59,16 @@ function Handlers(docProvider) {
 }
 
 
-function DocProvider() {
-  var doc;
+function makeDoc() {
+  return domReady()
+    .then(createDoc)
+    .then(function(doc) {
+      return Promise.resolve(doc.ready).then(function() {return doc});
+    })
 
-  this.getDoc = function() {
-    if (doc) return Promise.resolve(doc);
-    else return ready().then(function() {return doc = createDoc()});
-  }
-
-  function ready() {
+  function domReady() {
     return new Promise(function(fulfill) {
-      return $(fulfill);
+      $(fulfill);
     })
   }
 
@@ -77,6 +80,7 @@ function DocProvider() {
     }
     else if (location.hostname == "drive.google.com") return new GDriveDoc();
     else if (location.hostname == "read.amazon.com") return new KindleBook();
+    else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
     else return new HtmlDoc();
   }
 }
@@ -142,21 +146,6 @@ function GDriveDoc() {
         else return texts;
       })
   }
-
-  function fixParagraphs(texts) {
-    var out = [];
-    var para = "";
-    for (var i=0; i<texts.length; i++) {
-      if (para) para += " ";
-      para += texts[i];
-      if (!texts[i].match(/\w$/)) {
-        out.push(para);
-        para = "";
-      }
-    }
-    if (para) out.push(para);
-    return out;
-  }
 }
 
 
@@ -211,6 +200,32 @@ function KindleBook() {
     }
     lastText = out[out.length-1];
     return out;
+  }
+}
+
+
+function PdfDoc(url) {
+  PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+  this.ready = PDFJS.getDocument(url).promise;
+
+  this.getCurrentIndex = function() {
+    return 0;
+  }
+
+  this.getTexts = function(index) {
+    return this.ready.then(function(pdf) {
+      if (index < pdf.numPages) return pdf.getPage(index+1).then(getPageTexts);
+      else return null;
+    })
+  }
+
+  function getPageTexts(page) {
+    return page.getTextContent()
+      .then(function(content) {
+        return content.items.map(function(item) {return item.str.trim()}).filter(isNotEmpty);
+      })
+      .then(fixParagraphs)
   }
 }
 
@@ -322,4 +337,19 @@ function waitMillis(millis) {
   return new Promise(function(fulfill) {
     setTimeout(fulfill, millis);
   });
+}
+
+function fixParagraphs(texts) {
+  var out = [];
+  var para = "";
+  for (var i=0; i<texts.length; i++) {
+    if (para) para += " ";
+    para += texts[i];
+    if (texts[i].match(/[.!?:)"'\u2019\u201d]$/)) {
+      out.push(para);
+      para = "";
+    }
+  }
+  if (para) out.push(para);
+  return out;
 }
