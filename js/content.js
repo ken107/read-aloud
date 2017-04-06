@@ -248,7 +248,7 @@ function HtmlDoc() {
   }
 
   this.getTexts = function(index) {
-    if (index == 0) return this.texts || (this.texts = parse());
+    if (index == 0) return parse();
     else return null;
   }
 
