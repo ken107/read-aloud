@@ -1,3 +1,7 @@
+body {
+  user-select: none;
+}
+
 @font-face {
   font-family: 'Material Icons';
   font-style: normal;
@@ -28,7 +32,11 @@
   text-align: center;
   margin-top: 15px;
 }
-#buttons > i {
+#buttons > img {
+  vertical-align: top;
+}
+
+.button-1 {
   cursor: pointer;
   border: 2px outset;
   border-radius: 5px;
@@ -37,11 +45,20 @@
   padding: 3px;
   text-shadow: 1px 1px white;
 }
-#buttons > i:active {
+.button-1:active {
   border: 2px inset;
 }
-#buttons > i:hover {
+.button-1:hover {
   color: #606060;
+}
+
+#buttons-2 {
+  text-align: center;
+  margin-top: 10px;
+  white-space: nowrap;
+}
+#buttons-2 .button-1 {
+  font-size: 14px;
 }
 
 #playlist {

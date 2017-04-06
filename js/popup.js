@@ -1,30 +1,28 @@
 
 $(function() {
-  $("#btnPlay, #btnPause, #btnStop, #btnSettings").hide();
   $("#btnPlay").click(function() {
     getBackgroundPage()
-      .then(function(master) {return master.play()})
-      .then(updateButtons)
+      .then(function(master) {
+        return master.play()
+          .then(updateButtons)
+          .then(master.getDocInfo)
+          .then(function(docInfo) {return setState("lastUrl", docInfo.url)})
+      })
       .catch(function(err) {
         return reportIssue(err).then(window.close.bind(window));
       });
   });
-  $("#btnPause").click(function() {
-    getBackgroundPage()
-      .then(function(master) {return master.pause()})
-      .then(updateButtons);
-  });
-  $("#btnStop").click(function() {
-    getBackgroundPage()
-      .then(function(master) {return master.stop()})
-      .then(updateButtons);
-  });
-  $("#btnSettings").click(function() {
-    location.href = "options.html";
-  });
+  $("#btnPause").click(function() {getBackgroundPage().then(callMethod("pause")).then(updateButtons)});
+  $("#btnStop").click(function() {getBackgroundPage().then(callMethod("stop")).then(updateButtons)});
+  $("#btnSettings").click(function() {location.href = "options.html"});
+  $("#btnForward").click(function() {getBackgroundPage().then(callMethod("forward")).then(updateButtons)});
+  $("#btnRewind").click(function() {getBackgroundPage().then(callMethod("rewind")).then(updateButtons)});
+  $("#btnFastForward").click(function() {getBackgroundPage().then(callMethod("fastForward")).then(updateButtons)});
+  $("#btnFastRewind").click(function() {getBackgroundPage().then(callMethod("fastRewind")).then(updateButtons)});
+
   updateButtons()
     .then(getBackgroundPage)
-    .then(function(master) {return master.getPlaybackState()})
+    .then(callMethod("getPlaybackState"))
     .then(function(state) {
       if (state != "PLAYING") $("#btnPlay").click();
     });
@@ -34,28 +32,29 @@ $(function() {
 function updateButtons() {
   return getBackgroundPage().then(function(master) {
     return Promise.all([
-      master.activeSpeech,
       master.getPlaybackState(),
+      master.getDocInfo(),
+      master.getActiveSpeech(),
       getState("attributionLastShown")
     ])
   })
-  .then(spread(function(speech, state, lastShown) {
+  .then(spread(function(state, docInfo, speech, lastShown) {
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
+    $("#btnForward, #btnRewind").toggle(state == "PLAYING");
+    $("#btnFastForward, #btnFastRewind").toggle(state == "PLAYING" && !!docInfo.canFastForward);
     $("#attribution").toggle(speech != null && isCustomVoice(speech.options.voiceName) && (!lastShown || new Date().getTime()-lastShown > 3600*1000));
     if ($("#attribution").is(":visible")) setState("attributionLastShown", new Date().getTime());
   }));
 }
 
 function reportIssue(err) {
-  return getState("lastUrl").then(function(url) {
     $.ajax({
       method: "POST",
       url: "http://app.diepkhuc.com:30112/read-aloud/report-issue",
-      data: {url: url, comment: err.stack}
+      data: {comment: err.stack}
     })
-  })
 }

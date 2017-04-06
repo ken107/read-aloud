@@ -4,9 +4,10 @@ function Doc(onEnd) {
   var currentIndex;
   var activeSpeech;
   var port;
+  var waiting = true;
   var ready = connect()
     .then(send.bind(null, {method: "raGetInfo"}))
-    .then(function(result) {info = result})
+    .then(function(result) {info = result; waiting = false})
 
   function connect() {
     var name = String(Math.random());
@@ -43,6 +44,11 @@ function Doc(onEnd) {
       var id = ++port.requestIdGen;
       port.requestMap[id] = fulfill;
       port.postMessage({id: id, request: request});
+      waiting = true;
+    })
+    .then(function(response) {
+      waiting = false;
+      return response;
     })
   }
 
@@ -54,8 +60,21 @@ function Doc(onEnd) {
       .then(executeScript.bind(null, "connect('" + name + "')"))
   }
 
+  this.close = close;
+  this.play = play;
+  this.stop = stop;
+  this.pause = pause;
+  this.getInfo = getInfo;
+  this.getState = getState;
+  this.getActiveSpeech = getActiveSpeech;
+  this.forward = forward;
+  this.rewind = rewind;
+  this.fastForward = fastForward;
+  this.fastRewind = fastRewind;
+  this.gotoPage = gotoPage;
+
   //method close
-  this.close = function() {
+  function close() {
     return ready
       .catch(function() {})
       .then(function() {
@@ -65,7 +84,7 @@ function Doc(onEnd) {
   }
 
   //method play
-  this.play = function() {
+  function play() {
     return ready
       .then(function() {
         if (activeSpeech) return activeSpeech.play();
@@ -176,7 +195,7 @@ function Doc(onEnd) {
   }
 
   //method stop
-  this.stop = function() {
+  function stop() {
     return ready
       .then(function() {
         if (activeSpeech) return activeSpeech.pause().then(function() {activeSpeech = null});
@@ -184,22 +203,53 @@ function Doc(onEnd) {
   }
 
   //method pause
-  this.pause = function() {
+  function pause() {
     return ready
       .then(function() {
         if (activeSpeech) return activeSpeech.pause();
       })
   }
 
-  //method getUrl
-  this.getUrl = function() {
-    return ready.then(function() {return info.url});
+  //method getInfo
+  function getInfo() {
+    return ready.then(function() {return info});
   }
 
   //method getState
-  this.getState = function() {
-    console.log('document', activeSpeech != null, info != null);
+  function getState() {
     if (activeSpeech) return activeSpeech.getState();
-    else return Promise.resolve(info ? "STOPPED" : "LOADING");
+    else return Promise.resolve(waiting ? "LOADING" : "STOPPED");
+  }
+
+  //method getActiveSpeech
+  function getActiveSpeech() {
+    return Promise.resolve(activeSpeech);
+  }
+
+  //method forward
+  function forward() {
+    if (activeSpeech) return activeSpeech.forward();
+    else return Promise.reject(new Error("Can't forward, not active"));
+  }
+
+  //method rewind
+  function rewind() {
+    if (activeSpeech) return activeSpeech.rewind().catch(fastRewind);
+    else return Promise.reject(new Error("Can't rewind, not active"));
+  }
+
+  //method fastForward
+  function fastForward() {
+    return stop().then(function() {currentIndex++; readCurrent()});
+  }
+
+  //method fastRewind
+  function fastRewind() {
+    return stop().then(function() {currentIndex--; readCurrent()});
+  }
+
+  //method gotoPage
+  function gotoPage(index) {
+    return stop().then(function() {currentIndex = index; readCurrent()});
   }
 }

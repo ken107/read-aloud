@@ -25,6 +25,7 @@ function startService(name, doc) {
 
   function getInfo(request) {
     return {
+      canFastForward: doc.canFastForward,
       url: location.href,
       title: document.title,
       lang: document.documentElement.lang || $("html").attr("xml:lang") || $("meta[http-equiv=content-language]").attr("content")
@@ -90,6 +91,8 @@ function GoogleDoc() {
   var viewport = $(".kix-appview-editor").get(0);
   var pages = $(".kix-page");
 
+  this.canFastForward = true;
+
   this.getCurrentIndex = function() {
     for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > viewport.scrollTop+$(viewport).height()/2) break;
     return i-1;
@@ -120,6 +123,8 @@ function GoogleDoc() {
 function GDriveDoc() {
   var viewport = $(".drive-viewer-paginated-scrollable").get(0);
   var pages = $(".drive-viewer-paginated-page");
+
+  this.canFastForward = true;
 
   this.getCurrentIndex = function() {
     for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > viewport.scrollTop+$(viewport).height()/2) break;
@@ -162,6 +167,8 @@ function KindleBook() {
   var currentIndex = 0;
   var lastText;
 
+  this.canFastForward = true;
+
   this.getCurrentIndex = function() {
     return currentIndex = 0;
   }
@@ -191,7 +198,7 @@ function KindleBook() {
       $("h1, h2, h3, h4, h5, h6, .was-a-p", frame.contentDocument).each(function() {
         var top = $(this).offset().top;
         var bottom = top + $(this).height();
-        if (top < frameHeight && bottom > 0) texts.push($(this).text());
+        if (top >= 0 && top < frameHeight) texts.push($(this).text());
       })
     })
     var out = [];
@@ -208,6 +215,7 @@ function PdfDoc(url) {
   PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
 
   this.ready = PDFJS.getDocument(url).promise;
+  this.canFastForward = true;
 
   this.getCurrentIndex = function() {
     return 0;

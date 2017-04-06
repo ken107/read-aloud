@@ -15,9 +15,7 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
 
 function play() {
   if (!activeDoc) activeDoc = new Doc(closeDoc);
-  return activeDoc.getUrl()
-    .then(setState.bind(null, "lastUrl"))
-    .then(activeDoc.play)
+  return activeDoc.play()
     .catch(function(err) {closeDoc(); throw err})
 }
 
@@ -36,9 +34,18 @@ function pause() {
 }
 
 function getPlaybackState() {
-  console.log('events', activeDoc != null);
   if (activeDoc) return activeDoc.getState();
   else return Promise.resolve("STOPPED");
+}
+
+function getActiveSpeech() {
+  if (activeDoc) return activeDoc.getActiveSpeech();
+  else return Promise.resolve(null);
+}
+
+function getDocInfo() {
+  if (activeDoc) return activeDoc.getInfo();
+  else return Promise.resolve(null);
 }
 
 function closeDoc() {
@@ -46,4 +53,29 @@ function closeDoc() {
     activeDoc.close();
     activeDoc = null;
   }
+}
+
+function forward() {
+  if (activeDoc) return activeDoc.forward();
+  else return Promise.reject(new Error("Can't forward, not active"));
+}
+
+function rewind() {
+  if (activeDoc) return activeDoc.rewind();
+  else return Promise.reject(new Error("Can't rewind, not active"));
+}
+
+function fastForward() {
+  if (activeDoc) return activeDoc.fastForward();
+  else return Promise.reject(new Error("Can't fast forward, not active"));
+}
+
+function fastRewind() {
+  if (activeDoc) return activeDoc.fastRewind();
+  else return Promise.reject(new Error("Can't fast rewind, not active"));
+}
+
+function gotoPage(index) {
+  if (activeDoc) return activeDoc.gotoPage(index);
+  else return Promise.reject(new Error("Can't goto page, not active"));
 }

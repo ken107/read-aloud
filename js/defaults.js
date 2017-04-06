@@ -114,6 +114,12 @@ function spread(f, self) {
   };
 }
 
+function callMethod(name, args) {
+  return function(obj) {
+    return obj[name].apply(obj, args);
+  };
+}
+
 function waitMillis(millis) {
   return new Promise(function(fulfill) {
     setTimeout(fulfill, millis);

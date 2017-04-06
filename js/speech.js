@@ -8,11 +8,13 @@ function Speech(texts, options) {
   this.options = options;
   this.play = play;
   this.pause = pause;
+  this.getState = getState;
+  this.forward = playNext;
+  this.rewind = rewind;
 
-  this.getState = function() {
+  function getState() {
     return new Promise(function(fulfill) {
       chrome.tts.isSpeaking(function(isSpeaking) {
-        console.log('speech', isPlaying, isSpeaking);
         if (isPlaying) fulfill(isSpeaking ? "PLAYING" : "LOADING");
         else fulfill("PAUSED");
       })
@@ -46,7 +48,7 @@ function Speech(texts, options) {
 
   function playNext() {
     index++;
-    play();
+    return play();
   }
 
   function pause() {
@@ -54,6 +56,14 @@ function Speech(texts, options) {
     chrome.tts.stop();
     isPlaying = false;
     return Promise.resolve();
+  }
+
+  function rewind() {
+    if (index > 0) {
+      index--;
+      return play();
+    }
+    else return Promise.reject(new Error("Can't rewind, at beginning"));
   }
 
   function speak(text, onStart, onEnd) {
