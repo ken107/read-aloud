@@ -102,13 +102,13 @@ function GoogleDoc() {
     var page = pages.get(index);
     if (page) {
       viewport.scrollTop = $(page).position().top;
-      return tryGetTexts(page, 2);
+      return tryGetTexts(page, 4);
     }
     else return null;
   }
 
   function tryGetTexts(page, count) {
-    return waitMillis(1000)
+    return waitMillis(500)
       .then(function() {
         return $(".kix-paragraphrenderer", page).get().map(getText).filter(isNotEmpty);
       })
@@ -135,13 +135,13 @@ function GDriveDoc() {
     var page = pages.get(index);
     if (page) {
       viewport.scrollTop = $(page).position().top;
-      return tryGetTexts(page, 3);
+      return tryGetTexts(page, 6);
     }
     else return null;
   }
 
   function tryGetTexts(page, count) {
-    return waitMillis(1000)
+    return waitMillis(500)
       .then(function() {
         return $("p", page).get().map(getText).filter(isNotEmpty);
       })
@@ -176,11 +176,11 @@ function KindleBook() {
   this.getTexts = function(index) {
     for (; currentIndex<index; currentIndex++) $(btnNext).click();
     for (; currentIndex>index; currentIndex--) $(btnPrev).click();
-    return tryGetTexts(4);
+    return tryGetTexts(8);
   }
 
   function tryGetTexts(count) {
-    return waitMillis(1000)
+    return waitMillis(500)
       .then(getTexts)
       .then(function(texts) {
         if (texts && !texts.length && count > 1) return tryGetTexts(count-1);

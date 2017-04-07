@@ -1,16 +1,18 @@
 
 function Speech(texts, options) {
   var isPlaying = false;
-  var index = 0;
+  var index = [0, 0];
   var hackTimer = 0;
-  if (options.hack) texts = breakTexts(texts, options.spchletMaxLen);
+  if (options.hack) texts = texts.map(function(text) {return breakText(text, options.spchletMaxLen)});
+  else texts = texts.map(function(text) {return [text]});
 
   this.options = options;
   this.play = play;
   this.pause = pause;
   this.getState = getState;
-  this.forward = playNext;
+  this.forward = forward;
   this.rewind = rewind;
+  this.gotoEnd = gotoEnd;
 
   function getState() {
     return new Promise(function(fulfill) {
@@ -22,7 +24,7 @@ function Speech(texts, options) {
   }
 
   function play() {
-    if (index >= texts.length) {
+    if (index[0] >= texts.length) {
       if (options.hack) clearTimeout(hackTimer);
       isPlaying = false;
       if (options.onEnd) options.onEnd();
@@ -35,7 +37,7 @@ function Speech(texts, options) {
       }
       isPlaying = true;
       return new Promise(function(fulfill) {
-        speak(texts[index], fulfill, playNext);
+        speak(texts[index[0]][index[1]], fulfill, playNext);
       });
     }
   }
@@ -47,7 +49,8 @@ function Speech(texts, options) {
   }
 
   function playNext() {
-    index++;
+    index[1]++;
+    if (index[1] >= texts[index[0]].length) index = [index[0]+1, 0];
     return play();
   }
 
@@ -58,12 +61,24 @@ function Speech(texts, options) {
     return Promise.resolve();
   }
 
+  function forward() {
+    if (index[0]+1 < texts.length) {
+      index = [index[0]+1, 0];
+      return play();
+    }
+    else return Promise.reject(new Error("Can't forward, at end"));
+  }
+
   function rewind() {
-    if (index > 0) {
-      index--;
+    if (index[0] > 0) {
+      index = [index[0]-1, 0];
       return play();
     }
     else return Promise.reject(new Error("Can't rewind, at beginning"));
+  }
+
+  function gotoEnd() {
+    index = [texts.length-1, 0];
   }
 
   function speak(text, onStart, onEnd) {
@@ -80,12 +95,6 @@ function Speech(texts, options) {
         else if (event.type == "end") onEnd();
       }
     });
-  }
-
-  function breakTexts(texts, wordLimit) {
-    return [].concat.apply([], texts.map(function(text) {
-      return breakText(text, wordLimit);
-    }));
   }
 
   function breakText(text, wordLimit) {

@@ -91,12 +91,12 @@ function Doc(onEnd) {
         else {
           return send({method: "raGetCurrentIndex"})
             .then(function(index) {currentIndex = index})
-            .then(readCurrent)
+            .then(function() {readCurrent()})
         }
       })
   }
 
-  function readCurrent() {
+  function readCurrent(rewinded) {
     return send({method: "raGetTexts", index: currentIndex})
       .catch(function() {
         return null;
@@ -116,6 +116,7 @@ function Doc(onEnd) {
           if (activeSpeech) return;
           activeSpeech = speech;
           activeSpeech.options.onEnd = function() {activeSpeech = null; currentIndex++; readCurrent()};
+          if (rewinded) activeSpeech.gotoEnd();
           return activeSpeech.play();
         })
     }
@@ -228,14 +229,18 @@ function Doc(onEnd) {
 
   //method forward
   function forward() {
-    if (activeSpeech) return activeSpeech.forward();
+    if (activeSpeech) return activeSpeech.forward().catch(fastForward);
     else return Promise.reject(new Error("Can't forward, not active"));
   }
 
   //method rewind
   function rewind() {
-    if (activeSpeech) return activeSpeech.rewind().catch(fastRewind);
+    if (activeSpeech) return activeSpeech.rewind().catch(rewindPage);
     else return Promise.reject(new Error("Can't rewind, not active"));
+  }
+
+  function rewindPage() {
+    return stop().then(function() {currentIndex--; readCurrent(true)});
   }
 
   //method fastForward
