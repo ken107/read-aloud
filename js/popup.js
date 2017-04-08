@@ -17,8 +17,6 @@ $(function() {
   $("#btnSettings").click(function() {location.href = "options.html"});
   $("#btnForward").click(function() {getBackgroundPage().then(callMethod("forward")).then(updateButtons)});
   $("#btnRewind").click(function() {getBackgroundPage().then(callMethod("rewind")).then(updateButtons)});
-  $("#btnFastForward").click(function() {getBackgroundPage().then(callMethod("fastForward")).then(updateButtons)});
-  $("#btnFastRewind").click(function() {getBackgroundPage().then(callMethod("fastRewind")).then(updateButtons)});
 
   updateButtons()
     .then(getBackgroundPage)
@@ -45,7 +43,6 @@ function updateButtons() {
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING");
-    $("#btnFastForward, #btnFastRewind").toggle(state == "PLAYING" && !!docInfo.canFastForward);
     $("#attribution").toggle(speech != null && isCustomVoice(speech.options.voiceName) && (!lastShown || new Date().getTime()-lastShown > 3600*1000));
     if ($("#attribution").is(":visible")) setState("attributionLastShown", new Date().getTime());
   }));

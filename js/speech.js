@@ -35,7 +35,7 @@ function Speech(texts, options) {
         clearTimeout(hackTimer);
         hackTimer = setTimeout(hack, 16*1000);
       }
-      isPlaying = true;
+      isPlaying = new Date().getTime();
       return new Promise(function(fulfill) {
         speak(texts[index[0]][index[1]], fulfill, playNext);
       });
@@ -70,7 +70,11 @@ function Speech(texts, options) {
   }
 
   function rewind() {
-    if (index[0] > 0) {
+    if (isPlaying && new Date().getTime()-isPlaying > 3*1000) {
+      index = [index[0], 0];
+      return play();
+    }
+    else if (index[0] > 0) {
       index = [index[0]-1, 0];
       return play();
     }

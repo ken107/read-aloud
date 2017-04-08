@@ -69,8 +69,6 @@ function Doc(onEnd) {
   this.getActiveSpeech = getActiveSpeech;
   this.forward = forward;
   this.rewind = rewind;
-  this.fastForward = fastForward;
-  this.fastRewind = fastRewind;
   this.gotoPage = gotoPage;
 
   //method close
@@ -229,8 +227,12 @@ function Doc(onEnd) {
 
   //method forward
   function forward() {
-    if (activeSpeech) return activeSpeech.forward().catch(fastForward);
+    if (activeSpeech) return activeSpeech.forward().catch(forwardPage);
     else return Promise.reject(new Error("Can't forward, not active"));
+  }
+
+  function forwardPage() {
+    return stop().then(function() {currentIndex++; readCurrent()});
   }
 
   //method rewind
@@ -241,16 +243,6 @@ function Doc(onEnd) {
 
   function rewindPage() {
     return stop().then(function() {currentIndex--; readCurrent(true)});
-  }
-
-  //method fastForward
-  function fastForward() {
-    return stop().then(function() {currentIndex++; readCurrent()});
-  }
-
-  //method fastRewind
-  function fastRewind() {
-    return stop().then(function() {currentIndex--; readCurrent()});
   }
 
   //method gotoPage

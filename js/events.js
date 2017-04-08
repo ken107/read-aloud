@@ -65,16 +65,6 @@ function rewind() {
   else return Promise.reject(new Error("Can't rewind, not active"));
 }
 
-function fastForward() {
-  if (activeDoc) return activeDoc.fastForward();
-  else return Promise.reject(new Error("Can't fast forward, not active"));
-}
-
-function fastRewind() {
-  if (activeDoc) return activeDoc.fastRewind();
-  else return Promise.reject(new Error("Can't fast rewind, not active"));
-}
-
 function gotoPage(index) {
   if (activeDoc) return activeDoc.gotoPage(index);
   else return Promise.reject(new Error("Can't goto page, not active"));
