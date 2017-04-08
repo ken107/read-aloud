@@ -70,6 +70,7 @@ function Doc(onEnd) {
   this.forward = forward;
   this.rewind = rewind;
   this.gotoPage = gotoPage;
+  this.getCurrentPage = getCurrentPage;
 
   //method close
   function close() {
@@ -248,5 +249,10 @@ function Doc(onEnd) {
   //method gotoPage
   function gotoPage(index) {
     return stop().then(function() {currentIndex = index; readCurrent()});
+  }
+
+  //method getCurrentPage
+  function getCurrentPage() {
+    return Promise.resolve(currentIndex);
   }
 }

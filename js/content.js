@@ -25,6 +25,7 @@ function startService(name, doc) {
 
   function getInfo(request) {
     return {
+      canSeek: doc.canSeek,
       url: location.href,
       title: document.title,
       lang: document.documentElement.lang || $("html").attr("xml:lang") || $("meta[http-equiv=content-language]").attr("content")
@@ -208,6 +209,7 @@ function PdfDoc(url) {
   PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
 
   this.ready = PDFJS.getDocument(url).promise;
+  this.canSeek = true;
 
   this.getCurrentIndex = function() {
     return 0;

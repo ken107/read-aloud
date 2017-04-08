@@ -69,3 +69,8 @@ function gotoPage(index) {
   if (activeDoc) return activeDoc.gotoPage(index);
   else return Promise.reject(new Error("Can't goto page, not active"));
 }
+
+function getCurrentPage() {
+  if (activeDoc) return activeDoc.getCurrentPage();
+  else return Promise.resolve(0);
+}

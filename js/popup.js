@@ -1,4 +1,6 @@
 
+var showGotoPage;
+
 $(function() {
   $("#btnPlay").click(function() {
     getBackgroundPage()
@@ -17,6 +19,13 @@ $(function() {
   $("#btnSettings").click(function() {location.href = "options.html"});
   $("#btnForward").click(function() {getBackgroundPage().then(callMethod("forward")).then(updateButtons)});
   $("#btnRewind").click(function() {getBackgroundPage().then(callMethod("rewind")).then(updateButtons)});
+  $("#hlPageNo").click(function() {showGotoPage = true; updateButtons()});
+  $("#btnGotoPage").click(function() {
+    showGotoPage = false;
+    var pageNo = $("#txtPageNo").val();
+    if (isNaN(pageNo)) updateButtons();
+    else getBackgroundPage().then(callMethod("gotoPage", [pageNo-1])).then(updateButtons);
+  });
 
   updateButtons()
     .then(getBackgroundPage)
@@ -32,17 +41,20 @@ function updateButtons() {
     return Promise.all([
       master.getPlaybackState(),
       master.getDocInfo(),
+      master.getCurrentPage(),
       master.getActiveSpeech(),
       getState("attributionLastShown")
     ])
   })
-  .then(spread(function(state, docInfo, speech, lastShown) {
+  .then(spread(function(state, docInfo, pageIndex, speech, lastShown) {
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING");
+    $("#hlPageNo").toggle(Boolean(docInfo && docInfo.canSeek && !showGotoPage)).text("Page " + (pageIndex+1));
+    $("#txtPageNo, #btnGotoPage").toggle(Boolean(docInfo && docInfo.canSeek && showGotoPage));
     $("#attribution").toggle(speech != null && isCustomVoice(speech.options.voiceName) && (!lastShown || new Date().getTime()-lastShown > 3600*1000));
     if ($("#attribution").is(":visible")) setState("attributionLastShown", new Date().getTime());
   }));

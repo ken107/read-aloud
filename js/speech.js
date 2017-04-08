@@ -82,7 +82,7 @@ function Speech(texts, options) {
   }
 
   function gotoEnd() {
-    index = [texts.length-1, 0];
+    index = [Math.max(texts.length-1, 0), 0];
   }
 
   function speak(text, onStart, onEnd) {
