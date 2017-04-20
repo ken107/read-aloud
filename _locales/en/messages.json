@@ -15,7 +15,7 @@
     "message": "Voice"
   },
   "options_rate_label": {
-    "message": "Rate"
+    "message": "Speed"
   },
   "options_rate_explain": {
     "message": ".5 is half speed, 2 is double speed."
@@ -27,13 +27,13 @@
     "message": "Volume"
   },
   "options_spchlet_label": {
-    "message": "Max Length of Speechlet"
+    "message": "Max Length of Sentence"
   },
   "options_spchlet_label2": {
     "message": "(words)"
   },
   "options_spchlet_explain": {
-    "message": "If reading sometimes stops abruptly in the middle of a long sentence, try reducing this number. This setting causes longer paragraphs to be broken up into smaller speechlets."
+    "message": "If reading sometimes stops abruptly in the middle of a long sentence, try reducing this number. This setting causes longer sentences to be broken up."
   },
   "options_hotkey_label": {
     "message": "Shortcut"

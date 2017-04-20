@@ -1,0 +1,56 @@
+{
+  "extension_name": {
+    "message": "Texto A Voz"
+  },
+  "extension_short_name": {
+    "message": "Texto A Voz"
+  },
+  "extension_description": {
+    "message": "Lea en voz alta el artículo actual con un solo clic."
+  },
+  "options_heading": {
+    "message": "Configuración"
+  },
+  "options_voice_label": {
+    "message": "Voz"
+  },
+  "options_rate_label": {
+    "message": "Velocidad"
+  },
+  "options_rate_explain": {
+    "message": ".5 es media velocidad, 2 es doble velocidad."
+  },
+  "options_pitch_label": {
+    "message": "Tono"
+  },
+  "options_volume_label": {
+    "message": "Volumen"
+  },
+  "options_spchlet_label": {
+    "message": "Duración Máxima De La Oración"
+  },
+  "options_spchlet_label2": {
+    "message": "(palabras)"
+  },
+  "options_spchlet_explain": {
+    "message": "Si la lectura a veces se detiene abruptamente en medio de una oración larga, intente reducir este número. Este ajuste hace que las oraciones más largas se rompan."
+  },
+  "options_hotkey_label": {
+    "message": "Teclas De Atajo"
+  },
+  "options_save_button": {
+    "message": "Guardar"
+  },
+  "options_reset_button": {
+    "message": "Reiniciar"
+  },
+  "options_success_status": {
+    "message": "Cambios guardados."
+  },
+  "context_read_selection": {
+    "message": "Leer en voz alta el texto seleccionado"
+  },
+  "context_read_here": {
+    "message": "Leer en voz alta desde aquí"
+  }
+}
