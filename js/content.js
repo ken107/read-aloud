@@ -100,20 +100,13 @@ function GoogleDoc() {
     var page = pages.get(index);
     if (page) {
       viewport.scrollTop = $(page).position().top;
-      return tryGetTexts(page, 4);
+      return tryGetTexts(getTexts.bind(page), 2000);
     }
     else return null;
   }
 
-  function tryGetTexts(page, count) {
-    return waitMillis(500)
-      .then(function() {
-        return $(".kix-paragraphrenderer", page).get().map(getText).filter(isNotEmpty);
-      })
-      .then(function(texts) {
-        if (texts && !texts.length && count > 1) return tryGetTexts(page, count-1);
-        else return texts;
-      })
+  function getTexts() {
+    return $(".kix-paragraphrenderer", this).get().map(getText).filter(isNotEmpty);
   }
 }
 
@@ -131,21 +124,13 @@ function GDriveDoc() {
     var page = pages.get(index);
     if (page) {
       viewport.scrollTop = $(page).position().top;
-      return tryGetTexts(page, 6);
+      return tryGetTexts(getTexts.bind(page), 3000);
     }
     else return null;
   }
 
-  function tryGetTexts(page, count) {
-    return waitMillis(500)
-      .then(function() {
-        return $("p", page).get().map(getText).filter(isNotEmpty);
-      })
-      .then(fixParagraphs)
-      .then(function(texts) {
-        if (texts && !texts.length && count > 1) return tryGetTexts(page, count-1);
-        else return texts;
-      })
+  function getTexts() {
+    return $("p", this).get().map(getText).filter(isNotEmpty).then(fixParagraphs);
   }
 }
 
@@ -170,16 +155,7 @@ function KindleBook() {
   this.getTexts = function(index) {
     for (; currentIndex<index; currentIndex++) $(btnNext).click();
     for (; currentIndex>index; currentIndex--) $(btnPrev).click();
-    return tryGetTexts(8);
-  }
-
-  function tryGetTexts(count) {
-    return waitMillis(500)
-      .then(getTexts)
-      .then(function(texts) {
-        if (texts && !texts.length && count > 1) return tryGetTexts(count-1);
-        else return texts;
-      })
+    return tryGetTexts(getTexts, 4000);
   }
 
   function getTexts() {
@@ -354,4 +330,13 @@ function fixParagraphs(texts) {
   }
   if (para) out.push(para);
   return out;
+}
+
+function tryGetTexts(getTexts, millis) {
+  return waitMillis(500)
+    .then(getTexts)
+    .then(function(texts) {
+      if (texts && !texts.length && millis-500 > 0) return tryGetTexts(getTexts, millis-500);
+      else return texts;
+    })
 }

@@ -11,7 +11,7 @@ $(function() {
           .then(function(docInfo) {return setState("lastUrl", docInfo.url)})
       })
       .catch(function(err) {
-        return reportIssue(err).then(window.close.bind(window));
+        window.close();
       });
   });
   $("#btnPause").click(function() {getBackgroundPage().then(callMethod("pause")).then(updateButtons)});
@@ -61,9 +61,12 @@ function updateButtons() {
 }
 
 function reportIssue(err) {
+  return new Promise(function(fulfill) {
     $.ajax({
       method: "POST",
       url: "http://app.diepkhuc.com:30112/read-aloud/report-issue",
-      data: {comment: err.stack}
+      data: {comment: err.stack},
+      complete: fulfill
     })
+  })
 }
