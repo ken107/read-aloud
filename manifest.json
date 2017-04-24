@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "default_locale": "en",
 
   "browser_action": {
@@ -28,11 +28,10 @@
   "background": {
     "scripts": [
       "js/es6-promise.auto.min.js",
-      "js/responsivevoice.js",
       "js/defaults.js",
       "js/speech.js",
       "js/document.js",
-      "js/vietnamese.js",
+      "js/responsivevoice_tts.js",
       "js/events.js"
     ],
     "persistent": false
@@ -48,6 +47,279 @@
 
   "tts_engine": {
     "voices": [
+      {
+        "voice_name": "RspVoice Afrikaans Male",
+        "lang": "af",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Arabic Male",
+        "lang": "ar",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Bosnian Male",
+        "lang": "bs",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Catalan Male",
+        "lang": "ca",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Czech Male",
+        "lang": "cs",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Czech Female",
+        "lang": "cs",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Welsh Male",
+        "lang": "cy",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Danish Female",
+        "lang": "da",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Danish Male",
+        "lang": "da",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Greek Male",
+        "lang": "el",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Greek Female",
+        "lang": "el",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Esperanto Male",
+        "lang": "eo",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Finnish Male",
+        "lang": "fi",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Finnish Female",
+        "lang": "fi",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Croatian Male",
+        "lang": "hr",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Hungarian Female",
+        "lang": "hu",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Hungarian Male",
+        "lang": "hu",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Armenian Male",
+        "lang": "hy",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Icelandic Male",
+        "lang": "is",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Latin Female",
+        "lang": "la",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Latin Male",
+        "lang": "la",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Latvian Male",
+        "lang": "lv",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Macedonian Male",
+        "lang": "mk",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Moldavian Male",
+        "lang": "mo",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Norwegian Male",
+        "lang": "no",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Norwegian Female",
+        "lang": "no",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Romanian Male",
+        "lang": "ro",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Serbo-Croatian Male",
+        "lang": "sh",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Slovak Male",
+        "lang": "sk",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Slovak Female",
+        "lang": "sk",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Albanian Male",
+        "lang": "sq",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Serbian Male",
+        "lang": "sr",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Montenegrin Male",
+        "lang": "sr-ME",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Swedish Male",
+        "lang": "sv",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Swedish Female",
+        "lang": "sv",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Swahili Male",
+        "lang": "sw",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Tamil Male",
+        "lang": "ta",
+        "gender": "male",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Thai Female",
+        "lang": "th",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
+      {
+        "voice_name": "RspVoice Turkish Female",
+        "lang": "tr",
+        "gender": "female",
+        "event_types": ["start", "end"],
+        "remote": true
+      },
       {
         "voice_name": "RspVoice Vietnamese Male",
         "lang": "vi",
