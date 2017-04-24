@@ -25,6 +25,7 @@ function startService(name, doc) {
 
   function getInfo(request) {
     return {
+      isPdf: doc.isPdf,
       canSeek: doc.canSeek,
       url: location.href,
       title: document.title,
@@ -182,9 +183,8 @@ function KindleBook() {
 
 
 function PdfDoc(url) {
-  PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
-
-  this.ready = PDFJS.getDocument(url).promise;
+  var pdf;
+  this.isPdf = true;
   this.canSeek = true;
 
   this.getCurrentIndex = function() {
@@ -192,7 +192,7 @@ function PdfDoc(url) {
   }
 
   this.getTexts = function(index) {
-    return this.ready.then(function(pdf) {
+    return ready().then(function() {
       if (index < pdf.numPages) return pdf.getPage(index+1).then(getPageTexts);
       else return null;
     })
@@ -204,6 +204,14 @@ function PdfDoc(url) {
         return content.items.map(function(item) {return item.str.trim()}).filter(isNotEmpty);
       })
       .then(fixParagraphs)
+  }
+
+  function ready() {
+    if (pdf) return Promise.resolve();
+    else {
+      PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+      return PDFJS.getDocument(url).promise.then(function(result) {pdf = result});
+    }
   }
 }
 

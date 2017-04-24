@@ -7,7 +7,14 @@ function Doc(onEnd) {
   var waiting = true;
   var ready = connect()
     .then(send.bind(null, {method: "raGetInfo"}))
-    .then(function(result) {info = result; waiting = false})
+    .then(function(result) {
+      if (result.isPdf) return executeFile("js/pdf.js").then(function() {return result});
+      else return result;
+    })
+    .then(function(result) {
+      info = result;
+      waiting = false;
+    })
 
   function connect() {
     var name = String(Math.random());
@@ -55,7 +62,6 @@ function Doc(onEnd) {
   function injectScripts(name) {
     return executeFile("js/jquery-3.1.1.min.js")
       .then(executeFile.bind(null, "js/es6-promise.auto.min.js"))
-      .then(executeFile.bind(null, "js/pdf.js"))
       .then(executeFile.bind(null, "js/content.js"))
       .then(executeScript.bind(null, "connect('" + name + "')"))
   }
