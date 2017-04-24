@@ -42,8 +42,7 @@ function updateButtons() {
       master.getPlaybackState(),
       master.getDocInfo(),
       master.getCurrentPage(),
-      master.getActiveSpeech(),
-      getState("attributionLastShown")
+      master.getActiveSpeech()
     ])
   })
   .then(spread(function(state, docInfo, pageIndex, speech, lastShown) {
@@ -55,8 +54,7 @@ function updateButtons() {
     $("#btnForward, #btnRewind").toggle(state == "PLAYING");
     $("#hlPageNo").toggle(Boolean(docInfo && docInfo.canSeek && !showGotoPage)).text("Page " + (pageIndex+1));
     $("#txtPageNo, #btnGotoPage").toggle(Boolean(docInfo && docInfo.canSeek && showGotoPage));
-    $("#attribution").toggle(speech != null && isCustomVoice(speech.options.voiceName) && (!lastShown || new Date().getTime()-lastShown > 3600*1000));
-    if ($("#attribution").is(":visible")) setState("attributionLastShown", new Date().getTime());
+    $("#attribution").toggle(speech != null && isCustomVoice(speech.options.voiceName));
   }));
 }
 
