@@ -1,6 +1,42 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <link rel="stylesheet" type="text/css" href="css/main.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script>
+    $(function() {
+      $("nav .item").click(function(event) {
+        $("nav .item").toggleClass('active', function() {return this == event.target});
+        $("section").toggleClass('active', function() {return this.id == $(event.target).data("target")})
+      })
+    })
+  </script>
+</head>
 <body>
-  Home of the Read Aloud Chrome Extension
+  <header>
+    <h1>Read Aloud</h1>
+    <p>Voice enabling the web.</p>
+  </header>
+  <div id="banner">
+    <a title="View on GitHub" href="https://github.com/ken107/read-aloud">
+      <span id="logo"></span>
+    </a>
+    <a href="https://github.com/ken107/read-aloud" class="button">View On GitHub</a>
+  </div>
+  <div class="wrapper">
+    <nav>
+      <div class="item active" data-target="chrome-extension">Chrome Extension</div>
+      <div class="item" data-target="embed-website">Embed in Website</div>
+    </nav>
+    <section id="chrome-extension" class="active">
+      <h1>Read Aloud Chrome Extension</h1>
+      <p>Read aloud the content of any web page with a single click.</p>
+      <a href="https://chrome.google.com/webstore/detail/hdhinadidafjejdhmfkjgnolgimiaplp" class="button">Install</a>
+    </section>
+    <section id="embed-website">
+      <h1>Embed In Your Website</h1>
+      <p>Coming soon...</p>
+    </section>
+  </div>
 </body>
 </html>
