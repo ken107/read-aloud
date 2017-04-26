@@ -14,11 +14,18 @@ function restrictValue(value, min, max, def) {
   else return Math.min(Math.max(value, min), max);
 }
 
-function isCustomVoice(voiceName) {
+function isCustomVoice(voice) {
+  var voiceName = typeof voice == "string" ? voice : voice.voiceName;
   var customVoices = chrome.runtime.getManifest().tts_engine.voices;
   return customVoices.some(function(voice) {
     return voice.voice_name == voiceName;
   });
+}
+
+function not(predicate) {
+  return function() {
+    return !predicate.apply(null, arguments);
+  }
 }
 
 function Slider(elem) {

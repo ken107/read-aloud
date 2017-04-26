@@ -164,10 +164,7 @@ function Doc(onEnd) {
     return getVoices()
       .then(function(voices) {
         if (voiceName) return findVoiceByName(voices, voiceName);
-        else if (lang) {
-          return findVoiceByLang(voices.filter(function(voice) {return !isCustomVoice(voice.voiceName)}), lang)
-            || findVoiceByLang(voices.filter(function(voice) {return isCustomVoice(voice.voiceName)}), lang);
-        }
+        else if (lang) return findVoiceByLang(voices.filter(not(isCustomVoice)), lang) || findVoiceByLang(voices.filter(isCustomVoice), lang);
         else return null;
       })
       .then(function(voice) {

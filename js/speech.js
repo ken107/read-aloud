@@ -1,5 +1,12 @@
 
 function Speech(texts, options) {
+  var punctuator;
+  if (/^zh|ko|ja/.test(options.lang)) {
+    punctuator = eastAsianPunctuator;
+    options.spchletMaxLen *= 2;
+  }
+  else punctuator = latinPunctuator;
+
   var isPlaying = false;
   var index = [0, 0];
   var hackTimer = 0;
@@ -102,15 +109,15 @@ function Speech(texts, options) {
   }
 
   function breakText(text, wordLimit) {
-    return merge(getSentences(text), wordLimit, breakSentence);
+    return merge(punctuator.getSentences(text), wordLimit, breakSentence);
   }
 
   function breakSentence(sentence, wordLimit) {
-    return merge(getPhrases(sentence), wordLimit, breakPhrase);
+    return merge(punctuator.getPhrases(sentence), wordLimit, breakPhrase);
   }
 
   function breakPhrase(phrase, wordLimit) {
-    var words = getWords(phrase);
+    var words = punctuator.getWords(phrase);
     var splitPoint = Math.min(Math.ceil(words.length/2), wordLimit);
     var result = [];
     while (words.length) {
@@ -130,7 +137,7 @@ function Speech(texts, options) {
       }
     };
     parts.forEach(function(part) {
-      var wordCount = getWords(part).length;
+      var wordCount = punctuator.getWords(part).length;
       if (wordCount > wordLimit) {
         flush();
         var subParts = breakPart(part, wordLimit);
@@ -145,8 +152,10 @@ function Speech(texts, options) {
     flush();
     return result;
   }
+}
 
-  function getSentences(text) {
+var latinPunctuator = {
+  getSentences: function(text) {
     var tokens = text.split(/([.!?]+[\s\u200b])/);
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
@@ -154,9 +163,8 @@ function Speech(texts, options) {
       else result.push(tokens[i]);
     }
     return result;
-  }
-
-  function getPhrases(sentence) {
+  },
+  getPhrases: function(sentence) {
     var tokens = sentence.split(/([,;:]\s|\s-+\s|—)/);
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
@@ -164,9 +172,8 @@ function Speech(texts, options) {
       else result.push(tokens[i]);
     }
     return result;
-  }
-
-  function getWords(sentence) {
+  },
+  getWords: function(sentence) {
     var tokens = sentence.trim().split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
@@ -177,5 +184,29 @@ function Speech(texts, options) {
       }
     }
     return result;
+  }
+}
+
+var eastAsianPunctuator = {
+  getSentences: function(text) {
+    var tokens = text.split(/([.!?]+[\s\u200b]|[\u3002\uff01])/);
+    var result = [];
+    for (var i=0; i<tokens.length; i+=2) {
+      if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
+      else result.push(tokens[i]);
+    }
+    return result;
+  },
+  getPhrases: function(sentence) {
+    var tokens = sentence.split(/([,;:]\s|[\u2025\u2026\u3000\u3001\uff0c\uff1b])/);
+    var result = [];
+    for (var i=0; i<tokens.length; i+=2) {
+      if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
+      else result.push(tokens[i]);
+    }
+    return result;
+  },
+  getWords: function(sentence) {
+    return sentence.replace(/\s+/g, "").split("");
   }
 }
