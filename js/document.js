@@ -164,7 +164,10 @@ function Doc(onEnd) {
     return getVoices()
       .then(function(voices) {
         if (voiceName) return findVoiceByName(voices, voiceName);
-        else if (lang) return findVoiceByLang(voices, lang);
+        else if (lang) {
+          return findVoiceByLang(voices.filter(function(voice) {return !isCustomVoice(voice.voiceName)}), lang)
+            || findVoiceByLang(voices.filter(function(voice) {return isCustomVoice(voice.voiceName)}), lang);
+        }
         else return null;
       })
       .then(function(voice) {
@@ -195,9 +198,8 @@ function Doc(onEnd) {
           }
         }
       }
-      if (voice.voiceName == "Google US English") match.default = match.default || voice;
     });
-    return match.first || match.second || match.third || match.fourth || match.default;
+    return match.first || match.second || match.third || match.fourth;
   }
 
   //method stop
