@@ -15,6 +15,7 @@ function restrictValue(value, min, max, def) {
 }
 
 function isCustomVoice(voice) {
+  if (!voice) return false;
   var voiceName = typeof voice == "string" ? voice : voice.voiceName;
   var customVoices = chrome.runtime.getManifest().tts_engine.voices;
   return customVoices.some(function(voice) {

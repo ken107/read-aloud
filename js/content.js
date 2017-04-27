@@ -330,8 +330,11 @@ function fixParagraphs(texts) {
   var out = [];
   var para = "";
   for (var i=0; i<texts.length; i++) {
-    if (para) para += " ";
-    para += texts[i];
+    if (para) {
+      if (/-$/.test(para)) para = para.substr(0, para.length-1);
+      else para += " ";
+    }
+    para += texts[i].replace(/-\r?\n/g, "");
     if (texts[i].match(/[.!?:)"'\u2019\u201d]$/)) {
       out.push(para);
       para = "";
