@@ -131,7 +131,8 @@ function GDriveDoc() {
   }
 
   function getTexts() {
-    return $("p", this).get().map(getText).filter(isNotEmpty).then(fixParagraphs);
+    var texts = $("p", this).get().map(getText).filter(isNotEmpty);
+    return fixParagraphs(texts);
   }
 }
 
