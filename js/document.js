@@ -96,7 +96,7 @@ function Doc(onEnd) {
         else {
           return send({method: "raGetCurrentIndex"})
             .then(function(index) {currentIndex = index})
-            .then(function() {readCurrent()})
+            .then(function() {return readCurrent()})
         }
       })
   }
@@ -109,14 +109,14 @@ function Doc(onEnd) {
       .then(function(texts) {
         if (texts) return read(texts);
         else if (onEnd) onEnd();
-      });
+      })
     function read(texts) {
       return Promise.resolve()
         .then(function() {
           if (!info.detectedLang)
             return detectLanguage(texts).then(function(lang) {info.detectedLang = lang});
         })
-        .then(function() {return getSpeech(texts)})
+        .then(getSpeech.bind(null, texts))
         .then(function(speech) {
           if (activeSpeech) return;
           activeSpeech = speech;
@@ -151,6 +151,7 @@ function Doc(onEnd) {
         options.spchletMaxLen *= options.rate;
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voiceName) {
+            if (!voiceName) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang, url: info.url}));
             options.voiceName = voiceName;
             options.hack = !isCustomVoice(options.voiceName);
           })

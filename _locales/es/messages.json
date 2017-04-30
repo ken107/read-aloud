@@ -52,5 +52,8 @@
   },
   "context_read_here": {
     "message": "Leer en voz alta desde aquí"
+  },
+  "error_no_voice": {
+    "message": "Sin voz ({lang})"
   }
 }

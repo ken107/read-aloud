@@ -17,10 +17,9 @@ function restrictValue(value, min, max, def) {
 function isCustomVoice(voice) {
   if (!voice) return false;
   var voiceName = typeof voice == "string" ? voice : voice.voiceName;
-  var customVoices = chrome.runtime.getManifest().tts_engine.voices;
-  return customVoices.some(function(voice) {
-    return voice.voice_name == voiceName;
-  });
+  var mf = chrome.runtime.getManifest();
+  if (!mf.tts_engine || !mf.tts_engine.voices) return false;
+  return mf.tts_engine.voices.some(function(voice) {return voice.voice_name == voiceName});
 }
 
 function not(predicate) {
@@ -140,4 +139,10 @@ function parseLang(lang) {
     lang: tokens[0],
     rest: tokens[1]
   };
+}
+
+function formatError(err) {
+  var message = chrome.i18n.getMessage(err.code);
+  if (message) message = message.replace(/{(\w+)}/g, function(m, p1) {return err[p1]});
+  return message;
 }

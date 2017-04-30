@@ -49,5 +49,8 @@
   },
   "context_read_here": {
     "message": "Đọc từ chỗ này"
+  },
+  "error_no_voice": {
+    "message": "Không có giọng đọc cho ngôn ngữ này ({lang})"
   }
 }

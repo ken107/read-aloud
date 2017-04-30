@@ -77,8 +77,9 @@ body {
   color: #aaa;
 }
 
-#attribution {
-  margin: 20px auto;
+#status {
+  margin-top: 15px;
+  color: red;
   text-align: center;
   display: none;
 }
