@@ -153,7 +153,6 @@ function Doc(onEnd) {
           .then(function(voiceName) {
             if (!voiceName) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang, url: info.url}));
             options.voiceName = voiceName;
-            options.hack = !isCustomVoice(options.voiceName);
           })
           .then(function() {
             return new Speech(texts, options);

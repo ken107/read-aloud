@@ -10,8 +10,15 @@ function Speech(texts, options) {
   var isPlaying = false;
   var index = [0, 0];
   var hackTimer = 0;
-  if (options.hack) texts = texts.map(function(text) {return breakText(text, options.spchletMaxLen)});
-  else texts = texts.map(function(text) {return [text]});
+
+  if (isCustomVoice(options.voiceName)) {
+    texts = texts.map(function(text) {return charBreaker.breakText(text, 200, punctuator)})
+    options.hack = false;
+  }
+  else {
+    texts = texts.map(function(text) {return wordBreaker.breakText(text, options.spchletMaxLen, punctuator)});
+    options.hack = true;
+  }
 
   this.options = options;
   this.play = play;
@@ -107,16 +114,22 @@ function Speech(texts, options) {
       }
     });
   }
+}
 
-  function breakText(text, wordLimit) {
-    return merge(punctuator.getSentences(text), wordLimit, breakSentence);
+//text breakers
+
+var wordBreaker = new function() {
+  this.breakText = breakText;
+
+  function breakText(text, wordLimit, punctuator) {
+    return merge(punctuator.getSentences(text), wordLimit, punctuator, breakSentence);
   }
 
-  function breakSentence(sentence, wordLimit) {
-    return merge(punctuator.getPhrases(sentence), wordLimit, breakPhrase);
+  function breakSentence(sentence, wordLimit, punctuator) {
+    return merge(punctuator.getPhrases(sentence), wordLimit, punctuator, breakPhrase);
   }
 
-  function breakPhrase(phrase, wordLimit) {
+  function breakPhrase(phrase, wordLimit, punctuator) {
     var words = punctuator.getWords(phrase);
     var splitPoint = Math.min(Math.ceil(words.length/2), wordLimit);
     var result = [];
@@ -127,7 +140,7 @@ function Speech(texts, options) {
     return result;
   }
 
-  function merge(parts, wordLimit, breakPart) {
+  function merge(parts, wordLimit, punctuator, breakPart) {
     var result = [];
     var group = {parts: [], wordCount: 0};
     var flush = function() {
@@ -140,7 +153,7 @@ function Speech(texts, options) {
       var wordCount = punctuator.getWords(part).length;
       if (wordCount > wordLimit) {
         flush();
-        var subParts = breakPart(part, wordLimit);
+        var subParts = breakPart(part, wordLimit, punctuator);
         for (var i=0; i<subParts.length; i++) result.push(subParts[i]);
       }
       else {
@@ -153,6 +166,50 @@ function Speech(texts, options) {
     return result;
   }
 }
+
+var charBreaker = new function() {
+  this.breakText = breakText;
+
+  function breakText(text, charLimit, punctuator) {
+    return merge(punctuator.getSentences(text), charLimit, punctuator, breakSentence);
+  }
+
+  function breakSentence(sentence, charLimit, punctuator) {
+    return merge(punctuator.getPhrases(sentence), charLimit, punctuator, breakPhrase);
+  }
+
+  function breakPhrase(phrase, charLimit, punctuator) {
+    return merge(punctuator.getWords(phrase), charLimit, punctuator);
+  }
+
+  function merge(parts, charLimit, punctuator, breakPart) {
+    var result = [];
+    var group = {parts: [], charCount: 0};
+    var flush = function() {
+      if (group.parts.length) {
+        result.push(group.parts.join(""));
+        group = {parts: [], charCount: 0};
+      }
+    };
+    parts.forEach(function(part) {
+      var charCount = part.length;
+      if (charCount > charLimit) {
+        flush();
+        var subParts = breakPart(part, charLimit, punctuator);
+        for (var i=0; i<subParts.length; i++) result.push(subParts[i]);
+      }
+      else {
+        if (group.charCount + charCount > charLimit) flush();
+        group.parts.push(part);
+        group.charCount += charCount;
+      }
+    });
+    flush();
+    return result;
+  }
+}
+
+//punctuators
 
 var latinPunctuator = {
   getSentences: function(text) {
