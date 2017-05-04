@@ -7,6 +7,7 @@ function Speech(texts, options) {
   }
   else punctuator = latinPunctuator;
 
+  var engine = options.engine || chrome.tts;
   var isPlaying = false;
   var index = [0, 0];
   var hackTimer = 0;
@@ -30,7 +31,7 @@ function Speech(texts, options) {
 
   function getState() {
     return new Promise(function(fulfill) {
-      chrome.tts.isSpeaking(function(isSpeaking) {
+      engine.isSpeaking(function(isSpeaking) {
         if (isPlaying) fulfill(isSpeaking ? "PLAYING" : "LOADING");
         else fulfill("PAUSED");
       })
@@ -57,7 +58,7 @@ function Speech(texts, options) {
   }
 
   function hack() {
-    chrome.tts.isSpeaking(function(isSpeaking) {
+    engine.isSpeaking(function(isSpeaking) {
       if (isSpeaking) playNext();
     });
   }
@@ -70,7 +71,7 @@ function Speech(texts, options) {
 
   function pause() {
     if (options.hack) clearTimeout(hackTimer);
-    chrome.tts.stop();
+    engine.stop();
     isPlaying = false;
     return Promise.resolve();
   }
@@ -100,7 +101,7 @@ function Speech(texts, options) {
   }
 
   function speak(text, onStart, onEnd) {
-    chrome.tts.speak(text, {
+    engine.speak(text, {
       voiceName: options.voiceName,
       lang: options.lang,
       rate: Math.min(options.rate, 2),
