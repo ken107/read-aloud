@@ -26,8 +26,9 @@
       var theme = $("input[type=radio][name=theme]:checked").val();
       var exclude = $("#cbo-exclude-jquery").is(":checked");
       var embedCode = "";
-      if (!exclude) embedCode += '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"><'+ '/script>\n';
-      embedCode += '<script src="https://ken107.github.io/read-aloud/js/readaloud.min.js"><' + '/script>\n';
+      if (!exclude) embedCode += '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"><'+ '/script>\n';
+      embedCode += '<script src="https://ken107.github.io/read-aloud/js/readaloud.min.js" type="text/javascript"><' + '/script>\n';
+      embedCode += '<style type="text/css">.ra-play, .ra-pause {width: 32px; cursor: pointer;}</style>\n';
       embedCode += '<img src="https://ken107.github.io/read-aloud/images/play_' + theme + '.png" class="ra-play" onclick="readAloud.play({lang:\'' + lang + '\', pitch:1, rate:1})" />\n';
       embedCode += '<img src="https://ken107.github.io/read-aloud/images/pause_' + theme + '.png" class="ra-pause" onclick="readAloud.pause()" />\n';
       $("#txt-embed-code").val(embedCode);
@@ -111,24 +112,32 @@
       <table style="width: 100%;">
         <tr>
           <td>
-            <input type="radio" name="theme" value="round_dark" checked="checked" />
-            <img src="images/play_round_dark.png" class="icon" />
-            <img src="images/pause_round_dark.png" class="icon" />
+            <label>
+              <input type="radio" name="theme" value="round_dark" checked="checked" />
+              <img src="images/play_round_dark.png" class="icon" />
+              <img src="images/pause_round_dark.png" class="icon" />
+            </label>
           </td>
           <td>
-            <input type="radio" name="theme" value="square_dark" />
-            <img src="images/play_square_dark.png" class="icon" />
-            <img src="images/pause_square_dark.png" class="icon" />
+            <label>
+              <input type="radio" name="theme" value="square_dark" />
+              <img src="images/play_square_dark.png" class="icon" />
+              <img src="images/pause_square_dark.png" class="icon" />
+            </label>
           </td>
           <td>
-            <input type="radio" name="theme" value="round_light" />
-            <img src="images/play_round_light.png" class="icon" />
-            <img src="images/pause_round_light.png" class="icon" />
+            <label>
+              <input type="radio" name="theme" value="round_light" />
+              <img src="images/play_round_light.png" class="icon" />
+              <img src="images/pause_round_light.png" class="icon" />
+            </label>
           </td>
           <td>
-            <input type="radio" name="theme" value="square_light" />
-            <img src="images/play_square_light.png" class="icon" />
-            <img src="images/pause_square_light.png" class="icon" />
+            <label>
+              <input type="radio" name="theme" value="square_light" />
+              <img src="images/play_square_light.png" class="icon" />
+              <img src="images/pause_square_light.png" class="icon" />
+            </label>
           </td>
         </tr>
       </table>

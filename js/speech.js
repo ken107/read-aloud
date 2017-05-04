@@ -2,10 +2,10 @@
 function Speech(texts, options) {
   var punctuator;
   if (/^zh|ko|ja/.test(options.lang)) {
-    punctuator = eastAsianPunctuator;
+    punctuator = new EastAsianPunctuator();
     options.spchletMaxLen *= 2;
   }
-  else punctuator = latinPunctuator;
+  else punctuator = new LatinPunctuator();
 
   var engine = options.engine || chrome.tts;
   var isPlaying = false;
@@ -13,11 +13,11 @@ function Speech(texts, options) {
   var hackTimer = 0;
 
   if (isCustomVoice(options.voiceName)) {
-    texts = texts.map(function(text) {return charBreaker.breakText(text, 200, punctuator)})
+    texts = texts.map(function(text) {return new CharBreaker().breakText(text, 200, punctuator)})
     options.hack = false;
   }
   else {
-    texts = texts.map(function(text) {return wordBreaker.breakText(text, options.spchletMaxLen, punctuator)});
+    texts = texts.map(function(text) {return new WordBreaker().breakText(text, options.spchletMaxLen, punctuator)});
     options.hack = true;
   }
 
@@ -115,11 +115,10 @@ function Speech(texts, options) {
       }
     });
   }
-}
 
 //text breakers
 
-var wordBreaker = new function() {
+function WordBreaker() {
   this.breakText = breakText;
 
   function breakText(text, wordLimit, punctuator) {
@@ -168,7 +167,7 @@ var wordBreaker = new function() {
   }
 }
 
-var charBreaker = new function() {
+function CharBreaker() {
   this.breakText = breakText;
 
   function breakText(text, charLimit, punctuator) {
@@ -212,8 +211,8 @@ var charBreaker = new function() {
 
 //punctuators
 
-var latinPunctuator = {
-  getSentences: function(text) {
+function LatinPunctuator() {
+  this.getSentences = function(text) {
     var tokens = text.split(/([.!?]+[\s\u200b])/);
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
@@ -221,8 +220,9 @@ var latinPunctuator = {
       else result.push(tokens[i]);
     }
     return result;
-  },
-  getPhrases: function(sentence) {
+  }
+
+  this.getPhrases = function(sentence) {
     var tokens = sentence.split(/([,;:]\s|\s-+\s|—)/);
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
@@ -230,8 +230,9 @@ var latinPunctuator = {
       else result.push(tokens[i]);
     }
     return result;
-  },
-  getWords: function(sentence) {
+  }
+
+  this.getWords = function(sentence) {
     var tokens = sentence.trim().split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
@@ -245,8 +246,8 @@ var latinPunctuator = {
   }
 }
 
-var eastAsianPunctuator = {
-  getSentences: function(text) {
+function EastAsianPunctuator() {
+  this.getSentences = function(text) {
     var tokens = text.split(/([.!?]+[\s\u200b]|[\u3002\uff01])/);
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
@@ -254,8 +255,9 @@ var eastAsianPunctuator = {
       else result.push(tokens[i]);
     }
     return result;
-  },
-  getPhrases: function(sentence) {
+  }
+
+  this.getPhrases = function(sentence) {
     var tokens = sentence.split(/([,;:]\s|[\u2025\u2026\u3000\u3001\uff0c\uff1b])/);
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
@@ -263,8 +265,10 @@ var eastAsianPunctuator = {
       else result.push(tokens[i]);
     }
     return result;
-  },
-  getWords: function(sentence) {
+  }
+
+  this.getWords = function(sentence) {
     return sentence.replace(/\s+/g, "").split("");
   }
+}
 }
