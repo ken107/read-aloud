@@ -69,6 +69,11 @@ header p {
   background-color: #ffeca0;
 }
 
+.icon {
+  width: 32px;
+  vertical-align: middle;
+}
+
 .wrapper {
   width: 40%;
   margin: 25px auto;
@@ -114,4 +119,7 @@ section.active {
 section h1 {
   font-size: 28px;
   color: #333;
+}
+section h2 {
+  margin-top: 40px;
 }

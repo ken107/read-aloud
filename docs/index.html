@@ -9,7 +9,29 @@
         $("nav .item").toggleClass('active', function() {return this == event.target});
         $("section").toggleClass('active', function() {return this.id == $(event.target).data("target")})
       })
+      $("#ddl-language, input[type=radio][name=theme], #cbo-exclude-jquery").change(updateEmbedCode);
+      updateEmbedCode();
+      $("#txt-embed-code").focus(function() {
+        var $this = $(this);
+        $this.select();
+        $this.mouseup(function() {    //chrome hack
+          $this.unbind("mouseup");
+          return false;
+        });
+      })
     })
+
+    function updateEmbedCode() {
+      var lang = $("#ddl-language").val();
+      var theme = $("input[type=radio][name=theme]:checked").val();
+      var exclude = $("#cbo-exclude-jquery").is(":checked");
+      var embedCode = "";
+      if (!exclude) embedCode += '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"><'+ '/script>\n';
+      embedCode += '<script src="https://ken107.github.io/read-aloud/js/readaloud.min.js"><' + '/script>\n';
+      embedCode += '<img src="https://ken107.github.io/read-aloud/images/play_' + theme + '.png" class="ra-play" onclick="readAloud.play({lang:\'' + lang + '\', pitch:1, rate:1})" />\n';
+      embedCode += '<img src="https://ken107.github.io/read-aloud/images/pause_' + theme + '.png" class="ra-pause" onclick="readAloud.pause()" />\n';
+      $("#txt-embed-code").val(embedCode);
+    }
   </script>
 </head>
 <body>
@@ -35,7 +57,88 @@
     </section>
     <section id="embed-website">
       <h1>Embed In Your Website</h1>
-      <p>Coming soon...</p>
+      <h2>1. Select Language</h2>
+      <select id="ddl-language">
+        <option value="af">Afrikaans</option>
+        <option value="sq">Albanian</option>
+        <option value="ar">Arabic</option>
+        <option value="hy">Armenian</option>
+        <option value="bn">Bengali</option>
+        <option value="bs">Bosnian</option>
+        <option value="ca">Catalan</option>
+        <option value="zh-CN">Chinese</option>
+        <option value="hr">Croatian</option>
+        <option value="cs">Czech</option>
+        <option value="da">Danish</option>
+        <option value="nl">Dutch</option>
+        <option value="en" selected="selected">English</option>
+        <option value="eo">Esperanto</option>
+        <option value="fi">Finnish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="el">Greek</option>
+        <option value="hi">Hindi</option>
+        <option value="hu">Hungarian</option>
+        <option value="is">Icelandic</option>
+        <option value="id">Indonesian</option>
+        <option value="it">Italian</option>
+        <option value="ja">Japanese</option>
+        <option value="km">Khmer</option>
+        <option value="ko">Korean</option>
+        <option value="la">Latin</option>
+        <option value="lv">Latvian</option>
+        <option value="mk">Macedonian</option>
+        <option value="ne">Nepali</option>
+        <option value="no">Norwegian</option>
+        <option value="pl">Polish</option>
+        <option value="pt">Portuguese</option>
+        <option value="ro">Romanian</option>
+        <option value="ru">Russian</option>
+        <option value="sr">Serbian</option>
+        <option value="si">Sinhala</option>
+        <option value="sk">Slovak</option>
+        <option value="es">Spanish</option>
+        <option value="sw">Swahili</option>
+        <option value="sv">Swedish</option>
+        <option value="ta">Tamil</option>
+        <option value="th">Thai</option>
+        <option value="tr">Turkish</option>
+        <option value="uk">Ukrainian</option>
+        <option value="vi">Vietnamese</option>
+        <option value="cy">Welsh</option>
+      </select>
+      <h2>2. Select Theme</h2>
+      <table style="width: 100%;">
+        <tr>
+          <td>
+            <input type="radio" name="theme" value="round_dark" checked="checked" />
+            <img src="images/play_round_dark.png" class="icon" />
+            <img src="images/pause_round_dark.png" class="icon" />
+          </td>
+          <td>
+            <input type="radio" name="theme" value="square_dark" />
+            <img src="images/play_square_dark.png" class="icon" />
+            <img src="images/pause_square_dark.png" class="icon" />
+          </td>
+          <td>
+            <input type="radio" name="theme" value="round_light" />
+            <img src="images/play_round_light.png" class="icon" />
+            <img src="images/pause_round_light.png" class="icon" />
+          </td>
+          <td>
+            <input type="radio" name="theme" value="square_light" />
+            <img src="images/play_square_light.png" class="icon" />
+            <img src="images/pause_square_light.png" class="icon" />
+          </td>
+        </tr>
+      </table>
+      <h2>3. JQuery</h2>
+      <label>
+        <input type="checkbox" id="cbo-exclude-jquery" />
+        Don't include, my website already has jQuery. If you're not sure, leave this unchecked.
+      </label>
+      <h2>4. Your Embed Code</h2>
+      <textarea id="txt-embed-code" style="width: 500px; height: 80px;"></textarea>
     </section>
   </div>
 </body>
