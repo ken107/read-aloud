@@ -38,25 +38,15 @@ var readAloud = new function() {
   }
 
   function VoiceProvider() {
-    var voices;
-    if (window.speechSynthesis) speechSynthesis.onvoiceschanged = function() {voices = speechSynthesis.getVoices()};
-    else voices = [];
+    if (window.speechSynthesis) speechSynthesis.getVoices();
 
     window.isCustomVoice = function(voice) {
       return false;
     }
 
     this.getVoice = function(lang) {
-      return getVoices()
-        .then(function(voices) {return findVoiceByLang(voices, lang)})
-    }
-
-    function getVoices() {
-      if (voices) return Promise.resolve(voices);
-      else {
-        speechSynthesis.getVoices();
-        return new Promise(function(fulfill) {setTimeout(fulfill, 500)}).then(getVoices);
-      }
+      var voice = window.speechSynthesis ? findVoiceByLang(speechSynthesis.getVoices(), lang) : null;
+      return Promise.resolve(voice);
     }
 
     //from document.js
