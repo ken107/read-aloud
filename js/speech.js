@@ -1,5 +1,7 @@
 
 function Speech(texts, options) {
+  if (!options.spchletMaxLen) options.spchletMaxLen = 36;
+
   var punctuator;
   if (/^zh|ko|ja/.test(options.lang)) {
     punctuator = new EastAsianPunctuator();

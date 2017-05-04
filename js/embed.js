@@ -9,6 +9,7 @@ var readAloud = new function() {
       if (!window.Promise) return alert("Browser not supported");
       return voiceProvider.getVoice(options.lang)
         .then(function(voice) {
+          options.voiceName = voice ? voice.name : null;
           options.engine = voice ? new LocalTTS(voice) : new GoogleTranslateTTS();
           options.onEnd = function() {speech = null; updateButtons()};
           speech = new Speech(new HtmlDoc().getTexts(0), options);
@@ -41,7 +42,7 @@ var readAloud = new function() {
     if (window.speechSynthesis) speechSynthesis.getVoices();
 
     window.isCustomVoice = function(voice) {
-      return false;
+      return !voice;
     }
 
     this.getVoice = function(lang) {
