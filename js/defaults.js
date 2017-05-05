@@ -134,7 +134,7 @@ function waitMillis(millis) {
 }
 
 function parseLang(lang) {
-  var tokens = lang.toLowerCase().split("-", 2);
+  var tokens = lang.toLowerCase().split(/[-_]/, 2);
   return {
     lang: tokens[0],
     rest: tokens[1]
