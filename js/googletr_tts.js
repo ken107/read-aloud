@@ -9,12 +9,11 @@
 
 
 function GoogleTranslateTTS(host) {
-  var audio;
+  var audio = document.createElement("AUDIO");
 
   this.speak = function(utterance, options, onEvent) {
     if (!onEvent) onEvent = options.onEvent;
-    if (audio) audio.pause();
-    audio = document.createElement("AUDIO");
+    audio.pause();
     if (options.volume) audio.volume = options.volume;
     if (options.rate) audio.defaultPlaybackRate = options.rate;
     audio.src = host + "/read-aloud/speak/" + options.lang + "?q=" + encodeURIComponent(utterance);
@@ -25,13 +24,10 @@ function GoogleTranslateTTS(host) {
   }
 
   this.isSpeaking = function(callback) {
-    callback(audio && audio.currentTime && !audio.paused && !audio.ended);
+    callback(audio.currentTime && !audio.paused && !audio.ended);
   }
 
   this.stop = function() {
-    if (audio) {
-      audio.pause();
-      audio = null;
-    }
+    audio.pause();
   }
 }
