@@ -15,7 +15,7 @@ function GoogleTranslateTTS(host) {
     if (!onEvent) onEvent = options.onEvent;
     audio.pause();
     if (options.volume) audio.volume = options.volume;
-    if (options.rate) audio.defaultPlaybackRate = options.rate;
+    audio.defaultPlaybackRate = (options.rate || 1) * 1.2;
     audio.src = host + "/read-aloud/speak/" + options.lang + "?q=" + encodeURIComponent(utterance);
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
     audio.onerror =
