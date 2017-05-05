@@ -10,7 +10,7 @@ var readAloud = new function() {
       return voiceProvider.getVoice(options.lang)
         .then(function(voice) {
           options.voiceName = voice ? voice.name : null;
-          options.engine = voice ? new LocalTTS(voice) : new GoogleTranslateTTS();
+          options.engine = voice ? new LocalTTS(voice) : new GoogleTranslateTTS("https://test.diepkhuc.com:30113");
           options.onEnd = function() {speech = null; updateButtons()};
           speech = new Speech(new HtmlDoc().getTexts(0), options);
           return speech.play().then(updateButtons);

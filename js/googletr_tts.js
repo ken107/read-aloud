@@ -1,22 +1,23 @@
 
 (function() {
   if (window.chrome && chrome.ttsEngine) {
-    var engine = new GoogleTranslateTTS();
+    var engine = new GoogleTranslateTTS("http://app.diepkhuc.com:30112");
     chrome.ttsEngine.onSpeak.addListener(engine.speak);
     chrome.ttsEngine.onStop.addListener(engine.stop);
   }
 })();
 
 
-function GoogleTranslateTTS() {
+function GoogleTranslateTTS(host) {
   var audio;
 
   this.speak = function(utterance, options, onEvent) {
+    if (!onEvent) onEvent = options.onEvent;
     if (audio) audio.pause();
     audio = document.createElement("AUDIO");
     if (options.volume) audio.volume = options.volume;
     if (options.rate) audio.defaultPlaybackRate = options.rate;
-    audio.src = "http://app.diepkhuc.com:30112/read-aloud/speak/" + options.lang + "?q=" + encodeURIComponent(utterance);
+    audio.src = host + "/read-aloud/speak/" + options.lang + "?q=" + encodeURIComponent(utterance);
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
     audio.onerror =
     audio.onended = onEvent.bind(null, {type: 'end', charIndex: utterance.length});
