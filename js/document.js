@@ -151,10 +151,7 @@ function Doc(onEnd) {
         options.spchletMaxLen *= options.rate;
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voiceName) {
-            if (!voiceName) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang, url: info.url}));
             options.voiceName = voiceName;
-          })
-          .then(function() {
             return new Speech(texts, options);
           })
       })
