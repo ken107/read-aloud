@@ -83,6 +83,7 @@ function makeDoc() {
     else if (location.hostname == "drive.google.com") return new GDriveDoc();
     else if (location.hostname == "read.amazon.com") return new KindleBook();
     else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
+    else if ($("embed[type='application/pdf']").length) return new PdfDoc($("embed[type='application/pdf']").attr("src"));
     else return new HtmlDoc();
   }
 }
