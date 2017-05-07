@@ -114,7 +114,11 @@ function Doc(onEnd) {
       return Promise.resolve()
         .then(function() {
           if (!info.detectedLang)
-            return detectLanguage(texts).then(function(lang) {info.detectedLang = lang});
+            return detectLanguage(texts)
+              .then(function(lang) {
+                console.log("Detected", lang);
+                info.detectedLang = lang;
+              })
         })
         .then(getSpeech.bind(null, texts))
         .then(function(speech) {
@@ -161,7 +165,11 @@ function Doc(onEnd) {
     return getVoices()
       .then(function(voices) {
         if (voiceName) return findVoiceByName(voices, voiceName);
-        else if (lang) return findVoiceByLang(voices.filter(not(isCustomVoice)), lang) || findVoiceByLang(voices.filter(isCustomVoice), lang);
+        else if (lang) {
+          return findVoiceByLang(voices.filter(function(voice) {return !/^(Amazon|GoogleT) /.test(voice.voiceName)}), lang)
+            || findVoiceByLang(voices.filter(function(voice) {return /^Amazon /.test(voice.voiceName)}), lang)
+            || findVoiceByLang(voices.filter(function(voice) {return /^GoogleT /.test(voice.voiceName)}), lang);
+        }
         else return null;
       })
       .then(function(voice) {

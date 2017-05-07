@@ -7,14 +7,19 @@ var readAloud = new function() {
     if (speech) return speech.play().then(updateButtons);
     else {
       if (!window.Promise) return alert("Browser not supported");
-      return voiceProvider.getVoice(options.lang)
-        .then(function(voice) {
-          options.voiceName = voice ? voice.name : null;
-          options.engine = voice ? new LocalTTS(voice) : new GoogleTranslateTTS("https://test.diepkhuc.com:30113");
-          options.onEnd = function() {speech = null; updateButtons()};
-          speech = new Speech(new HtmlDoc().getTexts(0), options);
-          return speech.play().then(updateButtons);
-        })
+      var voice = voiceProvider.getLocalVoice(options.lang);
+      if (voice) {
+        options.voiceName = voice.name;
+        options.engine = new LocalTTS(voice);
+      }
+      else {
+        voice = voiceProvider.getRemoteVoice(options.lang);
+        options.voiceName = voice ? voice.voice_name : "default";
+        options.engine = new RemoteTTS("https://test.diepkhuc.com:30113");
+      }
+      options.onEnd = function() {speech = null; updateButtons()};
+      speech = new Speech(new HtmlDoc().getTexts(0), options);
+      return speech.play().then(updateButtons);
     }
   }
 
@@ -41,13 +46,16 @@ var readAloud = new function() {
   function VoiceProvider() {
     if (window.speechSynthesis) speechSynthesis.getVoices();
 
-    window.isCustomVoice = function(voice) {
-      return !voice;
+    this.getLocalVoice = function(lang) {
+      return window.speechSynthesis ? findVoiceByLang(speechSynthesis.getVoices(), lang) : null;
     }
 
-    this.getVoice = function(lang) {
-      var voice = window.speechSynthesis ? findVoiceByLang(speechSynthesis.getVoices(), lang) : null;
-      return Promise.resolve(voice);
+    this.getRemoteVoice = function(lang) {
+      if (window.remoteVoices) {
+        return findVoiceByLang(remoteVoices.filter(function(voice) {return /^Amazon /.test(voice.voice_name)}), lang)
+          || findVoiceByLang(remoteVoices.filter(function(voice) {return /^GoogleT /.test(voice.voice_name)}), lang);
+      }
+      else return null;
     }
 
     //from document.js
@@ -74,7 +82,7 @@ var readAloud = new function() {
     }
 
     function parseLang(lang) {
-      var tokens = lang.toLowerCase().split(/[-_]/, 2);
+      var tokens = lang.toLowerCase().replace(/_/g, '-').split(/-/, 2);
       return {
         lang: tokens[0],
         rest: tokens[1]

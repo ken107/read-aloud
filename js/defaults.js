@@ -14,14 +14,6 @@ function restrictValue(value, min, max, def) {
   else return Math.min(Math.max(value, min), max);
 }
 
-function isCustomVoice(voice) {
-  if (!voice) return false;
-  var voiceName = typeof voice == "string" ? voice : voice.voiceName;
-  var mf = chrome.runtime.getManifest();
-  if (!mf.tts_engine || !mf.tts_engine.voices) return false;
-  return mf.tts_engine.voices.some(function(voice) {return voice.voice_name == voiceName});
-}
-
 function not(predicate) {
   return function() {
     return !predicate.apply(null, arguments);
@@ -134,7 +126,7 @@ function waitMillis(millis) {
 }
 
 function parseLang(lang) {
-  var tokens = lang.toLowerCase().split(/[-_]/, 2);
+  var tokens = lang.toLowerCase().replace(/_/g, '-').split(/-/, 2);
   return {
     lang: tokens[0],
     rest: tokens[1]
