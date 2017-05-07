@@ -150,7 +150,7 @@ function Doc(onEnd) {
           pitch: settings.pitch || defaults.pitch,
           volume: settings.volume || defaults.volume,
           spchletMaxLen: settings.spchletMaxLen || defaults.spchletMaxLen,
-          lang: info.detectedLang || info.lang,
+          lang: pickBestLang(info.detectedLang, info.lang),
         }
         options.spchletMaxLen *= options.rate;
         return getSpeechVoice(settings.voiceName, options.lang)
@@ -159,6 +159,12 @@ function Doc(onEnd) {
             return new Speech(texts, options);
           })
       })
+  }
+
+  function pickBestLang(detectedLang, declaredLang) {
+    //return declaredLang if it's more specific than detectedLang
+    if (declaredLang && detectedLang && declaredLang.lastIndexOf(detectedLang,0) == 0) return declaredLang;
+    return detectedLang || declaredLang;
   }
 
   function getSpeechVoice(voiceName, lang) {

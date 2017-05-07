@@ -1,7 +1,7 @@
 var defaults = {
   rate: 1.0,
-  minRate: 0.1,
-  maxRate: 2,
+  minRate: 0.2,
+  maxRate: 5,
   pitch: 1.0,
   volume: 1.0,
   spchletMaxLen: 36,
