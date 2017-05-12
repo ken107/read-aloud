@@ -1,6 +1,7 @@
 
 function Speech(texts, options) {
   if (!options.spchletMaxLen) options.spchletMaxLen = 36;
+  if (!options.rate) options.rate = 1;
 
   var punctuator;
   if (/^zh|ko|ja/.test(options.lang)) {
@@ -18,9 +19,13 @@ function Speech(texts, options) {
     texts = texts.map(function(text) {return new CharBreaker().breakText(text, 200, punctuator)})
     options.hack = false;
   }
-  else {
-    texts = texts.map(function(text) {return new WordBreaker().breakText(text, options.spchletMaxLen, punctuator)});
+  else if (isGoogleNative(options.voiceName)) {
+    texts = texts.map(function(text) {return new WordBreaker().breakText(text, options.spchletMaxLen*options.rate, punctuator)});
     options.hack = true;
+  }
+  else {
+    texts = texts.map(function(text) {return [text]});
+    options.hack = false;
   }
 
   this.options = options;
@@ -106,7 +111,7 @@ function Speech(texts, options) {
     engine.speak(text, {
       voiceName: options.voiceName,
       lang: options.lang,
-      rate: Math.min(options.rate, 2),
+      rate: options.rate,
       pitch: options.pitch,
       volume: options.volume,
       requiredEventTypes: ["start", "end"],

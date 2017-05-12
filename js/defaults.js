@@ -75,6 +75,10 @@ function getVoices() {
   });
 }
 
+function isGoogleNative(voiceName) {
+  return /^Google /.test(voiceName);
+}
+
 function isGoogleTranslate(voiceName) {
   return /^GoogleTranslate /.test(voiceName);
 }

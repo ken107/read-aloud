@@ -152,7 +152,6 @@ function Doc(onEnd) {
           spchletMaxLen: settings.spchletMaxLen || defaults.spchletMaxLen,
           lang: pickBestLang(info.detectedLang, info.lang),
         }
-        options.spchletMaxLen *= options.rate;
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voiceName) {
             options.voiceName = voiceName;
