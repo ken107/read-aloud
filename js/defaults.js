@@ -14,12 +14,6 @@ function restrictValue(value, min, max, def) {
   else return Math.min(Math.max(value, min), max);
 }
 
-function not(predicate) {
-  return function() {
-    return !predicate.apply(null, arguments);
-  }
-}
-
 function Slider(elem) {
   var min = $(elem).data("min");
   var max = $(elem).data("max");
@@ -79,6 +73,14 @@ function getVoices() {
   return new Promise(function(fulfill) {
     chrome.tts.getVoices(fulfill);
   });
+}
+
+function isGoogleTranslate(voiceName) {
+  return /^GoogleTranslate /.test(voiceName);
+}
+
+function isAmazonPolly(voiceName) {
+  return /^Amazon /.test(voiceName);
 }
 
 function executeFile(file) {

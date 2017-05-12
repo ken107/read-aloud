@@ -172,9 +172,9 @@ function Doc(onEnd) {
       .then(function(voices) {
         if (voiceName) return findVoiceByName(voices, voiceName);
         else if (lang) {
-          return findVoiceByLang(voices.filter(function(voice) {return !/^(Amazon|GoogleT) /.test(voice.voiceName)}), lang)
-            || findVoiceByLang(voices.filter(function(voice) {return /^Amazon /.test(voice.voiceName)}), lang)
-            || findVoiceByLang(voices.filter(function(voice) {return /^GoogleT /.test(voice.voiceName)}), lang);
+          return findVoiceByLang(voices.filter(function(voice) {return !(isAmazonPolly(voice.voiceName) || isGoogleTranslate(voice.voiceName))}), lang)
+            || findVoiceByLang(voices.filter(function(voice) {return isAmazonPolly(voice.voiceName)}), lang)
+            || findVoiceByLang(voices.filter(function(voice) {return isGoogleTranslate(voice.voiceName)}), lang);
         }
         else return null;
       })

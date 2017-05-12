@@ -14,7 +14,7 @@ function Speech(texts, options) {
   var index = [0, 0];
   var hackTimer = 0;
 
-  if (/^(Amazon|GoogleT) /.test(options.voiceName)) {
+  if (isAmazonPolly(options.voiceName) || isGoogleTranslate(options.voiceName)) {
     texts = texts.map(function(text) {return new CharBreaker().breakText(text, 200, punctuator)})
     options.hack = false;
   }

@@ -32,7 +32,7 @@ function RemoteTTS(host) {
   }
 
   function getRateMultiplier(voiceName) {
-    if (/^GoogleT /.test(voiceName)) return 1.2;
+    if (isGoogleTranslate(voiceName)) return 1.2;
     return 1;
   }
 }

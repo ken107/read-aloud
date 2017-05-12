@@ -2,6 +2,7 @@
 var readAloud = new function() {
   var speech;
   var voiceProvider = new VoiceProvider();
+  var attribution = new Attribution();
 
   this.play = function(options) {
     if (speech) return speech.play().then(updateButtons);
@@ -35,6 +36,7 @@ var readAloud = new function() {
       .then(function(playing) {
         $(".ra-play").toggle(!playing);
         $(".ra-pause").toggle(playing);
+        attribution.toggle(playing && isGoogleTranslate(speech.options.voiceName));
       })
   }
 
@@ -52,8 +54,8 @@ var readAloud = new function() {
 
     this.getRemoteVoice = function(lang) {
       if (window.remoteVoices) {
-        return findVoiceByLang(remoteVoices.filter(function(voice) {return /^Amazon /.test(voice.voice_name)}), lang)
-          || findVoiceByLang(remoteVoices.filter(function(voice) {return /^GoogleT /.test(voice.voice_name)}), lang);
+        return findVoiceByLang(remoteVoices.filter(function(voice) {return isAmazonPolly(voice.voice_name)}), lang)
+          || findVoiceByLang(remoteVoices.filter(function(voice) {return isGoogleTranslate(voice.voice_name)}), lang);
       }
       else return null;
     }
@@ -79,14 +81,6 @@ var readAloud = new function() {
         }
       });
       return match.first || match.second || match.third || match.fourth;
-    }
-
-    function parseLang(lang) {
-      var tokens = lang.toLowerCase().replace(/_/g, '-').split(/-/, 2);
-      return {
-        lang: tokens[0],
-        rest: tokens[1]
-      };
     }
   }
 
@@ -114,6 +108,49 @@ var readAloud = new function() {
     this.stop = function() {
       if (utter) utter.onend = null;
       speechSynthesis.cancel();
+    }
+  }
+
+  function Attribution() {
+    var elem = $("<div/>").get(0);
+    $("<div>powered&nbsp;by</div>").css({color: "#888", "margin-bottom": "3px"}).appendTo(elem);
+    $("<span>G</span>").css("color", "#4885ed").appendTo(elem);
+    $("<span>o</span>").css("color", "#db3236").appendTo(elem);
+    $("<span>o</span>").css("color", "#f4c20d").appendTo(elem);
+    $("<span>g</span>").css("color", "#4885ed").appendTo(elem);
+    $("<span>l</span>").css("color", "#3cba54").appendTo(elem);
+    $("<span>e</span>").css("color", "#db3236").appendTo(elem);
+    $("<span>&nbsp;Translate</span>").css("color", "#888").appendTo(elem);
+
+    $(elem).css({
+      display: "none",
+      position: "absolute",
+      padding: "6px",
+      color: "black",
+      "background-color": "white",
+      "border-radius": "3px",
+      "box-shadow": "1px 1px 3px gray",
+      "font-family": "Arial, Helvetica, sans-serif",
+      "font-size": "small",
+      "text-align": "center",
+      cursor: "pointer"
+    })
+    .click(function() {
+      window.open("https://translate.google.com/", "_blank");
+    });
+
+    $(function() {
+      $(elem).appendTo(document.body);
+    });
+
+    this.toggle = function(b) {
+      if (b) {
+        var offset = $(".ra-pause").offset();
+        offset.left = Math.max(0, offset.left + $(".ra-pause").outerWidth() / 2 - $(elem).outerWidth() / 2);
+        offset.top += $(".ra-pause").height() + 5;
+        $(elem).css(offset).show();
+      }
+      else $(elem).hide();
     }
   }
 }

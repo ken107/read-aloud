@@ -83,3 +83,26 @@ body {
   text-align: center;
   display: none;
 }
+
+#attribution {
+  margin-top: 10px;
+  text-align: center;
+  font-size: smaller;
+}
+#attribution a {
+  color: #888;
+  text-decoration: none;
+}
+
+.google-logo span:nth-child(1), .google-logo span:nth-child(4) {
+  color: #4885ed;
+}
+.google-logo span:nth-child(2), .google-logo span:nth-child(6) {
+  color: #db3236;
+}
+.google-logo span:nth-child(3) {
+  color: #f4c20d;
+}
+.google-logo span:nth-child(5) {
+  color: #3cba54;
+}

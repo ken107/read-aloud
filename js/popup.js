@@ -8,7 +8,7 @@ $(function() {
         return master.play()
           .then(updateButtons)
           .then(master.getDocInfo)
-          .then(function(docInfo) {return setState("lastUrl", docInfo.url)})
+          .then(function(docInfo) {return setState("lastUrl", docInfo && docInfo.url)})
       })
       .catch(function(err) {
         reportIssue(err);
@@ -43,10 +43,11 @@ function updateButtons() {
     return Promise.all([
       master.getPlaybackState(),
       master.getDocInfo(),
-      master.getCurrentPage()
+      master.getCurrentPage(),
+      master.getActiveSpeech()
     ])
   })
-  .then(spread(function(state, docInfo, pageIndex) {
+  .then(spread(function(state, docInfo, pageIndex, speech) {
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
@@ -55,6 +56,7 @@ function updateButtons() {
     $("#btnForward, #btnRewind").toggle(state == "PLAYING");
     $("#hlPageNo").toggle(Boolean(docInfo && docInfo.canSeek && !showGotoPage)).text("Page " + (pageIndex+1));
     $("#txtPageNo, #btnGotoPage").toggle(Boolean(docInfo && docInfo.canSeek && showGotoPage));
+    $("#attribution").toggle(Boolean(speech && isGoogleTranslate(speech.options.voiceName)));
   }));
 }
 

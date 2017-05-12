@@ -8,7 +8,7 @@ gulp.task("default", function() {
   var manifest = JSON.parse(fs.readFileSync("../manifest.json"));
   fs.writeFileSync("remotevoices.js", "var remoteVoices = " + JSON.stringify(manifest.tts_engine.voices));
 
-  gulp.src(["remotevoices.js", "content.js", "speech.js", "googletr_tts.js", "embed.js"])
+  gulp.src(["remotevoices.js", "defaults.js", "content.js", "speech.js", "googletr_tts.js", "embed.js"])
     .pipe(newer("../docs/js/readaloud.min.js"))
     .pipe(concat("../docs/js/readaloud.min.js"))
     .pipe(uglify({compress: {evaluate: false}}))
