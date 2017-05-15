@@ -16,7 +16,7 @@ var readAloud = new function() {
       else {
         voice = voiceProvider.getRemoteVoice(options.lang);
         options.voiceName = voice ? voice.voice_name : "default";
-        options.engine = new RemoteTTS("https://test.diepkhuc.com:30113");
+        options.engine = new RemoteTTS("https://support.lsdsoftware.com:30112");
       }
       options.onEnd = function() {speech = null; updateButtons()};
       speech = new Speech(new HtmlDoc().getTexts(0), options);
