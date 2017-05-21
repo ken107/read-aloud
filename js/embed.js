@@ -6,7 +6,10 @@ var readAloud = new function() {
 
   this.play = function(options) {
     if (speech) return speech.play().then(updateButtons);
-    else {
+    else return this.speak(new HtmlDoc().getTexts(0), options);
+  }
+
+  this.speak = function(texts, options) {
       if (!window.Promise) return alert("Browser not supported");
       var voice = voiceProvider.getLocalVoice(options.lang);
       if (voice) {
@@ -19,15 +22,17 @@ var readAloud = new function() {
         options.engine = new RemoteTTS("https://support.lsdsoftware.com:30112");
       }
       options.onEnd = function() {speech = null; updateButtons()};
-      speech = new Speech(new HtmlDoc().getTexts(0), options);
+      if (speech) speech.pause();
+      speech = new Speech(texts, options);
       return speech.play().then(updateButtons);
-    }
   }
 
   this.pause = function() {
     if (speech) return speech.pause().then(updateButtons);
     else return Promise.resolve();
   }
+
+  this.isPlaying = isPlaying;
 
   $(updateButtons);
 
@@ -146,9 +151,11 @@ var readAloud = new function() {
     this.toggle = function(b) {
       if (b) {
         var offset = $(".ra-pause").offset();
-        offset.left = Math.max(0, offset.left + $(".ra-pause").outerWidth() / 2 - $(elem).outerWidth() / 2);
-        offset.top += $(".ra-pause").height() + 5;
-        $(elem).css(offset).show();
+        if (offset) {
+          offset.left = Math.max(0, offset.left + $(".ra-pause").outerWidth() / 2 - $(elem).outerWidth() / 2);
+          offset.top += $(".ra-pause").height() + 5;
+          $(elem).css(offset).show();
+        }
       }
       else $(elem).hide();
     }
