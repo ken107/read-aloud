@@ -35,6 +35,9 @@
   "options_spchlet_explain": {
     "message": "Si la lectura a veces se detiene abruptamente en medio de una oración larga, intente reducir este número. Este ajuste hace que las oraciones más largas se rompan."
   },
+  "options_show_highlighting": {
+    "message": "Resaltado De Texto"
+  },
   "options_hotkey_label": {
     "message": "Teclas De Atajo"
   },

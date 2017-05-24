@@ -34,15 +34,21 @@
     <div></div>
   </div>
 
-  <div class="label" data-i18n="options_spchlet_label"></div>
+  <div class="label" data-i18n="options_show_highlighting"></div>
+  <label><input type="radio" name="highlighting" value="1" />On</label>
+  <label><input type="radio" name="highlighting" value="0" />Off</label>
+
+  <div>
+    <div class="label" data-i18n="options_spchlet_label"></div>
+    <span id="spchlet-explain-btn">(?)</span>
+  </div>
   <input type="text" id="spchletMaxLen" />
   <span data-i18n="options_spchlet_label2"></span>
   <div class="explain" data-i18n="options_spchlet_explain"></div>
 
-  <div class="label"></div>
+  <div class="buttons"></div>
   <button id="save" data-i18n="options_save_button"></button>
   <button id="reset" data-i18n="options_reset_button"></button>
-
-  <div class="status success" data-i18n="options_success_status"></div>
+  <span class="status success" data-i18n="options_success_status"></span>
 </body>
 </html>

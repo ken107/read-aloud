@@ -23,6 +23,8 @@ $(function() {
     $("#pitch").slider().setValue(settings.pitch || defaults.pitch);
     $("#volume").slider().setValue(settings.volume || defaults.volume);
     $("#spchletMaxLen").val(settings.spchletMaxLen || defaults.spchletMaxLen);
+    $("[name=highlighting]").prop("checked", false);
+    $("[name=highlighting][value=" + (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) + "]").prop("checked", true);
   }));
 
   $("#save").click(function() {
@@ -32,7 +34,8 @@ $(function() {
       rate: Math.pow(5, $("#rate").slider().getValue()),
       pitch: $("#pitch").slider().getValue(),
       volume: $("#volume").slider().getValue(),
-      spchletMaxLen: $("#spchletMaxLen").val()
+      spchletMaxLen: $("#spchletMaxLen").val(),
+      showHighlighting: Number($("[name=highlighting]:checked").val()),
     })
     .then(function() {
       $(".status.success").show().delay(3000).fadeOut();
@@ -42,6 +45,10 @@ $(function() {
   $("#reset").click(function() {
     clearSettings().then(() => location.reload());
   });
+
+  $("#spchlet-explain-btn").click(function() {
+    $("[data-i18n=options_spchlet_explain]").show();
+  })
 });
 
 function validate() {

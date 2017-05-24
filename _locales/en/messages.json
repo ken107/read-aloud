@@ -35,6 +35,9 @@
   "options_spchlet_explain": {
     "message": "If reading sometimes stops abruptly in the middle of a long sentence, try reducing this number. This setting causes longer sentences to be broken up."
   },
+  "options_show_highlighting": {
+    "message": "Text Highlighting"
+  },
   "options_hotkey_label": {
     "message": "Shortcut"
   },

@@ -22,11 +22,14 @@
   width: 1500px;
   height: 1px;
 }
+.buttons {
+  margin-top: 20px;
+}
 #save {
   font-weight: bold;
 }
 .status {
-  margin-top: 20px;
+  margin-left: 15px;
   font-weight: bold;
   display: none;
 }
@@ -35,4 +38,15 @@
 }
 .status.error {
   color: red;
+}
+
+[data-i18n=options_spchlet_label] {
+  display: inline-block;
+}
+[data-i18n=options_spchlet_explain] {
+  display: none;
+}
+#spchlet-explain-btn {
+  cursor: pointer;
+  color: blue;
 }

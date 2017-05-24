@@ -32,6 +32,7 @@ function Speech(texts, options) {
   this.play = play;
   this.pause = pause;
   this.getState = getState;
+  this.getPosition = getPosition;
   this.forward = forward;
   this.rewind = rewind;
   this.gotoEnd = gotoEnd;
@@ -43,6 +44,13 @@ function Speech(texts, options) {
         else fulfill("PAUSED");
       })
     })
+  }
+
+  function getPosition() {
+    return {
+      index: index,
+      texts: texts
+    }
   }
 
   function play() {

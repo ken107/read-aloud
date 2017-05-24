@@ -35,6 +35,12 @@
   "options_spchlet_explain": {
     "message": "Nếu máy đọc thường hay bị ngưng giữa chừng khi đang đọc những đoạn văn dài, hãy thử giảm thông số này xuống. Thông số này sẽ làm những câu văn dài bị ngắt ra làm nhiều đoạn."
   },
+  "options_show_highlighting": {
+    "message": "Highlight câu đang đọc"
+  },
+  "options_hotkey_label": {
+    "message": "Phím tắt"
+  },
   "options_save_button": {
     "message": "Lưu"
   },

@@ -68,6 +68,21 @@ body {
   width: 100px;
 }
 
+#highlight {
+  margin: 15px 7px 0 7px;
+  width: 350px;
+  height: 300px;
+  border: 1px solid lightgray;
+  padding: 0 5px 0 10px;
+  background-color: #ffefd5;
+  font-size: large;
+  overflow: auto;
+  position: relative;
+}
+#highlight span.active {
+  background: yellow;
+}
+
 #footer {
   margin-top: 10px;
   text-align: center;

@@ -5,6 +5,7 @@ var defaults = {
   spchletMaxLen: 36,
   minSpchletMaxLen: 10,
   maxSpchletMaxLen: 500,
+  showHighlighting: 1,
 };
 
 function restrictValue(value, min, max, def) {
@@ -35,7 +36,7 @@ function Slider(elem) {
 
 function getSettings() {
   return new Promise(function(fulfill) {
-    chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], fulfill);
+    chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "spchletMaxLen", "showHighlighting"], fulfill);
   });
 }
 
@@ -47,7 +48,7 @@ function updateSettings(items) {
 
 function clearSettings() {
   return new Promise(function(fulfill) {
-    chrome.storage.local.remove(["voiceName", "rate", "pitch", "volume", "spchletMaxLen"], fulfill);
+    chrome.storage.local.remove(["voiceName", "rate", "pitch", "volume", "spchletMaxLen", "showHighlighting"], fulfill);
   });
 }
 
