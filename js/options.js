@@ -19,7 +19,7 @@ $(function() {
         .prop("selected", voice.voiceName == settings.voiceName)
         .appendTo($("#voices"));
     });
-    $("#rate").val(settings.rate || defaults.rate);
+    $("#rate").slider().setValue(Math.log(settings.rate || defaults.rate) / Math.log(5));
     $("#pitch").slider().setValue(settings.pitch || defaults.pitch);
     $("#volume").slider().setValue(settings.volume || defaults.volume);
     $("#spchletMaxLen").val(settings.spchletMaxLen || defaults.spchletMaxLen);
@@ -29,7 +29,7 @@ $(function() {
     validate();
     updateSettings({
       voiceName: $("#voices").val(),
-      rate: Number($("#rate").val()),
+      rate: Math.pow(5, $("#rate").slider().getValue()),
       pitch: $("#pitch").slider().getValue(),
       volume: $("#volume").slider().getValue(),
       spchletMaxLen: $("#spchletMaxLen").val()
@@ -45,9 +45,6 @@ $(function() {
 });
 
 function validate() {
-  var rate = restrictValue($("#rate").val(), defaults.minRate, defaults.maxRate, defaults.rate);
-  $("#rate").val(rate);
-
   var spchletMaxLen = restrictValue($("#spchletMaxLen").val(), defaults.minSpchletMaxLen, defaults.maxSpchletMaxLen, defaults.spchletMaxLen);
   $("#spchletMaxLen").val(spchletMaxLen);
 }
