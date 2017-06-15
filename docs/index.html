@@ -6,8 +6,9 @@
   <script>
     $(function() {
       $("nav .item").click(function(event) {
-        $("nav .item").toggleClass('active', function() {return this == event.target});
-        $("section").toggleClass('active', function() {return this.id == $(event.target).data("target")})
+        var target = $(event.target).data("target");
+        $("nav .item.active, section.active").toggleClass("active", false);
+        $("nav .item[data-target=" + target + "], section#" + target).toggleClass("active", true);
       })
       $("#ddl-language, input[type=radio][name=theme], #cbo-exclude-jquery").change(updateEmbedCode);
       updateEmbedCode();
@@ -49,7 +50,8 @@
   <div class="wrapper">
     <nav>
       <div class="item active" data-target="chrome-extension">Chrome Extension</div>
-      <div class="item" data-target="embed-website">Embed in Website</div>
+      <div class="item" data-target="embed-website">Embed in Your Website</div>
+      <div class="item" data-target="tts-tool">TTS Voice Narration Tool</div>
     </nav>
     <section id="chrome-extension" class="active">
       <h1>Read Aloud Chrome Extension</h1>
@@ -57,7 +59,7 @@
       <a href="https://chrome.google.com/webstore/detail/hdhinadidafjejdhmfkjgnolgimiaplp" class="button">Install</a>
     </section>
     <section id="embed-website">
-      <h1>Embed In Your Website</h1>
+      <h1>Embed</h1>
       <h2>1. Select Language</h2>
       <select id="ddl-language">
         <option value="af">Afrikaans</option>
@@ -151,6 +153,11 @@
       <div style="margin-top: 20px;">
         <a href="embed_demo.html">Demo</a>
       </div>
+    </section>
+    <section id="tts-tool">
+      <h1>Voice Narration Tool</h1>
+      <p>Convert text to speech and create voice narrations.</p>
+      <a href="https://ttstool.com/">ttstool.com</a>
     </section>
   </div>
 </body>
