@@ -211,7 +211,7 @@ function PdfDoc(url) {
   function ready() {
     if (pdf) return Promise.resolve();
     else {
-      PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+      PDFJS.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.js';
       return PDFJS.getDocument(url).promise.then(function(result) {pdf = result});
     }
   }

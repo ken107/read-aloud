@@ -171,7 +171,8 @@ function Doc(onEnd) {
       .then(function(voices) {
         if (voiceName) return findVoiceByName(voices, voiceName);
         else if (lang) {
-          return findVoiceByLang(voices.filter(function(voice) {return !(isAmazonPolly(voice.voiceName) || isGoogleTranslate(voice.voiceName))}), lang)
+          return findVoiceByLang(voices.filter(function(voice) {return isGoogleNative(voice.voiceName)}), lang)
+            || findVoiceByLang(voices.filter(function(voice) {return !(isAmazonPolly(voice.voiceName) || isGoogleTranslate(voice.voiceName))}), lang)
             || findVoiceByLang(voices.filter(function(voice) {return isAmazonPolly(voice.voiceName)}), lang)
             || findVoiceByLang(voices.filter(function(voice) {return isGoogleTranslate(voice.voiceName)}), lang);
         }

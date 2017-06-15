@@ -5,7 +5,7 @@ var defaults = {
   spchletMaxLen: 36,
   minSpchletMaxLen: 10,
   maxSpchletMaxLen: 500,
-  showHighlighting: 1,
+  showHighlighting: 0,
 };
 
 function restrictValue(value, min, max, def) {
