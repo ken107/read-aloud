@@ -9,7 +9,8 @@
 
 
 function RemoteTTS(host) {
-  var audio = document.createElement("AUDIO");
+  var audio = window.ttsAudio;
+  if (!audio) audio = window.ttsAudio = document.createElement("AUDIO");
 
   this.speak = function(utterance, options, onEvent) {
     if (!onEvent) onEvent = options.onEvent;
