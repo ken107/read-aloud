@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "default_locale": "en",
 
   "browser_action": {
@@ -25,6 +25,9 @@
     "http://app.diepkhuc.com/"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "web_accessible_resources": [
+    "js/pdf.worker.js"
+  ],
   "background": {
     "scripts": [
       "js/es6-promise.auto.min.js",
