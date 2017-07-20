@@ -40,7 +40,7 @@ function startService(name, doc) {
 
   function getTexts(request) {
     if (request.index < 0) {
-      if (request.index == -100) return [getSelectedText()];
+      if (request.index == -100) return getSelectedText().split(/(?:\r?\n){2,}/);
       else return null;
     }
     else {

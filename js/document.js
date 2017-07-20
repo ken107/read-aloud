@@ -1,8 +1,22 @@
 
-function Doc(onEnd) {
-  var info;
-  var currentIndex;
-  var activeSpeech;
+function SimpleSource(texts) {
+  this.ready = Promise.resolve({});
+  this.isWaiting = function() {
+    return false;
+  }
+  this.getCurrentIndex = function() {
+    return Promise.resolve(0);
+  }
+  this.getTexts = function(index) {
+    return Promise.resolve(index == 0 ? texts : null);
+  }
+  this.close = function() {
+    return Promise.resolve();
+  }
+}
+
+
+function TabSource() {
   var port;
   var waiting = true;
   var ready = connect()
@@ -12,9 +26,24 @@ function Doc(onEnd) {
       else return result;
     })
     .then(function(result) {
-      info = result;
       waiting = false;
+      return result;
     })
+
+  this.ready = ready;
+  this.isWaiting = function() {
+    return waiting;
+  }
+  this.getCurrentIndex = function() {
+    return send({method: "raGetCurrentIndex"});
+  }
+  this.getTexts = function(index) {
+    return send({method: "raGetTexts", index: index});
+  }
+  this.close = function() {
+    if (port) port.disconnect();
+    return Promise.resolve();
+  }
 
   function connect() {
     var name = String(Math.random());
@@ -65,6 +94,16 @@ function Doc(onEnd) {
       .then(executeFile.bind(null, "js/content.js"))
       .then(executeScript.bind(null, "connect('" + name + "')"))
   }
+}
+
+
+function Doc(source, onEnd) {
+  var info;
+  var currentIndex;
+  var activeSpeech;
+  var ready = source.ready.then(function(result) {
+    info = result;
+  })
 
   this.close = close;
   this.play = play;
@@ -84,7 +123,7 @@ function Doc(onEnd) {
       .catch(function() {})
       .then(function() {
         if (activeSpeech) activeSpeech.pause();
-        if (port) port.disconnect();
+        source.close();
       })
   }
 
@@ -94,7 +133,7 @@ function Doc(onEnd) {
       .then(function() {
         if (activeSpeech) return activeSpeech.play();
         else {
-          return send({method: "raGetCurrentIndex"})
+          return source.getCurrentIndex()
             .then(function(index) {currentIndex = index})
             .then(function() {return readCurrent()})
         }
@@ -102,7 +141,7 @@ function Doc(onEnd) {
   }
 
   function readCurrent(rewinded) {
-    return send({method: "raGetTexts", index: currentIndex})
+    return source.getTexts(currentIndex)
       .catch(function() {
         return null;
       })
@@ -234,7 +273,7 @@ function Doc(onEnd) {
   //method getState
   function getState() {
     if (activeSpeech) return activeSpeech.getState();
-    else return Promise.resolve(waiting ? "LOADING" : "STOPPED");
+    else return Promise.resolve(source.isWaiting() ? "LOADING" : "STOPPED");
   }
 
   //method getActiveSpeech

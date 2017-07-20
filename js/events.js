@@ -10,11 +10,17 @@ chrome.runtime.onInstalled.addListener(function() {
 })
 
 chrome.contextMenus.onClicked.addListener(function(info, tab) {
-  if (info.menuItemId == "read-selection") stop().then(play);
+  if (info.menuItemId == "read-selection") stop().then(playText.bind(null, info.selectionText));
 })
 
+function playText(text) {
+  if (!activeDoc) activeDoc = new Doc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), closeDoc);
+  return activeDoc.play()
+    .catch(function(err) {closeDoc(); throw err})
+}
+
 function play() {
-  if (!activeDoc) activeDoc = new Doc(closeDoc);
+  if (!activeDoc) activeDoc = new Doc(new TabSource(), closeDoc);
   return activeDoc.play()
     .catch(function(err) {closeDoc(); throw err})
 }
