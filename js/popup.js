@@ -88,7 +88,7 @@ function updateButtons() {
 function reportIssue(err) {
     $.ajax({
       method: "POST",
-      url: "http://app.diepkhuc.com:30112/read-aloud/report-issue",
+      url: config.serviceUrl + "/read-aloud/report-issue",
       data: {comment: err.stack}
     })
 }

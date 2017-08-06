@@ -12,6 +12,16 @@ $(function() {
   });
 
   Promise.all([getSettings(), getVoices()]).then(spread(function(settings, voices) {
+    voices.sort(function(a,b) {
+      if (isRemoteVoice(a.voiceName)) {
+        if (isRemoteVoice(b.voiceName)) return a.voiceName.localeCompare(b.voiceName);
+        else return 1;
+      }
+      else {
+        if (isRemoteVoice(b.voiceName)) return -1;
+        else return a.voiceName.localeCompare(b.voiceName);
+      }
+    });
     voices.forEach(function(voice) {
       $("<option>")
         .val(voice.voiceName)

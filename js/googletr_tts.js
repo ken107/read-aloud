@@ -1,7 +1,7 @@
 
 (function() {
   if (window.chrome && chrome.ttsEngine) {
-    var engine = new RemoteTTS("http://app.diepkhuc.com:30112");
+    var engine = new RemoteTTS(config.serviceUrl);
     chrome.ttsEngine.onSpeak.addListener(engine.speak);
     chrome.ttsEngine.onStop.addListener(engine.stop);
   }

@@ -9,7 +9,7 @@ function submit() {
   $("#img-spinner").show();
   $.ajax({
     method: "POST",
-    url: "http://app.diepkhuc.com:30112/read-aloud/report-issue",
+    url: config.serviceUrl + "/read-aloud/report-issue",
     data: {
       url: $("#txt-url").val(),
       comment: $("#txt-comment").val()

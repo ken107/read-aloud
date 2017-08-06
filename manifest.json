@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "default_locale": "en",
 
   "browser_action": {
@@ -22,7 +22,7 @@
     "storage",
     "ttsEngine",
     "contextMenus",
-    "http://app.diepkhuc.com/"
+    "https://support.lsdsoftware.com/"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "web_accessible_resources": [

@@ -1,3 +1,7 @@
+var config = {
+  serviceUrl: "https://support.lsdsoftware.com"
+}
+
 var defaults = {
   rate: 1.0,
   pitch: 1.0,
@@ -84,6 +88,10 @@ function isGoogleTranslate(voiceName) {
 
 function isAmazonPolly(voiceName) {
   return /^Amazon /.test(voiceName);
+}
+
+function isRemoteVoice(voiceName) {
+  return isAmazonPolly(voiceName) || isGoogleTranslate(voiceName);
 }
 
 function executeFile(file) {

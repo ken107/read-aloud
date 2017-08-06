@@ -19,7 +19,7 @@ var readAloud = new function() {
       else {
         voice = voiceProvider.getRemoteVoice(options.lang);
         options.voiceName = voice ? voice.voice_name : "default";
-        options.engine = new RemoteTTS("https://support.lsdsoftware.com:30112");
+        options.engine = new RemoteTTS(config.serviceUrl);
       }
       options.onEnd = function() {speech = null; updateButtons()};
       if (speech) speech.pause();
