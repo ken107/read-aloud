@@ -151,3 +151,25 @@ function formatError(err) {
   if (message) message = message.replace(/{(\w+)}/g, function(m, p1) {return err[p1]});
   return message;
 }
+
+function urlEncode(oData) {
+  if (oData == null) return null;
+  var parts = [];
+  for (var key in oData) parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(oData[key]));
+  return parts.join("&");
+}
+
+function ajaxPost(sUrl, oData) {
+  return new Promise(function(fulfill, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", sUrl, true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) fulfill(xhr.responseText);
+        else reject(xhr.statusText);
+      }
+    };
+    xhr.send(urlEncode(oData));
+  })
+}

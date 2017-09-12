@@ -7,20 +7,14 @@ $(function() {
 function submit() {
   $("#btn-submit").hide();
   $("#img-spinner").show();
-  $.ajax({
-    method: "POST",
-    url: config.serviceUrl + "/read-aloud/report-issue",
-    data: {
-      url: $("#txt-url").val(),
-      comment: $("#txt-comment").val()
-    }
-  })
-  .done(function() {
-    $("#img-spinner").hide();
-    $("#lbl-status").text("Issue has been reported, thank you!").toggleClass("error", false);
-  })
-  .fail(function() {
-    $("#img-spinner").hide();
-    $("#lbl-status").text("Server could not be contacted, please email me directly at hai.phan@gmail.com. Thank you!").toggleClass("error", true);
-  });
+  getBackgroundPage()
+    .then(callMethod("reportIssue", [$("#txt-url").val(), $("#txt-comment").val()]))
+    .then(function() {
+      $("#img-spinner").hide();
+      $("#lbl-status").text("Issue has been reported, thank you!").toggleClass("error", false);
+    })
+    .catch(function() {
+      $("#img-spinner").hide();
+      $("#lbl-status").text("Server could not be contacted, please email me directly at hai.phan@gmail.com. Thank you!").toggleClass("error", true);
+    })
 }

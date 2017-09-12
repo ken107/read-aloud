@@ -9,12 +9,12 @@ $(function() {
           .then(updateButtons)
           .then(master.getDocInfo)
           .then(function(docInfo) {return setState("lastUrl", docInfo && docInfo.url)})
+          .catch(function(err) {
+            master.reportIssue("play", err.stack);
+            if (/^{/.test(err.message)) $("#status").text(formatError(JSON.parse(err.message)) || err.message).show();
+            else window.close();
+          });
       })
-      .catch(function(err) {
-        reportIssue(err);
-        if (/^{/.test(err.message)) $("#status").text(formatError(JSON.parse(err.message)) || err.message).show();
-        else window.close();
-      });
   });
   $("#btnPause").click(function() {getBackgroundPage().then(callMethod("pause")).then(updateButtons)});
   $("#btnStop").click(function() {getBackgroundPage().then(callMethod("stop")).then(updateButtons)});
@@ -83,12 +83,4 @@ function updateButtons() {
       }
     }
   }));
-}
-
-function reportIssue(err) {
-    $.ajax({
-      method: "POST",
-      url: config.serviceUrl + "/read-aloud/report-issue",
-      data: {comment: err.stack}
-    })
 }

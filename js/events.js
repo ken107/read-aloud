@@ -80,3 +80,7 @@ function getCurrentPage() {
   if (activeDoc) return activeDoc.getCurrentPage();
   else return Promise.resolve(0);
 }
+
+function reportIssue(subject, details) {
+  return ajaxPost(config.serviceUrl + "/read-aloud/report-issue", {url: subject, comment: details});
+}
