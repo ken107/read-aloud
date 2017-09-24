@@ -152,11 +152,11 @@ function Doc(source, onEnd) {
     function read(texts) {
       return Promise.resolve()
         .then(function() {
-          if (!info.detectedLang)
+          if (!info.lang)
             return detectLanguage(texts)
               .then(function(lang) {
                 console.log("Detected", lang);
-                info.detectedLang = lang;
+                info.lang = lang;
               })
         })
         .then(getSpeech.bind(null, texts))
@@ -189,7 +189,7 @@ function Doc(source, onEnd) {
           pitch: settings.pitch || defaults.pitch,
           volume: settings.volume || defaults.volume,
           spchletMaxLen: settings.spchletMaxLen || defaults.spchletMaxLen,
-          lang: pickBestLang(info.detectedLang, info.lang),
+          lang: info.lang,
         }
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voiceName) {
@@ -197,12 +197,6 @@ function Doc(source, onEnd) {
             return new Speech(texts, options);
           })
       })
-  }
-
-  function pickBestLang(detectedLang, declaredLang) {
-    //return declaredLang if it's more specific than detectedLang
-    if (declaredLang && detectedLang && declaredLang.lastIndexOf(detectedLang,0) == 0) return declaredLang;
-    return detectedLang || declaredLang;
   }
 
   function getSpeechVoice(voiceName, lang) {

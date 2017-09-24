@@ -24,12 +24,14 @@ function startService(name, doc) {
   }
 
   function getInfo(request) {
+    var lang = document.documentElement.lang || $("html").attr("xml:lang");
+    if (lang == "en") lang = null;    //foreign language pages often erronenously declare lang="en"
     return {
       isPdf: doc.isPdf,
       canSeek: doc.canSeek,
       url: location.href,
       title: document.title,
-      lang: document.documentElement.lang || $("html").attr("xml:lang") || $("meta[http-equiv=content-language]").attr("content")
+      lang: lang
     }
   }
 
@@ -203,7 +205,12 @@ function PdfDoc(url) {
   function getPageTexts(page) {
     return page.getTextContent()
       .then(function(content) {
-        return content.items.map(function(item) {return item.str.trim()}).filter(isNotEmpty);
+        var lines = [];
+        for (var i=0; i<content.items.length; i++) {
+          if (lines.length == 0 || i > 0 && content.items[i-1].transform[5] != content.items[i].transform[5]) lines.push("");
+          lines[lines.length-1] += content.items[i].str;
+        }
+        return lines.map(function(line) {return line.trim()});
       })
       .then(fixParagraphs)
   }
@@ -307,8 +314,9 @@ function notOutOfView() {
 }
 
 function getText(elem) {
-  $(elem).find(":hidden, sup").remove();
-  var text = $(elem).text().trim();
+  $(elem).find("sup").hide();
+  $(elem).find("*").filter(function() {return this.style && this.style.position == 'absolute'}).hide();
+  var text = elem.innerText.trim();
   if (elem.tagName == "LI") return ($(elem).index() + 1) + ". " + text;
   else return text;
 }
@@ -331,6 +339,13 @@ function fixParagraphs(texts) {
   var out = [];
   var para = "";
   for (var i=0; i<texts.length; i++) {
+    if (!texts[i]) {
+      if (para) {
+        out.push(para);
+        para = "";
+      }
+      continue;
+    }
     if (para) {
       if (/-$/.test(para)) para = para.substr(0, para.length-1);
       else para += " ";

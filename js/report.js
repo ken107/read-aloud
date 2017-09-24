@@ -7,8 +7,12 @@ $(function() {
 function submit() {
   $("#btn-submit").hide();
   $("#img-spinner").show();
-  getBackgroundPage()
-    .then(callMethod("reportIssue", [$("#txt-url").val(), $("#txt-comment").val()]))
+  Promise.all([getBackgroundPage(), getSettings()])
+    .then(spread(function(master, settings) {
+      var url = $("#txt-url").val();
+      var comment = $("#txt-comment").val();
+      return master.reportIssue(url + "\n" + JSON.stringify(settings), comment);
+    }))
     .then(function() {
       $("#img-spinner").hide();
       $("#lbl-status").text("Issue has been reported, thank you!").toggleClass("error", false);
