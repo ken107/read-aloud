@@ -15,12 +15,7 @@
   border-radius: 5px;
 }
 .slider {
-  width: 200px;
-  overflow: auto;
-}
-.slider div {
-  width: 1500px;
-  height: 1px;
+  max-width: 250px;
 }
 .buttons {
   margin-top: 20px;

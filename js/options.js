@@ -1,14 +1,15 @@
 
-$.fn.slider = function() {
-  var slider = this.data("slider");
-  if (!slider) this.data("slider", slider = new Slider(this.get(0)));
-  return slider;
-};
-
 $(function() {
   $("[data-i18n]").each(function() {
     var key = $(this).data("i18n");
     $(this).text(chrome.i18n.getMessage(key));
+  });
+  $(".slider").each(function() {
+    $(this).slider({
+      min: $(this).data("min"),
+      max: $(this).data("max"),
+      step: $(this).data("step")
+    })
   });
 
   Promise.all([getSettings(), getVoices()]).then(spread(function(settings, voices) {
@@ -29,9 +30,9 @@ $(function() {
         .prop("selected", voice.voiceName == settings.voiceName)
         .appendTo($("#voices"));
     });
-    $("#rate").slider().setValue(Math.log(settings.rate || defaults.rate) / Math.log(5));
-    $("#pitch").slider().setValue(settings.pitch || defaults.pitch);
-    $("#volume").slider().setValue(settings.volume || defaults.volume);
+    $("#rate").slider("value", Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")));
+    $("#pitch").slider("value", settings.pitch || defaults.pitch);
+    $("#volume").slider("value", settings.volume || defaults.volume);
     $("#spchletMaxLen").val(settings.spchletMaxLen || defaults.spchletMaxLen);
     $("[name=highlighting]").prop("checked", false);
     $("[name=highlighting][value=" + (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) + "]").prop("checked", true);
@@ -41,9 +42,9 @@ $(function() {
     validate();
     updateSettings({
       voiceName: $("#voices").val(),
-      rate: Math.pow(5, $("#rate").slider().getValue()),
-      pitch: $("#pitch").slider().getValue(),
-      volume: $("#volume").slider().getValue(),
+      rate: Math.pow($("#rate").data("pow"), $("#rate").slider("value")),
+      pitch: $("#pitch").slider("value"),
+      volume: $("#volume").slider("value"),
       spchletMaxLen: $("#spchletMaxLen").val(),
       showHighlighting: Number($("[name=highlighting]:checked").val()),
     })

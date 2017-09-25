@@ -2,9 +2,11 @@
 <html>
 <head>
   <title>Read Aloud Options</title>
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
   <link rel="stylesheet" type="text/css" href="css/options.css">
   <script src="js/es6-promise.auto.min.js"></script>
   <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/jquery-ui.min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/options.js"></script>
 </head>
@@ -20,19 +22,13 @@
   </select>
 
   <div class="label" data-i18n="options_rate_label"></div>
-  <div id="rate" class="slider" data-min="-1" data-max="1">
-    <div></div>
-  </div>
+  <div id="rate" class="slider" data-min="-1" data-max="1" data-step="0.05" data-pow="3"></div>
 
   <div class="label" data-i18n="options_pitch_label"></div>
-  <div id="pitch" class="slider" data-min="0" data-max="2">
-    <div></div>
-  </div>
+  <div id="pitch" class="slider" data-min="0" data-max="2" data-step="0.05"></div>
 
   <div class="label" data-i18n="options_volume_label"></div>
-  <div id="volume" class="slider" data-min="0" data-max="1">
-    <div></div>
-  </div>
+  <div id="volume" class="slider" data-min="0" data-max="1" data-step="0.025"></div>
 
   <div class="label" data-i18n="options_show_highlighting"></div>
   <label><input type="radio" name="highlighting" value="1" />On</label>
