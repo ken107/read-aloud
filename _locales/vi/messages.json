@@ -58,5 +58,14 @@
   },
   "error_no_voice": {
     "message": "Không có giọng đọc cho ngôn ngữ này ({lang})"
+  },
+  "uploadpdf_message1": {
+    "message": "Tôi không có quyền đọc tệp cục bộ được lưu trữ trên máy tính của bạn."
+  },
+  "uploadpdf_message2": {
+    "message": "Nếu muốn, bạn có thể sử dụng mẫu dưới đây để tải tệp PDF của bạn lên máy chủ tạm thời để đọc."
+  },
+  "uploadpdf_submit_button": {
+    "message": "Tải lên & Mở"
   }
 }

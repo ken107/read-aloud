@@ -228,21 +228,24 @@ function PdfDoc(url) {
   }
 
   function showUploadDialog() {
-    $("#pdf-upload-dialog").remove();
+    if ($(".pdf-upload-dialog:visible").length) return;
 
     var div = $("<div>")
-      .attr("id", "pdf-upload-dialog");
+      .addClass("pdf-upload-dialog");
     $("<p>")
-      .text("Read Aloud has no access to local files stored on your computer.")
+      .text(formatMessage({code: "uploadpdf_message1", extension_name: chrome.i18n.getMessage("extension_short_name")}))
       .css("color", "blue")
       .appendTo(div);
     $("<p>")
-      .text("If you wish, you can use the form below to upload your PDF file to Read Aloud server temporarily for reading. Your file will be removed from the server after you view it.")
+      .text(formatMessage({code: "uploadpdf_message2", extension_name: chrome.i18n.getMessage("extension_short_name")}))
       .appendTo(div);
     var form = $("<form>")
       .attr("action", "https://support2.lsdsoftware.com/dropmeafile-readaloud/upload")
       .attr("method", "POST")
       .attr("enctype", "multipart/form-data")
+      .on("submit", function() {
+        btnSubmit.prop("disabled", true);
+      })
       .appendTo(div);
     $("<input>")
       .attr("type", "file")
@@ -258,16 +261,22 @@ function PdfDoc(url) {
       .appendTo(form);
     var btnSubmit = $("<input>")
       .attr("type", "submit")
-      .attr("value", "Upload & Open")
+      .attr("value", chrome.i18n.getMessage("uploadpdf_submit_button"))
       .prop("disabled", true)
       .appendTo(form);
 
     div.appendTo(document.body)
       .dialog({
-        title: "Permission Required",
+        title: chrome.i18n.getMessage("extension_short_name"),
         width: 400,
         modal: true
       })
+  }
+
+  function formatMessage(msg) {
+    var message = chrome.i18n.getMessage(msg.code);
+    if (message) message = message.replace(/{(\w+)}/g, function(m, p1) {return msg[p1]});
+    return message;
   }
 }
 

@@ -58,5 +58,14 @@
   },
   "error_no_voice": {
     "message": "Sin voz ({lang})"
+  },
+  "uploadpdf_message1": {
+    "message": "No tengo permiso para leer archivos locales almacenados en su computadora."
+  },
+  "uploadpdf_message2": {
+    "message": "Si lo desea, puede utilizar el siguiente formulario para cargar su archivo PDF en el servidor de {extension_name} temporalmente para su lectura."
+  },
+  "uploadpdf_submit_button": {
+    "message": "Subir y Abrir"
   }
 }

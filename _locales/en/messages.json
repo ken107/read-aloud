@@ -58,5 +58,14 @@
   },
   "error_no_voice": {
     "message": "No voice ({lang})"
+  },
+  "uploadpdf_message1": {
+    "message": "{extension_name} cannot access local files stored on your computer."
+  },
+  "uploadpdf_message2": {
+    "message": "If you wish, you can use the form below to upload your PDF file to {extension_name} server temporarily for reading. Your file will be removed from the server after you view it."
+  },
+  "uploadpdf_submit_button": {
+    "message": "Upload & Open"
   }
 }
