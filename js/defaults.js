@@ -84,12 +84,22 @@ function executeFile(file) {
 }
 
 function executeScript(code) {
-  return new Promise(function(fulfill) {
+  return new Promise(function(fulfill, reject) {
     chrome.runtime.lastError = null;
     chrome.tabs.executeScript({code: code}, function(result) {
       if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
       else fulfill(result);
     });
+  });
+}
+
+function insertCSS(file) {
+  return new Promise(function(fulfill, reject) {
+    chrome.runtime.lastError = null;
+    chrome.tabs.insertCSS({file: file}, function(result) {
+      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+      else fulfill(result);
+    })
   });
 }
 

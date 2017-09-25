@@ -22,7 +22,12 @@ function TabSource() {
   var ready = connect()
     .then(send.bind(null, {method: "raGetInfo"}))
     .then(function(result) {
-      if (result.isPdf) return executeFile("js/pdf.js").then(function() {return result});
+      if (result.isPdf) {
+        return executeFile("js/pdf.js")
+          .then(executeFile.bind(null, "js/jquery-ui.min.js"))
+          .then(insertCSS.bind(null, "css/jquery-ui.min.css"))
+          .then(function() {return result});
+      }
       else return result;
     })
     .then(function(result) {

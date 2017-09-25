@@ -196,6 +196,10 @@ function PdfDoc(url) {
   }
 
   this.getTexts = function(index) {
+    if (/^file:/.test(url)) {
+      showUploadDialog();
+      return Promise.resolve(null);
+    }
     return ready().then(function() {
       if (index < pdf.numPages) return pdf.getPage(index+1).then(getPageTexts);
       else return null;
@@ -221,6 +225,49 @@ function PdfDoc(url) {
       PDFJS.workerSrc = chrome.runtime.getURL("/js/pdf.worker.js");
       return PDFJS.getDocument(url).promise.then(function(result) {pdf = result});
     }
+  }
+
+  function showUploadDialog() {
+    $("#pdf-upload-dialog").remove();
+
+    var div = $("<div>")
+      .attr("id", "pdf-upload-dialog");
+    $("<p>")
+      .text("Read Aloud has no access to local files stored on your computer.")
+      .css("color", "blue")
+      .appendTo(div);
+    $("<p>")
+      .text("If you wish, you can use the form below to upload your PDF file to Read Aloud server temporarily for reading. Your file will be removed from the server after you view it.")
+      .appendTo(div);
+    var form = $("<form>")
+      .attr("action", "https://support2.lsdsoftware.com/dropmeafile-readaloud/upload")
+      .attr("method", "POST")
+      .attr("enctype", "multipart/form-data")
+      .appendTo(div);
+    $("<input>")
+      .attr("type", "file")
+      .attr("name", "fileToUpload")
+      .attr("accept", "application/pdf")
+      .on("change", function() {
+        btnSubmit.prop("disabled", !$(this).val())
+      })
+      .appendTo(form);
+    $("<br>")
+      .appendTo(form);
+    $("<br>")
+      .appendTo(form);
+    var btnSubmit = $("<input>")
+      .attr("type", "submit")
+      .attr("value", "Upload & Open")
+      .prop("disabled", true)
+      .appendTo(form);
+
+    div.appendTo(document.body)
+      .dialog({
+        title: "Permission Required",
+        width: 400,
+        modal: true
+      })
   }
 }
 
