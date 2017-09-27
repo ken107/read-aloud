@@ -60,6 +60,10 @@ function startService(name, doc) {
   function getSelectedText() {
     return window.getSelection().toString().trim();
   }
+
+  function removeLinks(text) {
+    return text.replace(/https?:\/\/\S+/g, "this URL.");
+  }
 }
 
 
@@ -84,6 +88,7 @@ function makeDoc() {
     }
     else if (location.hostname == "drive.google.com") return new GDriveDoc();
     else if (location.hostname == "read.amazon.com") return new KindleBook();
+    else if (location.hostname == "www.quora.com") return new QuoraPage();
     else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
     else if ($("embed[type='application/pdf']").length) return new PdfDoc($("embed[type='application/pdf']").attr("src"));
     else return new HtmlDoc();
@@ -281,6 +286,29 @@ function PdfDoc(url) {
 }
 
 
+function QuoraPage() {
+  this.getCurrentIndex = function() {
+    return 0;
+  }
+
+  this.getTexts = function(index) {
+    if (index == 0) return parse();
+    else return null;
+  }
+
+  function parse() {
+    var texts = [$(".QuestionArea .question_qtext").get(0).innerText];
+    $(".AnswerBase")
+      .each(function() {
+        texts.push("Answer by " + $(this).find(".feed_item_answer_user .user").get(0).innerText);
+        texts.push.apply(texts, $(this).find(".rendered_qtext").get(0).innerText.split(/\n\n+/));
+        texts.push($(this).find(".AnswerFooter").get(0).innerText);
+      })
+    return texts;
+  }
+}
+
+
 function HtmlDoc() {
   var headingTags = ["H1", "H2", "H3", "H4", "H5", "H6"];
   var paragraphTags = ["P", "BLOCKQUOTE", "PRE"];
@@ -362,12 +390,14 @@ function HtmlDoc() {
     if (node.previousSibling) return node.previousSibling;
     return previousNode(node.parentNode, true);
   }
+
+  function notOutOfView() {
+    return $(this).offset().left >= 0;
+  }
 }
 
 
-function notOutOfView() {
-  return $(this).offset().left >= 0;
-}
+//helpers --------------------------
 
 function getText(elem) {
   $(elem).find("sup").hide();
@@ -379,16 +409,6 @@ function getText(elem) {
 
 function isNotEmpty(text) {
   return text;
-}
-
-function removeLinks(text) {
-  return text.replace(/https?:\/\/\S+/g, "this URL.");
-}
-
-function waitMillis(millis) {
-  return new Promise(function(fulfill) {
-    setTimeout(fulfill, millis);
-  });
 }
 
 function fixParagraphs(texts) {
@@ -423,4 +443,10 @@ function tryGetTexts(getTexts, millis) {
       if (texts && !texts.length && millis-500 > 0) return tryGetTexts(getTexts, millis-500);
       else return texts;
     })
+
+  function waitMillis(millis) {
+    return new Promise(function(fulfill) {
+      setTimeout(fulfill, millis);
+    });
+  }
 }
