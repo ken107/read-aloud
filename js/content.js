@@ -115,7 +115,9 @@ function GoogleDoc() {
   }
 
   function getTexts() {
-    return $(".kix-paragraphrenderer", this).get().map(getText).filter(isNotEmpty);
+    return $(".kix-paragraphrenderer", this).get()
+      .map(function(elem) {return elem.innerText.trim()})
+      .filter(isNotEmpty);
   }
 }
 
@@ -139,7 +141,9 @@ function GDriveDoc() {
   }
 
   function getTexts() {
-    var texts = $("p", this).get().map(getText).filter(isNotEmpty);
+    var texts = $("p", this).get()
+      .map(function(elem) {return elem.innerText.trim()})
+      .filter(isNotEmpty);
     return fixParagraphs(texts);
   }
 }
@@ -361,6 +365,14 @@ function HtmlDoc() {
     return texts;
   }
 
+  function getText(elem) {
+    $(elem).find("sup").hide();
+    $(elem).find("*").filter(function() {return this.style && this.style.position == 'absolute'}).hide();
+    var text = elem.innerText.trim();
+    if (elem.tagName == "LI") return ($(elem).index() + 1) + ". " + text;
+    else return text;
+  }
+
   function findHeadingsFor(block) {
     var result = [];
     var firstInnerElem = $(block).children(headingTags.concat(paragraphTags).join(", ")).get(0);
@@ -398,14 +410,6 @@ function HtmlDoc() {
 
 
 //helpers --------------------------
-
-function getText(elem) {
-  $(elem).find("sup").hide();
-  $(elem).find("*").filter(function() {return this.style && this.style.position == 'absolute'}).hide();
-  var text = elem.innerText.trim();
-  if (elem.tagName == "LI") return ($(elem).index() + 1) + ". " + text;
-  else return text;
-}
 
 function isNotEmpty(text) {
   return text;
