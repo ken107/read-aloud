@@ -89,6 +89,7 @@ function makeDoc() {
     else if (location.hostname == "drive.google.com") return new GDriveDoc();
     else if (location.hostname == "read.amazon.com") return new KindleBook();
     else if (location.hostname == "www.quora.com") return new QuoraPage();
+    else if (location.hostname == "www.khanacademy.org") return new KhanAcademy();
     else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
     else if ($("embed[type='application/pdf']").length) return new PdfDoc($("embed[type='application/pdf']").attr("src"));
     else return new HtmlDoc();
@@ -309,6 +310,29 @@ function QuoraPage() {
         texts.push($(this).find(".AnswerFooter").get(0).innerText);
       })
     return texts;
+  }
+}
+
+
+function KhanAcademy() {
+  this.getCurrentIndex = function() {
+    return 0;
+  }
+
+  this.getTexts = function(index) {
+    if (index == 0) return parse();
+    else return null;
+  }
+
+  function parse() {
+    return $("h1:first")
+      .add($("> :not(ul, ol), > ul > li, > ol > li", ".paragraph:not(.paragraph .paragraph)"))
+      .get()
+      .map(function(elem) {
+        var text = elem.innerText.trim();
+        if (elem.tagName == "LI") return ($(elem).index() + 1) + ". " + text;
+        else return text;
+      })
   }
 }
 
