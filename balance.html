@@ -1,0 +1,44 @@
+<!DOCTYPE>
+<html>
+<head>
+  <link rel="stylesheet" href="css/balance.css">
+</head>
+<body>
+  <div class="page">
+    <h1>Balance</h1>
+    <p>
+      Read Aloud's Amazon voices use Amazon's text-to-speech service, which is billed at $4 per million characters.
+      At this price, <b>it is not yet cost-effective to use Amazon voices to read books, novels, or very large articles</b>.
+      For these purposes, please use one of Google's native voices instead.
+    </p>
+    <p>
+      If you choose to use Amazon voices, you get 100,000 free characters per month.  After that, you can purchase
+      additional characters <a href="purchase.html">by going here</a>.
+    </p>
+    <p>
+      After purchasing, you will receive a code that can be redeemed by entering it below.  Purchased characters will be
+      added on top of your free characters.  The free characters will be used up first, before the purchased characters applies.
+      Also, we save the generated speech audio for 30 days, so rereading the same text or article again will not incur additional cost.
+    </p>
+    <p>
+      If you have questions or issues, please <a href="https://www.lsdsoftware.com/contact.html">contact us</a>.
+    </p>
+    <table class="balance">
+      <tr>
+        <td>Free characters remaining:</td>
+        <td><a href="usage_history.html" title="View usage history" id="lbl-free-balance">100,000</a></td>
+      </tr>
+      <tr>
+        <td>Purchased characters remaining:</td>
+        <td><a href="usage_history.html" title="View usage history" id="lbl-purchased-balance">0</a></td>
+      </tr>
+    </table>
+    <p>
+      <form id="frm-redeem">
+        <input type="text" name="code" placeholder="Enter code" size="10" />
+        <input type="submit" value="Redeem" />
+      </form>
+    </p>
+  </div>
+</body>
+</html>

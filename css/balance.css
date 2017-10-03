@@ -1,0 +1,12 @@
+.page {
+  width: 800px;
+  margin: 0 auto;
+}
+
+table.balance {
+  border-collapse: collapse;
+}
+table.balance td {
+  border: 1px solid black;
+  padding: 5px;
+}
