@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "0.2.14",
+  "version": "0.2.16",
   "default_locale": "en",
 
   "browser_action": {
