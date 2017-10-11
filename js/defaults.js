@@ -162,3 +162,25 @@ function ajaxPost(sUrl, oData) {
     xhr.send(urlEncode(oData));
   })
 }
+
+function getInstallId() {
+  return new Promise(function(fulfill) {
+    chrome.storage.local.get(["installId"], fulfill);
+  })
+  .then(function(items) {
+    if (items.installId) return items.installId;
+    else {
+      items.installId = uuidv4();
+      return new Promise(function(fulfill) {
+        chrome.storage.local.set(items, fulfill);
+      })
+    }
+  })
+}
+
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
