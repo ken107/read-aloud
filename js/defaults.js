@@ -6,20 +6,12 @@ var defaults = {
   rate: 1.0,
   pitch: 1.0,
   volume: 1.0,
-  spchletMaxLen: 36,
-  minSpchletMaxLen: 10,
-  maxSpchletMaxLen: 500,
   showHighlighting: 0,
 };
 
-function restrictValue(value, min, max, def) {
-  if (isNaN(value)) return def;
-  else return Math.min(Math.max(value, min), max);
-}
-
 function getSettings() {
   return new Promise(function(fulfill) {
-    chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "spchletMaxLen", "showHighlighting"], fulfill);
+    chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "showHighlighting"], fulfill);
   });
 }
 
@@ -31,7 +23,7 @@ function updateSettings(items) {
 
 function clearSettings() {
   return new Promise(function(fulfill) {
-    chrome.storage.local.remove(["voiceName", "rate", "pitch", "volume", "spchletMaxLen", "showHighlighting"], fulfill);
+    chrome.storage.local.remove(["voiceName", "rate", "pitch", "volume", "showHighlighting"], fulfill);
   });
 }
 

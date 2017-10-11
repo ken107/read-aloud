@@ -1,4 +1,8 @@
 
+var readAloud = {
+  paraSplitter: /(?:\s*\r?\n\s*){2,}/
+};
+
 function connect(name) {
   if (!window.docReady) window.docReady = makeDoc();
   window.docReady.then(function(doc) {startService(name, doc)});
@@ -42,7 +46,7 @@ function startService(name, doc) {
 
   function getTexts(request) {
     if (request.index < 0) {
-      if (request.index == -100) return getSelectedText().split(/(?:\r?\n){2,}/);
+      if (request.index == -100) return getSelectedText().split(readAloud.paraSplitter);
       else return null;
     }
     else {
@@ -89,6 +93,7 @@ function makeDoc() {
     else if (location.hostname == "drive.google.com") return new GDriveDoc();
     else if (location.hostname == "read.amazon.com") return new KindleBook();
     else if (location.hostname == "www.quora.com") return new QuoraPage();
+    else if (location.hostname == "www.khanacademy.org") return new KhanAcademy();
     else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
     else if ($("embed[type='application/pdf']").length) return new PdfDoc($("embed[type='application/pdf']").attr("src"));
     else return new HtmlDoc();
@@ -115,7 +120,9 @@ function GoogleDoc() {
   }
 
   function getTexts() {
-    return $(".kix-paragraphrenderer", this).get().map(getText).filter(isNotEmpty);
+    return $(".kix-paragraphrenderer", this).get()
+      .map(function(elem) {return elem.innerText.trim()})
+      .filter(isNotEmpty);
   }
 }
 
@@ -139,7 +146,9 @@ function GDriveDoc() {
   }
 
   function getTexts() {
-    var texts = $("p", this).get().map(getText).filter(isNotEmpty);
+    var texts = $("p", this).get()
+      .map(function(elem) {return elem.innerText.trim()})
+      .filter(isNotEmpty);
     return fixParagraphs(texts);
   }
 }
@@ -301,7 +310,7 @@ function QuoraPage() {
     $(".AnswerBase")
       .each(function() {
         texts.push("Answer by " + $(this).find(".feed_item_answer_user .user").get(0).innerText);
-        texts.push.apply(texts, $(this).find(".rendered_qtext").get(0).innerText.split(/\n\n+/));
+        texts.push.apply(texts, $(this).find(".rendered_qtext").get(0).innerText.split(readAloud.paraSplitter));
         texts.push($(this).find(".AnswerFooter").get(0).innerText);
       })
     return texts;
@@ -309,10 +318,31 @@ function QuoraPage() {
 }
 
 
+function KhanAcademy() {
+  this.getCurrentIndex = function() {
+    return 0;
+  }
+
+  this.getTexts = function(index) {
+    if (index == 0) return parse();
+    else return null;
+  }
+
+  function parse() {
+    return $("h1:first")
+      .add($("> :not(ul, ol), > ul > li, > ol > li", ".paragraph:not(.paragraph .paragraph)"))
+      .get()
+      .map(function(elem) {
+        var text = elem.innerText.trim();
+        if (elem.tagName == "LI") return ($(elem).index() + 1) + ". " + text;
+        else return text;
+      })
+  }
+}
+
+
 function HtmlDoc() {
-  var headingTags = ["H1", "H2", "H3", "H4", "H5", "H6"];
-  var paragraphTags = ["P", "BLOCKQUOTE", "PRE"];
-  var listTags = ["OL", "UL"];
+  var headingTags = "H1, H2, H3, H4, H5, H6";
 
   this.getCurrentIndex = function() {
     return 0;
@@ -327,47 +357,79 @@ function HtmlDoc() {
     //clear markers
     $(".read-aloud").removeClass("read-aloud");
 
-    //find text blocks with at least 1 paragraphs
-    var textBlocks = $("p").not("blockquote > p").parent().get();
-    $.uniqueSort(textBlocks);
-
-    //visible only
+    //find blocks containing text
+    var textBlocks = [];
+    var walk = function() {
+      if ($(this).is(headingTags));
+      else if (isTextBlock(this)) textBlocks.push(this);
+      else $(this).children().each(walk);
+    };
+    walk.call(document.body);
     textBlocks = $(textBlocks).filter(":visible").filter(notOutOfView).get();
 
-    if (textBlocks.length) {
-      //remove any block less than 1/7 the length of the longest block
+      //remove any block less than 1/10 the length of the longest block
       var lengths = textBlocks.map(function(block) {
-        return $(block).children(paragraphTags.join(", ")).text().length;
+        return block.innerText.length;
       });
-      var longest = Math.max.apply(null, lengths);
+      var threshold = Math.max.apply(null, lengths) /10;
       textBlocks = textBlocks.filter(function(block, index) {
-        return lengths[index] > longest/7;
+        return lengths[index] > threshold;
       });
 
       //mark the elements to be read
       textBlocks.forEach(function(block) {
         $(findHeadingsFor(block)).addClass("read-aloud");
-        $(block).children(headingTags.concat(paragraphTags).join(", ")).addClass("read-aloud");
-        $(block).children(listTags.join(", ")).children("li").addClass("read-aloud");
+        $(block).addClass("read-aloud");
       });
-    }
-    else {
-      //if no text blocks found, read all headings
-      $(headingTags.concat(paragraphTags).join(", ")).filter(":visible").addClass("read-aloud");
-    }
 
     //extract texts
-    var texts = $(".read-aloud").get().map(getText).filter(isNotEmpty);
+    var texts = $(".read-aloud").get().map(getText);
+    return flatten(texts).filter(isNotEmpty);
+  }
+
+  function isTextBlock(elem) {
+    return childNodes(elem).some(function(child) {
+      return isNonEmptyTextNode(child) || $(child).is("p");
+    })
+  }
+
+  function isNonEmptyTextNode(node) {
+    return node.nodeType == 3 && node.nodeValue.trim();
+  }
+
+  function getText(elem) {
+    $(elem).find("ol, ul").each(function() {
+      $(this).children("li").each(function(index) {
+        if (!$(this.firstChild).is(".read-aloud-numbering"))
+          $("<span>").addClass("read-aloud-numbering").text((index +1) + ". ").prependTo(this);
+      })
+    });
+    $(elem).find(".read-aloud-numbering").show();
+    var tmp = $(elem).find(":visible").filter(dontRead).toggle();
+    var texts = addMissingPunctuation(elem.innerText).trim().split(readAloud.paraSplitter);
+    tmp.toggle();
+    $(elem).find(".read-aloud-numbering").hide();
     return texts;
+  }
+
+  function dontRead() {
+    var tagName = this.tagName;
+    var float = $(this).css("float");
+    var position = $(this).css("position");
+    return tagName == "SUP" || float == "right" || position == "absolute" || position == "fixed";
+  }
+
+  function addMissingPunctuation(text) {
+    return text.replace(/(\w)(\s*?\r?\n)/g, "$1.$2");
   }
 
   function findHeadingsFor(block) {
     var result = [];
-    var firstInnerElem = $(block).children(headingTags.concat(paragraphTags).join(", ")).get(0);
+    var firstInnerElem = $(block).find(headingTags + ", p").filter(":visible").get(0);
     var currentLevel = getHeadingLevel(firstInnerElem);
-    var node = previousNode(firstInnerElem, true);
+    var node = previousNode(block, true);
     while (node && !$(node).hasClass("read-aloud")) {
-      if (node.nodeType == 1) {
+      if (node.nodeType == 1 && $(node).is(":visible")) {
         var level = getHeadingLevel(node);
         if (level < currentLevel) {
           result.push(node);
@@ -380,8 +442,8 @@ function HtmlDoc() {
   }
 
   function getHeadingLevel(elem) {
-    var index = elem ? headingTags.indexOf(elem.tagName) : -1;
-    return index == -1 ? 100 : index + 1;
+    var matches = elem && elem.tagName.match(/^H(\d)$/);
+    return matches ? Number(matches[1]) : 100;
   }
 
   function previousNode(node, skipChildren) {
@@ -394,18 +456,24 @@ function HtmlDoc() {
   function notOutOfView() {
     return $(this).offset().left >= 0;
   }
+
+  function childNodes(elem) {
+    var result = [];
+    var child = elem.firstChild;
+    while (child) {
+      result.push(child);
+      child = child.nextSibling;
+    }
+    return result;
+  }
+
+  function flatten(array) {
+    return [].concat.apply([], array);
+  }
 }
 
 
 //helpers --------------------------
-
-function getText(elem) {
-  $(elem).find("sup").hide();
-  $(elem).find("*").filter(function() {return this.style && this.style.position == 'absolute'}).hide();
-  var text = elem.innerText.trim();
-  if (elem.tagName == "LI") return ($(elem).index() + 1) + ". " + text;
-  else return text;
-}
 
 function isNotEmpty(text) {
   return text;

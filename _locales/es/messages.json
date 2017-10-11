@@ -26,15 +26,6 @@
   "options_volume_label": {
     "message": "Volumen"
   },
-  "options_spchlet_label": {
-    "message": "Duración Máxima De La Oración"
-  },
-  "options_spchlet_label2": {
-    "message": "(palabras)"
-  },
-  "options_spchlet_explain": {
-    "message": "Si la lectura a veces se detiene abruptamente en medio de una oración larga, intente reducir este número. Este ajuste hace que las oraciones más largas se rompan."
-  },
   "options_show_highlighting": {
     "message": "Resaltado De Texto"
   },

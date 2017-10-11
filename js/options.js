@@ -33,19 +33,16 @@ $(function() {
     $("#rate").slider("value", Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")));
     $("#pitch").slider("value", settings.pitch || defaults.pitch);
     $("#volume").slider("value", settings.volume || defaults.volume);
-    $("#spchletMaxLen").val(settings.spchletMaxLen || defaults.spchletMaxLen);
     $("[name=highlighting]").prop("checked", false);
     $("[name=highlighting][value=" + (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) + "]").prop("checked", true);
   }));
 
   $("#save").click(function() {
-    validate();
     updateSettings({
       voiceName: $("#voices").val(),
       rate: Math.pow($("#rate").data("pow"), $("#rate").slider("value")),
       pitch: $("#pitch").slider("value"),
       volume: $("#volume").slider("value"),
-      spchletMaxLen: $("#spchletMaxLen").val(),
       showHighlighting: Number($("[name=highlighting]:checked").val()),
     })
     .then(function() {
@@ -56,13 +53,4 @@ $(function() {
   $("#reset").click(function() {
     clearSettings().then(() => location.reload());
   });
-
-  $("#spchlet-explain-btn").click(function() {
-    $("[data-i18n=options_spchlet_explain]").show();
-  })
 });
-
-function validate() {
-  var spchletMaxLen = restrictValue($("#spchletMaxLen").val(), defaults.minSpchletMaxLen, defaults.maxSpchletMaxLen, defaults.spchletMaxLen);
-  $("#spchletMaxLen").val(spchletMaxLen);
-}

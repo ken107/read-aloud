@@ -193,7 +193,6 @@ function Doc(source, onEnd) {
           rate: settings.rate || defaults.rate,
           pitch: settings.pitch || defaults.pitch,
           volume: settings.volume || defaults.volume,
-          spchletMaxLen: settings.spchletMaxLen || defaults.spchletMaxLen,
           lang: info.lang,
         }
         return getSpeechVoice(settings.voiceName, options.lang)

@@ -26,15 +26,6 @@
   "options_volume_label": {
     "message": "Volume"
   },
-  "options_spchlet_label": {
-    "message": "Max Length of Sentence"
-  },
-  "options_spchlet_label2": {
-    "message": "(words)"
-  },
-  "options_spchlet_explain": {
-    "message": "If reading sometimes stops abruptly in the middle of a long sentence, try reducing this number. This setting causes longer sentences to be broken up."
-  },
   "options_show_highlighting": {
     "message": "Text Highlighting"
   },
