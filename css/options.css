@@ -34,14 +34,3 @@
 .status.error {
   color: red;
 }
-
-[data-i18n=options_spchlet_label] {
-  display: inline-block;
-}
-[data-i18n=options_spchlet_explain] {
-  display: none;
-}
-#spchlet-explain-btn {
-  cursor: pointer;
-  color: blue;
-}

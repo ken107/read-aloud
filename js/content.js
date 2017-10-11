@@ -360,14 +360,14 @@ function HtmlDoc() {
     //find blocks containing text
     var textBlocks = [];
     var walk = function() {
-      if (isTextBlock(this)) textBlocks.push(this);
+      if ($(this).is(headingTags));
+      else if (isTextBlock(this)) textBlocks.push(this);
       else $(this).children().each(walk);
     };
     walk.call(document.body);
     textBlocks = $(textBlocks).filter(":visible").filter(notOutOfView).get();
 
-    if (textBlocks.length) {
-      //remove any block less than 1/7 the length of the longest block
+      //remove any block less than 1/10 the length of the longest block
       var lengths = textBlocks.map(function(block) {
         return block.innerText.length;
       });
@@ -381,11 +381,6 @@ function HtmlDoc() {
         $(findHeadingsFor(block)).addClass("read-aloud");
         $(block).addClass("read-aloud");
       });
-    }
-    else {
-      //if no text blocks found, read all headings
-      $(headingTags).filter(":visible").addClass("read-aloud");
-    }
 
     //extract texts
     var texts = $(".read-aloud").get().map(getText);
