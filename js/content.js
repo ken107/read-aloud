@@ -360,7 +360,7 @@ function HtmlDoc() {
     //find blocks containing text
     var textBlocks = [];
     var walk = function() {
-      if ($(this).is(headingTags));
+      if ($(this).is(headingTags + ", a"));
       else if (isTextBlock(this)) textBlocks.push(this);
       else $(this).children().each(walk);
     };
