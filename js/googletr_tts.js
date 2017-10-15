@@ -9,8 +9,8 @@
 
 
 function RemoteTTS(host) {
-  var installId;
-  getInstallId().then(function(result) {installId = result});
+  var installationId;
+  getInstallationId().then(function(result) {installationId = result});
 
   var audio = window.ttsAudio;
   if (!audio) audio = window.ttsAudio = document.createElement("AUDIO");
@@ -20,7 +20,7 @@ function RemoteTTS(host) {
     audio.pause();
     audio.volume = options.volume || 1;
     audio.defaultPlaybackRate = (options.rate || 1) * getRateMultiplier(options.voiceName);
-    audio.src = host + "/read-aloud/speak/" + options.lang + "/" + encodeURIComponent(options.voiceName) + "?k=" + installId + "q=" + encodeURIComponent(utterance);
+    audio.src = host + "/read-aloud/speak/" + options.lang + "/" + encodeURIComponent(options.voiceName) + "?k=" + installationId + "&q=" + encodeURIComponent(utterance);
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
     audio.onerror =
     audio.onended = onEvent.bind(null, {type: 'end', charIndex: utterance.length});

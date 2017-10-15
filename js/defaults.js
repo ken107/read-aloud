@@ -155,16 +155,19 @@ function ajaxPost(sUrl, oData) {
   })
 }
 
-function getInstallId() {
+function getInstallationId() {
   return new Promise(function(fulfill) {
-    chrome.storage.local.get(["installId"], fulfill);
+    chrome.storage.local.get(["installationId"], fulfill);
   })
   .then(function(items) {
-    if (items.installId) return items.installId;
+    if (items.installationId) return items.installationId;
     else {
-      items.installId = uuidv4();
+      items.installationId = uuidv4();
       return new Promise(function(fulfill) {
         chrome.storage.local.set(items, fulfill);
+      })
+      .then(function() {
+        return items.installationId;
       })
     }
   })
