@@ -140,6 +140,20 @@ function urlEncode(oData) {
   return parts.join("&");
 }
 
+function ajaxGet(sUrl) {
+  return new Promise(function(fulfill, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", sUrl, true);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) fulfill(xhr.responseText);
+        else reject(new Error(xhr.responseText));
+      }
+    };
+    xhr.send(null);
+  })
+}
+
 function ajaxPost(sUrl, oData) {
   return new Promise(function(fulfill, reject) {
     var xhr = new XMLHttpRequest();
@@ -148,7 +162,7 @@ function ajaxPost(sUrl, oData) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState == XMLHttpRequest.DONE) {
         if (xhr.status == 200) fulfill(xhr.responseText);
-        else reject(xhr.statusText);
+        else reject(new Error(xhr.responseText));
       }
     };
     xhr.send(urlEncode(oData));
@@ -179,3 +193,29 @@ function uuidv4() {
     return v.toString(16);
   });
 }
+
+var billing = {
+  getBalance: function() {
+    return getInstallationId()
+      .then(function(installationId) {
+        return ajaxGet(config.serviceUrl + "/read-aloud/billing/get-balance/" + installationId);
+      })
+      .then(function(text) {
+        return JSON.parse(text);
+      })
+  },
+
+  redeemCoupon: function(couponCode) {
+    return getInstallationId()
+      .then(function(installationId) {
+        return ajaxGet(config.serviceUrl + "/read-aloud/billing/redeem-coupon/" + installationId + "/" + couponCode);
+      })
+  },
+
+  removeCoupon: function(couponCode) {
+    return getInstallationId()
+      .then(function(installationId) {
+        return ajaxGet(config.serviceUrl + "/read-aloud/billing/remove-coupon/" + installationId + "/" + couponCode);
+      })
+  }
+};

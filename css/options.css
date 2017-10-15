@@ -34,3 +34,7 @@
 .status.error {
   color: red;
 }
+#balance {
+  display: none;
+  color: gray;
+}

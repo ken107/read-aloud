@@ -11,32 +11,6 @@ $(function() {
       step: $(this).data("step")
     })
   });
-
-  Promise.all([getSettings(), getVoices()]).then(spread(function(settings, voices) {
-    voices.sort(function(a,b) {
-      if (isRemoteVoice(a.voiceName)) {
-        if (isRemoteVoice(b.voiceName)) return a.voiceName.localeCompare(b.voiceName);
-        else return 1;
-      }
-      else {
-        if (isRemoteVoice(b.voiceName)) return -1;
-        else return a.voiceName.localeCompare(b.voiceName);
-      }
-    });
-    voices.forEach(function(voice) {
-      $("<option>")
-        .val(voice.voiceName)
-        .text(voice.voiceName)
-        .prop("selected", voice.voiceName == settings.voiceName)
-        .appendTo($("#voices"));
-    });
-    $("#rate").slider("value", Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")));
-    $("#pitch").slider("value", settings.pitch || defaults.pitch);
-    $("#volume").slider("value", settings.volume || defaults.volume);
-    $("[name=highlighting]").prop("checked", false);
-    $("[name=highlighting][value=" + (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) + "]").prop("checked", true);
-  }));
-
   $("#save").click(function() {
     updateSettings({
       voiceName: $("#voices").val(),
@@ -49,8 +23,60 @@ $(function() {
       $(".status.success").show().delay(3000).fadeOut();
     });
   });
-
+  $("#voices").change(function() {
+    onVoiceChanged(this.value);
+  });
   $("#reset").click(function() {
     clearSettings().then(() => location.reload());
   });
+  getSettings().then(init);
 });
+
+
+function init(settings) {
+  getVoices()
+    .then(initVoices)
+    .then(function() {
+      if (settings.voiceName) {
+        $("#voices").val(settings.voiceName);
+        onVoiceChanged(settings.voiceName);
+      }
+    })
+  $("#rate").slider("value", Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")));
+  $("#pitch").slider("value", settings.pitch || defaults.pitch);
+  $("#volume").slider("value", settings.volume || defaults.volume);
+  $("[name=highlighting]").prop("checked", false);
+  $("[name=highlighting][value=" + (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) + "]").prop("checked", true);
+}
+
+function initVoices(voices) {
+  voices.sort(function(a,b) {
+    if (isRemoteVoice(a.voiceName)) {
+      if (isRemoteVoice(b.voiceName)) return a.voiceName.localeCompare(b.voiceName);
+      else return 1;
+    }
+    else {
+      if (isRemoteVoice(b.voiceName)) return -1;
+      else return a.voiceName.localeCompare(b.voiceName);
+    }
+  });
+  voices.forEach(function(voice) {
+    $("<option>")
+      .val(voice.voiceName)
+      .text(voice.voiceName)
+      .appendTo($("#voices"));
+  });
+}
+
+function onVoiceChanged(voiceName) {
+  if (/^Amazon /.test(voiceName)) {
+    $("#balance").show();
+    billing.getBalance().then(function(rs) {
+      var total = rs.reduce(function(sum, r) {return sum + r.balance}, 0);
+      $("#balance > a").text(total);
+    })
+  }
+  else {
+    $("#balance").hide();
+  }
+}

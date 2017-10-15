@@ -1,11 +1,17 @@
 <!DOCTYPE>
 <html>
 <head>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="css/balance.css">
+
+  <script src="js/es6-promise.auto.min.js"></script>
+  <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/defaults.js"></script>
+  <script src="js/balance.js"></script>
 </head>
 <body>
   <div class="page">
-    <h1>Balance</h1>
+    <h1>Premium Voices</h1>
     <p>
       Read Aloud's Amazon voices use Amazon's text-to-speech service, which is billed at $4 per million characters.
       At this price, <b>it is not yet cost-effective to use Amazon voices to read books, novels, or very large articles</b>.
@@ -18,26 +24,22 @@
     <p>
       After purchasing, you will receive a code that can be redeemed by entering it below.  Purchased characters will be
       added on top of your free characters.  The free characters will be used up first, before the purchased characters applies.
-      Also, we save the generated speech audio for 30 days, so rereading the same text or article again will not incur additional cost.
     </p>
     <p>
-      If you have questions or issues, please <a href="https://www.lsdsoftware.com/contact.html">contact us</a>.
+      If you have questions or issues, please <a href="https://www.lsdsoftware.com/contact.html?subject=Read%20Aloud%20Balance">contact us</a>.
     </p>
-    <table class="balance">
+
+    <h1>Balance <i id="btn-refresh-balance" class="material-icons">refresh</i></h1>
+    <table id="balance">
       <tr>
-        <td>Free characters remaining:</td>
-        <td><a href="usage_history.html" title="View usage history" id="lbl-free-balance">100,000</a></td>
-      </tr>
-      <tr>
-        <td>Purchased characters remaining:</td>
-        <td><a href="usage_history.html" title="View usage history" id="lbl-purchased-balance">0</a></td>
+        <th>Coupon Code</th>
+        <th>Characters Remaining</th>
       </tr>
     </table>
-    <p>
-      <form id="frm-redeem">
-        <input type="text" name="code" placeholder="Enter code" size="10" />
-        <input type="submit" value="Redeem" />
-      </form>
+    <p id="frm-redeem">
+      <input class="txt-coupon-code" type="text" placeholder="Enter code" size="10" />
+      <input class="btn-submit" type="submit" value="Redeem" />
+      <span class="error-message"></span>
     </p>
   </div>
 </body>

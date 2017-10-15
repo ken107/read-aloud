@@ -14,6 +14,9 @@
   "options_voice_label": {
     "message": "Voz"
   },
+  "options_balance_label": {
+    "message": "Caracteres restantes"
+  },
   "options_rate_label": {
     "message": "Velocidad"
   },
