@@ -204,14 +204,27 @@ function Doc(source, onEnd) {
   }
 
   function getSpeechVoice(voiceName, lang) {
-    return getVoices()
+    return Promise.resolve()
+      .then(function() {
+        if (voiceName && isPremiumVoice(voiceName)) {
+          return billing.getBalance()
+            .then(function(coupons) {
+              var balance = coupons.reduce(function(sum, c) {return sum + c.balance}, 0);
+              if (!balance) voiceName = null;
+            })
+            .catch(function(err) {
+              console.error(err);
+              voiceName = null;
+            })
+        }
+      })
+      .then(getVoices)
       .then(function(voices) {
         if (voiceName) return findVoiceByName(voices, voiceName);
         else if (lang) {
           return findVoiceByLang(voices.filter(function(voice) {return isGoogleNative(voice.voiceName)}), lang)
-            || findVoiceByLang(voices.filter(function(voice) {return !(isAmazonPolly(voice.voiceName) || isGoogleTranslate(voice.voiceName))}), lang)
-            || findVoiceByLang(voices.filter(function(voice) {return isAmazonPolly(voice.voiceName)}), lang)
-            || findVoiceByLang(voices.filter(function(voice) {return isGoogleTranslate(voice.voiceName)}), lang);
+            || findVoiceByLang(voices.filter(function(voice) {return !isRemoteVoice(voice.voiceName)}), lang)
+            || findVoiceByLang(voices.filter(function(voice) {return !isPremiumVoice(voice.voiceName)}), lang);
         }
         else return null;
       })

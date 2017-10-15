@@ -69,7 +69,7 @@ function initVoices(voices) {
 }
 
 function onVoiceChanged(voiceName) {
-  if (/^Amazon /.test(voiceName)) {
+  if (isPremiumVoice(voiceName)) {
     $("#balance").show();
     billing.getBalance().then(function(rs) {
       var total = rs.reduce(function(sum, r) {return sum + r.balance}, 0);

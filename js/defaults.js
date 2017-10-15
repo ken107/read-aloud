@@ -65,6 +65,10 @@ function isRemoteVoice(voiceName) {
   return isAmazonPolly(voiceName) || isGoogleTranslate(voiceName);
 }
 
+function isPremiumVoice(voiceName) {
+  return isAmazonPolly(voiceName);
+}
+
 function executeFile(file) {
   return new Promise(function(fulfill, reject) {
     chrome.runtime.lastError = null;
