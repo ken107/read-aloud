@@ -9,13 +9,15 @@
 
 
 function RemoteTTS(host) {
-  var installationId;
-  getInstallationId().then(function(result) {installationId = result});
-
   var audio = window.ttsAudio;
   if (!audio) audio = window.ttsAudio = document.createElement("AUDIO");
 
   this.speak = function(utterance, options, onEvent) {
+    getInstallationId()
+      .then(speak.bind(null, utterance, options, onEvent))
+  }
+
+  function speak(utterance, options, onEvent, installationId) {
     if (!onEvent) onEvent = options.onEvent;
     audio.pause();
     audio.volume = options.volume || 1;

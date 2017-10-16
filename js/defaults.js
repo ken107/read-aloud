@@ -180,14 +180,16 @@ function getInstallationId() {
   .then(function(items) {
     if (items.installationId) return items.installationId;
     else {
-      items.installationId = uuidv4();
-      return new Promise(function(fulfill) {
-        chrome.storage.local.set(items, fulfill);
-      })
-      .then(function() {
-        return items.installationId;
-      })
+      var installationId = uuidv4();
+      return setInstallationId(installationId).then(function() {return installationId});
     }
+  })
+}
+
+function setInstallationId(installationId) {
+  return new Promise(function(fulfill) {
+    chrome.storage.local.set({installationId: installationId}, fulfill);
+    chrome.runtime.setUninstallURL(config.serviceUrl + "/read-aloud/billing/uninstall/" + installationId);
   })
 }
 

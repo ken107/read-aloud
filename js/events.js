@@ -7,6 +7,9 @@ chrome.runtime.onInstalled.addListener(function() {
     title: chrome.i18n.getMessage("context_read_selection"),
     contexts: ["selection"]
   });
+  ajaxGet(config.serviceUrl + "/read-aloud/billing/reinstall")
+    .then(setInstallationId)
+    .catch(function() {})
 })
 
 chrome.contextMenus.onClicked.addListener(function(info, tab) {
