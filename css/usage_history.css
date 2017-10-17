@@ -1,0 +1,11 @@
+
+.material-icons {
+  font-size: 18px;
+  color: gray;
+  cursor: pointer;
+  vertical-align: top;
+}
+
+#tbl-result {
+  margin-top: 10px;
+}
