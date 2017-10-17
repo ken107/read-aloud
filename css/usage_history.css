@@ -1,4 +1,8 @@
 
+body {
+  color: #333;
+}
+
 .material-icons {
   font-size: 18px;
   color: gray;
@@ -8,4 +12,11 @@
 
 #tbl-result {
   margin-top: 10px;
+}
+#tbl-result th {
+  text-align: left;
+}
+#tbl-result th,
+#tbl-result td {
+  padding: 3px 5px;
 }

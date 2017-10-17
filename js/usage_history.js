@@ -1,4 +1,7 @@
 
+var queryString = getQueryString();
+var couponCode = queryString.code;
+
 $(function() {
   $("#btn-refresh").click(refreshResult);
   $("#ddl-num-pages").change(refreshResult);
@@ -16,7 +19,7 @@ function clearResult() {
 
 function loadResult(installationId) {
   return new Promise(function(fulfill) {
-    $.get(config.serviceUrl + "/read-aloud/history/" + installationId + "?n=" + $("#ddl-num-pages").val(), function(data) {
+    $.get(config.serviceUrl + "/read-aloud/history/" + installationId + (couponCode ? "/" + couponCode : "") + "?n=" + $("#ddl-num-pages").val(), function(data) {
       var lines = data.split("\n").reverse();
       var entries = [];
       for (var i=0; i<lines.length; i++) {
@@ -37,7 +40,7 @@ function updateResult(entries) {
     $("<td>").appendTo(tr).text(entry.text);
     $("<td>").appendTo(tr).text(entry.billedChars);
     $("<td>").appendTo(tr).text(entry.balance);
-    $("<td>").appendTo(tr).text(entry.couponCode || "FREE");
+    $("<td>").appendTo(tr).text(couponCode || "FREE");
   })
 }
 

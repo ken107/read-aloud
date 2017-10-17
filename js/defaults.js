@@ -9,6 +9,15 @@ var defaults = {
   showHighlighting: 0,
 };
 
+function getQueryString() {
+  var queryString = {};
+  if (location.search) location.search.substr(1).replace(/\+/g, '%20').split('&').forEach(function(tuple) {
+    var tokens = tuple.split('=');
+    queryString[decodeURIComponent(tokens[0])] = tokens[1] && decodeURIComponent(tokens[1]);
+  })
+  return queryString;
+}
+
 function getSettings() {
   return new Promise(function(fulfill) {
     chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "showHighlighting"], fulfill);
