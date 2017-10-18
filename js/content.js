@@ -334,7 +334,7 @@ function KhanAcademy() {
       .get()
       .map(function(elem) {
         var text = elem.innerText.trim();
-        if (elem.tagName == "LI") return ($(elem).index() + 1) + ". " + text;
+        if ($(elem).is("li")) return ($(elem).index() + 1) + ". " + text;
         else return text;
       })
   }
@@ -354,33 +354,33 @@ function HtmlDoc() {
   }
 
   function parse() {
-    //clear markers
-    $(".read-aloud").removeClass("read-aloud");
-
     //find blocks containing text
     var textBlocks = [];
     var walk = function() {
       if ($(this).is(headingTags + ", a"));
       else if (isTextBlock(this)) textBlocks.push(this);
+      else if ($(this).is("frame, iframe")) try {walk.call(this.contentDocument.body)} catch(err) {}
       else $(this).children().each(walk);
     };
     walk.call(document.body);
     textBlocks = $(textBlocks).filter(":visible").filter(notOutOfView).get();
 
-      //mark the elements to be read
-      textBlocks.forEach(function(block) {
-        $(findHeadingsFor(block)).addClass("read-aloud");
-        $(block).addClass("read-aloud");
-      });
+    //mark the elements to be read
+    var toRead = [];
+    for (var i=0; i<textBlocks.length; i++) {
+      toRead.push.apply(toRead, findHeadingsFor(textBlocks[i], textBlocks[i-1]));
+      toRead.push(textBlocks[i]);
+    }
+    $(toRead).addClass("read-aloud");   //for debugging only
 
     //extract texts
-    var texts = $(".read-aloud").get().map(getText);
+    var texts = toRead.map(getText);
     return flatten(texts).filter(isNotEmpty);
   }
 
   function isTextBlock(elem) {
     return childNodes(elem).some(function(child) {
-      return child.nodeType == 1 && child.tagName == "P" && child.textContent.trim().length > 100 ||
+      return child.nodeType == 1 && $(child).is("p") && child.textContent.trim().length > 100 ||
         child.nodeType == 3 && child.nodeValue.trim().length > 100;
     })
   }
@@ -401,22 +401,21 @@ function HtmlDoc() {
   }
 
   function dontRead() {
-    var tagName = this.tagName;
     var float = $(this).css("float");
     var position = $(this).css("position");
-    return tagName == "SUP" || float == "right" || position == "absolute" || position == "fixed";
+    return $(this).is("sup") || float == "right" || position == "absolute" || position == "fixed";
   }
 
   function addMissingPunctuation(text) {
     return text.replace(/(\w)(\s*?\r?\n)/g, "$1.$2");
   }
 
-  function findHeadingsFor(block) {
+  function findHeadingsFor(block, prevBlock) {
     var result = [];
     var firstInnerElem = $(block).find(headingTags + ", p").filter(":visible").get(0);
     var currentLevel = getHeadingLevel(firstInnerElem);
     var node = previousNode(block, true);
-    while (node && !$(node).hasClass("read-aloud")) {
+    while (node && node != prevBlock) {
       if (node.nodeType == 1 && $(node).is(":visible")) {
         var level = getHeadingLevel(node);
         if (level < currentLevel) {
@@ -430,12 +429,12 @@ function HtmlDoc() {
   }
 
   function getHeadingLevel(elem) {
-    var matches = elem && elem.tagName.match(/^H(\d)$/);
+    var matches = elem && /^H(\d)$/i.exec(elem.tagName);
     return matches ? Number(matches[1]) : 100;
   }
 
   function previousNode(node, skipChildren) {
-    if (node == document.body) return null;
+    if ($(node).is('body')) return null;
     if (node.nodeType == 1 && !skipChildren && node.lastChild) return node.lastChild;
     if (node.previousSibling) return node.previousSibling;
     return previousNode(node.parentNode, true);
