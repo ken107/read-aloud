@@ -367,15 +367,6 @@ function HtmlDoc() {
     walk.call(document.body);
     textBlocks = $(textBlocks).filter(":visible").filter(notOutOfView).get();
 
-      //remove any block less than 1/10 the length of the longest block
-      var lengths = textBlocks.map(function(block) {
-        return block.innerText.length;
-      });
-      var threshold = Math.max.apply(null, lengths) /10;
-      textBlocks = textBlocks.filter(function(block, index) {
-        return lengths[index] > threshold;
-      });
-
       //mark the elements to be read
       textBlocks.forEach(function(block) {
         $(findHeadingsFor(block)).addClass("read-aloud");
@@ -389,12 +380,9 @@ function HtmlDoc() {
 
   function isTextBlock(elem) {
     return childNodes(elem).some(function(child) {
-      return isNonEmptyTextNode(child) || $(child).is("p");
+      return child.nodeType == 1 && child.tagName == "P" && child.textContent.trim().length > 100 ||
+        child.nodeType == 3 && child.nodeValue.trim().length > 100;
     })
-  }
-
-  function isNonEmptyTextNode(node) {
-    return node.nodeType == 3 && node.nodeValue.trim();
   }
 
   function getText(elem) {
