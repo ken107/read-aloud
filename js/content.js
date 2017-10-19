@@ -306,12 +306,17 @@ function QuoraPage() {
   }
 
   function parse() {
-    var texts = [$(".QuestionArea .question_qtext").get(0).innerText];
+    var texts = [];
+    var elem = $(".QuestionArea .question_qtext").get(0);
+    if (elem) texts.push(elem.innerText);
     $(".AnswerBase")
       .each(function() {
-        texts.push("Answer by " + $(this).find(".feed_item_answer_user .user").get(0).innerText);
-        texts.push.apply(texts, $(this).find(".rendered_qtext").get(0).innerText.split(readAloud.paraSplitter));
-        texts.push($(this).find(".AnswerFooter").get(0).innerText);
+        elem = $(this).find(".feed_item_answer_user .user").get(0);
+        if (elem) texts.push("Answer by " + elem.innerText);
+        elem = $(this).find(".rendered_qtext").get(0);
+        if (elem) texts.push.apply(texts, elem.innerText.split(readAloud.paraSplitter));
+        elem = $(this).find(".AnswerFooter").get(0);
+        if (elem) texts.push(elem.innerText);
       })
     return texts;
   }
