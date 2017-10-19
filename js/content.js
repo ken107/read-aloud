@@ -385,7 +385,7 @@ function HtmlDoc() {
 
   function isTextBlock(elem) {
     return childNodes(elem).some(function(child) {
-      return child.nodeType == 1 && $(child).is("p") && child.textContent.trim().length > 100 ||
+      return child.nodeType == 1 && $(child).is("p") && child.innerText.trim().length > 100 ||
         child.nodeType == 3 && child.nodeValue.trim().length > 100;
     })
   }
