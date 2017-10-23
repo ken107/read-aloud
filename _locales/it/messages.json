@@ -1,0 +1,65 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Un Lettore Vocale da Testo a Voce"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Legge ad alta voce la pagina web con un click. Supporta 40+ lingue."
+  },
+  "options_heading": {
+    "message": "Opzioni"
+  },
+  "options_voice_label": {
+    "message": "Voce"
+  },
+  "options_balance_label": {
+    "message": "Caratteri restanti"
+  },
+  "options_rate_label": {
+    "message": "Velocità"
+  },
+  "options_rate_explain": {
+    "message": ".5 è metà, 2 è il doppio."
+  },
+  "options_pitch_label": {
+    "message": "Altezza"
+  },
+  "options_volume_label": {
+    "message": "Volume"
+  },
+  "options_show_highlighting": {
+    "message": "Evidenzia Testo"
+  },
+  "options_hotkey_label": {
+    "message": "Scorciatoia"
+  },
+  "options_save_button": {
+    "message": "Salva"
+  },
+  "options_reset_button": {
+    "message": "Reset"
+  },
+  "options_success_status": {
+    "message": "Modifiche salvate."
+  },
+  "context_read_selection": {
+    "message": "Leggi il testo selezionato"
+  },
+  "context_read_here": {
+    "message": "Leggi partendo da qui"
+  },
+  "error_no_voice": {
+    "message": "Nessuna voce ({lang})"
+  },
+  "uploadpdf_message1": {
+    "message": "{extension_name} non può accedere file locali sul tuo computer."
+  },
+  "uploadpdf_message2": {
+    "message": "Se desideri, puoi usare il form sottostante per caricare il tuo file PDF di lettura temporaneamente nel server di {extension_name}. Il tuo file sarà rimosso dal server dopo la tua visione."
+  },
+  "uploadpdf_submit_button": {
+    "message": "Carica & Apri"
+  }
+}
