@@ -130,7 +130,7 @@ function Speech(texts, options) {
       pitch: options.pitch,
       volume: options.volume,
       requiredEventTypes: ["start", "end"],
-      desiredEventTypes: ["start", "end"],
+      desiredEventTypes: ["start", "end", "error"],
       onEvent: function(event) {
         if (event.type == "start") onStart();
         else if (event.type == "end") onEnd();
