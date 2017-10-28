@@ -67,7 +67,14 @@ function Speech(texts, options) {
       }
       isPlaying = new Date().getTime();
       return new Promise(function(fulfill) {
-        speak(texts[index[0]][index[1]], fulfill, playNext);
+        speak(texts[index[0]][index[1]], fulfill, function(err) {
+          if (err) {
+            if (options.hack) clearTimeout(hackTimer);
+            isPlaying = false;
+            if (options.onEnd) options.onEnd(err);
+          }
+          else playNext();
+        });
       });
     }
   }
@@ -127,6 +134,7 @@ function Speech(texts, options) {
       onEvent: function(event) {
         if (event.type == "start") onStart();
         else if (event.type == "end") onEnd();
+        else if (event.type == "error") onEnd(new Error(event.errorMessage || "Unknown TTS error"));
       }
     });
   }

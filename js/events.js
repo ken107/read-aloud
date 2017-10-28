@@ -7,23 +7,35 @@ chrome.runtime.onInstalled.addListener(function() {
     title: chrome.i18n.getMessage("context_read_selection"),
     contexts: ["selection"]
   });
-  ajaxGet(config.serviceUrl + "/read-aloud/billing/reinstall")
-    .then(setInstallationId)
-    .catch(function() {})
 })
 
 chrome.contextMenus.onClicked.addListener(function(info, tab) {
-  if (info.menuItemId == "read-selection") stop().then(playText.bind(null, info.selectionText));
+  if (info.menuItemId == "read-selection")
+    stop().then(function() {
+      playText(info.selectionText, function(err) {
+        if (err) console.error(err);
+      })
+    })
 })
 
-function playText(text) {
-  if (!activeDoc) activeDoc = new Doc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), closeDoc);
+function playText(text, onEnd) {
+  if (!activeDoc) {
+    activeDoc = new Doc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), function(err) {
+      if (!err) closeDoc();
+      if (typeof onEnd == "function") onEnd(err);
+    })
+  }
   return activeDoc.play()
     .catch(function(err) {closeDoc(); throw err})
 }
 
-function play() {
-  if (!activeDoc) activeDoc = new Doc(new TabSource(), closeDoc);
+function play(onEnd) {
+  if (!activeDoc) {
+    activeDoc = new Doc(new TabSource(), function(err) {
+      if (!err) closeDoc();
+      if (typeof onEnd == "function") onEnd(err);
+    })
+  }
   return activeDoc.play()
     .catch(function(err) {closeDoc(); throw err})
 }

@@ -168,7 +168,16 @@ function Doc(source, onEnd) {
         .then(function(speech) {
           if (activeSpeech) return;
           activeSpeech = speech;
-          activeSpeech.options.onEnd = function() {activeSpeech = null; currentIndex++; readCurrent()};
+          activeSpeech.options.onEnd = function(err) {
+            if (err) {
+              if (onEnd) onEnd(err);
+            }
+            else {
+              activeSpeech = null;
+              currentIndex++;
+              readCurrent();
+            }
+          };
           if (rewinded) activeSpeech.gotoEnd();
           return activeSpeech.play();
         })
@@ -204,27 +213,14 @@ function Doc(source, onEnd) {
   }
 
   function getSpeechVoice(voiceName, lang) {
-    return Promise.resolve()
-      .then(function() {
-        if (voiceName && isPremiumVoice(voiceName)) {
-          return billing.getBalance()
-            .then(function(coupons) {
-              var balance = coupons.reduce(function(sum, c) {return sum + c.balance}, 0);
-              if (!balance) voiceName = null;
-            })
-            .catch(function(err) {
-              console.error(err);
-              voiceName = null;
-            })
-        }
-      })
-      .then(getVoices)
+    return getVoices()
       .then(function(voices) {
         if (voiceName) return findVoiceByName(voices, voiceName);
         else if (lang) {
           return findVoiceByLang(voices.filter(function(voice) {return isGoogleNative(voice.voiceName)}), lang)
             || findVoiceByLang(voices.filter(function(voice) {return !isRemoteVoice(voice.voiceName)}), lang)
-            || findVoiceByLang(voices.filter(function(voice) {return !isPremiumVoice(voice.voiceName)}), lang);
+            || findVoiceByLang(voices.filter(function(voice) {return !isPremiumVoice(voice.voiceName)}), lang)
+            || findVoiceByLang(voices, lang);
         }
         else return null;
       })

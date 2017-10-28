@@ -5,7 +5,9 @@ $(function() {
   $("#btnPlay").click(function() {
     getBackgroundPage()
       .then(function(master) {
-        return master.play()
+        return master.play(function(err) {
+            if (err) $("#status").text(err.message).show();
+          })
           .then(updateButtons)
           .then(master.getDocInfo)
           .then(function(docInfo) {return setState("lastUrl", docInfo && docInfo.url)})
