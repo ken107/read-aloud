@@ -23,9 +23,6 @@ $(function() {
       $(".status.success").show().delay(3000).fadeOut();
     });
   });
-  $("#voices").change(function() {
-    onVoiceChanged(this.value);
-  });
   $("#reset").click(function() {
     clearSettings().then(() => location.reload());
   });
@@ -39,7 +36,6 @@ function init(settings) {
     .then(function() {
       if (settings.voiceName) {
         $("#voices").val(settings.voiceName);
-        onVoiceChanged(settings.voiceName);
       }
     })
   $("#rate").slider("value", Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")));
@@ -66,17 +62,5 @@ function initVoices(voices) {
       .text(voice.voiceName)
       .appendTo($("#voices"));
   });
-}
-
-function onVoiceChanged(voiceName) {
-  if (isPremiumVoice(voiceName)) {
-    $("#balance").show();
-    billing.getBalance().then(function(rs) {
-      var total = rs.reduce(function(sum, r) {return sum + r.balance}, 0);
-      $("#balance > a").text(total);
-    })
-  }
-  else {
-    $("#balance").hide();
-  }
+  $("#premium").toggle(!voices.some(function(voice) {return isPremiumVoice(voice.voiceName)}));
 }
