@@ -13,18 +13,13 @@ function RemoteTTS(host) {
   if (!audio) audio = window.ttsAudio = document.createElement("AUDIO");
 
   this.speak = function(utterance, options, onEvent) {
-    getInstallationId()
-      .then(speak.bind(null, utterance, options, onEvent))
-  }
-
-  function speak(utterance, options, onEvent, installationId) {
     if (!onEvent) onEvent = options.onEvent;
     audio.pause();
     audio.volume = options.volume || 1;
     audio.defaultPlaybackRate = (options.rate || 1) * getRateMultiplier(options.voiceName);
-    audio.src = host + "/read-aloud/speak/" + options.lang + "/" + encodeURIComponent(options.voiceName) + "?k=" + installationId + "&q=" + encodeURIComponent(utterance);
+    audio.src = host + "/read-aloud/speak/" + options.lang + "/" + encodeURIComponent(options.voiceName) + "?q=" + encodeURIComponent(utterance);
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
-    audio.onerror =
+    audio.onerror = onEvent.bind(null, {type: 'error', errorMessage: "TTS server error"});
     audio.onended = onEvent.bind(null, {type: 'end', charIndex: utterance.length});
     audio.play();
   }
