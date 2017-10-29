@@ -14,14 +14,11 @@
   "options_voice_label": {
     "message": "Giọng đọc"
   },
-  "options_balance_label": {
-    "message": "Ký tự còn lại"
+  "options_premium_link": {
+    "message": "Tải thêm giọng đọc"
   },
   "options_rate_label": {
     "message": "Tốc độ đọc"
-  },
-  "options_rate_explain": {
-    "message": "2 nghĩa là nhanh gấp hai lần, .5 nghĩa là chậm lại một nửa."
   },
   "options_pitch_label": {
     "message": "Giọng cao/thấp"
@@ -46,9 +43,6 @@
   },
   "context_read_selection": {
     "message": "Đọc"
-  },
-  "context_read_here": {
-    "message": "Đọc từ chỗ này"
   },
   "error_no_voice": {
     "message": "Không có giọng đọc cho ngôn ngữ này ({lang})"

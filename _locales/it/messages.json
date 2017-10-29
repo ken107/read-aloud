@@ -14,14 +14,11 @@
   "options_voice_label": {
     "message": "Voce"
   },
-  "options_balance_label": {
-    "message": "Caratteri restanti"
+  "options_premium_link": {
+    "message": "Ottieni Voci Premium"
   },
   "options_rate_label": {
     "message": "Velocità"
-  },
-  "options_rate_explain": {
-    "message": ".5 è metà, 2 è il doppio."
   },
   "options_pitch_label": {
     "message": "Altezza"
@@ -46,9 +43,6 @@
   },
   "context_read_selection": {
     "message": "Leggi il testo selezionato"
-  },
-  "context_read_here": {
-    "message": "Leggi partendo da qui"
   },
   "error_no_voice": {
     "message": "Nessuna voce ({lang})"

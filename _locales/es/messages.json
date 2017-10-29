@@ -14,14 +14,11 @@
   "options_voice_label": {
     "message": "Voz"
   },
-  "options_balance_label": {
-    "message": "Caracteres restantes"
+  "options_premium_link": {
+    "message": "Obtener Voces Premium"
   },
   "options_rate_label": {
     "message": "Velocidad"
-  },
-  "options_rate_explain": {
-    "message": ".5 es media velocidad, 2 es doble velocidad."
   },
   "options_pitch_label": {
     "message": "Tono"
@@ -46,9 +43,6 @@
   },
   "context_read_selection": {
     "message": "Leer en voz alta el texto seleccionado"
-  },
-  "context_read_here": {
-    "message": "Leer en voz alta desde aquí"
   },
   "error_no_voice": {
     "message": "Sin voz ({lang})"

@@ -11,6 +11,7 @@ $(function() {
       step: $(this).data("step")
     })
   });
+  $("#premium a").attr("href", "https://chrome.google.com/webstore/detail/premium-text-to-speech-vo/emniggnjhffhdfbiamnnjbljgapijkfk?hl=" + getUserPreferredLanguage());
   $("#save").click(function() {
     updateSettings({
       voiceName: $("#voices").val(),
@@ -63,4 +64,8 @@ function initVoices(voices) {
       .appendTo($("#voices"));
   });
   $("#premium").toggle(!voices.some(function(voice) {return isPremiumVoice(voice.voiceName)}));
+}
+
+function getUserPreferredLanguage() {
+  return navigator.languages ? navigator.languages[0] : navigator.userLanguage || navigator.language;
 }

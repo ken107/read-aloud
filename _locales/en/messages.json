@@ -14,14 +14,11 @@
   "options_voice_label": {
     "message": "Voice"
   },
-  "options_balance_label": {
-    "message": "Characters remaining"
+  "options_premium_link": {
+    "message": "Get Premium Voices"
   },
   "options_rate_label": {
     "message": "Speed"
-  },
-  "options_rate_explain": {
-    "message": ".5 is half speed, 2 is double speed."
   },
   "options_pitch_label": {
     "message": "Pitch"
@@ -46,9 +43,6 @@
   },
   "context_read_selection": {
     "message": "Read aloud selected text"
-  },
-  "context_read_here": {
-    "message": "Read aloud starting from here"
   },
   "error_no_voice": {
     "message": "No voice ({lang})"

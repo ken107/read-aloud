@@ -91,7 +91,7 @@ function makeDoc() {
       else return new HtmlDoc();
     }
     else if (location.hostname == "drive.google.com") return new GDriveDoc();
-    else if (location.hostname == "read.amazon.com") return new KindleBook();
+    else if (/^read\.amazon\./.test(location.hostname)) return new KindleBook();
     else if (location.hostname == "www.quora.com") return new QuoraPage();
     else if (location.hostname == "www.khanacademy.org") return new KhanAcademy();
     else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
