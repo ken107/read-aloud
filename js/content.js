@@ -360,15 +360,31 @@ function HtmlDoc() {
 
   function parse() {
     //find blocks containing text
-    var textBlocks = [];
-    var walk = function() {
-      if ($(this).is(headingTags + ", a"));
-      else if (isTextBlock(this)) textBlocks.push(this);
-      else if ($(this).is("frame, iframe")) try {walk.call(this.contentDocument.body)} catch(err) {}
-      else $(this).children().each(walk);
-    };
-    walk.call(document.body);
-    textBlocks = $(textBlocks).filter(":visible").filter(notOutOfView).get();
+    var start = new Date();
+    var textBlocks = findTextBlocks(100);
+    var countChars = textBlocks.reduce(function(sum, elem) {return sum + (elem.innerText || elem.textContent).trim().length}, 0);
+    console.log("Found", textBlocks.length, "blocks", countChars, "chars in", new Date()-start, "ms");
+
+    if (countChars < 1000) {
+      textBlocks = findTextBlocks(3);
+      var texts = textBlocks.map(function(elem) {return (elem.innerText || elem.textContent).trim()});
+      console.log("Using lower threshold, found", textBlocks.length, "blocks", texts.join("").length, "chars");
+
+      //trim the head and the tail
+      var head, tail;
+      for (var i=3; i<texts.length && !head; i++) {
+        var dist = getGaussian(texts, 0, i);
+        if (texts[i].length > dist.mean + 2*dist.stdev) head = i;
+      }
+      for (var i=texts.length-4; i>=0 && !tail; i--) {
+        var dist = getGaussian(texts, i+1, texts.length);
+        if (texts[i].length > dist.mean + 2*dist.stdev) tail = i+1;
+      }
+      if (head||tail) {
+        textBlocks = textBlocks.slice(head||0, tail);
+        console.log("After trim,", textBlocks.length, "blocks remain");
+      }
+    }
 
     //mark the elements to be read
     var toRead = [];
@@ -383,17 +399,40 @@ function HtmlDoc() {
     return flatten(texts).filter(isNotEmpty);
   }
 
-  function isTextBlock(elem) {
+  function findTextBlocks(threshold) {
+    var walk = function() {
+      if ($(this).is(headingTags + ", ol, ul, dl, a[href], select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style"));
+      else if ($(this).is("frame, iframe")) try {walk.call(this.contentDocument.body)} catch(err) {}
+      else if (isTextBlock(this, threshold)) textBlocks.push(this);
+      else $(this).children().each(walk);
+    };
+    var textBlocks = [];
+    walk.call(document.body);
+    return $(textBlocks).filter(":visible").filter(notOutOfView).get();
+  }
+
+  function isTextBlock(elem, threshold) {
     return childNodes(elem).some(function(child) {
-      return child.nodeType == 1 && $(child).is("p") && child.innerText.trim().length > 100 ||
-        child.nodeType == 3 && child.nodeValue.trim().length > 100;
+      return child.nodeType == 1 && $(child).is("p") && child.innerText.trim().length >= threshold ||
+        child.nodeType == 3 && child.nodeValue.trim().length >= threshold;
     })
+  }
+
+  function getGaussian(texts, start, end) {
+    if (start == undefined) start = 0;
+    if (end == undefined) end = texts.length;
+    var sum = 0;
+    for (var i=start; i<end; i++) sum += texts[i].length;
+    var mean = sum / (end-start);
+    var variance = 0;
+    for (var i=start; i<end; i++) variance += (texts[i].length-mean)*(texts[i].length-mean);
+    return {mean: mean, stdev: Math.sqrt(variance)};
   }
 
   function getText(elem) {
     $(elem).find("ol, ul").each(function() {
       $(this).children("li").each(function(index) {
-        if (!$(this.firstChild).is(".read-aloud-numbering"))
+        if (!$(this.firstChild).is(".read-aloud-numbering") && this.textContent.trim())
           $("<span>").addClass("read-aloud-numbering").text((index +1) + ". ").prependTo(this);
       })
     });
