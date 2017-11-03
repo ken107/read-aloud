@@ -348,6 +348,7 @@ function KhanAcademy() {
 
 function HtmlDoc() {
   var headingTags = "H1, H2, H3, H4, H5, H6";
+  var ignoredTags = headingTags + ", p, a[href], select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style";
 
   this.getCurrentIndex = function() {
     return 0;
@@ -382,7 +383,7 @@ function HtmlDoc() {
       }
       if (head||tail) {
         textBlocks = textBlocks.slice(head||0, tail);
-        console.log("After trim,", textBlocks.length, "blocks remain");
+        console.log("Trimmed", head, tail);
       }
     }
 
@@ -401,8 +402,17 @@ function HtmlDoc() {
 
   function findTextBlocks(threshold) {
     var walk = function() {
-      if ($(this).is(headingTags + ", ol, ul, dl, a[href], select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style"));
+      if ($(this).is(ignoredTags));
       else if ($(this).is("frame, iframe")) try {walk.call(this.contentDocument.body)} catch(err) {}
+      else if ($(this).is("ol, ul, dl")) {
+        var containsTextBlocks = $(this).children("li, dd").get().some(function(child) {
+          return isTextBlock(child, threshold) ||
+            $(child).children(":not(" + ignoredTags + ")").get().some(function(grandchild) {
+              return isTextBlock(grandchild, threshold);
+            });
+        });
+        if (containsTextBlocks) textBlocks.push(this);
+      }
       else if (isTextBlock(this, threshold)) textBlocks.push(this);
       else $(this).children().each(walk);
     };
@@ -430,7 +440,7 @@ function HtmlDoc() {
   }
 
   function getText(elem) {
-    $(elem).find("ol, ul").each(function() {
+    $(elem).find("ol, ul").addBack("ol, ul").each(function() {
       $(this).children("li").each(function(index) {
         if (!$(this.firstChild).is(".read-aloud-numbering") && this.textContent.trim())
           $("<span>").addClass("read-aloud-numbering").text((index +1) + ". ").prependTo(this);
@@ -438,7 +448,7 @@ function HtmlDoc() {
     });
     $(elem).find(".read-aloud-numbering").show();
     var tmp = $(elem).find(":visible").filter(dontRead).toggle();
-    var texts = addMissingPunctuation(elem.innerText).trim().split(readAloud.paraSplitter);
+    var texts = addMissingPunctuation(elem.innerText || elem.textContent).trim().split(readAloud.paraSplitter);
     tmp.toggle();
     $(elem).find(".read-aloud-numbering").hide();
     return texts;
