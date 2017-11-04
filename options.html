@@ -3,7 +3,9 @@
 <head>
   <title>Read Aloud Options</title>
   <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+  <link rel="stylesheet" type="text/css" href="css/common.css">
   <link rel="stylesheet" type="text/css" href="css/options.css">
+
   <script src="js/es6-promise.auto.min.js"></script>
   <script src="js/jquery-3.1.1.min.js"></script>
   <script src="js/jquery-ui.min.js"></script>
@@ -24,8 +26,14 @@
     <a target="_blank" data-i18n="options_premium_link"></a>
   </div>
 
-  <div class="label" data-i18n="options_rate_label"></div>
+  <div class="label">
+    <span data-i18n="options_rate_label"></span>
+    <i id="rate-edit-button" class="material-icons">mode_edit</i>
+  </div>
   <div id="rate" class="slider" data-min="-1" data-max="1" data-step="0.05" data-pow="3"></div>
+  <div id="rate-input-div">
+    <input id="rate-input" type="text" maxlength="5" />x
+  </div>
 
   <div class="label" data-i18n="options_pitch_label"></div>
   <div id="pitch" class="slider" data-min="0" data-max="2" data-step="0.05"></div>
