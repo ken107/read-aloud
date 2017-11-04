@@ -363,12 +363,12 @@ function HtmlDoc() {
     //find blocks containing text
     var start = new Date();
     var textBlocks = findTextBlocks(100);
-    var countChars = textBlocks.reduce(function(sum, elem) {return sum + (elem.innerText || elem.textContent).trim().length}, 0);
+    var countChars = textBlocks.reduce(function(sum, elem) {return sum + elem.innerText.trim().length}, 0);
     console.log("Found", textBlocks.length, "blocks", countChars, "chars in", new Date()-start, "ms");
 
     if (countChars < 1000) {
       textBlocks = findTextBlocks(3);
-      var texts = textBlocks.map(function(elem) {return (elem.innerText || elem.textContent).trim()});
+      var texts = textBlocks.map(function(elem) {return elem.innerText.trim()});
       console.log("Using lower threshold, found", textBlocks.length, "blocks", texts.join("").length, "chars");
 
       //trim the head and the tail
@@ -441,14 +441,21 @@ function HtmlDoc() {
 
   function getText(elem) {
     $(elem).find("ol, ul").addBack("ol, ul").each(function() {
-      $(this).children("li").each(function(index) {
-        if (!$(this.firstChild).is(".read-aloud-numbering") && this.textContent.trim())
+      var text = $(this).children("li").eq(0).text().trim();
+      if (text && !/^\d/.test(text))
+        $(this).children("li").each(function(index) {
           $("<span>").addClass("read-aloud-numbering").text((index +1) + ". ").prependTo(this);
-      })
+        })
     });
     $(elem).find(".read-aloud-numbering").show();
     var tmp = $(elem).find(":visible").filter(dontRead).toggle();
-    var texts = addMissingPunctuation(elem.innerText || elem.textContent).trim().split(readAloud.paraSplitter);
+    var texts;
+    if ($(elem).children("p").length) {
+      texts = $(elem).children(":visible").get().map(function(child) {
+        return addMissingPunctuation(child.innerText).trim();
+      })
+    }
+    else texts = addMissingPunctuation(elem.innerText).trim().split(readAloud.paraSplitter);
     tmp.toggle();
     $(elem).find(".read-aloud-numbering").hide();
     return texts;
