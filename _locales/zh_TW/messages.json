@@ -1,0 +1,59 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: 文字語音朗讀助理"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "輕輕點擊，即可為您朗讀頁面上的文字。（現正支援超過 40 種以上語言）"
+  },
+  "options_heading": {
+    "message": "選項"
+  },
+  "options_voice_label": {
+    "message": "朗讀語音"
+  },
+  "options_premium_link": {
+    "message": "取得進階版語音"
+  },
+  "options_rate_label": {
+    "message": "朗讀速度"
+  },
+  "options_pitch_label": {
+    "message": "朗讀聲調"
+  },
+  "options_volume_label": {
+    "message": "朗讀音量"
+  },
+  "options_show_highlighting": {
+    "message": "標示朗讀文字"
+  },
+  "options_hotkey_label": {
+    "message": "快捷鍵"
+  },
+  "options_save_button": {
+    "message": "儲存"
+  },
+  "options_reset_button": {
+    "message": "重新設定"
+  },
+  "options_success_status": {
+    "message": "已儲存。"
+  },
+  "context_read_selection": {
+    "message": "朗讀所選文字"
+  },
+  "error_no_voice": {
+    "message": "尚未支援的語音 ({lang})"
+  },
+  "uploadpdf_message1": {
+    "message": "{extension_name} 無法存取在您電腦上的檔案。"
+  },
+  "uploadpdf_message2": {
+    "message": "您可以透過下方的表單上傳並閱讀您的 PDF 檔案；請放心，您的檔案會在閱讀完畢後立即被刪除。"
+  },
+  "uploadpdf_submit_button": {
+    "message": "上傳並開啟"
+  }
+}
