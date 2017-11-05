@@ -348,7 +348,7 @@ function KhanAcademy() {
 
 function HtmlDoc() {
   var headingTags = "H1, H2, H3, H4, H5, H6";
-  var ignoredTags = headingTags + ", p, a[href], select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style";
+  var ignoredTags = headingTags + ", p, a[href], select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style, footer, [class*=footer]";
 
   this.getCurrentIndex = function() {
     return 0;
