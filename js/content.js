@@ -396,7 +396,7 @@ function HtmlDoc() {
     $(toRead).addClass("read-aloud");   //for debugging only
 
     //extract texts
-    var texts = toRead.map(getText);
+    var texts = toRead.map(getTexts);
     return flatten(texts).filter(isNotEmpty);
   }
 
@@ -405,20 +405,23 @@ function HtmlDoc() {
       if ($(this).is(ignoredTags));
       else if ($(this).is("frame, iframe")) try {walk.call(this.contentDocument.body)} catch(err) {}
       else if ($(this).is("ol, ul, dl")) {
-        var containsTextBlocks = $(this).children("li, dd").get().some(function(child) {
-          return isTextBlock(child, threshold) ||
-            $(child).children(":not(" + ignoredTags + ")").get().some(function(grandchild) {
-              return isTextBlock(grandchild, threshold);
-            });
-        });
-        if (containsTextBlocks) textBlocks.push(this);
+        if (containsTextBlocks(this, threshold)) textBlocks.push(this);
       }
       else if (isTextBlock(this, threshold)) textBlocks.push(this);
       else $(this).children().each(walk);
     };
     var textBlocks = [];
     walk.call(document.body);
-    return $(textBlocks).filter(":visible").filter(notOutOfView).get();
+    return textBlocks.filter(isVisible);
+  }
+
+  function containsTextBlocks(list, threshold) {
+    return $(list).children("li, dd").get().some(function(child) {
+      return isTextBlock(child, threshold) ||
+        $(child).children(":not(" + ignoredTags + ")").get().some(function(grandchild) {
+          return isTextBlock(grandchild, threshold);
+        })
+    })
   }
 
   function isTextBlock(elem, threshold) {
@@ -426,6 +429,10 @@ function HtmlDoc() {
       return child.nodeType == 1 && $(child).is("p") && child.innerText.trim().length >= threshold ||
         child.nodeType == 3 && child.nodeValue.trim().length >= threshold;
     })
+  }
+
+  function isVisible(elem) {
+    return $(elem).is(":visible") && $(elem).offset().left >= 0;
   }
 
   function getGaussian(texts, start, end) {
@@ -439,32 +446,38 @@ function HtmlDoc() {
     return {mean: mean, stdev: Math.sqrt(variance)};
   }
 
-  function getText(elem) {
-    $(elem).find("ol, ul").addBack("ol, ul").each(function() {
-      var text = $(this).children("li").eq(0).text().trim();
-      if (text && !/^\d/.test(text))
-        $(this).children("li").each(function(index) {
-          $("<span>").addClass("read-aloud-numbering").text((index +1) + ". ").prependTo(this);
-        })
-    });
+  function getTexts(elem) {
+    $(elem).find("ol, ul").addBack("ol, ul").each(addNumbering);
     $(elem).find(".read-aloud-numbering").show();
-    var tmp = $(elem).find(":visible").filter(dontRead).toggle();
-    var texts;
-    if ($(elem).children("p").length) {
-      texts = $(elem).children(":visible").get().map(function(child) {
-        return addMissingPunctuation(child.innerText).trim();
-      })
-    }
-    else texts = addMissingPunctuation(elem.innerText).trim().split(readAloud.paraSplitter);
-    tmp.toggle();
+    var toHide = $(elem).find(":visible").filter(dontRead).hide();
+    var texts = $(elem).children("p").length && !childNodes(elem).some(isNonEmptyTextNode)
+      ? $(elem).children(":visible").get().map(getText)
+      : getText(elem).split(readAloud.paraSplitter);
+    toHide.show();
     $(elem).find(".read-aloud-numbering").hide();
     return texts;
+  }
+
+  function addNumbering() {
+    var children = $(this).children("li").filter(function() {return $(this).text().trim()});
+    if (!children.eq(0).text().trim().match(/^[(]?(\d|[a-zA-Z][).])/))
+      children.each(function(index) {
+        $("<span>").addClass("read-aloud-numbering").text((index +1) + ". ").prependTo(this);
+      })
   }
 
   function dontRead() {
     var float = $(this).css("float");
     var position = $(this).css("position");
     return $(this).is("sup") || float == "right" || position == "absolute" || position == "fixed";
+  }
+
+  function isNonEmptyTextNode(node) {
+    return node.nodeType == 3 && node.nodeValue.trim();
+  }
+
+  function getText(elem) {
+    return addMissingPunctuation(elem.innerText).trim();
   }
 
   function addMissingPunctuation(text) {
@@ -499,10 +512,6 @@ function HtmlDoc() {
     if (node.nodeType == 1 && !skipChildren && node.lastChild) return node.lastChild;
     if (node.previousSibling) return node.previousSibling;
     return previousNode(node.parentNode, true);
-  }
-
-  function notOutOfView() {
-    return $(this).offset().left >= 0;
   }
 
   function childNodes(elem) {
