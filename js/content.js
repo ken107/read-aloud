@@ -29,7 +29,8 @@ function startService(name, doc) {
 
   function getInfo(request) {
     var lang = document.documentElement.lang || $("html").attr("xml:lang");
-    if (lang == "en") lang = null;    //foreign language pages often erronenously declare lang="en"
+    lang = lang.replace(/_/g, '-');
+    if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return {
       isPdf: doc.isPdf,
       canSeek: doc.canSeek,
@@ -401,34 +402,44 @@ function HtmlDoc() {
   }
 
   function findTextBlocks(threshold) {
+    var isTextNode = function(node) {
+      return node.nodeType == 3 && node.nodeValue.trim().length >= threshold;
+    };
+    var isParagraphElem = function(node) {
+      return node.nodeType == 1 && $(node).is("p") && node.innerText.trim().length >= threshold;
+    };
+    var isTextBlock = function(elem) {
+      var childNodes = getChildNodes(elem);
+      return childNodes.some(isTextNode) || childNodes.some(isParagraphElem);
+    };
+    var containsTextBlocks = function(elem) {
+      var childElems = $(elem).children(":not(" + ignoredTags + ")").get();
+      return childElems.some(isTextBlock) || childElems.some(containsTextBlocks);
+    };
     var walk = function() {
-      if ($(this).is(ignoredTags));
-      else if ($(this).is("frame, iframe")) try {walk.call(this.contentDocument.body)} catch(err) {}
-      else if ($(this).is("ol, ul, dl")) {
-        if (containsTextBlocks(this, threshold)) textBlocks.push(this);
+      if ($(this).is("frame, iframe")) try {walk.call(this.contentDocument.body)} catch(err) {}
+      else if ($(this).is("dl")) textBlocks.push(this);
+      else if ($(this).is("ol, ul")) {
+        var childElems = $(this).children().get();
+        if (childElems.some(isTextBlock)) textBlocks.push(this);
+        else if (childElems.some(containsTextBlocks)) {
+          $(this).data("read-aloud-multi-block", true);
+          textBlocks.push(this);
+        }
       }
-      else if (isTextBlock(this, threshold)) textBlocks.push(this);
-      else $(this).children().each(walk);
+      else {
+        var childNodes = getChildNodes(this);
+        if (childNodes.some(isTextNode)) textBlocks.push(this);
+        else if (childNodes.some(isParagraphElem)) {
+          $(this).data("read-aloud-multi-block", true);
+          textBlocks.push(this);
+        }
+        else $(this).children(":not(" + ignoredTags + ")").each(walk);
+      }
     };
     var textBlocks = [];
     walk.call(document.body);
     return textBlocks.filter(isVisible);
-  }
-
-  function containsTextBlocks(list, threshold) {
-    return $(list).children("li, dd").get().some(function(child) {
-      return isTextBlock(child, threshold) ||
-        $(child).children(":not(" + ignoredTags + ")").get().some(function(grandchild) {
-          return isTextBlock(grandchild, threshold);
-        })
-    })
-  }
-
-  function isTextBlock(elem, threshold) {
-    return childNodes(elem).some(function(child) {
-      return child.nodeType == 1 && $(child).is("p") && child.innerText.trim().length >= threshold ||
-        child.nodeType == 3 && child.nodeValue.trim().length >= threshold;
-    })
   }
 
   function isVisible(elem) {
@@ -450,7 +461,7 @@ function HtmlDoc() {
     $(elem).find("ol, ul").addBack("ol, ul").each(addNumbering);
     $(elem).find(".read-aloud-numbering").show();
     var toHide = $(elem).find(":visible").filter(dontRead).hide();
-    var texts = $(elem).children("p").length && !childNodes(elem).some(isNonEmptyTextNode)
+    var texts = $(elem).data("read-aloud-multi-block")
       ? $(elem).children(":visible").get().map(getText)
       : getText(elem).split(readAloud.paraSplitter);
     toHide.show();
@@ -459,9 +470,9 @@ function HtmlDoc() {
   }
 
   function addNumbering() {
-    var children = $(this).children("li").filter(function() {return $(this).text().trim()});
-    if (!children.eq(0).text().trim().match(/^[(]?(\d|[a-zA-Z][).])/))
-      children.each(function(index) {
+    var text = $(this).children().eq(0).text().trim();
+    if (text && !text.match(/^[(]?(\d|[a-zA-Z][).])/))
+      $(this).children().each(function(index) {
         $("<span>").addClass("read-aloud-numbering").text((index +1) + ". ").prependTo(this);
       })
   }
@@ -470,10 +481,6 @@ function HtmlDoc() {
     var float = $(this).css("float");
     var position = $(this).css("position");
     return $(this).is("sup") || float == "right" || position == "absolute" || position == "fixed";
-  }
-
-  function isNonEmptyTextNode(node) {
-    return node.nodeType == 3 && node.nodeValue.trim();
   }
 
   function getText(elem) {
@@ -514,7 +521,7 @@ function HtmlDoc() {
     return previousNode(node.parentNode, true);
   }
 
-  function childNodes(elem) {
+  function getChildNodes(elem) {
     var result = [];
     var child = elem.firstChild;
     while (child) {

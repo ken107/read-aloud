@@ -60,8 +60,9 @@ function initialize(voices, settings) {
   });
 
   //dirty
-  $("#voices, #rate-input, input[name=highlighting]").change(setDirty);
+  $("#voices, input[name=highlighting]").change(setDirty);
   $("#rate, #pitch, #volume").on("slidechange", setDirty);
+  $("#rate-input").on("input", setDirty);
 
   //set state
   $("#voices").val(settings.voiceName || "");
