@@ -29,7 +29,7 @@ function startService(name, doc) {
 
   function getInfo(request) {
     var lang = document.documentElement.lang || $("html").attr("xml:lang");
-    lang = lang.replace(/_/g, '-');
+    if (lang) lang = lang.replace(/_/g, '-');
     if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return {
       isPdf: doc.isPdf,
@@ -122,7 +122,7 @@ function GoogleDoc() {
 
   function getTexts() {
     return $(".kix-paragraphrenderer", this).get()
-      .map(function(elem) {return elem.innerText.trim()})
+      .map(getInnerText)
       .filter(isNotEmpty);
   }
 }
@@ -148,7 +148,7 @@ function GDriveDoc() {
 
   function getTexts() {
     var texts = $("p", this).get()
-      .map(function(elem) {return elem.innerText.trim()})
+      .map(getInnerText)
       .filter(isNotEmpty);
     return fixParagraphs(texts);
   }
@@ -339,7 +339,7 @@ function KhanAcademy() {
       .add($("> :not(ul, ol), > ul > li, > ol > li", ".paragraph:not(.paragraph .paragraph)"))
       .get()
       .map(function(elem) {
-        var text = elem.innerText.trim();
+        var text = getInnerText(elem);
         if ($(elem).is("li")) return ($(elem).index() + 1) + ". " + text;
         else return text;
       })
@@ -348,8 +348,7 @@ function KhanAcademy() {
 
 
 function HtmlDoc() {
-  var headingTags = "H1, H2, H3, H4, H5, H6";
-  var ignoredTags = headingTags + ", p, a[href], select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style, footer, #footer";
+  var ignoreTags = "select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style, svg, aside, footer, #footer";
 
   this.getCurrentIndex = function() {
     return 0;
@@ -364,12 +363,12 @@ function HtmlDoc() {
     //find blocks containing text
     var start = new Date();
     var textBlocks = findTextBlocks(100);
-    var countChars = textBlocks.reduce(function(sum, elem) {return sum + elem.innerText.trim().length}, 0);
+    var countChars = textBlocks.reduce(function(sum, elem) {return sum + getInnerText(elem).length}, 0);
     console.log("Found", textBlocks.length, "blocks", countChars, "chars in", new Date()-start, "ms");
 
     if (countChars < 1000) {
       textBlocks = findTextBlocks(3);
-      var texts = textBlocks.map(function(elem) {return elem.innerText.trim()});
+      var texts = textBlocks.map(getInnerText);
       console.log("Using lower threshold, found", textBlocks.length, "blocks", texts.join("").length, "chars");
 
       //trim the head and the tail
@@ -402,18 +401,20 @@ function HtmlDoc() {
   }
 
   function findTextBlocks(threshold) {
+    var skipTags = "h1, h2, h3, h4, h5, h6, p, a[href], " + ignoreTags;
     var isTextNode = function(node) {
-      return node.nodeType == 3 && node.nodeValue.trim().length >= threshold;
+      return node.nodeType == 3 && node.nodeValue.trim().length >= 3;
     };
     var isParagraphElem = function(node) {
-      return node.nodeType == 1 && $(node).is("p") && node.innerText.trim().length >= threshold;
+      return node.nodeType == 1 && $(node).is("p") && getInnerText(node).length >= threshold;
     };
     var isTextBlock = function(elem) {
       var childNodes = getChildNodes(elem);
-      return childNodes.some(isTextNode) || childNodes.some(isParagraphElem);
+      return childNodes.some(isTextNode) && getInnerText(elem).length >= threshold ||
+        childNodes.some(isParagraphElem);
     };
     var containsTextBlocks = function(elem) {
-      var childElems = $(elem).children(":not(" + ignoredTags + ")").get();
+      var childElems = $(elem).children(":not(" + skipTags + ")").get();
       return childElems.some(isTextBlock) || childElems.some(containsTextBlocks);
     };
     var walk = function() {
@@ -429,12 +430,12 @@ function HtmlDoc() {
       }
       else {
         var childNodes = getChildNodes(this);
-        if (childNodes.some(isTextNode)) textBlocks.push(this);
+        if (childNodes.some(isTextNode) && getInnerText(this).length >= threshold) textBlocks.push(this);
         else if (childNodes.some(isParagraphElem)) {
           $(this).data("read-aloud-multi-block", true);
           textBlocks.push(this);
         }
-        else $(this).children(":not(" + ignoredTags + ")").each(walk);
+        else $(this).children(":not(" + skipTags + ")").each(walk);
       }
     };
     var textBlocks = [];
@@ -458,21 +459,21 @@ function HtmlDoc() {
   }
 
   function getTexts(elem) {
-    $(elem).find("ol, ul").addBack("ol, ul").each(addNumbering);
-    $(elem).find(".read-aloud-numbering").show();
     var toHide = $(elem).find(":visible").filter(dontRead).hide();
+    $(elem).find("ol, ul").addBack("ol, ul").each(addNumbering);
     var texts = $(elem).data("read-aloud-multi-block")
       ? $(elem).children(":visible").get().map(getText)
       : getText(elem).split(readAloud.paraSplitter);
+    $(elem).find(".read-aloud-numbering").remove();
     toHide.show();
-    $(elem).find(".read-aloud-numbering").hide();
     return texts;
   }
 
   function addNumbering() {
-    var text = $(this).children().eq(0).text().trim();
+    var children = $(this).children();
+    var text = children.length ? getInnerText(children.get(0)) : null;
     if (text && !text.match(/^[(]?(\d|[a-zA-Z][).])/))
-      $(this).children().each(function(index) {
+      children.each(function(index) {
         $("<span>").addClass("read-aloud-numbering").text((index +1) + ". ").prependTo(this);
       })
   }
@@ -493,18 +494,19 @@ function HtmlDoc() {
 
   function findHeadingsFor(block, prevBlock) {
     var result = [];
-    var firstInnerElem = $(block).find(headingTags + ", p").filter(":visible").get(0);
+    var firstInnerElem = $(block).find("h1, h2, h3, h4, h5, h6, p").filter(":visible").get(0);
     var currentLevel = getHeadingLevel(firstInnerElem);
     var node = previousNode(block, true);
     while (node && node != prevBlock) {
-      if (node.nodeType == 1 && $(node).is(":visible")) {
+      var ignore = $(node).is(ignoreTags);
+      if (!ignore && node.nodeType == 1 && $(node).is(":visible")) {
         var level = getHeadingLevel(node);
         if (level < currentLevel) {
           result.push(node);
           currentLevel = level;
         }
       }
-      node = previousNode(node);
+      node = previousNode(node, ignore);
     }
     return result.reverse();
   }
@@ -538,6 +540,11 @@ function HtmlDoc() {
 
 
 //helpers --------------------------
+
+function getInnerText(elem) {
+  var text = elem.innerText;
+  return text ? text.trim() : "";
+}
 
 function isNotEmpty(text) {
   return text;
