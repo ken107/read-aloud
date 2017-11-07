@@ -428,6 +428,16 @@ function HtmlDoc() {
           textBlocks.push(this);
         }
       }
+      else if ($(this).is("tbody")) {
+        var rows = $(this).children();
+        if (rows.length > 3 || rows.eq(0).children().length > 3) {
+          if (rows.get().some(containsTextBlocks)) {
+            $(this).data("read-aloud-multi-block", true);
+            textBlocks.push(this);
+          }
+        }
+        else rows.each(walk);
+      }
       else {
         var childNodes = getChildNodes(this);
         if (childNodes.some(isTextNode) && getInnerText(this).length >= threshold) textBlocks.push(this);
