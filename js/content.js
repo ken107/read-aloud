@@ -409,7 +409,7 @@ function HtmlDoc() {
       return node.nodeType == 1 && $(node).is("p") && getInnerText(node).length >= threshold;
     };
     var isTextBlock = function(elem) {
-      return someChildNodes(isTextNode) && getInnerText(elem).length >= threshold || someChildNodes(isParagraphElem);
+      return someChildNodes(elem, isTextNode) && getInnerText(elem).length >= threshold || someChildNodes(elem, isParagraphElem);
     };
     var containsTextBlocks = function(elem) {
       var childElems = $(elem).children(":not(" + skipTags + ")").get();
@@ -435,8 +435,8 @@ function HtmlDoc() {
         else rows.each(walk);
       }
       else {
-        if (someChildNodes(isTextNode) && getInnerText(this).length >= threshold) addBlock(this);
-        else if (someChildNodes(isParagraphElem)) addBlock(this, true);
+        if (someChildNodes(this, isTextNode) && getInnerText(this).length >= threshold) addBlock(this);
+        else if (someChildNodes(this, isParagraphElem)) addBlock(this, true);
         else $(this).children(":not(" + skipTags + ")").each(walk);
       }
     };
