@@ -409,52 +409,42 @@ function HtmlDoc() {
       return node.nodeType == 1 && $(node).is("p") && getInnerText(node).length >= threshold;
     };
     var isTextBlock = function(elem) {
-      var childNodes = getChildNodes(elem);
-      return childNodes.some(isTextNode) && getInnerText(elem).length >= threshold ||
-        childNodes.some(isParagraphElem);
+      return someChildNodes(isTextNode) && getInnerText(elem).length >= threshold || someChildNodes(isParagraphElem);
     };
     var containsTextBlocks = function(elem) {
       var childElems = $(elem).children(":not(" + skipTags + ")").get();
       return childElems.some(isTextBlock) || childElems.some(containsTextBlocks);
     };
+    var addBlock = function(elem, multi) {
+      if (multi) $(elem).data("read-aloud-multi-block", true);
+      textBlocks.push(elem);
+    };
     var walk = function() {
       if ($(this).is("frame, iframe")) try {walk.call(this.contentDocument.body)} catch(err) {}
-      else if ($(this).is("dl")) textBlocks.push(this);
+      else if ($(this).is("dl")) addBlock(this);
       else if ($(this).is("ol, ul")) {
-        var childElems = $(this).children().get();
-        if (childElems.some(isTextBlock)) textBlocks.push(this);
-        else if (childElems.some(containsTextBlocks)) {
-          $(this).data("read-aloud-multi-block", true);
-          textBlocks.push(this);
-        }
+        var items = $(this).children().get();
+        if (items.some(isTextBlock)) addBlock(this);
+        else if (items.some(containsTextBlocks)) addBlock(this, true);
       }
       else if ($(this).is("tbody")) {
         var rows = $(this).children();
         if (rows.length > 3 || rows.eq(0).children().length > 3) {
-          if (rows.get().some(containsTextBlocks)) {
-            $(this).data("read-aloud-multi-block", true);
-            textBlocks.push(this);
-          }
+          if (rows.get().some(containsTextBlocks)) addBlock(this, true);
         }
         else rows.each(walk);
       }
       else {
-        var childNodes = getChildNodes(this);
-        if (childNodes.some(isTextNode) && getInnerText(this).length >= threshold) textBlocks.push(this);
-        else if (childNodes.some(isParagraphElem)) {
-          $(this).data("read-aloud-multi-block", true);
-          textBlocks.push(this);
-        }
+        if (someChildNodes(isTextNode) && getInnerText(this).length >= threshold) addBlock(this);
+        else if (someChildNodes(isParagraphElem)) addBlock(this, true);
         else $(this).children(":not(" + skipTags + ")").each(walk);
       }
     };
     var textBlocks = [];
     walk.call(document.body);
-    return textBlocks.filter(isVisible);
-  }
-
-  function isVisible(elem) {
-    return $(elem).is(":visible") && $(elem).offset().left >= 0;
+    return textBlocks.filter(function(elem) {
+      return $(elem).is(":visible") && $(elem).offset().left >= 0;
+    })
   }
 
   function getGaussian(texts, start, end) {
@@ -533,14 +523,13 @@ function HtmlDoc() {
     return previousNode(node.parentNode, true);
   }
 
-  function getChildNodes(elem) {
-    var result = [];
+  function someChildNodes(elem, test) {
     var child = elem.firstChild;
     while (child) {
-      result.push(child);
+      if (test(child)) return true;
       child = child.nextSibling;
     }
-    return result;
+    return false;
   }
 
   function flatten(array) {
