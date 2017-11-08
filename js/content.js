@@ -405,15 +405,18 @@ function HtmlDoc() {
     var isTextNode = function(node) {
       return node.nodeType == 3 && node.nodeValue.trim().length >= 3;
     };
-    var isParagraphElem = function(node) {
+    var isParagraph = function(node) {
       return node.nodeType == 1 && $(node).is("p") && getInnerText(node).length >= threshold;
     };
-    var isTextBlock = function(elem) {
-      return someChildNodes(elem, isTextNode) && getInnerText(elem).length >= threshold || someChildNodes(elem, isParagraphElem);
+    var hasTextNodes = function(elem) {
+      return someChildNodes(elem, isTextNode) && getInnerText(elem).length >= threshold;
+    };
+    var hasParagraphs = function(elem) {
+      return someChildNodes(elem, isParagraph);
     };
     var containsTextBlocks = function(elem) {
       var childElems = $(elem).children(":not(" + skipTags + ")").get();
-      return childElems.some(isTextBlock) || childElems.some(containsTextBlocks);
+      return childElems.some(hasTextNodes) || childElems.some(hasParagraphs) || childElems.some(containsTextBlocks);
     };
     var addBlock = function(elem, multi) {
       if (multi) $(elem).data("read-aloud-multi-block", true);
@@ -424,7 +427,8 @@ function HtmlDoc() {
       else if ($(this).is("dl")) addBlock(this);
       else if ($(this).is("ol, ul")) {
         var items = $(this).children().get();
-        if (items.some(isTextBlock)) addBlock(this);
+        if (items.some(hasTextNodes)) addBlock(this);
+        else if (items.some(hasParagraphs)) addBlock(this, true);
         else if (items.some(containsTextBlocks)) addBlock(this, true);
       }
       else if ($(this).is("tbody")) {
@@ -435,8 +439,8 @@ function HtmlDoc() {
         else rows.each(walk);
       }
       else {
-        if (someChildNodes(this, isTextNode) && getInnerText(this).length >= threshold) addBlock(this);
-        else if (someChildNodes(this, isParagraphElem)) addBlock(this, true);
+        if (hasTextNodes(this)) addBlock(this);
+        else if (hasParagraphs(this)) addBlock(this, true);
         else $(this).children(":not(" + skipTags + ")").each(walk);
       }
     };
