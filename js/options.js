@@ -59,6 +59,11 @@ function initialize(voices, settings) {
     clearSettings().then(() => location.reload());
   });
 
+  //hot key
+  $("#hotkeys-link").click(function() {
+    chrome.tabs.create({url: 'chrome://extensions/configureCommands'});
+  });
+
   //dirty
   $("#voices, input[name=highlighting]").change(setDirty);
   $("#rate, #pitch, #volume").on("slidechange", setDirty);

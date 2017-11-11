@@ -29,8 +29,8 @@
   "options_show_highlighting": {
     "message": "Highlight câu đang đọc"
   },
-  "options_hotkey_label": {
-    "message": "Phím tắt"
+  "options_hotkeys_link": {
+    "message": "Chỉnh sửa phím tắt"
   },
   "options_save_button": {
     "message": "Lưu"

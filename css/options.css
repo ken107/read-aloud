@@ -58,3 +58,9 @@
 #rate-input {
   width: 50px;
 }
+
+#hotkeys-link {
+  color: gray;
+  cursor: pointer;
+  text-decoration: underline;
+}

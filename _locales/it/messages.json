@@ -29,8 +29,8 @@
   "options_show_highlighting": {
     "message": "Evidenzia Testo"
   },
-  "options_hotkey_label": {
-    "message": "Scorciatoia"
+  "options_hotkeys_link": {
+    "message": "Modifica i tasti di scelta rapida"
   },
   "options_save_button": {
     "message": "Salva"

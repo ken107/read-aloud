@@ -29,8 +29,8 @@
   "options_show_highlighting": {
     "message": "Text Highlighting"
   },
-  "options_hotkey_label": {
-    "message": "Shortcut"
+  "options_hotkeys_link": {
+    "message": "Edit shortcut keys"
   },
   "options_save_button": {
     "message": "Save"

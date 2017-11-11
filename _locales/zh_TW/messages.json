@@ -29,8 +29,8 @@
   "options_show_highlighting": {
     "message": "標示朗讀文字"
   },
-  "options_hotkey_label": {
-    "message": "快捷鍵"
+  "options_hotkeys_link": {
+    "message": "編輯快捷鍵"
   },
   "options_save_button": {
     "message": "儲存"

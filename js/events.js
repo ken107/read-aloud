@@ -18,6 +18,19 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
     })
 })
 
+chrome.commands.onCommand.addListener(function(command) {
+  if (command == "play") {
+    getPlaybackState()
+      .then(function(state) {
+        if (state == "PLAYING") return pause();
+        else if (state == "STOPPED" || state == "PAUSED") return play();
+      })
+  }
+  else if (command == "stop") stop();
+  else if (command == "forward") forward();
+  else if (command == "rewind") rewind();
+})
+
 function playText(text, onEnd) {
   if (!activeDoc) {
     activeDoc = new Doc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), function(err) {
