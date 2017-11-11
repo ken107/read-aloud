@@ -167,17 +167,17 @@ function ajaxGet(sUrl) {
   })
 }
 
-function ajaxPost(sUrl, oData) {
+function ajaxPost(sUrl, oData, sType) {
   return new Promise(function(fulfill, reject) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", sUrl, true);
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.setRequestHeader("Content-type", sType == "json" ? "application/json" : "application/x-www-form-urlencoded");
     xhr.onreadystatechange = function() {
       if (xhr.readyState == XMLHttpRequest.DONE) {
         if (xhr.status == 200) fulfill(xhr.responseText);
         else reject(new Error(xhr.responseText));
       }
     };
-    xhr.send(urlEncode(oData));
+    xhr.send(sType == "json" ? JSON.stringify(oData) : urlEncode(oData));
   })
 }

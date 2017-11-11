@@ -193,6 +193,12 @@ function Doc(source, onEnd) {
         fulfill(result.languages[0] && result.languages[0].language);
       })
     })
+    .then(function(lang) {
+      return lang ||
+        ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
+          .then(JSON.parse)
+          .then(function(list) {return list[0] && list[0].language})
+    })
   }
 
   function getSpeech(texts) {
