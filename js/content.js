@@ -33,6 +33,7 @@ function startService(name, doc) {
     if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return {
       isPdf: doc.isPdf,
+      isGoogleDocs: doc.isGoogleDocs,
       canSeek: doc.canSeek,
       url: location.href,
       title: document.title,
@@ -106,12 +107,22 @@ function GoogleDoc() {
   var viewport = $(".kix-appview-editor").get(0);
   var pages = $(".kix-page");
 
+  this.isGoogleDocs = true;
+
   this.getCurrentIndex = function() {
+    var doc = googleDocsUtil.getGoogleDocument();
+    if (doc.selectedText) return 9999;
+
     for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > viewport.scrollTop+$(viewport).height()/2) break;
     return i-1;
   }
 
   this.getTexts = function(index) {
+    if (index == 9999) {
+      var doc = googleDocsUtil.getGoogleDocument();
+      return [doc.selectedText];
+    }
+
     var page = pages.get(index);
     if (page) {
       viewport.scrollTop = $(page).position().top;

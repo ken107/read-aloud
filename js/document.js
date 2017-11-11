@@ -28,6 +28,10 @@ function TabSource() {
           .then(insertCSS.bind(null, "css/jquery-ui.min.css"))
           .then(function() {return result});
       }
+      else if (result.isGoogleDocs) {
+        return executeFile("js/googleDocsUtil.js")
+          .then(function() {return result});
+      }
       else return result;
     })
     .then(function(result) {
