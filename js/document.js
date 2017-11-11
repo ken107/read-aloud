@@ -187,18 +187,18 @@ function Doc(source, onEnd) {
   function detectLanguage(texts) {
     var text = "";
     for (var i=0; i<texts.length && text.length<500; i++) text += (texts[i] + " ");
-    return new Promise(function(fulfill) {
-      chrome.i18n.detectLanguage(text, function(result) {
-        result.languages.sort(function(a,b) {return b.percentage-a.percentage});
-        fulfill(result.languages[0] && result.languages[0].language);
+    if (chrome.i18n.detectLanguage)
+      return new Promise(function(fulfill) {
+        chrome.i18n.detectLanguage(text, function(result) {
+          var list = result.languages.filter(function(item) {return item.language != "und"});
+          list.sort(function(a,b) {return b.percentage-a.percentage});
+          fulfill(list[0] && list[0].language);
+        })
       })
-    })
-    .then(function(lang) {
-      return lang ||
-        ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
-          .then(JSON.parse)
-          .then(function(list) {return list[0] && list[0].language})
-    })
+    else
+      return ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
+        .then(JSON.parse)
+        .then(function(list) {return list[0] && list[0].language})
   }
 
   function getSpeech(texts) {
