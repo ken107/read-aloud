@@ -99,16 +99,6 @@ function rewind() {
   else return Promise.reject(new Error("Can't rewind, not active"));
 }
 
-function gotoPage(index) {
-  if (activeDoc) return activeDoc.gotoPage(index);
-  else return Promise.reject(new Error("Can't goto page, not active"));
-}
-
-function getCurrentPage() {
-  if (activeDoc) return activeDoc.getCurrentPage();
-  else return Promise.resolve(0);
-}
-
 function reportIssue(subject, details) {
   return ajaxPost(config.serviceUrl + "/read-aloud/report-issue", {url: subject, comment: details});
 }

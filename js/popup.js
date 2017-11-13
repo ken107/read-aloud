@@ -25,20 +25,6 @@ $(function() {
   $("#btnSettings").click(function() {location.href = "options.html"});
   $("#btnForward").click(function() {getBackgroundPage().then(callMethod("forward")).then(updateButtons)});
   $("#btnRewind").click(function() {getBackgroundPage().then(callMethod("rewind")).then(updateButtons)});
-  $("#hlPageNo").click(function() {
-    showGotoPage = true;
-    updateButtons()
-      .then(function() {
-        $("#gotoPageForm input[name=pageNo]").val("").focus();
-      })
-  });
-  $("#gotoPageForm").submit(function() {
-    showGotoPage = false;
-    var pageNo = this.pageNo.value;
-    if (isNaN(pageNo)) updateButtons();
-    else getBackgroundPage().then(callMethod("gotoPage", [pageNo-1])).then(updateButtons);
-    return false;
-  });
 
   updateButtons()
     .then(getBackgroundPage)
@@ -55,19 +41,16 @@ function updateButtons() {
       getSettings(),
       master.getPlaybackState(),
       master.getDocInfo(),
-      master.getCurrentPage(),
       master.getActiveSpeech()
     ])
   })
-  .then(spread(function(settings, state, docInfo, pageIndex, speech) {
+  .then(spread(function(settings, state, docInfo, speech) {
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING");
-    $("#hlPageNo").toggle(Boolean(docInfo && docInfo.canSeek && !showGotoPage)).text("Page " + (pageIndex+1));
-    $("#gotoPageForm").toggle(Boolean(docInfo && docInfo.canSeek && showGotoPage));
     $("#attribution").toggle(Boolean(speech && isGoogleTranslate(speech.options.voiceName)));
     $("#highlight").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "PAUSED" || state == "PLAYING"));
 

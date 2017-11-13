@@ -4,6 +4,7 @@
 }
 
 #buttons {
+  min-width: 100px;
   text-align: center;
   margin-top: 15px;
 }
@@ -34,13 +35,6 @@
 }
 #buttons-2 .button-1 {
   font-size: 14px;
-}
-
-#playlist {
-  margin-top: 10px;
-  text-align: center;
-  font-size: small;
-  width: 100px;
 }
 
 #highlight {

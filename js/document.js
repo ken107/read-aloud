@@ -110,8 +110,6 @@ function Doc(source, onEnd) {
   this.getActiveSpeech = getActiveSpeech;
   this.forward = forward;
   this.rewind = rewind;
-  this.gotoPage = gotoPage;
-  this.getCurrentPage = getCurrentPage;
 
   //method close
   function close() {
@@ -303,15 +301,5 @@ function Doc(source, onEnd) {
 
   function rewindPage() {
     return stop().then(function() {currentIndex--; readCurrent(true)});
-  }
-
-  //method gotoPage
-  function gotoPage(index) {
-    return stop().then(function() {currentIndex = index; readCurrent()});
-  }
-
-  //method getCurrentPage
-  function getCurrentPage() {
-    return Promise.resolve(currentIndex);
   }
 }

@@ -32,7 +32,6 @@ function startService(name, doc) {
     if (lang) lang = lang.replace(/_/g, '-');
     if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return {
-      canSeek: doc.canSeek,
       url: location.href,
       title: document.title,
       lang: lang
@@ -211,28 +210,81 @@ function KindleBook() {
 
 
 function PdfDoc(url) {
-  var pdf;
-  this.canSeek = true;
+  var viewerBase = "https://assets.lsdsoftware.com/read-aloud/pdf-viewer/web/";
 
-  this.ready = readAloud.loadScript(chrome.runtime.getURL("js/jquery-ui.min.js"))
-    .then(readAloud.loadCss.bind(null, chrome.runtime.getURL("css/jquery-ui.min.css")))
-    .then(readAloud.loadScript.bind(null, chrome.runtime.getURL("js/pdf.js")))
-    .then(function() {
-      PDFJS.workerSrc = chrome.runtime.getURL("/js/pdf.worker.js");
-      return PDFJS.getDocument(url).promise.then(function(result) {pdf = result});
+  if (/^file:/.test(url)) {
+    this.ready = readAloud.loadScript(chrome.runtime.getURL("js/jquery-ui.min.js"))
+      .then(readAloud.loadCss.bind(null, chrome.runtime.getURL("css/jquery-ui.min.css")))
+      .then(showUploadDialog)
+  }
+  else {
+    this.ready = readAloud.loadCss(viewerBase + "viewer.css")
+      .then(loadViewerHtml)
+      .then(appendLocaleResourceLink)
+      .then(readAloud.loadScript.bind(null, viewerBase + "../build/pdf.js"))
+      .then(rebaseUrls)
+      .then(readAloud.loadScript.bind(null, viewerBase + "pdf.viewer.js", viewerJsPreprocessor))
+      .then(loadPdf)
+  }
+
+  function loadViewerHtml() {
+    return new Promise(function(fulfill, reject) {
+      $.ajax(viewerBase + "viewer.html", {
+        dataType: "text",
+        success: function(text) {
+          var start = text.indexOf(">", text.indexOf("<body")) +1;
+          var end = text.indexOf("</body>");
+          document.body.innerHTML = text.slice(start, end);
+          fulfill();
+        },
+        error: function() {
+          reject(new Error("Failed to load viewer html"));
+        }
+      })
     })
+  }
+
+  function appendLocaleResourceLink() {
+    $('<link>')
+      .appendTo("head")
+      .attr({rel: "resource", type: "application/l10n", href: viewerBase + "locale/locale.properties"});
+  }
+
+  function rebaseUrls() {
+    var wrap = function(prop) {
+      var value = PDFJS[prop];
+      Object.defineProperty(PDFJS, prop, {
+        enumerable: true,
+        configurable: true,
+        get: function() {return viewerBase + value},
+        set: function(val) {value = val}
+      })
+    };
+    wrap("imageResourcesPath");
+    wrap("workerSrc");
+    wrap("cMapUrl");
+  }
+
+  function viewerJsPreprocessor(text) {
+    return text.replace("compressed.tracemonkey-pldi-09.pdf", "");
+  }
+
+  function loadPdf() {
+    return PDFViewerApplication.open(url);
+  }
 
   this.getCurrentIndex = function() {
-    return 0;
+    var pageNo = PDFViewerApplication.pdfViewer.currentPageNumber;
+    return pageNo ? pageNo-1 : 0;
   }
 
   this.getTexts = function(index) {
-    if (/^file:/.test(url)) {
-      showUploadDialog();
-      return Promise.resolve(null);
+    var pdf = PDFViewerApplication.pdfDocument;
+    if (index < pdf.numPages) {
+      PDFViewerApplication.pdfViewer.currentPageNumber = index+1;
+      return pdf.getPage(index+1).then(getPageTexts);
     }
-      if (index < pdf.numPages) return pdf.getPage(index+1).then(getPageTexts);
-      else return null;
+    else return null;
   }
 
   function getPageTexts(page) {
@@ -605,12 +657,12 @@ readAloud.loadCss = function(url) {
   return Promise.resolve();
 }
 
-readAloud.loadScript = function(url) {
+readAloud.loadScript = function(url, preprocess) {
   return new Promise(function(fulfill, reject) {
     $.ajax(url, {
       dataType: "text",
       success: function(text) {
-        eval.call(window, text);
+        eval.call(window, preprocess ? preprocess(text) : text);
         fulfill();
       },
       error: function() {

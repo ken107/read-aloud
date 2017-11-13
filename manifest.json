@@ -28,9 +28,7 @@
   "web_accessible_resources": [
     "js/jquery-ui.min.js",
     "css/jquery-ui.min.css",
-    "js/googleDocsUtil.js",
-    "js/pdf.js",
-    "js/pdf.worker.js"
+    "js/googleDocsUtil.js"
   ],
   "background": {
     "scripts": [
