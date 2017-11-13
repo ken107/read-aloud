@@ -32,8 +32,6 @@ function startService(name, doc) {
     if (lang) lang = lang.replace(/_/g, '-');
     if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return {
-      isPdf: doc.isPdf,
-      isGoogleDocs: doc.isGoogleDocs,
       canSeek: doc.canSeek,
       url: location.href,
       title: document.title,
@@ -107,7 +105,7 @@ function GoogleDoc() {
   var viewport = $(".kix-appview-editor").get(0);
   var pages = $(".kix-page");
 
-  this.isGoogleDocs = true;
+  this.ready = readAloud.loadScript(chrome.runtime.getURL("js/googleDocsUtil.js"));
 
   this.getCurrentIndex = function() {
     var doc = googleDocsUtil.getGoogleDocument();
@@ -214,8 +212,15 @@ function KindleBook() {
 
 function PdfDoc(url) {
   var pdf;
-  this.isPdf = true;
   this.canSeek = true;
+
+  this.ready = readAloud.loadScript(chrome.runtime.getURL("js/jquery-ui.min.js"))
+    .then(readAloud.loadCss.bind(null, chrome.runtime.getURL("css/jquery-ui.min.css")))
+    .then(readAloud.loadScript.bind(null, chrome.runtime.getURL("js/pdf.js")))
+    .then(function() {
+      PDFJS.workerSrc = chrome.runtime.getURL("/js/pdf.worker.js");
+      return PDFJS.getDocument(url).promise.then(function(result) {pdf = result});
+    })
 
   this.getCurrentIndex = function() {
     return 0;
@@ -226,10 +231,8 @@ function PdfDoc(url) {
       showUploadDialog();
       return Promise.resolve(null);
     }
-    return ready().then(function() {
       if (index < pdf.numPages) return pdf.getPage(index+1).then(getPageTexts);
       else return null;
-    })
   }
 
   function getPageTexts(page) {
@@ -243,14 +246,6 @@ function PdfDoc(url) {
         return lines.map(function(line) {return line.trim()});
       })
       .then(fixParagraphs)
-  }
-
-  function ready() {
-    if (pdf) return Promise.resolve();
-    else {
-      PDFJS.workerSrc = chrome.runtime.getURL("/js/pdf.worker.js");
-      return PDFJS.getDocument(url).promise.then(function(result) {pdf = result});
-    }
   }
 
   function showUploadDialog() {
@@ -602,4 +597,25 @@ function tryGetTexts(getTexts, millis) {
       setTimeout(fulfill, millis);
     });
   }
+}
+
+readAloud.loadCss = function(url) {
+  if (!$("head").length) $("<head>").prependTo("html");
+  $("<link>").appendTo("head").attr({type: "text/css", rel: "stylesheet", href: url});
+  return Promise.resolve();
+}
+
+readAloud.loadScript = function(url) {
+  return new Promise(function(fulfill, reject) {
+    $.ajax(url, {
+      dataType: "text",
+      success: function(text) {
+        eval.call(window, text);
+        fulfill();
+      },
+      error: function() {
+        reject(new Error("Failed to load script"));
+      }
+    })
+  })
 }
