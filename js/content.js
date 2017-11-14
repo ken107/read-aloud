@@ -211,11 +211,13 @@ function KindleBook() {
 
 function PdfDoc(url) {
   var viewerBase = "https://assets.lsdsoftware.com/read-aloud/pdf-viewer/web/";
+  var uploadDialog;
 
   if (/^file:/.test(url)) {
-    this.ready = readAloud.loadScript(chrome.runtime.getURL("js/jquery-ui.min.js"))
-      .then(readAloud.loadCss.bind(null, chrome.runtime.getURL("css/jquery-ui.min.css")))
-      .then(showUploadDialog)
+    this.ready = readAloud.loadCss(chrome.runtime.getURL("css/jquery-ui.min.css"))
+      .then(readAloud.loadScript.bind(null, chrome.runtime.getURL("js/jquery-ui.min.js")))
+      .then(createUploadDialog)
+      .then(function(dialog) {uploadDialog = dialog})
   }
   else {
     this.ready = readAloud.loadCss(viewerBase + "viewer.css")
@@ -274,11 +276,18 @@ function PdfDoc(url) {
   }
 
   this.getCurrentIndex = function() {
+    if (uploadDialog) {
+      return 0;
+    }
     var pageNo = PDFViewerApplication.pdfViewer.currentPageNumber;
     return pageNo ? pageNo-1 : 0;
   }
 
   this.getTexts = function(index) {
+    if (uploadDialog) {
+      uploadDialog.show();
+      return null;
+    }
     var pdf = PDFViewerApplication.pdfDocument;
     if (index < pdf.numPages) {
       PDFViewerApplication.pdfViewer.currentPageNumber = index+1;
@@ -300,11 +309,8 @@ function PdfDoc(url) {
       .then(fixParagraphs)
   }
 
-  function showUploadDialog() {
-    if ($(".pdf-upload-dialog:visible").length) return;
-
-    var div = $("<div>")
-      .addClass("pdf-upload-dialog");
+  function createUploadDialog() {
+    var div = $("<div>");
     $("<p>")
       .text(formatMessage({code: "uploadpdf_message1", extension_name: chrome.i18n.getMessage("extension_short_name")}))
       .css("color", "blue")
@@ -338,12 +344,17 @@ function PdfDoc(url) {
       .prop("disabled", true)
       .appendTo(form);
 
-    div.appendTo(document.body)
-      .dialog({
+    div.dialog({
         title: chrome.i18n.getMessage("extension_short_name"),
-        width: 400,
-        modal: true
+        width: 450,
+        modal: true,
+        autoOpen: false
       })
+    return {
+      show: function() {
+        div.dialog("open");
+      }
+    }
   }
 
   function formatMessage(msg) {
