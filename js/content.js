@@ -1,3 +1,6 @@
+(function() {
+  window.connect = connect;
+  window.HtmlDoc = HtmlDoc;
 
 var readAloud = {
   paraSplitter: /(?:\s*\r?\n\s*){2,}/
@@ -682,3 +685,5 @@ readAloud.loadScript = function(url, preprocess) {
     })
   })
 }
+
+})();

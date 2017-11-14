@@ -51,6 +51,11 @@ header p {
   margin-left: 42.8%;
 }
 
+#social-buttons {
+  margin: 20px 10px;
+  float: right;
+}
+
 .button {
   border: 1px solid #dba500;
   background: linear_gradient(#ffe788, #ffce38);

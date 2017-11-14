@@ -1,16 +1,34 @@
 
 var readAloud = new function() {
+  var pauseBtn = document.querySelector(".ra-pause");
+  if (pauseBtn) pauseBtn.style.display = "none";
+
+  if (!window.Promise) ajaxGetCb("https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js", eval);
+
   var speech;
   var voiceProvider = new VoiceProvider();
   var attribution = new Attribution();
 
   this.play = function(options) {
+    return ready().then(play.bind(this, options));
+  };
+  this.speak = function(text, options) {
+    return ready().then(speak.bind(this, text, options));
+  };
+  this.pause = pause;
+  this.isPlaying = isPlaying;
+
+  function ready() {
+    if (window.jQuery) return Promise.resolve();
+    else return ajaxGet("https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js").then(eval);
+  }
+
+  function play(options) {
     if (speech) return speech.play().then(updateButtons);
     else return this.speak(new HtmlDoc().getTexts(0), options);
   }
 
-  this.speak = function(texts, options) {
-      if (!window.Promise) return alert("Browser not supported");
+  function speak(texts, options) {
       var voice = voiceProvider.getLocalVoice(options.lang);
       if (voice) {
         options.voiceName = voice.name;
@@ -27,14 +45,10 @@ var readAloud = new function() {
       return speech.play().then(updateButtons);
   }
 
-  this.pause = function() {
+  function pause() {
     if (speech) return speech.pause().then(updateButtons);
     else return Promise.resolve();
   }
-
-  this.isPlaying = isPlaying;
-
-  $(updateButtons);
 
   function updateButtons() {
     return isPlaying()
@@ -50,6 +64,7 @@ var readAloud = new function() {
     else return Promise.resolve(false);
   }
 
+  //voice provider
   function VoiceProvider() {
     if (window.speechSynthesis) speechSynthesis.getVoices();
 
@@ -89,6 +104,7 @@ var readAloud = new function() {
     }
   }
 
+  //native tts engine
   function LocalTTS(voice) {
     var utter;
 
@@ -116,8 +132,12 @@ var readAloud = new function() {
     }
   }
 
+  //google translate attribution
   function Attribution() {
-    var elem = $("<div/>").get(0);
+    var elem;
+
+    function create() {
+      elem = $("<div/>").appendTo(document.body);
     $("<div>powered&nbsp;by</div>").css({color: "#888", "margin-bottom": "3px"}).appendTo(elem);
     $("<span>G</span>").css("color", "#4885ed").appendTo(elem);
     $("<span>o</span>").css("color", "#db3236").appendTo(elem);
@@ -127,7 +147,7 @@ var readAloud = new function() {
     $("<span>e</span>").css("color", "#db3236").appendTo(elem);
     $("<span>&nbsp;Translate</span>").css("color", "#888").appendTo(elem);
 
-    $(elem).css({
+    elem.css({
       display: "none",
       position: "absolute",
       padding: "6px",
@@ -143,21 +163,19 @@ var readAloud = new function() {
     .click(function() {
       window.open("https://translate.google.com/", "_blank");
     });
-
-    $(function() {
-      $(elem).appendTo(document.body);
-    });
+    }
 
     this.toggle = function(b) {
       if (b) {
+        if (!elem) create();
         var offset = $(".ra-pause").offset();
         if (offset) {
-          offset.left = Math.max(0, offset.left + $(".ra-pause").outerWidth() / 2 - $(elem).outerWidth() / 2);
+          offset.left = Math.max(0, offset.left + $(".ra-pause").outerWidth() / 2 - elem.outerWidth() / 2);
           offset.top += $(".ra-pause").height() + 5;
-          $(elem).css(offset).show();
+          elem.css(offset).show();
         }
       }
-      else $(elem).hide();
+      else elem && elem.hide();
     }
   }
 }
