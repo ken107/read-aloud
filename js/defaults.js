@@ -70,8 +70,12 @@ function isAmazonPolly(voiceName) {
   return /^Amazon /.test(voiceName);
 }
 
+function isMicrosoftCloud(voiceName) {
+  return /^Microsoft /.test(voiceName) && voiceName.indexOf(' - ') == -1;
+}
+
 function isRemoteVoice(voiceName) {
-  return isAmazonPolly(voiceName) || isGoogleTranslate(voiceName);
+  return isAmazonPolly(voiceName) || isGoogleTranslate(voiceName) || isMicrosoftCloud(voiceName);
 }
 
 function isPremiumVoice(voiceName) {
