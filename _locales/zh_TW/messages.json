@@ -14,8 +14,11 @@
   "options_voice_label": {
     "message": "朗讀語音"
   },
-  "options_premium_link": {
-    "message": "取得進階版語音"
+  "options_voicegroup_standard": {
+    "message": "標準的聲音"
+  },
+  "options_voicegroup_premium": {
+    "message": "優質的聲音"
   },
   "options_rate_label": {
     "message": "朗讀速度"

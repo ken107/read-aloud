@@ -14,8 +14,11 @@
   "options_voice_label": {
     "message": "Voce"
   },
-  "options_premium_link": {
-    "message": "Ottieni Voci Premium"
+  "options_voicegroup_standard": {
+    "message": "Voci Standard"
+  },
+  "options_voicegroup_premium": {
+    "message": "Voci Premium"
   },
   "options_rate_label": {
     "message": "Velocità"

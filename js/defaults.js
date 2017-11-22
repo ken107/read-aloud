@@ -59,7 +59,7 @@ function getVoices() {
 }
 
 function isGoogleNative(voiceName) {
-  return /^Google /.test(voiceName);
+  return /^Google\s/.test(voiceName);
 }
 
 function isGoogleTranslate(voiceName) {
@@ -79,7 +79,7 @@ function isRemoteVoice(voiceName) {
 }
 
 function isPremiumVoice(voiceName) {
-  return isAmazonPolly(voiceName);
+  return isAmazonPolly(voiceName) || isMicrosoftCloud(voiceName);
 }
 
 function executeFile(file) {

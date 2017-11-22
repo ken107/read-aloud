@@ -19,12 +19,28 @@ function initialize(voices, settings) {
   });
 
   //voices
-  voices.sort(voiceSorter);
-  voices.forEach(function(voice) {
-    $("<option>").val(voice.voiceName).text(voice.voiceName).appendTo($("#voices"));
+  var groups = groupVoices(voices, function(v) {return isPremiumVoice(v.voiceName)});
+  groups[true].sort(voiceSorter);
+  groups[false].sort(voiceSorter);
+  var standard = $("<optgroup>")
+    .attr("label", chrome.i18n.getMessage("options_voicegroup_standard"))
+    .appendTo($("#voices"));
+  groups[false].forEach(function(voice) {
+    $("<option>")
+      .val(voice.voiceName)
+      .text(voice.voiceName)
+      .appendTo(standard);
   });
-  $("#premium").toggle(!voices.some(function(voice) {return isPremiumVoice(voice.voiceName)}));
-  $("#premium a").attr("href", "https://chrome.google.com/webstore/detail/premium-text-to-speech-vo/emniggnjhffhdfbiamnnjbljgapijkfk?hl=" + getUserPreferredLanguage());
+  $("<optgroup>").appendTo($("#voices"));
+  var premium = $("<optgroup>")
+    .attr("label", chrome.i18n.getMessage("options_voicegroup_premium"))
+    .appendTo($("#voices"));
+  groups[true].forEach(function(voice) {
+    $("<option>")
+      .val(voice.voiceName)
+      .text(voice.voiceName)
+      .appendTo(premium);
+  });
 
   //rate
   $("#rate-edit-button").click(function() {
@@ -87,6 +103,16 @@ function domReady() {
   })
 }
 
+function groupVoices(voices, keySelector) {
+  var groups = {};
+  for (var i=0; i<voices.length; i++) {
+    var key = keySelector(voices[i]);
+    if (groups[key]) groups[key].push(voices[i]);
+    else groups[key] = [voices[i]];
+  }
+  return groups;
+}
+
 function voiceSorter(a,b) {
   if (isRemoteVoice(a.voiceName)) {
     if (isRemoteVoice(b.voiceName)) return a.voiceName.localeCompare(b.voiceName);
@@ -96,10 +122,6 @@ function voiceSorter(a,b) {
     if (isRemoteVoice(b.voiceName)) return -1;
     else return a.voiceName.localeCompare(b.voiceName);
   }
-}
-
-function getUserPreferredLanguage() {
-  return navigator.languages ? navigator.languages[0] : navigator.userLanguage || navigator.language;
 }
 
 function setDirty() {

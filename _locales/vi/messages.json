@@ -14,8 +14,11 @@
   "options_voice_label": {
     "message": "Giọng đọc"
   },
-  "options_premium_link": {
-    "message": "Tải thêm giọng đọc"
+  "options_voicegroup_standard": {
+    "message": "Các giọng chuẩn"
+  },
+  "options_voicegroup_premium": {
+    "message": "Các giọng chất lượng cao"
   },
   "options_rate_label": {
     "message": "Tốc độ đọc"
