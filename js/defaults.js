@@ -187,3 +187,43 @@ function ajaxPost(sUrl, oData, sType) {
     xhr.send(sType == "json" ? JSON.stringify(oData) : urlEncode(oData));
   })
 }
+
+function inSequence(tasks) {
+  return tasks.reduce(function(p, task) {return p.then(task)}, Promise.resolve());
+}
+
+function getRateMultiplier(voiceName) {
+  if (isGoogleTranslate(voiceName)) return 1.2;
+  return 1;
+}
+
+function isEastAsian(lang) {
+  return /^zh|ko|ja/.test(lang);
+}
+
+function objectAssign(target, varArgs) { // .length of function is 2
+  'use strict';
+  if (target == null) throw new TypeError('Cannot convert undefined or null to object');
+  var to = Object(target);
+  for (var index = 1; index < arguments.length; index++) {
+    var nextSource = arguments[index];
+    if (nextSource != null) { // Skip over if undefined or null
+      for (var nextKey in nextSource) {
+        // Avoid bugs when hasOwnProperty is shadowed
+        if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+          to[nextKey] = nextSource[nextKey];
+        }
+      }
+    }
+  }
+  return to;
+}
+
+if (typeof Object.assign != 'function') {
+  // Must be writable: true, enumerable: false, configurable: true
+  Object.defineProperty(Object, "assign", {
+    value: objectAssign,
+    writable: true,
+    configurable: true
+  });
+}

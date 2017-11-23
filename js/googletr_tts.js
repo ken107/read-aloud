@@ -9,18 +9,19 @@
 
 
 function RemoteTTS(host) {
-  var audio = window.ttsAudio;
-  if (!audio) audio = window.ttsAudio = document.createElement("AUDIO");
+  var audio = window.ttsAudio || (window.ttsAudio = document.createElement("AUDIO"));
 
   this.speak = function(utterance, options, onEvent) {
     if (!onEvent) onEvent = options.onEvent;
     audio.pause();
     audio.volume = options.volume || 1;
-    audio.defaultPlaybackRate = (options.rate || 1) * getRateMultiplier(options.voiceName);
+    audio.defaultPlaybackRate = options.rate || 1;
     audio.src = host + "/read-aloud/speak/" + options.lang + "/" + encodeURIComponent(options.voiceName) + "?q=" + encodeURIComponent(utterance);
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
-    audio.onerror = onEvent.bind(null, {type: 'error', errorMessage: "TTS server error"});
     audio.onended = onEvent.bind(null, {type: 'end', charIndex: utterance.length});
+    audio.onerror = function() {
+      onEvent({type: "error", errorMessage: audio.error.message});
+    };
     audio.play();
   }
 
@@ -30,10 +31,5 @@ function RemoteTTS(host) {
 
   this.stop = function() {
     audio.pause();
-  }
-
-  function getRateMultiplier(voiceName) {
-    if (isGoogleTranslate(voiceName)) return 1.2;
-    return 1;
   }
 }

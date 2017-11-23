@@ -58,19 +58,17 @@ function updateButtons() {
       var pos = speech.getPosition();
       var elem = $("#highlight");
       if (elem.data("texts") != pos.texts) {
-        elem.data("texts", pos.texts)
-          .empty()
-          .append(pos.texts.map(function(texts, i) {
-            var spans = texts.map(function(text, j) {return $("<span/>").addClass("s"+i+"-"+j).text(text + " ")});
-            return $("<p/>").append(spans);
-          }))
+        elem.data("texts", pos.texts).empty();
+        for (var i=0; i<pos.texts.length; i++) $("<p>").text(pos.texts[i]).appendTo(elem);
       }
-      var oldIndex = elem.data("index");
-      var index = "s" + pos.index[0] + "-" + pos.index[1];
-      if (index != oldIndex) {
-        elem.data("index", index);
-        if (oldIndex) elem.find("span." + oldIndex).removeClass("active");
-        var child = elem.find("span." + index).addClass("active");
+      if (elem.data("chunk") != pos.chunk) {
+        elem.find(".active").removeClass("active");
+        elem.data("chunk", pos.chunk);
+        var para = $("<p>");
+        $("<span>").text(pos.texts[pos.index].slice(0, pos.chunk.startIndex)).appendTo(para);
+        var child = $("<span>").text(pos.texts[pos.index].slice(pos.chunk.startIndex, pos.chunk.endIndex)).addClass("active").appendTo(para);
+        $("<span>").text(pos.texts[pos.index].slice(pos.chunk.endIndex)).appendTo(para);
+        elem.children().eq(pos.index).replaceWith(para);
         var childTop = child.position().top;
         var childBottom = childTop + child.outerHeight();
         if (childTop < 0 || childBottom >= elem.height()) elem.animate({scrollTop: elem[0].scrollTop + childTop - 10});
