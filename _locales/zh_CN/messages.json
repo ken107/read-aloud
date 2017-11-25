@@ -23,6 +23,9 @@
   "options_rate_label": {
     "message": "朗读速度"
   },
+  "options_rate_warning": {
+    "message": "注意：有些声音可能无法高速运行。"
+  },
   "options_pitch_label": {
     "message": "朗读音调"
   },

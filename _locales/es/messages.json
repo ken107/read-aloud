@@ -23,6 +23,9 @@
   "options_rate_label": {
     "message": "Velocidad"
   },
+  "options_rate_warning": {
+    "message": "Nota: algunas voces pueden no funcionar a alta velocidad."
+  },
   "options_pitch_label": {
     "message": "Tono"
   },

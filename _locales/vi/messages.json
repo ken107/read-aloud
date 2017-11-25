@@ -23,6 +23,9 @@
   "options_rate_label": {
     "message": "Tốc độ đọc"
   },
+  "options_rate_warning": {
+    "message": "Lưu ý: một số tiếng nói có thể không hoạt động ở tốc độ cao."
+  },
   "options_pitch_label": {
     "message": "Giọng cao/thấp"
   },

@@ -47,7 +47,9 @@ function initialize(voices, settings) {
     $("#rate, #rate-input-div").toggle();
   });
   $("#rate").on("slidechange", function() {
-    $("#rate-input").val(Math.pow($(this).data("pow"), $(this).slider("value")).toFixed(3));
+    var val = Math.pow($(this).data("pow"), $(this).slider("value"));
+    $("#rate-input").val(val.toFixed(3));
+    $("#rate-warning").toggle(val > 2);
   });
   $("#rate-input").change(function() {
     var val = $(this).val().trim();
@@ -55,6 +57,7 @@ function initialize(voices, settings) {
     else if (val < .1) $(this).val(.1);
     else if (val > 10) $(this).val(10);
     else $("#rate-edit-button").hide();
+    $("#rate-warning").toggle(val > 2);
   });
 
   //buttons
@@ -89,6 +92,7 @@ function initialize(voices, settings) {
   $("#voices").val(settings.voiceName || "");
   $("#rate").slider("value", Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")));
   $("#rate-input").val(settings.rate || defaults.rate);
+  $("#rate-warning").toggle((settings.rate || defaults.rate) > 2);
   $("#pitch").slider("value", settings.pitch || defaults.pitch);
   $("#volume").slider("value", settings.volume || defaults.volume);
   $("[name=highlighting]").prop("checked", false);

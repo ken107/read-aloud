@@ -59,6 +59,11 @@
   width: 50px;
 }
 
+#rate-warning {
+  color: blue;
+  display: none;
+}
+
 #hotkeys-link {
   color: gray;
   cursor: pointer;
