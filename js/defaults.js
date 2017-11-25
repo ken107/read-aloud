@@ -20,7 +20,7 @@ function getQueryString() {
 
 function getSettings() {
   return new Promise(function(fulfill) {
-    chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "showHighlighting"], fulfill);
+    chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
   });
 }
 
@@ -32,7 +32,7 @@ function updateSettings(items) {
 
 function clearSettings() {
   return new Promise(function(fulfill) {
-    chrome.storage.local.remove(["voiceName", "rate", "pitch", "volume", "showHighlighting"], fulfill);
+    chrome.storage.local.remove(["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
   });
 }
 
@@ -231,4 +231,19 @@ if (typeof Object.assign != 'function') {
     writable: true,
     configurable: true
   });
+}
+
+function domReady() {
+  return new Promise(function(fulfill) {
+    $(fulfill);
+  })
+}
+
+function setI18nText() {
+  $("[data-i18n]").each(function() {
+    var key = $(this).data("i18n");
+    var text = chrome.i18n.getMessage(key);
+    if ($(this).is("input")) $(this).val(text);
+    else $(this).text(text);
+  })
 }

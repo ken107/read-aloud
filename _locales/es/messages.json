@@ -61,5 +61,11 @@
   },
   "uploadpdf_submit_button": {
     "message": "Subir y Abrir"
+  },
+  "languages_heading": {
+    "message": "Seleccionar idiomas"
+  },
+  "languages_back_button": {
+    "message": "Volver a la configuración"
   }
 }

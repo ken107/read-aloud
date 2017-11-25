@@ -61,5 +61,11 @@
   },
   "uploadpdf_submit_button": {
     "message": "上傳並開啟"
+  },
+  "languages_heading": {
+    "message": "選擇語言"
+  },
+  "languages_back_button": {
+    "message": "返回選項"
   }
 }

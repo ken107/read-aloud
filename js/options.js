@@ -2,12 +2,8 @@
 Promise.all([getVoices(), getSettings(), domReady()])
   .then(spread(initialize));
 
-function initialize(voices, settings) {
-  //labels
-  $("[data-i18n]").each(function() {
-    var key = $(this).data("i18n");
-    $(this).text(chrome.i18n.getMessage(key));
-  });
+function initialize(allVoices, settings) {
+  setI18nText();
 
   //sliders
   $(".slider").each(function() {
@@ -19,6 +15,11 @@ function initialize(voices, settings) {
   });
 
   //voices
+  var selectedLangs = settings.languages && settings.languages.split(',');
+  var voices = allVoices.filter(function(voice) {
+    var lang = voice.lang.split('-',1)[0];
+    return !selectedLangs || selectedLangs.indexOf(lang) != -1;
+  });
   var groups = groupVoices(voices, function(v) {return isPremiumVoice(v.voiceName)});
   groups[true].sort(voiceSorter);
   groups[false].sort(voiceSorter);
@@ -41,6 +42,10 @@ function initialize(voices, settings) {
       .text(voice.voiceName)
       .appendTo(premium);
   });
+
+  $("#languages-edit-button").click(function() {
+    location.href = "languages.html";
+  })
 
   //rate
   $("#rate-edit-button").click(function() {

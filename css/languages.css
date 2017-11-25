@@ -1,0 +1,13 @@
+
+h1 {
+  white-space: nowrap;
+}
+
+#lang-list > label {
+  display: none;
+  white-space: nowrap;
+}
+
+#buttons {
+  margin-top: 20px;
+}

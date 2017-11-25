@@ -45,7 +45,7 @@
   color: gray;
 }
 
-#rate-edit-button {
+#rate-edit-button, #languages-edit-button {
   font-size: 12px;
   color: gray;
   cursor: pointer;

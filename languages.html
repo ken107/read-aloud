@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="css/languages.css">
+
+  <script src="js/es6-promise.auto.min.js"></script>
+  <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/defaults.js"></script>
+  <script src="js/languages.js"></script>
+</head>
+<body>
+  <h1 data-i18n="languages_heading"></h1>
+
+  <div id="lang-list">
+    <label><input type="checkbox" data-lang="ab"/> Abkhazian</label>
+    <label><input type="checkbox" data-lang="aa"/> Afar</label>
+    <label><input type="checkbox" data-lang="af"/> Afrikaans</label>
+    <label><input type="checkbox" data-lang="ak"/> Akan</label>
+    <label><input type="checkbox" data-lang="sq"/> Albanian</label>
+    <label><input type="checkbox" data-lang="am"/> Amharic</label>
+    <label><input type="checkbox" data-lang="ar"/> Arabic</label>
+    <label><input type="checkbox" data-lang="an"/> Aragonese</label>
+    <label><input type="checkbox" data-lang="hy"/> Armenian</label>
+    <label><input type="checkbox" data-lang="as"/> Assamese</label>
+    <label><input type="checkbox" data-lang="av"/> Avaric</label>
+    <label><input type="checkbox" data-lang="ae"/> Avestan</label>
+    <label><input type="checkbox" data-lang="ay"/> Aymara</label>
+    <label><input type="checkbox" data-lang="az"/> Azerbaijani</label>
+    <label><input type="checkbox" data-lang="bm"/> Bambara</label>
+    <label><input type="checkbox" data-lang="ba"/> Bashkir</label>
+    <label><input type="checkbox" data-lang="eu"/> Basque</label>
+    <label><input type="checkbox" data-lang="be"/> Belarusian</label>
+    <label><input type="checkbox" data-lang="bn"/> Bengali</label>
+    <label><input type="checkbox" data-lang="bh"/> Bihari languages</label>
+    <label><input type="checkbox" data-lang="bi"/> Bislama</label>
+    <label><input type="checkbox" data-lang="bs"/> Bosnian</label>
+    <label><input type="checkbox" data-lang="br"/> Breton</label>
+    <label><input type="checkbox" data-lang="bg"/> Bulgarian</label>
+    <label><input type="checkbox" data-lang="my"/> Burmese</label>
+    <label><input type="checkbox" data-lang="ca"/> Catalan, Valencian</label>
+    <label><input type="checkbox" data-lang="ch"/> Chamorro</label>
+    <label><input type="checkbox" data-lang="ce"/> Chechen</label>
+    <label><input type="checkbox" data-lang="ny"/> Chichewa, Chewa, Nyanja</label>
+    <label><input type="checkbox" data-lang="zh"/> Chinese</label>
+    <label><input type="checkbox" data-lang="cv"/> Chuvash</label>
+    <label><input type="checkbox" data-lang="kw"/> Cornish</label>
+    <label><input type="checkbox" data-lang="co"/> Corsican</label>
+    <label><input type="checkbox" data-lang="cr"/> Cree</label>
+    <label><input type="checkbox" data-lang="hr"/> Croatian</label>
+    <label><input type="checkbox" data-lang="cs"/> Czech</label>
+    <label><input type="checkbox" data-lang="da"/> Danish</label>
+    <label><input type="checkbox" data-lang="dv"/> Divehi, Dhivehi, Maldivian</label>
+    <label><input type="checkbox" data-lang="nl"/> Dutch, Flemish</label>
+    <label><input type="checkbox" data-lang="dz"/> Dzongkha</label>
+    <label><input type="checkbox" data-lang="en"/> English</label>
+    <label><input type="checkbox" data-lang="eo"/> Esperanto</label>
+    <label><input type="checkbox" data-lang="et"/> Estonian</label>
+    <label><input type="checkbox" data-lang="ee"/> Ewe</label>
+    <label><input type="checkbox" data-lang="fo"/> Faroese</label>
+    <label><input type="checkbox" data-lang="fj"/> Fijian</label>
+    <label><input type="checkbox" data-lang="fi"/> Finnish</label>
+    <label><input type="checkbox" data-lang="fr"/> French</label>
+    <label><input type="checkbox" data-lang="ff"/> Fulah</label>
+    <label><input type="checkbox" data-lang="gl"/> Galician</label>
+    <label><input type="checkbox" data-lang="ka"/> Georgian</label>
+    <label><input type="checkbox" data-lang="de"/> German</label>
+    <label><input type="checkbox" data-lang="el"/> Greek (modern)</label>
+    <label><input type="checkbox" data-lang="gn"/> Guaraní</label>
+    <label><input type="checkbox" data-lang="gu"/> Gujarati</label>
+    <label><input type="checkbox" data-lang="ht"/> Haitian, Haitian Creole</label>
+    <label><input type="checkbox" data-lang="ha"/> Hausa</label>
+    <label><input type="checkbox" data-lang="he"/> Hebrew (modern)</label>
+    <label><input type="checkbox" data-lang="hz"/> Herero</label>
+    <label><input type="checkbox" data-lang="hi"/> Hindi</label>
+    <label><input type="checkbox" data-lang="ho"/> Hiri Motu</label>
+    <label><input type="checkbox" data-lang="hu"/> Hungarian</label>
+    <label><input type="checkbox" data-lang="ia"/> Interlingua</label>
+    <label><input type="checkbox" data-lang="id"/> Indonesian</label>
+    <label><input type="checkbox" data-lang="ie"/> Interlingue</label>
+    <label><input type="checkbox" data-lang="ga"/> Irish</label>
+    <label><input type="checkbox" data-lang="ig"/> Igbo</label>
+    <label><input type="checkbox" data-lang="ik"/> Inupiaq</label>
+    <label><input type="checkbox" data-lang="io"/> Ido</label>
+    <label><input type="checkbox" data-lang="is"/> Icelandic</label>
+    <label><input type="checkbox" data-lang="it"/> Italian</label>
+    <label><input type="checkbox" data-lang="iu"/> Inuktitut</label>
+    <label><input type="checkbox" data-lang="ja"/> Japanese</label>
+    <label><input type="checkbox" data-lang="jv"/> Javanese</label>
+    <label><input type="checkbox" data-lang="kl"/> Kalaallisut, Greenlandic</label>
+    <label><input type="checkbox" data-lang="kn"/> Kannada</label>
+    <label><input type="checkbox" data-lang="kr"/> Kanuri</label>
+    <label><input type="checkbox" data-lang="ks"/> Kashmiri</label>
+    <label><input type="checkbox" data-lang="kk"/> Kazakh</label>
+    <label><input type="checkbox" data-lang="km"/> Central Khmer</label>
+    <label><input type="checkbox" data-lang="ki"/> Kikuyu, Gikuyu</label>
+    <label><input type="checkbox" data-lang="rw"/> Kinyarwanda</label>
+    <label><input type="checkbox" data-lang="ky"/> Kirghiz, Kyrgyz</label>
+    <label><input type="checkbox" data-lang="kv"/> Komi</label>
+    <label><input type="checkbox" data-lang="kg"/> Kongo</label>
+    <label><input type="checkbox" data-lang="ko"/> Korean</label>
+    <label><input type="checkbox" data-lang="ku"/> Kurdish</label>
+    <label><input type="checkbox" data-lang="kj"/> Kuanyama, Kwanyama</label>
+    <label><input type="checkbox" data-lang="la"/> Latin</label>
+    <label><input type="checkbox" data-lang="lb"/> Luxembourgish, Letzeburgesch</label>
+    <label><input type="checkbox" data-lang="lg"/> Ganda</label>
+    <label><input type="checkbox" data-lang="li"/> Limburgan, Limburger, Limburgish</label>
+    <label><input type="checkbox" data-lang="ln"/> Lingala</label>
+    <label><input type="checkbox" data-lang="lo"/> Lao</label>
+    <label><input type="checkbox" data-lang="lt"/> Lithuanian</label>
+    <label><input type="checkbox" data-lang="lu"/> Luba-Katanga</label>
+    <label><input type="checkbox" data-lang="lv"/> Latvian</label>
+    <label><input type="checkbox" data-lang="gv"/> Manx</label>
+    <label><input type="checkbox" data-lang="mk"/> Macedonian</label>
+    <label><input type="checkbox" data-lang="mg"/> Malagasy</label>
+    <label><input type="checkbox" data-lang="ms"/> Malay</label>
+    <label><input type="checkbox" data-lang="ml"/> Malayalam</label>
+    <label><input type="checkbox" data-lang="mt"/> Maltese</label>
+    <label><input type="checkbox" data-lang="mi"/> Maori</label>
+    <label><input type="checkbox" data-lang="mr"/> Marathi</label>
+    <label><input type="checkbox" data-lang="mh"/> Marshallese</label>
+    <label><input type="checkbox" data-lang="mn"/> Mongolian</label>
+    <label><input type="checkbox" data-lang="na"/> Nauru</label>
+    <label><input type="checkbox" data-lang="nv"/> Navajo, Navaho</label>
+    <label><input type="checkbox" data-lang="nd"/> North Ndebele</label>
+    <label><input type="checkbox" data-lang="ne"/> Nepali</label>
+    <label><input type="checkbox" data-lang="ng"/> Ndonga</label>
+    <label><input type="checkbox" data-lang="nb"/> Norwegian Bokmål</label>
+    <label><input type="checkbox" data-lang="nn"/> Norwegian Nynorsk</label>
+    <label><input type="checkbox" data-lang="no"/> Norwegian</label>
+    <label><input type="checkbox" data-lang="ii"/> Sichuan Yi, Nuosu</label>
+    <label><input type="checkbox" data-lang="nr"/> South Ndebele</label>
+    <label><input type="checkbox" data-lang="oc"/> Occitan</label>
+    <label><input type="checkbox" data-lang="oj"/> Ojibwa</label>
+    <label><input type="checkbox" data-lang="cu"/> Church Slavic, Church Slavonic, Old Church Slavonic, Old Slavonic, Old Bulgarian</label>
+    <label><input type="checkbox" data-lang="om"/> Oromo</label>
+    <label><input type="checkbox" data-lang="or"/> Oriya</label>
+    <label><input type="checkbox" data-lang="os"/> Ossetian, Ossetic</label>
+    <label><input type="checkbox" data-lang="pa"/> Panjabi, Punjabi</label>
+    <label><input type="checkbox" data-lang="pi"/> Pali</label>
+    <label><input type="checkbox" data-lang="fa"/> Persian</label>
+    <label><input type="checkbox" data-lang="pl"/> Polish</label>
+    <label><input type="checkbox" data-lang="ps"/> Pashto, Pushto</label>
+    <label><input type="checkbox" data-lang="pt"/> Portuguese</label>
+    <label><input type="checkbox" data-lang="qu"/> Quechua</label>
+    <label><input type="checkbox" data-lang="rm"/> Romansh</label>
+    <label><input type="checkbox" data-lang="rn"/> Rundi</label>
+    <label><input type="checkbox" data-lang="ro"/> Romanian, Moldavian, Moldovan</label>
+    <label><input type="checkbox" data-lang="ru"/> Russian</label>
+    <label><input type="checkbox" data-lang="sa"/> Sanskrit</label>
+    <label><input type="checkbox" data-lang="sc"/> Sardinian</label>
+    <label><input type="checkbox" data-lang="sd"/> Sindhi</label>
+    <label><input type="checkbox" data-lang="se"/> Northern Sami</label>
+    <label><input type="checkbox" data-lang="sm"/> Samoan</label>
+    <label><input type="checkbox" data-lang="sg"/> Sango</label>
+    <label><input type="checkbox" data-lang="sr"/> Serbian</label>
+    <label><input type="checkbox" data-lang="gd"/> Gaelic, Scottish Gaelic</label>
+    <label><input type="checkbox" data-lang="sn"/> Shona</label>
+    <label><input type="checkbox" data-lang="si"/> Sinhala, Sinhalese</label>
+    <label><input type="checkbox" data-lang="sk"/> Slovak</label>
+    <label><input type="checkbox" data-lang="sl"/> Slovenian</label>
+    <label><input type="checkbox" data-lang="so"/> Somali</label>
+    <label><input type="checkbox" data-lang="st"/> Southern Sotho</label>
+    <label><input type="checkbox" data-lang="es"/> Spanish, Castilian</label>
+    <label><input type="checkbox" data-lang="su"/> Sundanese</label>
+    <label><input type="checkbox" data-lang="sw"/> Swahili</label>
+    <label><input type="checkbox" data-lang="ss"/> Swati</label>
+    <label><input type="checkbox" data-lang="sv"/> Swedish</label>
+    <label><input type="checkbox" data-lang="ta"/> Tamil</label>
+    <label><input type="checkbox" data-lang="te"/> Telugu</label>
+    <label><input type="checkbox" data-lang="tg"/> Tajik</label>
+    <label><input type="checkbox" data-lang="th"/> Thai</label>
+    <label><input type="checkbox" data-lang="ti"/> Tigrinya</label>
+    <label><input type="checkbox" data-lang="bo"/> Tibetan</label>
+    <label><input type="checkbox" data-lang="tk"/> Turkmen</label>
+    <label><input type="checkbox" data-lang="tl"/> Tagalog</label>
+    <label><input type="checkbox" data-lang="tn"/> Tswana</label>
+    <label><input type="checkbox" data-lang="to"/> Tonga (Tonga Islands)</label>
+    <label><input type="checkbox" data-lang="tr"/> Turkish</label>
+    <label><input type="checkbox" data-lang="ts"/> Tsonga</label>
+    <label><input type="checkbox" data-lang="tt"/> Tatar</label>
+    <label><input type="checkbox" data-lang="tw"/> Twi</label>
+    <label><input type="checkbox" data-lang="ty"/> Tahitian</label>
+    <label><input type="checkbox" data-lang="ug"/> Uighur, Uyghur</label>
+    <label><input type="checkbox" data-lang="uk"/> Ukrainian</label>
+    <label><input type="checkbox" data-lang="ur"/> Urdu</label>
+    <label><input type="checkbox" data-lang="uz"/> Uzbek</label>
+    <label><input type="checkbox" data-lang="ve"/> Venda</label>
+    <label><input type="checkbox" data-lang="vi"/> Vietnamese</label>
+    <label><input type="checkbox" data-lang="vo"/> Volapük</label>
+    <label><input type="checkbox" data-lang="wa"/> Walloon</label>
+    <label><input type="checkbox" data-lang="cy"/> Welsh</label>
+    <label><input type="checkbox" data-lang="wo"/> Wolof</label>
+    <label><input type="checkbox" data-lang="fy"/> Western Frisian</label>
+    <label><input type="checkbox" data-lang="xh"/> Xhosa</label>
+    <label><input type="checkbox" data-lang="yi"/> Yiddish</label>
+    <label><input type="checkbox" data-lang="yo"/> Yoruba</label>
+    <label><input type="checkbox" data-lang="za"/> Zhuang, Chuang</label>
+    <label><input type="checkbox" data-lang="zu"/> Zulu</label>
+  </div>
+
+  <div id="buttons">
+    <input id="back-button" type="button" data-i18n="languages_back_button" />
+  </div>
+</body>
+</html>
