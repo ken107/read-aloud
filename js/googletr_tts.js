@@ -10,19 +10,30 @@
 
 function RemoteTTS(host) {
   var audio = window.ttsAudio || (window.ttsAudio = document.createElement("AUDIO"));
+  var lastEndTime = 0;
 
   this.speak = function(utterance, options, onEvent) {
+    if (!options.volume) options.volume = 1;
+    if (!options.rate) options.rate = 1;
     if (!onEvent) onEvent = options.onEvent;
     audio.pause();
-    audio.volume = options.volume || 1;
-    audio.defaultPlaybackRate = options.rate || 1;
+    audio.volume = options.volume;
+    audio.defaultPlaybackRate = options.rate;
     audio.src = host + "/read-aloud/speak/" + options.lang + "/" + encodeURIComponent(options.voiceName) + "?q=" + encodeURIComponent(utterance);
+    audio.oncanplay = function() {
+      var startTime = lastEndTime + (getParagraphPause(options.voiceName) / options.rate);
+      var waitTime = startTime - new Date().getTime();
+      if (waitTime > 0) waitMillis(waitTime).then(audio.play.bind(audio));
+      else audio.play();
+    };
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
-    audio.onended = onEvent.bind(null, {type: 'end', charIndex: utterance.length});
+    audio.onended = function() {
+      onEvent({type: 'end', charIndex: utterance.length});
+      lastEndTime = new Date().getTime();
+    };
     audio.onerror = function() {
       onEvent({type: "error", errorMessage: audio.error.message});
     };
-    audio.play();
   }
 
   this.isSpeaking = function(callback) {

@@ -197,6 +197,11 @@ function getRateMultiplier(voiceName) {
   return 1;
 }
 
+function getParagraphPause(voiceName) {
+  if (isGoogleTranslate(voiceName)) return 0;
+  else return 500;
+}
+
 function isEastAsian(lang) {
   return /^zh|ko|ja/.test(lang);
 }
