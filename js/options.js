@@ -21,6 +21,8 @@ function initialize(allVoices, settings) {
     return !selectedLangs || selectedLangs.indexOf(lang) != -1;
   });
   var groups = groupVoices(voices, function(v) {return isPremiumVoice(v.voiceName)});
+  if (!groups[true]) groups[true] = [];
+  if (!groups[false]) groups[false] = [];
   groups[true].sort(voiceSorter);
   groups[false].sort(voiceSorter);
   var standard = $("<optgroup>")
