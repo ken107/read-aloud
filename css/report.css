@@ -1,3 +1,7 @@
+.container {
+  width: 300px;
+}
+
 .label {
   color: red;
   font-size: 1em;
@@ -5,12 +9,19 @@
   margin-bottom: 3px;
 }
 
+.note {
+  color: gray;
+  font-style: italic;
+}
+
 #txt-url {
-  width: 250px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 #txt-comment {
-  width: 250px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 #img-spinner {
