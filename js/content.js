@@ -215,6 +215,7 @@ function KindleBook() {
 function PdfDoc(url) {
   var viewerBase = "https://assets.lsdsoftware.com/read-aloud/pdf-viewer/web/";
   var uploadDialog;
+  var foundText;
 
   if (/^file:/.test(url)) {
     this.ready = readAloud.loadCss(chrome.runtime.getURL("css/jquery-ui.min.css"))
@@ -294,9 +295,17 @@ function PdfDoc(url) {
     var pdf = PDFViewerApplication.pdfDocument;
     if (index < pdf.numPages) {
       PDFViewerApplication.pdfViewer.currentPageNumber = index+1;
-      return pdf.getPage(index+1).then(getPageTexts);
+      return pdf.getPage(index+1)
+        .then(getPageTexts)
+        .then(function(texts) {
+          if (texts.length) foundText = true;
+          return texts;
+        })
     }
-    else return null;
+    else {
+      if (!foundText) showNoTextExplanation();
+      return null;
+    }
   }
 
   function getPageTexts(page) {
@@ -358,6 +367,26 @@ function PdfDoc(url) {
         div.dialog("open");
       }
     }
+  }
+
+  function showNoTextExplanation() {
+    Promise.resolve()
+      .then(function() {
+        if (!$.ui)
+          return readAloud.loadCss(chrome.runtime.getURL("css/jquery-ui.min.css"))
+            .then(readAloud.loadScript.bind(null, chrome.runtime.getURL("js/jquery-ui.min.js")))
+      })
+      .then(function() {
+        var div = $("<div>");
+        $("<p>")
+          .text("I can't find any text to read.  This is probably because this PDF contains scanned images of text instead of the actual text.  If you're unable to select any text using your mouse, it means they are images.")
+          .css("color", "blue")
+          .appendTo(div);
+        div.dialog({
+            title: chrome.i18n.getMessage("extension_short_name"),
+            width: 450
+          })
+      })
   }
 
   function formatMessage(msg) {
