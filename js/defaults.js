@@ -1,5 +1,15 @@
 var config = {
-  serviceUrl: "https://support.lsdsoftware.com"
+  serviceUrl: "https://support.lsdsoftware.com",
+  entityMap: {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;'
+  }
 }
 
 var defaults = {
@@ -188,24 +198,6 @@ function ajaxPost(sUrl, oData, sType) {
   })
 }
 
-function inSequence(tasks) {
-  return tasks.reduce(function(p, task) {return p.then(task)}, Promise.resolve());
-}
-
-function getRateMultiplier(voiceName) {
-  if (isGoogleTranslate(voiceName)) return 1.2;
-  return 1;
-}
-
-function getParagraphPause(voiceName) {
-  if (isGoogleTranslate(voiceName)) return 0;
-  else return 500;
-}
-
-function isEastAsian(lang) {
-  return /^zh|ko|ja/.test(lang);
-}
-
 function objectAssign(target, varArgs) { // .length of function is 2
   'use strict';
   if (target == null) throw new TypeError('Cannot convert undefined or null to object');
@@ -245,5 +237,11 @@ function setI18nText() {
     var text = chrome.i18n.getMessage(key);
     if ($(this).is("input")) $(this).val(text);
     else $(this).text(text);
+  })
+}
+
+function escapeHtml(text) {
+  return text.replace(/[&<>"'`=\/]/g, function(s) {
+    return config.entityMap[s];
   })
 }

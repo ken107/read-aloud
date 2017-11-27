@@ -1,7 +1,7 @@
 
 (function() {
   if (window.chrome && chrome.ttsEngine) {
-    var engine = new RemoteTTS(config.serviceUrl);
+    var engine = window.remoteTtsEngine = new RemoteTTS(config.serviceUrl);
     chrome.ttsEngine.onSpeak.addListener(engine.speak);
     chrome.ttsEngine.onStop.addListener(engine.stop);
   }
@@ -10,7 +10,8 @@
 
 function RemoteTTS(host) {
   var audio = window.ttsAudio || (window.ttsAudio = document.createElement("AUDIO"));
-  var lastEndTime = 0;
+  var prefetchAudio = document.createElement("AUDIO");
+  var nextStartTime = 0;
 
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;
@@ -19,18 +20,14 @@ function RemoteTTS(host) {
     audio.pause();
     audio.volume = options.volume;
     audio.defaultPlaybackRate = options.rate;
-    audio.src = host + "/read-aloud/speak/" + options.lang + "/" + encodeURIComponent(options.voiceName) + "?q=" + encodeURIComponent(utterance);
+    audio.src = getAudioUrl(utterance, options.lang, options.voiceName);
     audio.oncanplay = function() {
-      var startTime = lastEndTime + (getParagraphPause(options.voiceName) / options.rate);
-      var waitTime = startTime - new Date().getTime();
+      var waitTime = nextStartTime - new Date().getTime();
       if (waitTime > 0) waitMillis(waitTime).then(audio.play.bind(audio));
       else audio.play();
     };
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
-    audio.onended = function() {
-      onEvent({type: 'end', charIndex: utterance.length});
-      lastEndTime = new Date().getTime();
-    };
+    audio.onended = onEvent.bind(null, {type: 'end', charIndex: utterance.length});
     audio.onerror = function() {
       onEvent({type: "error", errorMessage: audio.error.message});
     };
@@ -42,5 +39,17 @@ function RemoteTTS(host) {
 
   this.stop = function() {
     audio.pause();
+  }
+
+  this.prefetch = function(utterance, options) {
+    prefetchAudio.src = getAudioUrl(utterance, options.lang, options.voiceName);
+  }
+
+  this.setNextStartTime = function(time) {
+    nextStartTime = time || 0;
+  }
+
+  function getAudioUrl(utterance, lang, voiceName) {
+    return host + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voiceName) + "?q=" + encodeURIComponent(utterance);
   }
 }

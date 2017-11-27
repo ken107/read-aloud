@@ -59,16 +59,15 @@ function updateButtons() {
       var elem = $("#highlight");
       if (elem.data("texts") != pos.texts) {
         elem.data("texts", pos.texts).empty();
-        for (var i=0; i<pos.texts.length; i++) $("<p>").text(pos.texts[i]).appendTo(elem);
+        for (var i=0; i<pos.texts.length; i++) {
+          var html = escapeHtml(pos.texts[i]).replace(/\r?\n/g, "<br/>");
+          $("<span>").html(html).appendTo(elem);
+        }
       }
-      if (elem.data("chunk") != pos.chunk) {
-        elem.find(".active").removeClass("active");
-        elem.data("chunk", pos.chunk);
-        var para = $("<p>");
-        $("<span>").text(pos.texts[pos.index].slice(0, pos.chunk.startIndex)).appendTo(para);
-        var child = $("<span>").text(pos.texts[pos.index].slice(pos.chunk.startIndex, pos.chunk.endIndex)).addClass("active").appendTo(para);
-        $("<span>").text(pos.texts[pos.index].slice(pos.chunk.endIndex)).appendTo(para);
-        elem.children().eq(pos.index).replaceWith(para);
+      if (elem.data("index") != pos.index) {
+        elem.data("index", pos.index);
+        elem.children(".active").removeClass("active");
+        var child = elem.children().eq(pos.index).addClass("active");
         var childTop = child.position().top;
         var childBottom = childTop + child.outerHeight();
         if (childTop < 0 || childBottom >= elem.height()) elem.animate({scrollTop: elem[0].scrollTop + childTop - 10});
