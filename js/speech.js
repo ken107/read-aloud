@@ -3,7 +3,7 @@ function Speech(texts, options) {
   options.rate = (options.rate || 1) * (isGoogleTranslate(options.voiceName) ? 1.2 : 1);
 
   for (var i=0; i<texts.length; i++) if (/\w$/.test(texts[i])) texts[i] += '.';
-  texts = getChunks(texts.join("\n\n"));
+  if (texts.length) texts = getChunks(texts.join("\n\n"));
 
   var engine = options.engine || (isGoogleNative(options.voiceName) ? new TimeoutTtsEngine(new ChromeTtsEngine(), 16*1000) : new ChromeTtsEngine());
   var pauseDuration = isGoogleTranslate(options.voiceName) ? 0 : (650/options.rate);
