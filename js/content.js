@@ -586,7 +586,7 @@ function HtmlDoc() {
   function dontRead() {
     var float = $(this).css("float");
     var position = $(this).css("position");
-    return $(this).is(ignoreTags) || $(this).is("sup") || float == "right" || position == "absolute" || position == "fixed";
+    return $(this).is(ignoreTags) || $(this).is("sup") || float == "right" || position == "fixed";
   }
 
   function getText(elem) {

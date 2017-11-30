@@ -58,7 +58,8 @@ function updateButtons() {
       var pos = speech.getPosition();
       var elem = $("#highlight");
       if (elem.data("texts") != pos.texts) {
-        elem.data("texts", pos.texts).empty();
+        elem.data({texts: pos.texts, index: -1});
+        elem.empty();
         for (var i=0; i<pos.texts.length; i++) {
           var html = escapeHtml(pos.texts[i]).replace(/\r?\n/g, "<br/>");
           $("<span>").html(html).appendTo(elem);

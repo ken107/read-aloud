@@ -4,6 +4,8 @@
     var engine = window.remoteTtsEngine = new RemoteTTS(config.serviceUrl);
     chrome.ttsEngine.onSpeak.addListener(engine.speak);
     chrome.ttsEngine.onStop.addListener(engine.stop);
+    chrome.ttsEngine.onPause.addListener(engine.pause);
+    chrome.ttsEngine.onResume.addListener(engine.resume);
   }
 })();
 
@@ -37,8 +39,13 @@ function RemoteTTS(host) {
     callback(audio.currentTime && !audio.paused && !audio.ended);
   }
 
+  this.pause =
   this.stop = function() {
     audio.pause();
+  }
+
+  this.resume = function() {
+    audio.play();
   }
 
   this.prefetch = function(utterance, options) {

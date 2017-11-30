@@ -116,7 +116,7 @@ function Doc(source, onEnd) {
     return ready
       .catch(function() {})
       .then(function() {
-        if (activeSpeech) activeSpeech.pause();
+        if (activeSpeech) activeSpeech.stop().then(function() {activeSpeech = null});
         source.close();
       })
   }
@@ -255,7 +255,7 @@ function Doc(source, onEnd) {
   function stop() {
     return ready
       .then(function() {
-        if (activeSpeech) return activeSpeech.pause().then(function() {activeSpeech = null});
+        if (activeSpeech) return activeSpeech.stop().then(function() {activeSpeech = null});
       })
   }
 

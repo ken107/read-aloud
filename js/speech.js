@@ -7,12 +7,13 @@ function Speech(texts, options) {
 
   var engine = options.engine || (isGoogleNative(options.voiceName) ? new TimeoutTtsEngine(new ChromeTtsEngine(), 16*1000) : new ChromeTtsEngine());
   var pauseDuration = isGoogleTranslate(options.voiceName) ? 0 : (650/options.rate);
-  var isPlaying = false;
+  var state = "IDLE";
   var index = 0;
 
   this.options = options;
   this.play = play;
   this.pause = pause;
+  this.stop = stop;
   this.getState = getState;
   this.getPosition = getPosition;
   this.forward = forward;
@@ -35,7 +36,7 @@ function Speech(texts, options) {
   function getState() {
     return new Promise(function(fulfill) {
       engine.isSpeaking(function(isSpeaking) {
-        if (isPlaying) fulfill(isSpeaking ? "PLAYING" : "LOADING");
+        if (state == "PLAYING") fulfill(isSpeaking ? "PLAYING" : "LOADING");
         else fulfill("PAUSED");
       })
     })
@@ -50,20 +51,27 @@ function Speech(texts, options) {
 
   function play() {
     if (index >= texts.length) {
-      isPlaying = false;
+      state = "IDLE";
       if (options.onEnd) options.onEnd();
       return Promise.resolve();
     }
+    else if (state == "PAUSED") {
+      state = "PLAYING";
+      engine.resume();
+      return Promise.resolve();
+    }
     else {
-      isPlaying = new Date().getTime();
+      state = new String("PLAYING");
+      state.startTime = new Date().getTime();
       return speak(texts[index],
         function() {
+          state = "IDLE";
           engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
           index++;
           play();
         },
         function(err) {
-          isPlaying = false;
+          state = "IDLE";
           if (options.onEnd) options.onEnd(err);
         })
         .then(function() {
@@ -73,8 +81,17 @@ function Speech(texts, options) {
   }
 
   function pause() {
+    if (engine.pause) {
+      engine.pause();
+      state = "PAUSED";
+      return Promise.resolve();
+    }
+    else return stop();
+  }
+
+  function stop() {
     engine.stop();
-    isPlaying = false;
+    state = "IDLE";
     return Promise.resolve();
   }
 
@@ -87,7 +104,7 @@ function Speech(texts, options) {
   }
 
   function rewind() {
-    if (isPlaying && new Date().getTime()-isPlaying > 3*1000) {
+    if (state == "PLAYING" && new Date().getTime()-state.startTime > 3*1000) {
       return play();
     }
     else if (index > 0) {
@@ -305,6 +322,8 @@ function EastAsianPunctuator() {
       chrome.tts.speak(text, Object.assign({onEvent: onEvent}, options));
     }
     this.stop = chrome.tts.stop;
+    this.pause = chrome.tts.pause;
+    this.resume = chrome.tts.resume;
     this.isSpeaking = chrome.tts.isSpeaking;
     this.prefetch = function(text, options) {
       if (isRemoteVoice(options.voiceName)) remoteTtsEngine.prefetch(text, options);
