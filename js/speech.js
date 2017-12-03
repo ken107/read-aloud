@@ -28,8 +28,8 @@ function Speech(texts, options) {
       return new WordBreaker(wordLimit, punctuator).breakText(text);
     }
     else {
-      var charLimit = isGoogleTranslate(options.voiceName) ? 200 : 500;
-      return new CharBreaker(charLimit, punctuator).breakText(text);
+      if (isGoogleTranslate(options.voiceName)) return new CharBreaker(200, punctuator).breakText(text);
+      else return new CharBreaker(500, punctuator, 200).breakText(text);
     }
   }
 
@@ -188,10 +188,10 @@ function WordBreaker(wordLimit, punctuator) {
   }
 }
 
-function CharBreaker(charLimit, punctuator) {
+function CharBreaker(charLimit, punctuator, paragraphCombineThreshold) {
   this.breakText = breakText;
   function breakText(text) {
-    return merge(punctuator.getParagraphs(text), breakParagraph);
+    return merge(punctuator.getParagraphs(text), breakParagraph, paragraphCombineThreshold);
   }
   function breakParagraph(text) {
     return merge(punctuator.getSentences(text), breakSentence);
@@ -210,7 +210,7 @@ function CharBreaker(charLimit, punctuator) {
     }
     return result;
   }
-  function merge(parts, breakPart) {
+  function merge(parts, breakPart, combineThreshold) {
     var result = [];
     var group = {parts: [], charCount: 0};
     var flush = function() {
@@ -227,7 +227,7 @@ function CharBreaker(charLimit, punctuator) {
         for (var i=0; i<subParts.length; i++) result.push(subParts[i]);
       }
       else {
-        if (group.charCount + charCount > charLimit) flush();
+        if (group.charCount + charCount > (combineThreshold || charLimit)) flush();
         group.parts.push(part);
         group.charCount += charCount;
       }
