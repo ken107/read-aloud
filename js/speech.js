@@ -244,10 +244,10 @@ function LatinPunctuator() {
     return recombine(text.split(/((?:\r?\n\s*){2,})/));
   }
   this.getSentences = function(text) {
-    return recombine(text.split(/([.!?]+[\s\u200b])/));
+    return recombine(text.split(/([.!?]+[\s\u200b]+)/));
   }
   this.getPhrases = function(sentence) {
-    return recombine(sentence.split(/([,;:]\s|\s-+\s|—)/));
+    return recombine(sentence.split(/([,;:]\s+|\s-+\s+|—\s*)/));
   }
   this.getWords = function(sentence) {
     var tokens = sentence.trim().split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
@@ -265,7 +265,7 @@ function LatinPunctuator() {
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
       if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
-      else result.push(tokens[i]);
+      else if (tokens[i]) result.push(tokens[i]);
     }
     return result;
   }
@@ -276,10 +276,10 @@ function EastAsianPunctuator() {
     return recombine(text.split(/((?:\r?\n\s*){2,})/));
   }
   this.getSentences = function(text) {
-    return recombine(text.split(/([.!?]+[\s\u200b]|[\u3002\uff01])/));
+    return recombine(text.split(/([.!?]+[\s\u200b]+|[\u3002\uff01]+)/));
   }
   this.getPhrases = function(sentence) {
-    return recombine(sentence.split(/([,;:]\s|[\u2025\u2026\u3000\u3001\uff0c\uff1b])/));
+    return recombine(sentence.split(/([,;:]\s+|[\u2025\u2026\u3000\u3001\uff0c\uff1b]+)/));
   }
   this.getWords = function(sentence) {
     return sentence.replace(/\s+/g, "").split("");
@@ -288,7 +288,7 @@ function EastAsianPunctuator() {
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
       if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
-      else result.push(tokens[i]);
+      else if (tokens[i]) result.push(tokens[i]);
     }
     return result;
   }
