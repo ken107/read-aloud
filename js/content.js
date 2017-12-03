@@ -226,11 +226,13 @@ function PdfDoc(url) {
   else {
     this.ready = readAloud.loadCss(viewerBase + "viewer.css")
       .then(loadViewerHtml)
+      .then(showLoadingIcon)
       .then(appendLocaleResourceLink)
       .then(readAloud.loadScript.bind(null, viewerBase + "../build/pdf.js"))
       .then(rebaseUrls)
       .then(readAloud.loadScript.bind(null, viewerBase + "pdf.viewer.js", viewerJsPreprocessor))
       .then(loadPdf)
+      .then(hideLoadingIcon)
   }
 
   function loadViewerHtml() {
@@ -277,6 +279,24 @@ function PdfDoc(url) {
 
   function loadPdf() {
     return PDFViewerApplication.open(url);
+  }
+
+  function showLoadingIcon() {
+    if (!$(".ra-loading-icon").length) {
+      var holder = $("<div>")
+        .addClass("ra-loading-icon")
+        .css({position: "absolute", left: "50%", top: "50%"})
+        .appendTo(document.body)
+      $("<img>")
+        .attr("src", chrome.runtime.getURL("img/throb.gif"))
+        .css({position: "relative", width: 48, left: -24, top: -24})
+        .appendTo(holder)
+    }
+    $(".ra-loading-icon").show();
+  }
+
+  function hideLoadingIcon() {
+    $(".ra-loading-icon").hide();
   }
 
   this.getCurrentIndex = function() {
