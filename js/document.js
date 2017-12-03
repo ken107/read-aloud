@@ -174,8 +174,25 @@ function Doc(source, onEnd) {
   }
 
   function detectLanguage(texts) {
-    var text = "";
-    for (var i=0; i<texts.length && text.length<500; i++) text += (texts[i] + " ");
+    var minChars = 1000;
+    var output = combineTexts("", texts);
+    return output.length<minChars ? accumulateMore(output, currentIndex+1).then(detectLanguageOf) : detectLanguageOf(output);
+
+    function combineTexts(output, texts) {
+      for (var i=0; i<texts.length && output.length<minChars; i++) output += (texts[i] + " ");
+      return output;
+    }
+    function accumulateMore(output, index) {
+      return source.getTexts(index)
+        .then(function(texts) {
+          if (!texts) return output;
+          output = combineTexts(output, texts);
+          return output.length<minChars ? accumulateMore(output, index+1) : output;
+        })
+    }
+  }
+
+  function detectLanguageOf(text) {
     if (chrome.i18n.detectLanguage)
       return new Promise(function(fulfill) {
         chrome.i18n.detectLanguage(text, function(result) {
