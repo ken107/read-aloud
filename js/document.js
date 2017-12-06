@@ -33,8 +33,8 @@ function TabSource() {
   this.getCurrentIndex = function() {
     return send({method: "raGetCurrentIndex"});
   }
-  this.getTexts = function(index) {
-    return send({method: "raGetTexts", index: index});
+  this.getTexts = function(index, quietly) {
+    return send({method: "raGetTexts", index: index, quietly: quietly});
   }
   this.close = function() {
     if (port) port.disconnect();
@@ -183,7 +183,7 @@ function Doc(source, onEnd) {
       return output;
     }
     function accumulateMore(output, index) {
-      return source.getTexts(index)
+      return source.getTexts(index, true)
         .then(function(texts) {
           if (!texts) return output;
           output = combineTexts(output, texts);

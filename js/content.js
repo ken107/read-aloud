@@ -52,11 +52,11 @@ function startService(name, doc) {
       else return null;
     }
     else {
-      return Promise.resolve(doc.getTexts(request.index))
+      return Promise.resolve(doc.getTexts(request.index, request.quietly))
         .then(function(texts) {
           if (texts) {
             texts = texts.map(removeLinks);
-            console.log(texts.join("\n\n"));
+            if (!request.quietly) console.log(texts.join("\n\n"));
           }
           return texts;
         })
@@ -117,7 +117,7 @@ function GoogleDoc() {
     return i-1;
   }
 
-  this.getTexts = function(index) {
+  this.getTexts = function(index, quietly) {
     if (index == 9999) {
       var doc = googleDocsUtil.getGoogleDocument();
       return [doc.selectedText];
@@ -125,8 +125,13 @@ function GoogleDoc() {
 
     var page = pages.get(index);
     if (page) {
+      var oldScrollTop = viewport.scrollTop;
       viewport.scrollTop = $(page).position().top;
-      return tryGetTexts(getTexts.bind(page), 2000);
+      return tryGetTexts(getTexts.bind(page), 2000)
+        .then(function(result) {
+          if (quietly) viewport.scrollTop = oldScrollTop;
+          return result;
+        })
     }
     else return null;
   }
@@ -148,11 +153,16 @@ function GDriveDoc() {
     return i-1;
   }
 
-  this.getTexts = function(index) {
+  this.getTexts = function(index, quietly) {
     var page = pages.get(index);
     if (page) {
+      var oldScrollTop = viewport.scrollTop;
       viewport.scrollTop = $(page).position().top;
-      return tryGetTexts(getTexts.bind(page), 3000);
+      return tryGetTexts(getTexts.bind(page), 3000)
+        .then(function(result) {
+          if (quietly) viewport.scrollTop = oldScrollTop;
+          return result;
+        })
     }
     else return null;
   }
@@ -307,14 +317,14 @@ function PdfDoc(url) {
     return pageNo ? pageNo-1 : 0;
   }
 
-  this.getTexts = function(index) {
+  this.getTexts = function(index, quietly) {
     if (uploadDialog) {
       uploadDialog.show();
       return null;
     }
     var pdf = PDFViewerApplication.pdfDocument;
     if (index < pdf.numPages) {
-      PDFViewerApplication.pdfViewer.currentPageNumber = index+1;
+      if (!quietly) PDFViewerApplication.pdfViewer.currentPageNumber = index+1;
       return pdf.getPage(index+1)
         .then(getPageTexts)
         .then(function(texts) {

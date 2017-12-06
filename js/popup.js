@@ -40,11 +40,10 @@ function updateButtons() {
     return Promise.all([
       getSettings(),
       master.getPlaybackState(),
-      master.getDocInfo(),
       master.getActiveSpeech()
     ])
   })
-  .then(spread(function(settings, state, docInfo, speech) {
+  .then(spread(function(settings, state, speech) {
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
@@ -69,9 +68,11 @@ function updateButtons() {
         elem.data("index", pos.index);
         elem.children(".active").removeClass("active");
         var child = elem.children().eq(pos.index).addClass("active");
+        if (child.length) {
         var childTop = child.position().top;
         var childBottom = childTop + child.outerHeight();
         if (childTop < 0 || childBottom >= elem.height()) elem.animate({scrollTop: elem[0].scrollTop + childTop - 10});
+        }
       }
     }
   }));
