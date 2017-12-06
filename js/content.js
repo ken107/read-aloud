@@ -288,7 +288,12 @@ function PdfDoc(url) {
   }
 
   function loadPdf() {
-    return PDFViewerApplication.open(url);
+    return PDFViewerApplication.open(url)
+      .then(function() {
+        return new Promise(function(fulfill) {
+          PDFViewerApplication.eventBus.on("documentload", fulfill);
+        })
+      })
   }
 
   function showLoadingIcon() {
@@ -313,7 +318,7 @@ function PdfDoc(url) {
     if (uploadDialog) {
       return 0;
     }
-    var pageNo = PDFViewerApplication.pdfViewer.currentPageNumber;
+    var pageNo = PDFViewerApplication.page;
     return pageNo ? pageNo-1 : 0;
   }
 
@@ -324,7 +329,7 @@ function PdfDoc(url) {
     }
     var pdf = PDFViewerApplication.pdfDocument;
     if (index < pdf.numPages) {
-      if (!quietly) PDFViewerApplication.pdfViewer.currentPageNumber = index+1;
+      if (!quietly) PDFViewerApplication.page = index+1;
       return pdf.getPage(index+1)
         .then(getPageTexts)
         .then(function(texts) {
