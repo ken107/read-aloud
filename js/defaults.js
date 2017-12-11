@@ -28,9 +28,9 @@ function getQueryString() {
   return queryString;
 }
 
-function getSettings() {
+function getSettings(names) {
   return new Promise(function(fulfill) {
-    chrome.storage.local.get(["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
+    chrome.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
   });
 }
 
@@ -40,9 +40,9 @@ function updateSettings(items) {
   });
 }
 
-function clearSettings() {
+function clearSettings(names) {
   return new Promise(function(fulfill) {
-    chrome.storage.local.remove(["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
+    chrome.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
   });
 }
 

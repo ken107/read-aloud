@@ -33,6 +33,8 @@ $(function() {
       if (state != "PLAYING") $("#btnPlay").click();
     });
   setInterval(updateButtons, 500);
+
+  checkAnnouncements();
 });
 
 function updateButtons() {
@@ -53,7 +55,7 @@ function updateButtons() {
     $("#attribution").toggle(Boolean(speech && isGoogleTranslate(speech.options.voiceName)));
     $("#highlight").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "PAUSED" || state == "PLAYING"));
 
-    if (speech) {
+    if (settings.showHighlighting && speech) {
       var pos = speech.getPosition();
       var elem = $("#highlight");
       if (elem.data("texts") != pos.texts) {
@@ -76,4 +78,45 @@ function updateButtons() {
       }
     }
   }));
+}
+
+function checkAnnouncements() {
+  var now = new Date().getTime();
+  getSettings(["announcement"])
+    .then(function(settings) {
+      var ann = settings.announcement;
+      if (ann && ann.expire > now)
+        return ann;
+      else
+        return ajaxGet(config.serviceUrl + "/read-aloud/announcement")
+          .then(JSON.parse)
+          .then(function(result) {
+            result.expire = now + 6*3600*1000;
+            if (ann && result.id == ann.id) {
+              result.lastShown = ann.lastShown;
+              result.disabled = ann.disabled;
+            }
+            updateSettings({announcement: result});
+            return result;
+          })
+    })
+    .then(function(ann) {
+      if (ann.text && !ann.disabled) {
+        if (!ann.lastShown || now-ann.lastShown > ann.period*60*1000) {
+          showAnnouncement(ann);
+          ann.lastShown = now;
+          updateSettings({announcement: ann});
+        }
+      }
+    })
+}
+
+function showAnnouncement(ann) {
+  var html = escapeHtml(ann.text).replace(/\[(.*?)\]/g, "<a target='_blank' href='" + ann.link + "'>$1</a>").replace(/\n/g, "<br/>");
+  $("#footer").html(html).addClass("announcement");
+  if (ann.disableIfClick)
+    $("#footer a").click(function() {
+      ann.disabled = true;
+      updateSettings({announcement: ann});
+    })
 }

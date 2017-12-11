@@ -56,8 +56,10 @@
   margin-top: 10px;
   text-align: center;
   font-size: smaller;
+  line-height: 1.3em;
+  color: #888;
 }
-#footer a {
+#footer:not(.announcement) a {
   color: #aaa;
 }
 
