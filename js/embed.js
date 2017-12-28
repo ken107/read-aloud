@@ -10,22 +10,25 @@ var readAloud = new function() {
   var attribution = new Attribution();
 
   this.play = function(options) {
-    return ready().then(play.bind(this, options));
+    return ready()
+      .then(function() {
+        return speech ? speech.play() : speak(new HtmlDoc().getTexts(0), options);
+      })
+      .then(updateButtons)
   };
   this.speak = function(text, options) {
-    return ready().then(speak.bind(this, text, options));
+    return ready()
+      .then(speak.bind(this, text, options))
+      .then(updateButtons)
   };
-  this.pause = pause;
+  this.pause = function() {
+    return speech ? speech.pause().then(updateButtons) : Promise.resolve();
+  };
   this.isPlaying = isPlaying;
 
   function ready() {
     if (window.jQuery) return Promise.resolve();
     else return ajaxGet("https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js").then(eval);
-  }
-
-  function play(options) {
-    if (speech) return speech.play().then(updateButtons);
-    else return this.speak(new HtmlDoc().getTexts(0), options);
   }
 
   function speak(texts, options) {
@@ -40,14 +43,9 @@ var readAloud = new function() {
         options.engine = new RemoteTTS(config.serviceUrl);
       }
       options.onEnd = function() {speech = null; updateButtons()};
-      if (speech) speech.pause();
+      if (speech) speech.stop();
       speech = new Speech(texts, options);
-      return speech.play().then(updateButtons);
-  }
-
-  function pause() {
-    if (speech) return speech.pause().then(updateButtons);
-    else return Promise.resolve();
+      return speech.play();
   }
 
   function updateButtons() {
@@ -73,8 +71,10 @@ var readAloud = new function() {
     }
 
     this.getRemoteVoice = function(lang) {
-      if (window.remoteVoices) {
+      if (window.manifest) {
+        var remoteVoices = manifest.tts_engine.voices;
         return findVoiceByLang(remoteVoices.filter(function(voice) {return isAmazonPolly(voice.voice_name)}), lang)
+          || findVoiceByLang(remoteVoices.filter(function(voice) {return isMicrosoftCloud(voice.voice_name)}), lang)
           || findVoiceByLang(remoteVoices.filter(function(voice) {return isGoogleTranslate(voice.voice_name)}), lang);
       }
       else return null;
@@ -108,7 +108,7 @@ var readAloud = new function() {
   function LocalTTS(voice) {
     var utter;
 
-    this.speak = function(text, options) {
+    this.speak = function(text, options, onEvent) {
       utter = new SpeechSynthesisUtterance();
       if (options.lang) utter.lang = options.lang;
       if (options.pitch) utter.pitch = options.pitch;
@@ -116,9 +116,9 @@ var readAloud = new function() {
       utter.text = text;
       utter.voice = voice;
       if (options.volume) utter.volume = options.volume;
-      utter.onstart = options.onEvent.bind(null, {type: 'start', charIndex: 0});
+      utter.onstart = onEvent.bind(null, {type: 'start', charIndex: 0});
       utter.onerror =
-      utter.onend = options.onEvent.bind(null, {type: 'end', charIndex: text.length});
+      utter.onend = onEvent.bind(null, {type: 'end', charIndex: text.length});
       speechSynthesis.speak(utter);
     }
 
@@ -130,6 +130,9 @@ var readAloud = new function() {
       if (utter) utter.onend = null;
       speechSynthesis.cancel();
     }
+
+    this.prefetch = function() {}
+    this.setNextStartTime = function() {}
   }
 
   //google translate attribution

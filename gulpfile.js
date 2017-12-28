@@ -1,44 +1,61 @@
 var fs = require("fs"),
 	util = require("util"),
-	gulp = require("gulp"),
-	newer = require("gulp-newer"),
-	concat = require("gulp-concat"),
-	uglify = require("gulp-uglify"),
-	zip = require("gulp-zip");
+	path = require("path"),
+	{minify} = require("uglify-js");
 
-gulp.task("remote-voice-list", async function() {
-	var stats = await Promise.all([
-		util.promisify(fs.stat)("manifest.json"),
-		util.promisify(fs.stat)("build/remote_voices.js").catch(err => ({mtime: 0}))
-	])
-	if (stats[0].mtime > stats[1].mtime) {
-		var manifest = JSON.parse(await util.promisify(fs.readFile)("manifest.json"));
-		await util.promisify(fs.mkdir)("build").catch(err => "OK");
-		await util.promisify(fs.writeFile)("build/remote_voices.js", "var remoteVoices = " + JSON.stringify(manifest.tts_engine.voices));
+const fsp = {
+	readFile: util.promisify(fs.readFile),
+	writeFile: util.promisify(fs.writeFile),
+	stat: util.promisify(fs.stat)
+};
+
+
+exports.build = async function() {
+	const jsFiles = ["manifest.json", "js/defaults.js", "js/content.js", "js/speech.js", "js/googletr_tts.js", "js/embed.js"];
+	const outFile = "docs/js/readaloud.js";
+	const outFileMin = "docs/js/readaloud.min.js";
+
+	const areNewer = await Promise.all(jsFiles.map(file => isNewer(file, outFile)));
+	if (!areNewer.some(x => x)) {
+		console.log("No changes");
+		return;
 	}
-})
 
-gulp.task("embed-script", ["remote-voice-list"], function() {
-  return gulp.src([
-			"build/remote_voices.js",
-			"js/defaults.js",
-			"js/content.js",
-			"js/speech.js",
-			"js/googletr_tts.js",
-			"js/embed.js"
-		])
-    .pipe(newer("docs/js/readaloud.min.js"))
-    .pipe(concat("docs/js/readaloud.min.js"))
-    .pipe(uglify({compress: {evaluate: false}}))
-    .pipe(gulp.dest("."))
-})
+	const str = fs.createWriteStream(outFile);
+	str.write("var manifest = ");
+	for (const file of jsFiles) await copyStream(fs.createReadStream(file), str);
+	str.end();
 
-gulp.task("build", ["embed-script"]);
+	const {error, code} = minify(await fsp.readFile(outFile, "utf8"));
+	if (error) {
+		console.log(error);
+		return;
+	}
+	await fsp.writeFile(outFileMin, code);
+}
 
-gulp.task("dist", function() {
-	return gulp.src(["_locales/**", "css/**", "img/**", "js/**", "*.html", "manifest.json"], {base: "."})
-		.pipe(zip("package.zip"))
-		.pipe(gulp.dest("build"))
-})
 
-gulp.task("default", ["build"]);
+async function isNewer(srcFile, dstFile) {
+	const srcStat = await fsp.stat(srcFile);
+	try {
+		const dstStat = await fsp.stat(dstFile);
+		return srcStat.mtime > dstStat.mtime;
+	}
+	catch (err) {
+		return true;
+	}
+}
+
+function copyStream(src, dst) {
+	return new Promise(function(fulfill, reject) {
+		src.pipe(dst, {end: false});
+		src.on("error", reject);
+		src.on("end", fulfill);
+	})
+}
+
+if (require.main == module) {
+	const task = process.argv[2];
+	if (task) exports[task]();
+	else console.error("No task specified");
+}

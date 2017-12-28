@@ -11,6 +11,7 @@
 
 
 function RemoteTTS(host) {
+  var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
   var audio = window.ttsAudio || (window.ttsAudio = document.createElement("AUDIO"));
   var prefetchAudio = document.createElement("AUDIO");
   var nextStartTime = 0;
@@ -21,8 +22,10 @@ function RemoteTTS(host) {
     if (!options.rate) options.rate = 1;
     if (!onEvent) onEvent = options.onEvent;
     audio.pause();
-    audio.volume = options.volume;
-    audio.defaultPlaybackRate = options.rate;
+    if (!iOS) {
+      audio.volume = options.volume;
+      audio.defaultPlaybackRate = options.rate;
+    }
     audio.src = getAudioUrl(utterance, options.lang, options.voiceName);
     audio.oncanplay = function() {
       var waitTime = nextStartTime - new Date().getTime();
@@ -34,6 +37,7 @@ function RemoteTTS(host) {
     audio.onerror = function() {
       onEvent({type: "error", errorMessage: audio.error.message});
     };
+    audio.load();
   }
 
   this.isSpeaking = function(callback) {
