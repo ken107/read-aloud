@@ -9,6 +9,7 @@ function submit() {
   $("#img-spinner").show();
   Promise.all([getBackgroundPage(), getSettings()])
     .then(spread(function(master, settings) {
+      settings.browser = config.browser;
       var url = $("#txt-url").val();
       var comment = $("#txt-comment").val();
       return master.reportIssue(url + "\n" + JSON.stringify(settings), comment);

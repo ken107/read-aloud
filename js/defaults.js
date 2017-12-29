@@ -9,7 +9,8 @@ var config = {
     '/': '&#x2F;',
     '`': '&#x60;',
     '=': '&#x3D;'
-  }
+  },
+  browser: getBrowser()
 }
 
 var defaults = {
@@ -244,4 +245,18 @@ function escapeHtml(text) {
   return text.replace(/[&<>"'`=\/]/g, function(s) {
     return config.entityMap[s];
   })
+}
+
+function getBrowser() {
+  if (/Opera|OPR\//.test(navigator.userAgent)) return 'opera';
+  if (/firefox/i.test(navigator.userAgent)) return 'firefox';
+  return 'chrome';
+}
+
+function getHotkeySettingsUrl() {
+  switch (config.browser) {
+    case 'opera': return 'opera://settings/configureCommands';
+    case 'chrome': return 'chrome://extensions/configureCommands';
+    default: return chrome.runtime.getURL("shortcuts.html");
+  }
 }
