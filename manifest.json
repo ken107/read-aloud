@@ -46,19 +46,19 @@
   "options_page": "options.html",
   "commands": {
     "play": {
-      "suggested_key": {"default": "Alt+P"},
+      "suggested_key": {"default": "Alt+Shift+P"},
       "description": "play/pause"
     },
     "stop": {
-      "suggested_key": {"default": "Alt+S"},
+      "suggested_key": {"default": "Alt+Shift+S"},
       "description": "stop"
     },
     "forward": {
-      "suggested_key": {"default": "Alt+Period"},
+      "suggested_key": {"default": "Alt+Shift+N"},
       "description": "forward"
     },
     "rewind": {
-      "suggested_key": {"default": "Alt+Comma"},
+      "suggested_key": {"default": "Alt+Shift+B"},
       "description": "rewind"
     }
   },
