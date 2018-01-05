@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "default_locale": "en",
 
   "browser_action": {
@@ -83,6 +83,7 @@
       {"voice_name": "GoogleTranslate French", "lang": "fr", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate German", "lang": "de", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Greek", "lang": "el", "event_types": ["start", "end", "error"]},
+      {"voice_name": "GoogleTranslate Hebrew", "lang": "he", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Hindi", "lang": "hi", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Hungarian", "lang": "hu", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Icelandic", "lang": "is", "event_types": ["start", "end", "error"]},
