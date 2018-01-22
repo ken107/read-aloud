@@ -35,6 +35,7 @@ function startService(name, doc) {
     if (lang) lang = lang.replace(/_/g, '-');
     if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return {
+      redirect: doc.redirect,
       url: location.href,
       title: document.title,
       lang: lang
@@ -96,6 +97,7 @@ function makeDoc() {
     else if (/^read\.amazon\./.test(location.hostname)) return new KindleBook();
     else if (location.hostname == "www.quora.com") return new QuoraPage();
     else if (location.hostname == "www.khanacademy.org") return new KhanAcademy();
+    else if (location.hostname == "bookshelf.vitalsource.com") return new VitalSourceBookshelf();
     else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
     else if ($("embed[type='application/pdf']").length) return new PdfDoc($("embed[type='application/pdf']").attr("src"));
     else return new HtmlDoc();
@@ -480,6 +482,21 @@ function KhanAcademy() {
         else return text;
       })
   }
+}
+
+
+function VitalSourceBookshelf() {
+  this.redirect = true;
+
+  this.getCurrentIndex = function() {
+    return 0
+  };
+
+  this.getTexts = function() {
+    var iframe = $("#jigsaw-placeholder > iframe").get(0);
+    if (iframe) location.href = iframe.src;
+    return null;
+  };
 }
 
 

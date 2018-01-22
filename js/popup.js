@@ -10,7 +10,10 @@ $(function() {
           })
           .then(updateButtons)
           .then(master.getDocInfo)
-          .then(function(docInfo) {return setState("lastUrl", docInfo && docInfo.url)})
+          .then(function(docInfo) {
+            if (docInfo.redirect) window.close();
+            return setState("lastUrl", docInfo && docInfo.url);
+          })
           .catch(function(err) {
             getSettings().then(function(settings) {
               return master.reportIssue(JSON.stringify(settings), err.stack);
