@@ -11,7 +11,7 @@ $(function() {
           .then(updateButtons)
           .then(master.getDocInfo)
           .then(function(docInfo) {
-            if (docInfo.redirect) window.close();
+            if (docInfo && docInfo.redirect) window.close();
             return setState("lastUrl", docInfo && docInfo.url);
           })
           .catch(function(err) {
