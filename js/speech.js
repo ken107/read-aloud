@@ -9,6 +9,7 @@ function Speech(texts, options) {
   var pauseDuration = isGoogleTranslate(options.voiceName) ? 0 : (650/options.rate);
   var state = "IDLE";
   var index = 0;
+  var delayedPlayTimer;
 
   this.options = options;
   this.play = play;
@@ -80,6 +81,12 @@ function Speech(texts, options) {
     }
   }
 
+  function delayedPlay() {
+    clearTimeout(delayedPlayTimer);
+    delayedPlayTimer = setTimeout(play, 750);
+    return Promise.resolve();
+  }
+
   function pause() {
     if (engine.pause) {
       engine.pause();
@@ -98,7 +105,7 @@ function Speech(texts, options) {
   function forward() {
     if (index+1 < texts.length) {
       index++;
-      return play();
+      return delayedPlay();
     }
     else return Promise.reject(new Error("Can't forward, at end"));
   }
