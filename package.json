@@ -6,7 +6,7 @@
     "doc": "docs"
   },
   "devDependencies": {
-    "uglifyjs": "^2.4.11"
+    "uglify-js": "^2.4.11"
   },
   "scripts": {
     "build": "node gulpfile.js build",

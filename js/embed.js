@@ -27,7 +27,11 @@ var readAloud = new function() {
   this.isPlaying = isPlaying;
 
   function ready() {
-    if (window.jQuery) return Promise.resolve();
+    if (window.jQuery) {
+      if (!window.$) window.$ = window.jQuery;
+      else if (window.$ != window.jQuery) console.warn("WARNING: Read Aloud embed script may not work because $ != jQuery.");
+      return Promise.resolve();
+    }
     else return ajaxGet("https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js").then(eval);
   }
 

@@ -4,7 +4,7 @@ var manifest = {
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.2.9",
+  "version": "1.2.12",
   "default_locale": "en",
 
   "browser_action": {
@@ -46,19 +46,19 @@ var manifest = {
   "options_page": "options.html",
   "commands": {
     "play": {
-      "suggested_key": {"default": "Alt+P"},
+      "suggested_key": {"default": "Alt+Shift+P"},
       "description": "play/pause"
     },
     "stop": {
-      "suggested_key": {"default": "Alt+S"},
+      "suggested_key": {"default": "Alt+Shift+S"},
       "description": "stop"
     },
     "forward": {
-      "suggested_key": {"default": "Alt+Period"},
+      "suggested_key": {"default": "Alt+Shift+N"},
       "description": "forward"
     },
     "rewind": {
-      "suggested_key": {"default": "Alt+Comma"},
+      "suggested_key": {"default": "Alt+Shift+B"},
       "description": "rewind"
     }
   },
@@ -83,6 +83,7 @@ var manifest = {
       {"voice_name": "GoogleTranslate French", "lang": "fr", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate German", "lang": "de", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Greek", "lang": "el", "event_types": ["start", "end", "error"]},
+      {"voice_name": "GoogleTranslate Hebrew", "lang": "he", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Hindi", "lang": "hi", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Hungarian", "lang": "hu", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Icelandic", "lang": "is", "event_types": ["start", "end", "error"]},
@@ -219,7 +220,8 @@ var manifest = {
       {"voice_name": "Microsoft Turkish (Tolga)", "lang": "tr-TR", "gender": "male", "event_types": ["start", "end", "error"]},
       {"voice_name": "Microsoft US English (David)", "lang": "en-US", "gender": "male", "event_types": ["start", "end", "error"]},
       {"voice_name": "Microsoft US English (Mark)", "lang": "en-US", "gender": "male", "event_types": ["start", "end", "error"]},
-      {"voice_name": "Microsoft US English (Zira)", "lang": "en-US", "gender": "female", "event_types": ["start", "end", "error"]}
+      {"voice_name": "Microsoft US English (Zira)", "lang": "en-US", "gender": "female", "event_types": ["start", "end", "error"]},
+      {"voice_name": "Microsoft Vietnamese (An)", "lang": "vi-VI", "gender": "male", "event_types": ["start", "end", "error"]}
     ]
   }
 }
@@ -234,7 +236,8 @@ var config = {
     '/': '&#x2F;',
     '`': '&#x60;',
     '=': '&#x3D;'
-  }
+  },
+  browser: getBrowser()
 }
 
 var defaults = {
@@ -470,6 +473,20 @@ function escapeHtml(text) {
     return config.entityMap[s];
   })
 }
+
+function getBrowser() {
+  if (/Opera|OPR\//.test(navigator.userAgent)) return 'opera';
+  if (/firefox/i.test(navigator.userAgent)) return 'firefox';
+  return 'chrome';
+}
+
+function getHotkeySettingsUrl() {
+  switch (config.browser) {
+    case 'opera': return 'opera://settings/configureCommands';
+    case 'chrome': return 'chrome://extensions/configureCommands';
+    default: return chrome.runtime.getURL("shortcuts.html");
+  }
+}
 (function() {
   window.connect = connect;
   window.HtmlDoc = HtmlDoc;
@@ -507,6 +524,7 @@ function startService(name, doc) {
     if (lang) lang = lang.replace(/_/g, '-');
     if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return {
+      redirect: doc.redirect,
       url: location.href,
       title: document.title,
       lang: lang
@@ -568,6 +586,7 @@ function makeDoc() {
     else if (/^read\.amazon\./.test(location.hostname)) return new KindleBook();
     else if (location.hostname == "www.quora.com") return new QuoraPage();
     else if (location.hostname == "www.khanacademy.org") return new KhanAcademy();
+    else if (location.hostname == "bookshelf.vitalsource.com") return new VitalSourceBookshelf();
     else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
     else if ($("embed[type='application/pdf']").length) return new PdfDoc($("embed[type='application/pdf']").attr("src"));
     else return new HtmlDoc();
@@ -955,6 +974,21 @@ function KhanAcademy() {
 }
 
 
+function VitalSourceBookshelf() {
+  this.redirect = true;
+
+  this.getCurrentIndex = function() {
+    return 0
+  };
+
+  this.getTexts = function() {
+    var iframe = $("#jigsaw-placeholder > iframe").get(0);
+    if (iframe) location.href = iframe.src;
+    return null;
+  };
+}
+
+
 function HtmlDoc() {
   var ignoreTags = "select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style, svg, aside, footer, #footer";
 
@@ -1234,6 +1268,7 @@ function Speech(texts, options) {
   var pauseDuration = isGoogleTranslate(options.voiceName) ? 0 : (650/options.rate);
   var state = "IDLE";
   var index = 0;
+  var delayedPlayTimer;
 
   this.options = options;
   this.play = play;
@@ -1249,7 +1284,7 @@ function Speech(texts, options) {
     var isEA = /^zh|ko|ja/.test(options.lang);
     var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
     if (isGoogleNative(options.voiceName)) {
-      var wordLimit = 36 * (isEA ? 2 : 1) * options.rate;
+      var wordLimit = (/^de/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
       return new WordBreaker(wordLimit, punctuator).breakText(text);
     }
     else {
@@ -1305,6 +1340,12 @@ function Speech(texts, options) {
     }
   }
 
+  function delayedPlay() {
+    clearTimeout(delayedPlayTimer);
+    delayedPlayTimer = setTimeout(play, 750);
+    return Promise.resolve();
+  }
+
   function pause() {
     if (engine.pause) {
       engine.pause();
@@ -1323,7 +1364,7 @@ function Speech(texts, options) {
   function forward() {
     if (index+1 < texts.length) {
       index++;
-      return play();
+      return delayedPlay();
     }
     else return Promise.reject(new Error("Can't forward, at end"));
   }
@@ -1655,7 +1696,11 @@ var readAloud = new function() {
   this.isPlaying = isPlaying;
 
   function ready() {
-    if (window.jQuery) return Promise.resolve();
+    if (window.jQuery) {
+      if (!window.$) window.$ = window.jQuery;
+      else if (window.$ != window.jQuery) console.warn("WARNING: Read Aloud embed script may not work because $ != jQuery.");
+      return Promise.resolve();
+    }
     else return ajaxGet("https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js").then(eval);
   }
 

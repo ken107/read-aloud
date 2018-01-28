@@ -26,7 +26,7 @@ exports.build = async function() {
 	for (const file of jsFiles) await copyStream(fs.createReadStream(file), str);
 	str.end();
 
-	const {error, code} = minify(await fsp.readFile(outFile, "utf8"));
+	const {error, code} = minify(outFile);
 	if (error) {
 		console.log(error);
 		return;
