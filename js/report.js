@@ -7,13 +7,10 @@ $(function() {
 function submit() {
   $("#btn-submit").hide();
   $("#img-spinner").show();
-  Promise.all([getBackgroundPage(), getSettings()])
-    .then(spread(function(master, settings) {
-      settings.browser = config.browser;
-      var url = $("#txt-url").val();
-      var comment = $("#txt-comment").val();
-      return master.reportIssue(url + "\n" + JSON.stringify(settings), comment);
-    }))
+  getBackgroundPage()
+    .then(function(master) {
+      return master.reportIssue($("#txt-url").val(), $("#txt-comment").val());
+    })
     .then(function() {
       $("#img-spinner").hide();
       $("#lbl-status").text("Issue has been reported, thank you!").toggleClass("error", false);

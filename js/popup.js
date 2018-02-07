@@ -15,9 +15,7 @@ $(function() {
             return setState("lastUrl", docInfo && docInfo.url);
           })
           .catch(function(err) {
-            getSettings().then(function(settings) {
-              return master.reportIssue(JSON.stringify(settings), err.stack);
-            })
+            master.reportIssue(null, err.stack);
             if (/^{/.test(err.message)) $("#status").text(formatError(JSON.parse(err.message)) || err.message).show();
             else window.close();
           });

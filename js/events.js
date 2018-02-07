@@ -99,6 +99,14 @@ function rewind() {
   else return Promise.reject(new Error("Can't rewind, not active"));
 }
 
-function reportIssue(subject, details) {
-  return ajaxPost(config.serviceUrl + "/read-aloud/report-issue", {url: subject, comment: details});
+function reportIssue(url, comment) {
+  return getSettings()
+    .then(function(settings) {
+      if (url) settings.url = url;
+      settings.browser = config.browser;
+      return ajaxPost(config.serviceUrl + "/read-aloud/report-issue", {
+        url: JSON.stringify(settings),
+        comment: comment
+      })
+    })
 }
