@@ -146,13 +146,11 @@ function Doc(source, onEnd) {
     function read(texts) {
       return Promise.resolve()
         .then(function() {
+          if (info.detectedLang == null)
             return detectLanguage(texts)
               .then(function(lang) {
                 console.log("Detected", lang);
-                if (lang) {
-                  if (info.lang && info.lang.lastIndexOf(lang,0) == 0);
-                  else info.lang = lang;
-                }
+                info.detectedLang = lang || "";
               })
         })
         .then(getSpeech.bind(null, texts))
@@ -177,6 +175,7 @@ function Doc(source, onEnd) {
 
   function detectLanguage(texts) {
     var minChars = 1000;
+    var maxPages = 10;
     var output = combineTexts("", texts);
     return output.length<minChars ? accumulateMore(output, currentIndex+1).then(detectLanguageOf) : detectLanguageOf(output);
 
@@ -189,7 +188,7 @@ function Doc(source, onEnd) {
         .then(function(texts) {
           if (!texts) return output;
           output = combineTexts(output, texts);
-          return output.length<minChars ? accumulateMore(output, index+1) : output;
+          return output.length<minChars && index-currentIndex<maxPages ? accumulateMore(output, index+1) : output;
         })
     }
   }
@@ -216,7 +215,7 @@ function Doc(source, onEnd) {
           rate: settings.rate || defaults.rate,
           pitch: settings.pitch || defaults.pitch,
           volume: settings.volume || defaults.volume,
-          lang: info.lang,
+          lang: (!info.detectedLang || info.lang && info.lang.lastIndexOf(info.detectedLang,0) == 0) ? info.lang : info.detectedLang
         }
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voiceName) {
