@@ -32,7 +32,7 @@ function startService(name, doc) {
 
   function getInfo(request) {
     var lang = document.documentElement.lang || $("html").attr("xml:lang");
-    if (lang) lang = lang.replace(/_/g, '-');
+    if (lang) lang = lang.split(",",1)[0].replace(/_/g, '-');
     if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return {
       url: location.href,
@@ -94,7 +94,6 @@ function makeDoc() {
     }
     else if (location.hostname == "drive.google.com") return new GDriveDoc();
     else if (/^read\.amazon\./.test(location.hostname)) return new KindleBook();
-    else if (location.hostname == "www.quora.com") return new QuoraPage();
     else if (location.hostname == "www.khanacademy.org") return new KhanAcademy();
     else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
     else if ($("embed[type='application/pdf']").length) return new PdfDoc($("embed[type='application/pdf']").attr("src"));
@@ -444,34 +443,6 @@ function PdfDoc(url) {
     var message = chrome.i18n.getMessage(msg.code);
     if (message) message = message.replace(/{(\w+)}/g, function(m, p1) {return msg[p1]});
     return message;
-  }
-}
-
-
-function QuoraPage() {
-  this.getCurrentIndex = function() {
-    return 0;
-  }
-
-  this.getTexts = function(index) {
-    if (index == 0) return parse();
-    else return null;
-  }
-
-  function parse() {
-    var texts = [];
-    var elem = $(".QuestionArea .question_qtext").get(0);
-    if (elem) texts.push(elem.innerText);
-    $(".AnswerBase")
-      .each(function() {
-        elem = $(this).find(".feed_item_answer_user .user").get(0);
-        if (elem) texts.push("Answer by " + elem.innerText);
-        elem = $(this).find(".rendered_qtext").get(0);
-        if (elem) texts.push.apply(texts, elem.innerText.split(readAloud.paraSplitter));
-        elem = $(this).find(".AnswerFooter").get(0);
-        if (elem) texts.push(elem.innerText);
-      })
-    return texts;
   }
 }
 
