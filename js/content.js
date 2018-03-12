@@ -217,7 +217,7 @@ function KindleBook() {
   function getTexts() {
     var texts = [];
     contentFrames.filter(function(frame) {
-      return frame.style.visibility != "hidden";
+      return frame != null && frame.style.visibility != "hidden";
     })
     .forEach(function(frame) {
       var frameHeight = $(frame).height();
