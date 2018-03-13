@@ -44,6 +44,10 @@
     "persistent": false
   },
   "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
   "commands": {
     "play": {
       "suggested_key": {"default": "Alt+Shift+P"},
