@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.2.15",
+  "version": "1.3.1",
   "default_locale": "en",
 
   "browser_action": {
@@ -12,8 +12,8 @@
     "default_popup": "popup.html"
   },
   "icons": {
-    "16": "img/icon.png",
-    "48": "img/icon.png",
+    "16": "img/icon-16.png",
+    "48": "img/icon-48.png",
     "128": "img/icon.png"
   },
   "permissions": [
@@ -24,13 +24,8 @@
     "contextMenus",
     "https://support.lsdsoftware.com/"
   ],
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "content_security_policy": "script-src 'self'; object-src 'self'",
   "web_accessible_resources": [
-    "img/*",
-    "js/jquery-ui.min.js",
-    "css/jquery-ui.min.css",
-    "css/images/*",
-    "js/googleDocsUtil.js"
   ],
   "background": {
     "scripts": [
@@ -38,7 +33,6 @@
       "js/defaults.js",
       "js/speech.js",
       "js/document.js",
-      "js/googletr_tts.js",
       "js/events.js"
     ],
     "persistent": false

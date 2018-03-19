@@ -10,7 +10,8 @@
   },
   "scripts": {
     "build": "node gulpfile.js build",
-    "package": "zip -r build/package.zip _locales css img js *.html manifest.json"
+    "package": "zip -u -r build/package.zip _locales css img js *.html manifest.json -x js/embed.js || true",
+    "sync-page-scripts": "aws s3 sync --profile s3 --delete --metadata-directive REPLACE --cache-control max-age=86400,public page-scripts s3://lsdsoftware-assets/read-aloud/page-scripts"
   },
   "repository": {
     "type": "git",

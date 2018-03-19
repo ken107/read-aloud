@@ -1,12 +1,12 @@
 
 function Speech(texts, options) {
-  options.rate = (options.rate || 1) * (isGoogleTranslate(options.voiceName) ? 1.2 : 1);
+  options.rate = (options.rate || 1) * (isGoogleTranslate(options.voice.voiceName) ? 1.2 : 1);
 
   for (var i=0; i<texts.length; i++) if (/\w$/.test(texts[i])) texts[i] += '.';
   if (texts.length) texts = getChunks(texts.join("\n\n"));
 
-  var engine = options.engine || (isGoogleNative(options.voiceName) ? new TimeoutTtsEngine(new ChromeTtsEngine(), 16*1000) : new ChromeTtsEngine());
-  var pauseDuration = isGoogleTranslate(options.voiceName) ? 0 : (650/options.rate);
+  var engine = options.engine || pickEngine();
+  var pauseDuration = isGoogleTranslate(options.voice.voiceName) ? 0 : (650/options.rate);
   var state = "IDLE";
   var index = 0;
   var delayedPlayTimer;
@@ -21,15 +21,21 @@ function Speech(texts, options) {
   this.rewind = rewind;
   this.gotoEnd = gotoEnd;
 
+  function pickEngine() {
+    if (isRemoteVoice(options.voice.voiceName)) return remoteTtsEngine;
+    if (isGoogleNative(options.voice.voiceName)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
+    return browserTtsEngine;
+  }
+
   function getChunks(text) {
     var isEA = /^zh|ko|ja/.test(options.lang);
     var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
-    if (isGoogleNative(options.voiceName)) {
+    if (isGoogleNative(options.voice.voiceName)) {
       var wordLimit = (/^de/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
       return new WordBreaker(wordLimit, punctuator).breakText(text);
     }
     else {
-      if (isGoogleTranslate(options.voiceName)) return new CharBreaker(200, punctuator).breakText(text);
+      if (isGoogleTranslate(options.voice.voiceName)) return new CharBreaker(200, punctuator).breakText(text);
       else return new CharBreaker(500, punctuator, 200).breakText(text);
     }
   }
@@ -67,7 +73,7 @@ function Speech(texts, options) {
       return speak(texts[index],
         function() {
           state = "IDLE";
-          engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
+          if (engine.setNextStartTime) engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
           index++;
           play();
         },
@@ -76,7 +82,7 @@ function Speech(texts, options) {
           if (options.onEnd) options.onEnd(err);
         })
         .then(function() {
-          if (texts[index+1]) engine.prefetch(texts[index+1], options);
+          if (texts[index+1] && engine.prefetch) engine.prefetch(texts[index+1], options);
         })
     }
   }
@@ -127,20 +133,11 @@ function Speech(texts, options) {
 
   function speak(text, onEnd, onError) {
     return new Promise(function(fulfill) {
-    engine.speak(text, {
-      voiceName: options.voiceName,
-      lang: options.lang,
-      rate: options.rate,
-      pitch: options.pitch,
-      volume: options.volume,
-      requiredEventTypes: ["start", "end"],
-      desiredEventTypes: ["start", "end", "error"],
-    },
-    function(event) {
+      engine.speak(text, options, function(event) {
         if (event.type == "start") fulfill();
         else if (event.type == "end") onEnd();
         else if (event.type == "error") onError(new Error(event.errorMessage || "Unknown TTS error"));
-    });
+      })
     })
   }
 
@@ -320,23 +317,5 @@ function EastAsianPunctuator() {
       baseEngine.stop();
     }
     this.isSpeaking = baseEngine.isSpeaking;
-    this.prefetch = baseEngine.prefetch;
-    this.setNextStartTime = baseEngine.setNextStartTime;
-  }
-
-  function ChromeTtsEngine() {
-    this.speak = function(text, options, onEvent) {
-      chrome.tts.speak(text, Object.assign({onEvent: onEvent}, options));
-    }
-    this.stop = chrome.tts.stop;
-    this.pause = chrome.tts.pause;
-    this.resume = chrome.tts.resume;
-    this.isSpeaking = chrome.tts.isSpeaking;
-    this.prefetch = function(text, options) {
-      if (isRemoteVoice(options.voiceName)) remoteTtsEngine.prefetch(text, options);
-    }
-    this.setNextStartTime = function(time, options) {
-      if (isRemoteVoice(options.voiceName)) remoteTtsEngine.setNextStartTime(time);
-    }
   }
 }

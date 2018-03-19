@@ -1,3 +1,5 @@
+var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
+
 var config = {
   serviceUrl: "https://support.lsdsoftware.com",
   entityMap: {
@@ -10,7 +12,6 @@ var config = {
     '`': '&#x60;',
     '=': '&#x3D;'
   },
-  browser: getBrowser()
 }
 
 var defaults = {
@@ -19,6 +20,10 @@ var defaults = {
   volume: 1.0,
   showHighlighting: 0,
 };
+
+var browserTtsEngine = brapi.tts ? new BrowserTtsEngine() : new WebSpeechEngine();
+var remoteTtsEngine = new RemoteTtsEngine(config.serviceUrl, (typeof readAloudManifest != 'undefined') ? readAloudManifest : brapi.runtime.getManifest());
+
 
 function getQueryString() {
   var queryString = {};
@@ -31,25 +36,25 @@ function getQueryString() {
 
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    chrome.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
+    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
   });
 }
 
 function updateSettings(items) {
   return new Promise(function(fulfill) {
-    chrome.storage.local.set(items, fulfill);
+    brapi.storage.local.set(items, fulfill);
   });
 }
 
 function clearSettings(names) {
   return new Promise(function(fulfill) {
-    chrome.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
+    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
   });
 }
 
 function getState(key) {
   return new Promise(function(fulfill) {
-    chrome.storage.local.get(key, function(items) {
+    brapi.storage.local.get(key, function(items) {
       fulfill(items[key]);
     });
   });
@@ -59,14 +64,18 @@ function setState(key, value) {
   var items = {};
   items[key] = value;
   return new Promise(function(fulfill) {
-    chrome.storage.local.set(items, fulfill);
+    brapi.storage.local.set(items, fulfill);
   });
 }
 
 function getVoices() {
-  return new Promise(function(fulfill) {
-    chrome.tts.getVoices(fulfill);
-  });
+  return browserTtsEngine.getVoices()
+    .then(function(voices) {
+      //add the remote voices if browser didn't return them (i.e. because it doesn't support the ttsEngine declaration in the manifest)
+      var remoteVoices = remoteTtsEngine.getVoices();
+      if (!voices.some(function(voice) {return voice.voiceName == remoteVoices[0].voiceName})) voices = voices.concat(remoteVoices);
+      return voices;
+    })
 }
 
 function isGoogleNative(voiceName) {
@@ -86,7 +95,7 @@ function isMicrosoftCloud(voiceName) {
 }
 
 function isRemoteVoice(voiceName) {
-  return isAmazonPolly(voiceName) || isGoogleTranslate(voiceName) || isMicrosoftCloud(voiceName);
+  return remoteTtsEngine.hasVoice(voiceName);
 }
 
 function isPremiumVoice(voiceName) {
@@ -95,9 +104,8 @@ function isPremiumVoice(voiceName) {
 
 function executeFile(file) {
   return new Promise(function(fulfill, reject) {
-    chrome.runtime.lastError = null;
-    chrome.tabs.executeScript({file: file}, function(result) {
-      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+    brapi.tabs.executeScript({file: file}, function(result) {
+      if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
       else fulfill(result);
     });
   });
@@ -105,9 +113,8 @@ function executeFile(file) {
 
 function executeScript(code) {
   return new Promise(function(fulfill, reject) {
-    chrome.runtime.lastError = null;
-    chrome.tabs.executeScript({code: code}, function(result) {
-      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+    brapi.tabs.executeScript({code: code}, function(result) {
+      if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
       else fulfill(result);
     });
   });
@@ -115,9 +122,8 @@ function executeScript(code) {
 
 function insertCSS(file) {
   return new Promise(function(fulfill, reject) {
-    chrome.runtime.lastError = null;
-    chrome.tabs.insertCSS({file: file}, function(result) {
-      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+    brapi.tabs.insertCSS({file: file}, function(result) {
+      if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
       else fulfill(result);
     })
   });
@@ -125,7 +131,7 @@ function insertCSS(file) {
 
 function getBackgroundPage() {
   return new Promise(function(fulfill) {
-    chrome.runtime.getBackgroundPage(fulfill);
+    brapi.runtime.getBackgroundPage(fulfill);
   });
 }
 
@@ -133,6 +139,17 @@ function spread(f, self) {
   return function(args) {
     return f.apply(self, args);
   };
+}
+
+function extraAction(action) {
+  return function(data) {
+    return Promise.resolve(action(data))
+      .then(function() {return data})
+  }
+}
+
+function inSequence(tasks) {
+  return tasks.reduce(function(p, task) {return p.then(task)}, Promise.resolve());
 }
 
 function callMethod(name, args) {
@@ -156,7 +173,7 @@ function parseLang(lang) {
 }
 
 function formatError(err) {
-  var message = chrome.i18n.getMessage(err.code);
+  var message = brapi.i18n.getMessage(err.code);
   if (message) message = message.replace(/{(\w+)}/g, function(m, p1) {return err[p1]});
   return message;
 }
@@ -235,7 +252,7 @@ function domReady() {
 function setI18nText() {
   $("[data-i18n]").each(function() {
     var key = $(this).data("i18n");
-    var text = chrome.i18n.getMessage(key);
+    var text = brapi.i18n.getMessage(key);
     if ($(this).is("input")) $(this).val(text);
     else $(this).text(text);
   })
@@ -254,9 +271,147 @@ function getBrowser() {
 }
 
 function getHotkeySettingsUrl() {
-  switch (config.browser) {
+  switch (getBrowser()) {
     case 'opera': return 'opera://settings/configureCommands';
     case 'chrome': return 'chrome://extensions/configureCommands';
-    default: return chrome.runtime.getURL("shortcuts.html");
+    default: return brapi.runtime.getURL("shortcuts.html");
+  }
+}
+
+function BrowserTtsEngine() {
+  this.speak = function(text, options, onEvent) {
+    brapi.tts.speak(text, {
+      voiceName: options.voice.voiceName,
+      lang: options.lang,
+      rate: options.rate,
+      pitch: options.pitch,
+      volume: options.volume,
+      requiredEventTypes: ["start", "end"],
+      desiredEventTypes: ["start", "end", "error"],
+      onEvent: onEvent
+    })
+  }
+  this.stop = brapi.tts.stop;
+  this.pause = brapi.tts.pause;
+  this.resume = brapi.tts.resume;
+  this.isSpeaking = brapi.tts.isSpeaking;
+  this.getVoices = function() {
+    return new Promise(function(fulfill) {
+      brapi.tts.getVoices(fulfill);
+    })
+  }
+}
+
+function WebSpeechEngine() {
+  var utter;
+  this.speak = function(text, options, onEvent) {
+    utter = new SpeechSynthesisUtterance();
+    utter.text = text;
+    utter.voice = options.voice;
+    if (options.lang) utter.lang = options.lang;
+    if (options.pitch) utter.pitch = options.pitch;
+    if (options.rate) utter.rate = options.rate;
+    if (options.volume) utter.volume = options.volume;
+    utter.onstart = onEvent.bind(null, {type: 'start', charIndex: 0});
+    utter.onend = onEvent.bind(null, {type: 'end', charIndex: text.length});
+    utter.onerror = function(event) {
+      onEvent({type: 'error', errorMessage: event.error});
+    };
+    speechSynthesis.speak(utter);
+  }
+  this.stop = function() {
+    if (utter) utter.onend = null;
+    speechSynthesis.cancel();
+  }
+  this.pause = function() {
+    speechSynthesis.pause();
+  }
+  this.resume = function() {
+    speechSynthesis.resume();
+  }
+  this.isSpeaking = function(callback) {
+    callback(speechSynthesis.speaking);
+  }
+  this.getVoices = function() {
+    return new Promise(function(fulfill) {
+      var voices = speechSynthesis.getVoices();
+      if (voices.length) fulfill(voices);
+      else speechSynthesis.onvoiceschanged = function() {
+        fulfill(speechSynthesis.getVoices());
+      }
+    })
+    .then(function(voices) {
+      for (var i=0; i<voices.length; i++) voices[i].voiceName = voices[i].name;
+      return voices;
+    })
+  }
+}
+
+function RemoteTtsEngine(serviceUrl, manifest) {
+  var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+  var audio = document.createElement("AUDIO");
+  var prefetchAudio = document.createElement("AUDIO");
+  var isSpeaking = false;
+  var nextStartTime = 0;
+  var waitTimer;
+  var voices = manifest.tts_engine.voices.map(function(voice) {
+    return {voiceName: voice.voice_name, lang: voice.lang};
+  })
+  var voiceMap = {};
+  for (var i=0; i<voices.length; i++) voiceMap[voices[i].voiceName] = voices[i];
+
+  this.speak = function(utterance, options, onEvent) {
+    if (!options.volume) options.volume = 1;
+    if (!options.rate) options.rate = 1;
+    audio.pause();
+    if (!iOS) {
+      audio.volume = options.volume;
+      audio.defaultPlaybackRate = options.rate;
+    }
+    audio.src = getAudioUrl(utterance, options.lang, options.voice.voiceName);
+    audio.oncanplay = function() {
+      var waitTime = nextStartTime - new Date().getTime();
+      if (waitTime > 0) waitTimer = setTimeout(audio.play.bind(audio), waitTime);
+      else audio.play();
+      isSpeaking = true;
+    };
+    audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
+    audio.onended = function() {
+      onEvent({type: 'end', charIndex: utterance.length});
+      isSpeaking = false;
+    };
+    audio.onerror = function() {
+      onEvent({type: "error", errorMessage: audio.error.message});
+      isSpeaking = false;
+    };
+    audio.load();
+  }
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking);
+  }
+  this.pause =
+  this.stop = function() {
+    clearTimeout(waitTimer);
+    audio.pause();
+  }
+  this.resume = function() {
+    audio.play();
+  }
+  this.prefetch = function(utterance, options) {
+    if (!iOS)
+      prefetchAudio.src = getAudioUrl(utterance, options.lang, options.voice.voiceName);
+  }
+  this.setNextStartTime = function(time, options) {
+    if (!iOS)
+      nextStartTime = time || 0;
+  }
+  this.getVoices = function() {
+    return voices;
+  }
+  this.hasVoice = function(voiceName) {
+    return voiceMap[voiceName] != null;
+  }
+  function getAudioUrl(utterance, lang, voiceName) {
+    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voiceName) + "?q=" + encodeURIComponent(utterance);
   }
 }

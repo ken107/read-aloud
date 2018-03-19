@@ -1,10 +1,11 @@
 (function() {
+  var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
+  var paragraphSplitter = /(?:\s*\r?\n\s*){2,}/;
+
+  $.ajaxSetup({cache: true});
+
   window.connect = connect;
   window.HtmlDoc = HtmlDoc;
-
-var readAloud = {
-  paraSplitter: /(?:\s*\r?\n\s*){2,}/
-};
 
 function connect(name) {
   if (!window.docReady) window.docReady = makeDoc();
@@ -13,7 +14,7 @@ function connect(name) {
 
 
 function startService(name, doc) {
-  var port = chrome.runtime.connect({name: name});
+  var port = brapi.runtime.connect({name: name});
   port.onMessage.addListener(dispatch.bind(null, {
     raGetInfo: getInfo,
     raGetCurrentIndex: getCurrentIndex,
@@ -37,7 +38,8 @@ function startService(name, doc) {
     return {
       url: location.href,
       title: document.title,
-      lang: lang
+      lang: lang,
+      requireJs: doc.requireJs
     }
   }
 
@@ -48,7 +50,7 @@ function startService(name, doc) {
 
   function getTexts(request) {
     if (request.index < 0) {
-      if (request.index == -100) return getSelectedText().split(readAloud.paraSplitter);
+      if (request.index == -100) return getSelectedText().split(paragraphSplitter);
       else return null;
     }
     else {
@@ -107,7 +109,7 @@ function GoogleDoc() {
   var pages = $(".kix-page");
   var selectionState;
 
-  this.ready = readAloud.loadScript(chrome.runtime.getURL("js/googleDocsUtil.js"));
+  this.requireJs = ["js/googleDocsUtil.js"];
 
   this.getCurrentIndex = function() {
     if (getSelectedText()) return 9999;
@@ -238,211 +240,26 @@ function KindleBook() {
 
 
 function PdfDoc(url) {
-  var viewerBase = "https://assets.lsdsoftware.com/read-aloud/pdf-viewer/web/";
-  var uploadDialog;
-  var foundText;
+  var queue = new EventQueue("PdfDoc");
 
-  if (/^file:/.test(url)) {
-    this.ready = readAloud.loadCss(chrome.runtime.getURL("css/jquery-ui.min.css"))
-      .then(readAloud.loadScript.bind(null, chrome.runtime.getURL("js/jquery-ui.min.js")))
-      .then(createUploadDialog)
-      .then(function(dialog) {uploadDialog = dialog})
-  }
-  else {
-    this.ready = readAloud.loadCss(viewerBase + "viewer.css")
-      .then(loadViewerHtml)
-      .then(showLoadingIcon)
-      .then(appendLocaleResourceLink)
-      .then(readAloud.loadScript.bind(null, viewerBase + "../build/pdf.js"))
-      .then(rebaseUrls)
-      .then(readAloud.loadScript.bind(null, viewerBase + "pdf.viewer.js", viewerJsPreprocessor))
-      .then(loadPdf)
-      .then(hideLoadingIcon)
-  }
+  this.ready = new Promise(function(fulfill) {
+    queue.once("pageScriptLoaded", function() {
+      queue.trigger("loadDocument", url);
+    })
+    queue.once("documentLoaded", fulfill);
+    loadPageScript("https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-viewer.js");
+  })
 
-  function loadViewerHtml() {
-    return new Promise(function(fulfill, reject) {
-      $.ajax(viewerBase + "viewer.html", {
-        dataType: "text",
-        success: function(text) {
-          var start = text.indexOf(">", text.indexOf("<body")) +1;
-          var end = text.indexOf("</body>");
-          document.body.innerHTML = text.slice(start, end);
-          fulfill();
-        },
-        error: function() {
-          reject(new Error("Failed to load viewer html"));
-        }
-      })
+  this.getCurrentIndex = function() {
+    return new Promise(function(fulfill) {
+      queue.once("currentIndexGot", fulfill).trigger("getCurrentIndex");
     })
   }
 
-  function appendLocaleResourceLink() {
-    $('<link>')
-      .appendTo("head")
-      .attr({rel: "resource", type: "application/l10n", href: viewerBase + "locale/locale.properties"});
-  }
-
-  function rebaseUrls() {
-    var wrap = function(prop) {
-      var value = PDFJS[prop];
-      Object.defineProperty(PDFJS, prop, {
-        enumerable: true,
-        configurable: true,
-        get: function() {return viewerBase + value},
-        set: function(val) {value = val}
-      })
-    };
-    wrap("imageResourcesPath");
-    wrap("workerSrc");
-    wrap("cMapUrl");
-  }
-
-  function viewerJsPreprocessor(text) {
-    return text.replace("compressed.tracemonkey-pldi-09.pdf", "");
-  }
-
-  function loadPdf() {
-    return PDFViewerApplication.open(url)
-      .then(function() {
-        return new Promise(function(fulfill) {
-          PDFViewerApplication.eventBus.on("documentload", fulfill);
-        })
-      })
-  }
-
-  function showLoadingIcon() {
-    if (!$(".ra-loading-icon").length) {
-      var holder = $("<div>")
-        .addClass("ra-loading-icon")
-        .css({position: "absolute", left: "50%", top: "50%"})
-        .appendTo(document.body)
-      $("<img>")
-        .attr("src", chrome.runtime.getURL("img/throb.gif"))
-        .css({position: "relative", width: 48, left: -24, top: -24})
-        .appendTo(holder)
-    }
-    $(".ra-loading-icon").show();
-  }
-
-  function hideLoadingIcon() {
-    $(".ra-loading-icon").hide();
-  }
-
-  this.getCurrentIndex = function() {
-    if (uploadDialog) {
-      return 0;
-    }
-    var pageNo = PDFViewerApplication.page;
-    return pageNo ? pageNo-1 : 0;
-  }
-
   this.getTexts = function(index, quietly) {
-    if (uploadDialog) {
-      uploadDialog.show();
-      return null;
-    }
-    var pdf = PDFViewerApplication.pdfDocument;
-    if (index < pdf.numPages) {
-      if (!quietly) PDFViewerApplication.page = index+1;
-      return pdf.getPage(index+1)
-        .then(getPageTexts)
-        .then(function(texts) {
-          if (texts.length) foundText = true;
-          return texts;
-        })
-    }
-    else {
-      if (!foundText) showNoTextExplanation();
-      return null;
-    }
-  }
-
-  function getPageTexts(page) {
-    return page.getTextContent()
-      .then(function(content) {
-        var lines = [];
-        for (var i=0; i<content.items.length; i++) {
-          if (lines.length == 0 || i > 0 && content.items[i-1].transform[5] != content.items[i].transform[5]) lines.push("");
-          lines[lines.length-1] += content.items[i].str;
-        }
-        return lines.map(function(line) {return line.trim()});
-      })
-      .then(fixParagraphs)
-  }
-
-  function createUploadDialog() {
-    var div = $("<div>");
-    $("<p>")
-      .text(formatMessage({code: "uploadpdf_message1", extension_name: chrome.i18n.getMessage("extension_short_name")}))
-      .css("color", "blue")
-      .appendTo(div);
-    $("<p>")
-      .text(formatMessage({code: "uploadpdf_message2", extension_name: chrome.i18n.getMessage("extension_short_name")}))
-      .appendTo(div);
-    var form = $("<form>")
-      .attr("action", "https://support2.lsdsoftware.com/dropmeafile-readaloud/upload")
-      .attr("method", "POST")
-      .attr("enctype", "multipart/form-data")
-      .on("submit", function() {
-        btnSubmit.prop("disabled", true);
-      })
-      .appendTo(div);
-    $("<input>")
-      .attr("type", "file")
-      .attr("name", "fileToUpload")
-      .attr("accept", "application/pdf")
-      .on("change", function() {
-        btnSubmit.prop("disabled", !$(this).val())
-      })
-      .appendTo(form);
-    $("<br>")
-      .appendTo(form);
-    $("<br>")
-      .appendTo(form);
-    var btnSubmit = $("<input>")
-      .attr("type", "submit")
-      .attr("value", chrome.i18n.getMessage("uploadpdf_submit_button"))
-      .prop("disabled", true)
-      .appendTo(form);
-
-    div.dialog({
-        title: chrome.i18n.getMessage("extension_short_name"),
-        width: 450,
-        modal: true,
-        autoOpen: false
-      })
-    return {
-      show: function() {
-        div.dialog("open");
-      }
-    }
-  }
-
-  function showNoTextExplanation() {
-    Promise.resolve()
-      .then(function() {
-        if (!$.ui)
-          return readAloud.loadCss(chrome.runtime.getURL("css/jquery-ui.min.css"))
-            .then(readAloud.loadScript.bind(null, chrome.runtime.getURL("js/jquery-ui.min.js")))
-      })
-      .then(function() {
-        var div = $("<div>");
-        $("<p>")
-          .text("I can't find any text to read.  This is probably because this PDF contains scanned images of text instead of the actual text.  If you're unable to select any text using your mouse, it means they are images.")
-          .css("color", "blue")
-          .appendTo(div);
-        div.dialog({
-            title: chrome.i18n.getMessage("extension_short_name"),
-            width: 450
-          })
-      })
-  }
-
-  function formatMessage(msg) {
-    var message = chrome.i18n.getMessage(msg.code);
-    if (message) message = message.replace(/{(\w+)}/g, function(m, p1) {return msg[p1]});
-    return message;
+    return new Promise(function(fulfill) {
+      queue.once("textsGot", fulfill).trigger("getTexts", index, quietly);
+    })
   }
 }
 
@@ -590,7 +407,7 @@ function HtmlDoc() {
     $(elem).find("ol, ul").addBack("ol, ul").each(addNumbering);
     var texts = $(elem).data("read-aloud-multi-block")
       ? $(elem).children(":visible").get().map(getText)
-      : getText(elem).split(readAloud.paraSplitter);
+      : getText(elem).split(paragraphSplitter);
     $(elem).find(".read-aloud-numbering").remove();
     toHide.show();
     return texts;
@@ -716,25 +533,33 @@ function tryGetTexts(getTexts, millis) {
   }
 }
 
-readAloud.loadCss = function(url) {
+function loadPageScript(url) {
   if (!$("head").length) $("<head>").prependTo("html");
-  $("<link>").appendTo("head").attr({type: "text/css", rel: "stylesheet", href: url});
-  return Promise.resolve();
+  $.getScript(url);
 }
 
-readAloud.loadScript = function(url, preprocess) {
-  return new Promise(function(fulfill, reject) {
-    $.ajax(url, {
-      dataType: "text",
-      success: function(text) {
-        eval.call(window, preprocess ? preprocess(text) : text);
-        fulfill();
-      },
-      error: function() {
-        reject(new Error("Failed to load script"));
-      }
+function EventQueue(prefix) {
+  this.on = function(eventType, callback) {
+    document.addEventListener(prefix+eventType, function(event) {
+      callback.apply(null, JSON.parse(event.detail));
     })
-  })
+    return this;
+  }
+
+  this.once = function(eventType, callback) {
+    var handler = function(event) {
+      document.removeEventListener(prefix+eventType, handler);
+      callback.apply(null, JSON.parse(event.detail));
+    };
+    document.addEventListener(prefix+eventType, handler);
+    return this;
+  }
+
+  this.trigger = function(eventType) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    document.dispatchEvent(new CustomEvent(prefix+eventType, {detail: JSON.stringify(args)}));
+    return this;
+  }
 }
 
 })();

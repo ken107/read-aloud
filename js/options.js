@@ -26,7 +26,7 @@ function initialize(allVoices, settings) {
   groups[true].sort(voiceSorter);
   groups[false].sort(voiceSorter);
   var standard = $("<optgroup>")
-    .attr("label", chrome.i18n.getMessage("options_voicegroup_standard"))
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_standard"))
     .appendTo($("#voices"));
   groups[false].forEach(function(voice) {
     $("<option>")
@@ -36,7 +36,7 @@ function initialize(allVoices, settings) {
   });
   $("<optgroup>").appendTo($("#voices"));
   var premium = $("<optgroup>")
-    .attr("label", chrome.i18n.getMessage("options_voicegroup_premium"))
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
     .appendTo($("#voices"));
   groups[true].forEach(function(voice) {
     $("<option>")
@@ -87,7 +87,7 @@ function initialize(allVoices, settings) {
 
   //hot key
   $("#hotkeys-link").click(function() {
-    chrome.tabs.create({url: getHotkeySettingsUrl()});
+    brapi.tabs.create({url: getHotkeySettingsUrl()});
   });
 
   //dirty

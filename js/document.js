@@ -21,6 +21,12 @@ function TabSource() {
   var waiting = true;
   var ready = connect()
     .then(send.bind(null, {method: "raGetInfo"}))
+    .then(extraAction(function(result) {
+      if (result.requireJs) {
+        var tasks = result.requireJs.map(function(file) {return executeFile.bind(null, file)});
+        return inSequence(tasks);
+      }
+    }))
     .then(function(result) {
       waiting = false;
       return result;
@@ -46,12 +52,12 @@ function TabSource() {
     return new Promise(function(fulfill, reject) {
       function onConnect(result) {
         if (result.name == name) {
-          chrome.runtime.onConnect.removeListener(onConnect);
+          brapi.runtime.onConnect.removeListener(onConnect);
           setPort(result);
           fulfill();
         }
       }
-      chrome.runtime.onConnect.addListener(onConnect);
+      brapi.runtime.onConnect.addListener(onConnect);
       injectScripts(name).catch(reject);
     })
   }
@@ -194,9 +200,9 @@ function Doc(source, onEnd) {
   }
 
   function detectLanguageOf(text) {
-    if (chrome.i18n.detectLanguage)
+    if (brapi.i18n.detectLanguage)
       return new Promise(function(fulfill) {
-        chrome.i18n.detectLanguage(text, function(result) {
+        brapi.i18n.detectLanguage(text, function(result) {
           var list = result.languages.filter(function(item) {return item.language != "und"});
           list.sort(function(a,b) {return b.percentage-a.percentage});
           fulfill(list[0] && list[0].language);
@@ -218,8 +224,9 @@ function Doc(source, onEnd) {
           lang: (!info.detectedLang || info.lang && info.lang.lastIndexOf(info.detectedLang,0) == 0) ? info.lang : info.detectedLang
         }
         return getSpeechVoice(settings.voiceName, options.lang)
-          .then(function(voiceName) {
-            options.voiceName = voiceName;
+          .then(function(voice) {
+            if (!voice) throw {message: "Language not supported '" + options.lang + "'"};
+            options.voice = voice;
             return new Speech(texts, options);
           })
       })
@@ -236,9 +243,6 @@ function Doc(source, onEnd) {
             || findVoiceByLang(voices, lang);
         }
         else return null;
-      })
-      .then(function(voice) {
-        return voice ? voice.voiceName : voiceName;
       })
   }
 

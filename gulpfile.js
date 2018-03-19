@@ -11,7 +11,7 @@ const fsp = {
 
 
 exports.build = async function() {
-	const jsFiles = ["manifest.json", "js/defaults.js", "js/content.js", "js/speech.js", "js/googletr_tts.js", "js/embed.js"];
+	const jsFiles = ["manifest.json", "js/defaults.js", "js/content.js", "js/speech.js", "js/embed.js"];
 	const outFile = "docs/js/readaloud.js";
 	const outFileMin = "docs/js/readaloud.min.js";
 
@@ -22,7 +22,7 @@ exports.build = async function() {
 	}
 
 	const str = fs.createWriteStream(outFile);
-	str.write("var manifest = ");
+	str.write("var readAloudManifest = ");
 	for (const file of jsFiles) await copyStream(fs.createReadStream(file), str);
 	str.end();
 

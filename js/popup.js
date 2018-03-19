@@ -14,7 +14,7 @@ $(function() {
           .catch(function(err) {
             master.reportIssue(null, err.stack);
             if (/^{/.test(err.message)) $("#status").text(formatError(JSON.parse(err.message)) || err.message).show();
-            else window.close();
+            else $("#status").text(err.message).show();
           });
       })
   });
@@ -50,7 +50,7 @@ function updateButtons() {
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING");
-    $("#attribution").toggle(Boolean(speech && isGoogleTranslate(speech.options.voiceName)));
+    $("#attribution").toggle(Boolean(speech && isGoogleTranslate(speech.options.voice.voiceName)));
     $("#highlight").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "PAUSED" || state == "PLAYING"));
 
     if (settings.showHighlighting && speech) {

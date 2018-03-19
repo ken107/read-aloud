@@ -3,7 +3,7 @@ var readAloud = new function() {
   var pauseBtn = document.querySelector(".ra-pause");
   if (pauseBtn) pauseBtn.style.display = "none";
 
-  if (!window.Promise) ajaxGetCb("https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js", eval);
+  if (typeof Promise == 'undefined') ajaxGetCb("https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js", eval);
 
   var speech;
   var voiceProvider = new VoiceProvider();
@@ -36,20 +36,17 @@ var readAloud = new function() {
   }
 
   function speak(texts, options) {
-      var voice = voiceProvider.getLocalVoice(options.lang);
-      if (voice) {
-        options.voiceName = voice.name;
-        options.engine = new LocalTTS(voice);
+    return voiceProvider.getVoice(options.lang).then(function(voice) {
+      if (!voice) {
+        alert("Language not supported '" + options.lang + "'");
+        return;
       }
-      else {
-        voice = voiceProvider.getRemoteVoice(options.lang);
-        options.voiceName = voice ? voice.voice_name : "default";
-        options.engine = new RemoteTTS(config.serviceUrl);
-      }
+      options.voice = voice;
       options.onEnd = function() {speech = null; updateButtons()};
       if (speech) speech.stop();
       speech = new Speech(texts, options);
       return speech.play();
+    })
   }
 
   function updateButtons() {
@@ -57,7 +54,7 @@ var readAloud = new function() {
       .then(function(playing) {
         $(".ra-play").toggle(!playing);
         $(".ra-pause").toggle(playing);
-        attribution.toggle(playing && isGoogleTranslate(speech.options.voiceName));
+        attribution.toggle(playing && isGoogleTranslate(speech.options.voice.voiceName));
       })
   }
 
@@ -68,20 +65,12 @@ var readAloud = new function() {
 
   //voice provider
   function VoiceProvider() {
-    if (window.speechSynthesis) speechSynthesis.getVoices();
-
-    this.getLocalVoice = function(lang) {
-      return window.speechSynthesis ? findVoiceByLang(speechSynthesis.getVoices(), lang) : null;
-    }
-
-    this.getRemoteVoice = function(lang) {
-      if (window.manifest) {
-        var remoteVoices = manifest.tts_engine.voices;
-        return findVoiceByLang(remoteVoices.filter(function(voice) {return isAmazonPolly(voice.voice_name)}), lang)
-          || findVoiceByLang(remoteVoices.filter(function(voice) {return isMicrosoftCloud(voice.voice_name)}), lang)
-          || findVoiceByLang(remoteVoices.filter(function(voice) {return isGoogleTranslate(voice.voice_name)}), lang);
-      }
-      else return null;
+    this.getVoice = function(lang) {
+      return getVoices().then(function(voices) {
+        return findVoiceByLang(voices.filter(function(voice) {return !isRemoteVoice(voice.voiceName)}), lang)
+          || findVoiceByLang(voices.filter(function(voice) {return isMicrosoftCloud(voice.voiceName)}), lang)
+          || findVoiceByLang(voices, lang);
+      })
     }
 
     //from document.js
@@ -106,37 +95,6 @@ var readAloud = new function() {
       });
       return match.first || match.second || match.third || match.fourth;
     }
-  }
-
-  //native tts engine
-  function LocalTTS(voice) {
-    var utter;
-
-    this.speak = function(text, options, onEvent) {
-      utter = new SpeechSynthesisUtterance();
-      if (options.lang) utter.lang = options.lang;
-      if (options.pitch) utter.pitch = options.pitch;
-      if (options.rate) utter.rate = options.rate;
-      utter.text = text;
-      utter.voice = voice;
-      if (options.volume) utter.volume = options.volume;
-      utter.onstart = onEvent.bind(null, {type: 'start', charIndex: 0});
-      utter.onerror =
-      utter.onend = onEvent.bind(null, {type: 'end', charIndex: text.length});
-      speechSynthesis.speak(utter);
-    }
-
-    this.isSpeaking = function(callback) {
-      callback(speechSynthesis.speaking);
-    }
-
-    this.stop = function() {
-      if (utter) utter.onend = null;
-      speechSynthesis.cancel();
-    }
-
-    this.prefetch = function() {}
-    this.setNextStartTime = function() {}
   }
 
   //google translate attribution
