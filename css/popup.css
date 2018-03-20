@@ -1,3 +1,6 @@
+body {
+  margin: 20px 15px 10px 15px;
+}
 
 #speech-info {
   text-align: center;
@@ -7,6 +10,7 @@
   min-width: 100px;
   text-align: center;
   margin-top: 15px;
+  white-space: nowrap;
 }
 #buttons > img {
   vertical-align: top;
@@ -17,6 +21,7 @@
   border: 2px outset;
   border-radius: 5px;
   background-color: #e4e4e4;
+  font-size: x-large;
   color: #757575;
   padding: 3px;
   text-shadow: 1px 1px white;
@@ -28,17 +33,14 @@
   color: #606060;
 }
 
-#buttons-2 {
-  text-align: center;
-  margin-top: 10px;
-  white-space: nowrap;
-}
-#buttons-2 .button-1 {
-  font-size: 14px;
+#btnRewind, #btnForward {
+  margin: 0 1px;
+  font-size: small;
+  vertical-align: text-bottom;
 }
 
 #highlight {
-  margin: 15px 7px 0 7px;
+  margin-top: 15px;
   width: 350px;
   height: 300px;
   border: 1px solid lightgray;
@@ -46,10 +48,19 @@
   background-color: #ffefd5;
   font-size: large;
   overflow: auto;
+  word-wrap: break-word;
   position: relative;
 }
 #highlight span.active {
   background: yellow;
+}
+
+#resize > i {
+  position: absolute;
+  right: 15px;
+  font-size: medium;
+  color: lightgray;
+  cursor: pointer;
 }
 
 #footer {
@@ -64,7 +75,7 @@
 }
 
 #status {
-  margin-top: 15px;
+  min-width: 250px;
   color: red;
   text-align: center;
   display: none;

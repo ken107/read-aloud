@@ -31,7 +31,7 @@ function Speech(texts, options) {
     var isEA = /^zh|ko|ja/.test(options.lang);
     var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
     if (isGoogleNative(options.voice.voiceName)) {
-      var wordLimit = (/^de/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
+      var wordLimit = (/^(de|ru)/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
       return new WordBreaker(wordLimit, punctuator).breakText(text);
     }
     else {

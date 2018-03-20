@@ -23,6 +23,13 @@ $(function() {
   $("#btnSettings").click(function() {location.href = "options.html"});
   $("#btnForward").click(function() {getBackgroundPage().then(callMethod("forward")).then(updateButtons)});
   $("#btnRewind").click(function() {getBackgroundPage().then(callMethod("rewind")).then(updateButtons)});
+  $("#resize").click(function() {
+    getSettings(["highlightWindowSize"])
+      .then(function(settings) {
+        updateSettings({highlightWindowSize: ((settings.highlightWindowSize || 0) + 1) % 3});
+        updateSize();
+      })
+  })
 
   updateButtons()
     .then(getBackgroundPage)
@@ -32,6 +39,7 @@ $(function() {
     });
   setInterval(updateButtons, 500);
 
+  updateSize();
   checkAnnouncements();
 });
 
@@ -51,7 +59,7 @@ function updateButtons() {
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING");
     $("#attribution").toggle(Boolean(speech && isGoogleTranslate(speech.options.voice.voiceName)));
-    $("#highlight").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "PAUSED" || state == "PLAYING"));
+    $("#highlight, #resize").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "PAUSED" || state == "PLAYING"));
 
     if (settings.showHighlighting && speech) {
       var pos = speech.getPosition();
@@ -76,6 +84,20 @@ function updateButtons() {
       }
     }
   }));
+}
+
+function updateSize() {
+  getSettings(["highlightWindowSize"])
+    .then(function(settings) {
+      switch (settings.highlightWindowSize) {
+        case 2: return [720, 420];
+        case 1: return [520, 390];
+        default: return [400, 300];
+      }
+    })
+    .then(function(size) {
+      $("#highlight").css({width: size[0], height: size[1]});
+    })
 }
 
 function checkAnnouncements() {
