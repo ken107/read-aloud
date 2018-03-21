@@ -44,19 +44,19 @@
   },
   "commands": {
     "play": {
-      "suggested_key": {"default": "Alt+Shift+P"},
+      "suggested_key": {"default": "Alt+P"},
       "description": "play/pause"
     },
     "stop": {
-      "suggested_key": {"default": "Alt+Shift+S"},
+      "suggested_key": {"default": "Alt+O"},
       "description": "stop"
     },
     "forward": {
-      "suggested_key": {"default": "Alt+Shift+N"},
+      "suggested_key": {"default": "Alt+Period"},
       "description": "forward"
     },
     "rewind": {
-      "suggested_key": {"default": "Alt+Shift+B"},
+      "suggested_key": {"default": "Alt+Comma"},
       "description": "rewind"
     }
   },

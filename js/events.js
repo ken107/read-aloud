@@ -110,9 +110,11 @@ function rewind() {
 }
 
 function reportIssue(url, comment) {
+  var manifest = brapi.runtime.getManifest();
   return getSettings()
     .then(function(settings) {
       if (url) settings.url = url;
+      settings.version = manifest.version;
       settings.userAgent = navigator.userAgent;
       return ajaxPost(config.serviceUrl + "/read-aloud/report-issue", {
         url: JSON.stringify(settings),
