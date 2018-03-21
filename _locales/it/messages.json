@@ -51,16 +51,7 @@
     "message": "Leggi il testo selezionato"
   },
   "error_no_voice": {
-    "message": "Nessuna voce ({lang})"
-  },
-  "uploadpdf_message1": {
-    "message": "{extension_name} non può accedere file locali sul tuo computer."
-  },
-  "uploadpdf_message2": {
-    "message": "Se desideri, puoi usare il form sottostante per caricare il tuo file PDF di lettura temporaneamente nel server di {extension_name}. Il tuo file sarà rimosso dal server dopo la tua visione."
-  },
-  "uploadpdf_submit_button": {
-    "message": "Carica & Apri"
+    "message": "Lingua non supportata '{lang}'"
   },
   "languages_heading": {
     "message": "Seleziona le lingue"

@@ -225,7 +225,7 @@ function Doc(source, onEnd) {
         }
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voice) {
-            if (!voice) throw {message: "Language not supported '" + options.lang + "'"};
+            if (!voice) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang}));
             options.voice = voice;
             return new Speech(texts, options);
           })
