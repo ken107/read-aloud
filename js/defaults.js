@@ -21,7 +21,7 @@ var defaults = {
   showHighlighting: 0,
 };
 
-var browserTtsEngine = brapi.tts ? new BrowserTtsEngine() : new WebSpeechEngine();
+var browserTtsEngine = brapi.tts ? new BrowserTtsEngine() : (typeof speechSynthesis != 'undefined' ? new WebSpeechEngine() : new DummyTtsEngine());
 var remoteTtsEngine = new RemoteTtsEngine(config.serviceUrl, (typeof readAloudManifest != 'undefined') ? readAloudManifest : brapi.runtime.getManifest());
 
 
@@ -350,6 +350,12 @@ function WebSpeechEngine() {
       for (var i=0; i<voices.length; i++) voices[i].voiceName = voices[i].name;
       return voices;
     })
+  }
+}
+
+function DummyTtsEngine() {
+  this.getVoices = function() {
+    return Promise.resolve([]);
   }
 }
 
