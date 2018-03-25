@@ -12,7 +12,9 @@ $(function() {
           .then(master.getDocInfo)
           .then(function(docInfo) {return setState("lastUrl", docInfo && docInfo.url)})
           .catch(function(err) {
-            master.reportIssue(null, err.stack);
+            if (err.stack) {
+              master.reportIssue(null, err.stack.startsWith(err.name) ? err.stack : (err.name + ": " + err.message + "\n" + err.stack));
+            }
             if (/^{/.test(err.message)) $("#status").text(formatError(JSON.parse(err.message)) || err.message).show();
             else $("#status").text(err.message).show();
           });
