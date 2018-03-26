@@ -410,8 +410,10 @@ function RemoteTtsEngine(serviceUrl, manifest) {
     audio.play();
   }
   this.prefetch = function(utterance, options) {
-    if (!iOS)
+    if (!iOS) {
       prefetchAudio.src = getAudioUrl(utterance, options.lang, options.voice.voiceName);
+      prefetchAudio.load();
+    }
   }
   this.setNextStartTime = function(time, options) {
     if (!iOS)
