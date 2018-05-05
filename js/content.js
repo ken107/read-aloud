@@ -288,7 +288,7 @@ function KhanAcademy() {
 
 
 function HtmlDoc() {
-  var ignoreTags = "select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style, svg, aside, footer, #footer";
+  var ignoreTags = "select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style, svg, aside, footer, #footer, .no-read-aloud";
 
   this.getCurrentIndex = function() {
     return 0;
