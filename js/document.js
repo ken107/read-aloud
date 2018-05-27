@@ -200,9 +200,16 @@ function Doc(source, onEnd) {
   }
 
   function detectLanguageOf(text) {
+    return browserDetectLanguage(text)
+      .then(function(result) {
+        return result || serverDetectLanguage(text);
+      })
+  }
+
+  function browserDetectLanguage(text) {
+    if (!brapi.i18n.detectLanguage) return Promise.resolve(null);
     return new Promise(function(fulfill) {
-      if (brapi.i18n.detectLanguage) brapi.i18n.detectLanguage(text, fulfill);
-      else fulfill(null);
+      brapi.i18n.detectLanguage(text, fulfill);
     })
     .then(function(result) {
       if (result) {
@@ -211,11 +218,15 @@ function Doc(source, onEnd) {
           return list[0] && list[0].language;
       }
       else {
+        return null;
+      }
+    })
+  }
+
+  function serverDetectLanguage(text) {
       return ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
         .then(JSON.parse)
         .then(function(list) {return list[0] && list[0].language})
-      }
-    })
   }
 
   function getSpeech(texts) {
