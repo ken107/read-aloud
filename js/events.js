@@ -68,6 +68,7 @@ function stop() {
   if (activeDoc) {
     activeDoc.stop();
     closeDoc();
+    return Promise.resolve();
   }
   else return Promise.resolve();
 }
