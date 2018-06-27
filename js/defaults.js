@@ -12,6 +12,13 @@ var config = {
     '`': '&#x60;',
     '=': '&#x3D;'
   },
+  unsupportedSites: [
+    'https://chrome.google.com/webstore',
+    'https://addons.mozilla.org',
+    'https://play.google.com/books',
+    'https://ereader.chegg.com',
+    /^https:\/\/\w+\.vitalsource\.com/,
+  ],
 }
 
 var defaults = {
@@ -296,6 +303,13 @@ function getHotkeySettingsUrl() {
     case 'chrome': return 'chrome://extensions/configureCommands';
     default: return brapi.runtime.getURL("shortcuts.html");
   }
+}
+
+function isUnsupportedSite(url) {
+  return config.unsupportedSites.some(function(site) {
+    return (typeof site == "string" && url.startsWith(site)) ||
+      (site instanceof RegExp && site.test(url));
+  })
 }
 
 function BrowserTtsEngine() {

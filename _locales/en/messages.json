@@ -53,6 +53,12 @@
   "error_no_voice": {
     "message": "Language not supported '{lang}'"
   },
+  "error_upload_pdf": {
+    "message": "Please use the form to upload your PDF file to read aloud"
+  },
+  "error_page_unreadable": {
+    "message": "Cannot read aloud this website"
+  },
   "languages_heading": {
     "message": "Select Languages"
   },

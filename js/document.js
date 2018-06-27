@@ -21,9 +21,13 @@ function TabSource() {
   var waiting = true;
   var ready = getActiveTab()
     .then(function(tab) {
+      if (!tab.url) return;
       if (/^file:/.test(tab.url)) {
         setTabUrl(tab.id, "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html");
-        throw new Error("Please use the form to upload your PDF file to read aloud");
+        throw new Error(JSON.stringify({code: "error_upload_pdf"}));
+      }
+      else if (isUnsupportedSite(tab.url)) {
+        throw new Error(JSON.stringify({code: "error_page_unreadable"}));
       }
     })
     .then(connect)

@@ -53,6 +53,12 @@
   "error_no_voice": {
     "message": "Idioma no admitido '{lang}'"
   },
+  "error_upload_pdf": {
+    "message": "Use el formulario para cargar su archivo PDF y leer en voz alta"
+  },
+  "error_page_unreadable": {
+    "message": "No puedo leer en voz alta este sitio web"
+  },
   "languages_heading": {
     "message": "Seleccionar idiomas"
   },

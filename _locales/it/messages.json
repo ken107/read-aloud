@@ -53,6 +53,12 @@
   "error_no_voice": {
     "message": "Lingua non supportata '{lang}'"
   },
+  "error_upload_pdf": {
+    "message": "Usa il modulo per caricare il tuo file PDF per leggere ad alta voce"
+  },
+  "error_page_unreadable": {
+    "message": "Non posso leggere ad alta voce questo sito"
+  },
   "languages_heading": {
     "message": "Seleziona le lingue"
   },

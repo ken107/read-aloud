@@ -53,6 +53,12 @@
   "error_no_voice": {
     "message": "Ngôn ngữ không được hỗ trợ '{lang}'"
   },
+  "error_upload_pdf": {
+    "message": "Sử dụng biểu mẫu để tải lên tệp PDF của bạn để đọc to"
+  },
+  "error_page_unreadable": {
+    "message": "Không thể đọc to trang web này"
+  },
   "languages_heading": {
     "message": "Chọn ngôn ngữ"
   },

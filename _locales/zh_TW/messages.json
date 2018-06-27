@@ -53,6 +53,12 @@
   "error_no_voice": {
     "message": "不支持語言 '{lang}'"
   },
+  "error_upload_pdf": {
+    "message": "使用表格上傳您的PDF文件進行朗讀"
+  },
+  "error_page_unreadable": {
+    "message": "不能大聲朗讀這個網站"
+  },
   "languages_heading": {
     "message": "選擇語言"
   },
