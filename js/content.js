@@ -97,6 +97,11 @@ function makeDoc() {
     else if (location.hostname == "drive.google.com") return new GDriveDoc();
     else if (/^read\.amazon\./.test(location.hostname)) return new KindleBook();
     else if (location.hostname == "www.khanacademy.org") return new KhanAcademy();
+    else if (location.href.endsWith("pdf-upload.html")) {
+      var doc = new PdfDoc();
+      doc.ready = Promise.resolve();
+      return doc;
+    }
     else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
     else if ($("embed[type='application/pdf']").length) return new PdfDoc($("embed[type='application/pdf']").attr("src"));
     else return new HtmlDoc();

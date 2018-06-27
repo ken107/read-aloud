@@ -129,6 +129,20 @@ function insertCSS(file) {
   });
 }
 
+function getActiveTab() {
+  return new Promise(function(fulfill) {
+    brapi.tabs.query({active: true, lastFocusedWindow: true}, function(tabs) {
+      fulfill(tabs[0]);
+    })
+  })
+}
+
+function setTabUrl(tabId, url) {
+  return new Promise(function(fulfill) {
+    brapi.tabs.update(tabId, {url: url}, fulfill);
+  })
+}
+
 function getBackgroundPage() {
   return new Promise(function(fulfill) {
     brapi.runtime.getBackgroundPage(fulfill);

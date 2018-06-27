@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="pdf-viewer.js"></script>
+  <script>
+    (function() {
+      var queue = new EventQueue("PdfDoc");
+
+      queue.once("pageScriptLoaded", function() {
+        queue.trigger("loadDocument", "file:///");
+      })
+
+      function EventQueue(prefix) {
+        this.on = function(eventType, callback) {
+          document.addEventListener(prefix+eventType, function(event) {
+            callback.apply(null, JSON.parse(event.detail));
+          })
+          return this;
+        }
+        this.once = function(eventType, callback) {
+          var handler = function(event) {
+            document.removeEventListener(prefix+eventType, handler);
+            callback.apply(null, JSON.parse(event.detail));
+          };
+          document.addEventListener(prefix+eventType, handler);
+          return this;
+        }
+        this.trigger = function(eventType) {
+          var args = Array.prototype.slice.call(arguments, 1);
+          document.dispatchEvent(new CustomEvent(prefix+eventType, {detail: JSON.stringify(args)}));
+          return this;
+        }
+      }
+    })();
+  </script>
+</head>
+<body>
+</body>
