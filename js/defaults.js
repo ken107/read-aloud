@@ -12,6 +12,9 @@ var config = {
     '`': '&#x60;',
     '=': '&#x3D;'
   },
+  langMap: {
+    iw: 'he'
+  },
   unsupportedSites: [
     'https://chrome.google.com/webstore',
     'https://addons.mozilla.org',

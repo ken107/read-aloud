@@ -243,11 +243,12 @@ function Doc(source, onEnd) {
   function getSpeech(texts) {
     return getSettings()
       .then(function(settings) {
+        var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
         var options = {
           rate: settings.rate || defaults.rate,
           pitch: settings.pitch || defaults.pitch,
           volume: settings.volume || defaults.volume,
-          lang: (!info.detectedLang || info.lang && info.lang.lastIndexOf(info.detectedLang,0) == 0) ? info.lang : info.detectedLang
+          lang: config.langMap[lang] || lang,
         }
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voice) {
