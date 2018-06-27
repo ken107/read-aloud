@@ -45,7 +45,7 @@ if (brapi.ttsEngine) (function() {
 function playText(text, onEnd) {
   if (!activeDoc) {
     activeDoc = new Doc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), function(err) {
-      if (!err) closeDoc();
+      closeDoc();
       if (typeof onEnd == "function") onEnd(err);
     })
   }
@@ -56,7 +56,7 @@ function playText(text, onEnd) {
 function play(onEnd) {
   if (!activeDoc) {
     activeDoc = new Doc(new TabSource(), function(err) {
-      if (!err) closeDoc();
+      closeDoc();
       if (typeof onEnd == "function") onEnd(err);
     })
   }

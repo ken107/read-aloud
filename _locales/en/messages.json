@@ -50,6 +50,9 @@
   "context_read_selection": {
     "message": "Read aloud selected text"
   },
+  "error_no_text": {
+    "message": "Didn't find any text to read"
+  },
   "error_no_voice": {
     "message": "Language not supported '{lang}'"
   },

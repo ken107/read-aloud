@@ -50,6 +50,9 @@
   "context_read_selection": {
     "message": "Leer en voz alta el texto seleccionado"
   },
+  "error_no_text": {
+    "message": "No encontré ningún texto para leer"
+  },
   "error_no_voice": {
     "message": "Idioma no admitido '{lang}'"
   },

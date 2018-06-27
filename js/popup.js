@@ -6,7 +6,7 @@ $(function() {
     getBackgroundPage()
       .then(function(master) {
         return master.play(function(err) {
-            if (err) $("#status").text(err.message).show();
+            if (err) showError(err);
           })
           .then(updateButtons)
           .then(master.getDocInfo)
@@ -15,8 +15,7 @@ $(function() {
             if (err.stack) {
               master.reportIssue(null, err.stack.startsWith(err.name) ? err.stack : (err.name + ": " + err.message + "\n" + err.stack));
             }
-            if (/^{/.test(err.message)) $("#status").text(formatError(JSON.parse(err.message)) || err.message).show();
-            else $("#status").text(err.message).show();
+            showError(err);
           });
       })
   });
@@ -44,6 +43,11 @@ $(function() {
   updateSize();
   checkAnnouncements();
 });
+
+function showError(err) {
+  if (/^{/.test(err.message)) $("#status").text(formatError(JSON.parse(err.message)) || err.message).show();
+  else $("#status").text(err.message).show();
+}
 
 function updateButtons() {
   return getBackgroundPage().then(function(master) {

@@ -50,6 +50,9 @@
   "context_read_selection": {
     "message": "Đọc"
   },
+  "error_no_text": {
+    "message": "Không tìm thấy bất kỳ văn bản nào để đọc"
+  },
   "error_no_voice": {
     "message": "Ngôn ngữ không được hỗ trợ '{lang}'"
   },

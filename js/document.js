@@ -117,6 +117,7 @@ function Doc(source, onEnd) {
   var ready = source.ready.then(function(result) {
     info = result;
   })
+  var hasText;
 
   this.close = close;
   this.play = play;
@@ -157,8 +158,14 @@ function Doc(source, onEnd) {
         return null;
       })
       .then(function(texts) {
-        if (texts) return read(texts);
-        else if (onEnd) onEnd();
+        if (texts) {
+          if (texts.length) hasText = true;
+          return read(texts);
+        }
+        else if (onEnd) {
+          if (hasText) onEnd();
+          else onEnd(new Error(JSON.stringify({code: "error_no_text"})));
+        }
       })
     function read(texts) {
       return Promise.resolve()
@@ -248,7 +255,7 @@ function Doc(source, onEnd) {
           rate: settings.rate || defaults.rate,
           pitch: settings.pitch || defaults.pitch,
           volume: settings.volume || defaults.volume,
-          lang: config.langMap[lang] || lang,
+          lang: config.langMap[lang] || lang || 'en-US',
         }
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voice) {

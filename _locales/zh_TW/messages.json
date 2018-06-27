@@ -50,6 +50,9 @@
   "context_read_selection": {
     "message": "朗讀所選文字"
   },
+  "error_no_text": {
+    "message": "沒有找到任何文字閱讀"
+  },
   "error_no_voice": {
     "message": "不支持語言 '{lang}'"
   },
