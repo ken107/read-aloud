@@ -24,17 +24,16 @@
   margin-top: 20px;
 }
 
-#save {
-  font-weight: bold;
-}
-
 .status {
-  margin-left: 15px;
+  float: right;
   font-weight: bold;
   display: none;
 }
 .status.success {
-  color: #080;
+  padding: 3px 5px;
+  color: white;
+  background-color: #080;
+  border-radius: 1em;
 }
 .status.error {
   color: red;

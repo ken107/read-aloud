@@ -44,6 +44,11 @@ function initialize(allVoices, settings) {
       .text(voice.voiceName)
       .appendTo(premium);
   });
+  $("#voices")
+    .val(settings.voiceName || "")
+    .change(function() {
+      updateSettings({voiceName: $(this).val()}).then(showSaveConfirmation);
+    });
 
   $("#languages-edit-button").click(function() {
     location.href = "languages.html";
@@ -53,34 +58,55 @@ function initialize(allVoices, settings) {
   $("#rate-edit-button").click(function() {
     $("#rate, #rate-input-div").toggle();
   });
-  $("#rate").on("slidechange", function() {
-    var val = Math.pow($(this).data("pow"), $(this).slider("value"));
-    $("#rate-input").val(val.toFixed(3));
-    $("#rate-warning").toggle(val > 2);
-  });
-  $("#rate-input").change(function() {
-    var val = $(this).val().trim();
-    if (isNaN(val)) $(this).val(1);
-    else if (val < .1) $(this).val(.1);
-    else if (val > 10) $(this).val(10);
-    else $("#rate-edit-button").hide();
-    $("#rate-warning").toggle(val > 2);
-  });
+  $("#rate")
+    .slider("value", Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")))
+    .on("slidechange", function() {
+      var val = Math.pow($(this).data("pow"), $(this).slider("value"));
+      $("#rate-input").val(val.toFixed(3));
+      $("#rate-warning").toggle(val > 2);
+      saveRateSetting();
+    });
+  $("#rate-input")
+    .val(settings.rate || defaults.rate)
+    .change(function() {
+      var val = $(this).val().trim();
+      if (isNaN(val)) $(this).val(1);
+      else if (val < .1) $(this).val(.1);
+      else if (val > 10) $(this).val(10);
+      else $("#rate-edit-button").hide();
+      $("#rate-warning").toggle(val > 2);
+      saveRateSetting();
+    });
+  $("#rate-warning")
+    .toggle((settings.rate || defaults.rate) > 2);
+  function saveRateSetting() {
+    updateSettings({rate: Number($("#rate-input").val())}).then(showSaveConfirmation);
+  }
+
+  //pitch
+  $("#pitch")
+    .slider("value", settings.pitch || defaults.pitch)
+    .on("slidechange", function() {
+      updateSettings({pitch: $(this).slider("value")}).then(showSaveConfirmation);
+    })
+
+  //volume
+  $("#volume")
+    .slider("value", settings.volume || defaults.volume)
+    .on("slidechange", function() {
+      updateSettings({volume: $(this).slider("value")}).then(showSaveConfirmation);
+    })
+
+  //showHighlighting
+  $("[name=highlighting]")
+    .prop("checked", function() {
+      return $(this).val() == (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting);
+    })
+    .change(function() {
+      updateSettings({showHighlighting: Number($(this).val())}).then(showSaveConfirmation);
+    })
 
   //buttons
-  $("#save").click(function() {
-    updateSettings({
-      voiceName: $("#voices").val(),
-      rate: Number($("#rate-input").val()),
-      pitch: $("#pitch").slider("value"),
-      volume: $("#volume").slider("value"),
-      showHighlighting: Number($("[name=highlighting]:checked").val()),
-    })
-    .then(function() {
-      $("#save").prop("disabled", true);
-      $(".status.success").show().delay(3000).fadeOut();
-    });
-  });
   $("#reset").click(function() {
     clearSettings().then(() => location.reload());
   });
@@ -89,30 +115,8 @@ function initialize(allVoices, settings) {
   $("#hotkeys-link").click(function() {
     brapi.tabs.create({url: getHotkeySettingsUrl()});
   });
-
-  //dirty
-  $("#voices, input[name=highlighting]").change(setDirty);
-  $("#rate, #pitch, #volume").on("slidechange", setDirty);
-  $("#rate-input").on("input", setDirty);
-
-  //set state
-  $("#voices").val(settings.voiceName || "");
-  $("#rate").slider("value", Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")));
-  $("#rate-input").val(settings.rate || defaults.rate);
-  $("#rate-warning").toggle((settings.rate || defaults.rate) > 2);
-  $("#pitch").slider("value", settings.pitch || defaults.pitch);
-  $("#volume").slider("value", settings.volume || defaults.volume);
-  $("[name=highlighting]").prop("checked", false);
-  $("[name=highlighting][value=" + (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) + "]").prop("checked", true);
-  $("#save").prop("disabled", true);
 }
 
-
-function domReady() {
-  return new Promise(function(fulfill) {
-    $(fulfill);
-  })
-}
 
 function groupVoices(voices, keySelector) {
   var groups = {};
@@ -135,6 +139,6 @@ function voiceSorter(a,b) {
   }
 }
 
-function setDirty() {
-  $("#save").prop("disabled", false);
+function showSaveConfirmation() {
+  $(".status.success").finish().show().delay(500).fadeOut();
 }
