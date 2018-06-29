@@ -248,7 +248,7 @@ function LatinPunctuator() {
     return recombine(text.split(/((?:\r?\n\s*){2,})/));
   }
   this.getSentences = function(text) {
-    return recombine(text.split(/([.!?]+[\s\u200b]+)/));
+    return recombine(text.split(/([.!?]+[\s\u200b]+)/), /\b(\w|[A-Z][a-z]|Assn|Ave|Capt|Col|Comdr|Corp|Cpl|Gen|Gov|Hon|Inc|Lieut|Ltd|Rev|Univ|Jan|Feb|Mar|Apr|Aug|Sept|Oct|Nov|Dec|dept|ed|est|vol|vs)\.\s+$/);
   }
   this.getPhrases = function(sentence) {
     return recombine(sentence.split(/([,;:]\s+|\s-+\s+|—\s*)/));
@@ -265,11 +265,14 @@ function LatinPunctuator() {
     }
     return result;
   }
-  function recombine(tokens) {
+  function recombine(tokens, nonPunc) {
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
-      if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
-      else if (tokens[i]) result.push(tokens[i]);
+      var part = (i+1 < tokens.length) ? (tokens[i] + tokens[i+1]) : tokens[i];
+      if (part) {
+        if (nonPunc && result.length && nonPunc.test(result[result.length-1])) result[result.length-1] += part;
+        else result.push(part);
+      }
     }
     return result;
   }
