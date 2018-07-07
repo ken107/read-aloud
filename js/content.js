@@ -2,8 +2,6 @@
   var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
   var paragraphSplitter = /(?:\s*\r?\n\s*){2,}/;
 
-  $.ajaxSetup({cache: true});
-
   window.connect = connect;
   window.HtmlDoc = HtmlDoc;
 
@@ -577,7 +575,11 @@ function tryGetTexts(getTexts, millis) {
 
 function loadPageScript(url) {
   if (!$("head").length) $("<head>").prependTo("html");
-  $.getScript(url);
+  $.ajax({
+    dataType: "script",
+    cache: true,
+    url: url
+  });
 }
 
 function EventQueue(prefix) {

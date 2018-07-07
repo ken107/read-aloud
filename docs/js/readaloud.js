@@ -1,10 +1,10 @@
-var manifest = {
+var readAloudManifest = {
   "manifest_version": 2,
 
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.2.12",
+  "version": "1.3.5",
   "default_locale": "en",
 
   "browser_action": {
@@ -12,8 +12,8 @@ var manifest = {
     "default_popup": "popup.html"
   },
   "icons": {
-    "16": "img/icon.png",
-    "48": "img/icon.png",
+    "16": "img/icon-16.png",
+    "48": "img/icon-48.png",
     "128": "img/icon.png"
   },
   "permissions": [
@@ -24,13 +24,8 @@ var manifest = {
     "contextMenus",
     "https://support.lsdsoftware.com/"
   ],
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "content_security_policy": "script-src 'self'; object-src 'self'",
   "web_accessible_resources": [
-    "img/*",
-    "js/jquery-ui.min.js",
-    "css/jquery-ui.min.css",
-    "css/images/*",
-    "js/googleDocsUtil.js"
   ],
   "background": {
     "scripts": [
@@ -38,27 +33,30 @@ var manifest = {
       "js/defaults.js",
       "js/speech.js",
       "js/document.js",
-      "js/googletr_tts.js",
       "js/events.js"
     ],
     "persistent": false
   },
   "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
   "commands": {
     "play": {
-      "suggested_key": {"default": "Alt+Shift+P"},
+      "suggested_key": {"default": "Alt+P"},
       "description": "play/pause"
     },
     "stop": {
-      "suggested_key": {"default": "Alt+Shift+S"},
+      "suggested_key": {"default": "Alt+O"},
       "description": "stop"
     },
     "forward": {
-      "suggested_key": {"default": "Alt+Shift+N"},
+      "suggested_key": {"default": "Alt+Period"},
       "description": "forward"
     },
     "rewind": {
-      "suggested_key": {"default": "Alt+Shift+B"},
+      "suggested_key": {"default": "Alt+Comma"},
       "description": "rewind"
     }
   },
@@ -225,6 +223,8 @@ var manifest = {
     ]
   }
 }
+var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
+
 var config = {
   serviceUrl: "https://support.lsdsoftware.com",
   entityMap: {
@@ -237,7 +237,16 @@ var config = {
     '`': '&#x60;',
     '=': '&#x3D;'
   },
-  browser: getBrowser()
+  langMap: {
+    iw: 'he'
+  },
+  unsupportedSites: [
+    'https://chrome.google.com/webstore',
+    'https://addons.mozilla.org',
+    'https://play.google.com/books',
+    'https://ereader.chegg.com',
+    /^https:\/\/\w+\.vitalsource\.com/,
+  ],
 }
 
 var defaults = {
@@ -246,6 +255,10 @@ var defaults = {
   volume: 1.0,
   showHighlighting: 0,
 };
+
+var browserTtsEngine = brapi.tts ? new BrowserTtsEngine() : (typeof speechSynthesis != 'undefined' ? new WebSpeechEngine() : new DummyTtsEngine());
+var remoteTtsEngine = new RemoteTtsEngine(config.serviceUrl, (typeof readAloudManifest != 'undefined') ? readAloudManifest : brapi.runtime.getManifest());
+
 
 function getQueryString() {
   var queryString = {};
@@ -258,25 +271,25 @@ function getQueryString() {
 
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    chrome.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
+    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
   });
 }
 
 function updateSettings(items) {
   return new Promise(function(fulfill) {
-    chrome.storage.local.set(items, fulfill);
+    brapi.storage.local.set(items, fulfill);
   });
 }
 
 function clearSettings(names) {
   return new Promise(function(fulfill) {
-    chrome.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
+    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
   });
 }
 
 function getState(key) {
   return new Promise(function(fulfill) {
-    chrome.storage.local.get(key, function(items) {
+    brapi.storage.local.get(key, function(items) {
       fulfill(items[key]);
     });
   });
@@ -286,14 +299,18 @@ function setState(key, value) {
   var items = {};
   items[key] = value;
   return new Promise(function(fulfill) {
-    chrome.storage.local.set(items, fulfill);
+    brapi.storage.local.set(items, fulfill);
   });
 }
 
 function getVoices() {
-  return new Promise(function(fulfill) {
-    chrome.tts.getVoices(fulfill);
-  });
+  return browserTtsEngine.getVoices()
+    .then(function(voices) {
+      //add the remote voices if browser didn't return them (i.e. because it doesn't support the ttsEngine declaration in the manifest)
+      var remoteVoices = remoteTtsEngine.getVoices();
+      if (!voices.some(function(voice) {return voice.voiceName == remoteVoices[0].voiceName})) voices = voices.concat(remoteVoices);
+      return voices;
+    })
 }
 
 function isGoogleNative(voiceName) {
@@ -313,7 +330,7 @@ function isMicrosoftCloud(voiceName) {
 }
 
 function isRemoteVoice(voiceName) {
-  return isAmazonPolly(voiceName) || isGoogleTranslate(voiceName) || isMicrosoftCloud(voiceName);
+  return remoteTtsEngine.hasVoice(voiceName);
 }
 
 function isPremiumVoice(voiceName) {
@@ -322,9 +339,8 @@ function isPremiumVoice(voiceName) {
 
 function executeFile(file) {
   return new Promise(function(fulfill, reject) {
-    chrome.runtime.lastError = null;
-    chrome.tabs.executeScript({file: file}, function(result) {
-      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+    brapi.tabs.executeScript({file: file}, function(result) {
+      if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
       else fulfill(result);
     });
   });
@@ -332,9 +348,8 @@ function executeFile(file) {
 
 function executeScript(code) {
   return new Promise(function(fulfill, reject) {
-    chrome.runtime.lastError = null;
-    chrome.tabs.executeScript({code: code}, function(result) {
-      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+    brapi.tabs.executeScript({code: code}, function(result) {
+      if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
       else fulfill(result);
     });
   });
@@ -342,17 +357,30 @@ function executeScript(code) {
 
 function insertCSS(file) {
   return new Promise(function(fulfill, reject) {
-    chrome.runtime.lastError = null;
-    chrome.tabs.insertCSS({file: file}, function(result) {
-      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+    brapi.tabs.insertCSS({file: file}, function(result) {
+      if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
       else fulfill(result);
     })
   });
 }
 
+function getActiveTab() {
+  return new Promise(function(fulfill) {
+    brapi.tabs.query({active: true, lastFocusedWindow: true}, function(tabs) {
+      fulfill(tabs[0]);
+    })
+  })
+}
+
+function setTabUrl(tabId, url) {
+  return new Promise(function(fulfill) {
+    brapi.tabs.update(tabId, {url: url}, fulfill);
+  })
+}
+
 function getBackgroundPage() {
   return new Promise(function(fulfill) {
-    chrome.runtime.getBackgroundPage(fulfill);
+    brapi.runtime.getBackgroundPage(fulfill);
   });
 }
 
@@ -360,6 +388,17 @@ function spread(f, self) {
   return function(args) {
     return f.apply(self, args);
   };
+}
+
+function extraAction(action) {
+  return function(data) {
+    return Promise.resolve(action(data))
+      .then(function() {return data})
+  }
+}
+
+function inSequence(tasks) {
+  return tasks.reduce(function(p, task) {return p.then(task)}, Promise.resolve());
 }
 
 function callMethod(name, args) {
@@ -383,7 +422,7 @@ function parseLang(lang) {
 }
 
 function formatError(err) {
-  var message = chrome.i18n.getMessage(err.code);
+  var message = brapi.i18n.getMessage(err.code);
   if (message) message = message.replace(/{(\w+)}/g, function(m, p1) {return err[p1]});
   return message;
 }
@@ -453,6 +492,12 @@ if (typeof Object.assign != 'function') {
   });
 }
 
+if (!String.prototype.startsWith) {
+  String.prototype.startsWith = function(search, pos) {
+  return this.substr(!pos || pos < 0 ? 0 : +pos, search.length) === search;
+  };
+}
+
 function domReady() {
   return new Promise(function(fulfill) {
     $(fulfill);
@@ -462,7 +507,7 @@ function domReady() {
 function setI18nText() {
   $("[data-i18n]").each(function() {
     var key = $(this).data("i18n");
-    var text = chrome.i18n.getMessage(key);
+    var text = brapi.i18n.getMessage(key);
     if ($(this).is("input")) $(this).val(text);
     else $(this).text(text);
   })
@@ -481,19 +526,171 @@ function getBrowser() {
 }
 
 function getHotkeySettingsUrl() {
-  switch (config.browser) {
+  switch (getBrowser()) {
     case 'opera': return 'opera://settings/configureCommands';
     case 'chrome': return 'chrome://extensions/configureCommands';
-    default: return chrome.runtime.getURL("shortcuts.html");
+    default: return brapi.runtime.getURL("shortcuts.html");
+  }
+}
+
+function isUnsupportedSite(url) {
+  return config.unsupportedSites.some(function(site) {
+    return (typeof site == "string" && url.startsWith(site)) ||
+      (site instanceof RegExp && site.test(url));
+  })
+}
+
+function BrowserTtsEngine() {
+  this.speak = function(text, options, onEvent) {
+    brapi.tts.speak(text, {
+      voiceName: options.voice.voiceName,
+      lang: options.lang,
+      rate: options.rate,
+      pitch: options.pitch,
+      volume: options.volume,
+      requiredEventTypes: ["start", "end"],
+      desiredEventTypes: ["start", "end", "error"],
+      onEvent: onEvent
+    })
+  }
+  this.stop = brapi.tts.stop;
+  this.pause = brapi.tts.pause;
+  this.resume = brapi.tts.resume;
+  this.isSpeaking = brapi.tts.isSpeaking;
+  this.getVoices = function() {
+    return new Promise(function(fulfill) {
+      brapi.tts.getVoices(fulfill);
+    })
+  }
+}
+
+function WebSpeechEngine() {
+  var utter;
+  this.speak = function(text, options, onEvent) {
+    utter = new SpeechSynthesisUtterance();
+    utter.text = text;
+    utter.voice = options.voice;
+    if (options.lang) utter.lang = options.lang;
+    if (options.pitch) utter.pitch = options.pitch;
+    if (options.rate) utter.rate = options.rate;
+    if (options.volume) utter.volume = options.volume;
+    utter.onstart = onEvent.bind(null, {type: 'start', charIndex: 0});
+    utter.onend = onEvent.bind(null, {type: 'end', charIndex: text.length});
+    utter.onerror = function(event) {
+      onEvent({type: 'error', errorMessage: event.error});
+    };
+    speechSynthesis.speak(utter);
+  }
+  this.stop = function() {
+    if (utter) utter.onend = null;
+    speechSynthesis.cancel();
+  }
+  this.pause = function() {
+    speechSynthesis.pause();
+  }
+  this.resume = function() {
+    speechSynthesis.resume();
+  }
+  this.isSpeaking = function(callback) {
+    callback(speechSynthesis.speaking);
+  }
+  this.getVoices = function() {
+    return new Promise(function(fulfill) {
+      var voices = speechSynthesis.getVoices();
+      if (voices.length) fulfill(voices);
+      else speechSynthesis.onvoiceschanged = function() {
+        fulfill(speechSynthesis.getVoices());
+      }
+    })
+    .then(function(voices) {
+      for (var i=0; i<voices.length; i++) voices[i].voiceName = voices[i].name;
+      return voices;
+    })
+  }
+}
+
+function DummyTtsEngine() {
+  this.getVoices = function() {
+    return Promise.resolve([]);
+  }
+}
+
+function RemoteTtsEngine(serviceUrl, manifest) {
+  var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+  var audio = document.createElement("AUDIO");
+  var prefetchAudio = document.createElement("AUDIO");
+  var isSpeaking = false;
+  var nextStartTime = 0;
+  var waitTimer;
+  var voices = manifest.tts_engine.voices.map(function(voice) {
+    return {voiceName: voice.voice_name, lang: voice.lang};
+  })
+  var voiceMap = {};
+  for (var i=0; i<voices.length; i++) voiceMap[voices[i].voiceName] = voices[i];
+
+  this.speak = function(utterance, options, onEvent) {
+    if (!options.volume) options.volume = 1;
+    if (!options.rate) options.rate = 1;
+    audio.pause();
+    if (!iOS) {
+      audio.volume = options.volume;
+      audio.defaultPlaybackRate = options.rate;
+    }
+    audio.src = getAudioUrl(utterance, options.lang, options.voice.voiceName);
+    audio.oncanplay = function() {
+      var waitTime = nextStartTime - new Date().getTime();
+      if (waitTime > 0) waitTimer = setTimeout(audio.play.bind(audio), waitTime);
+      else audio.play();
+      isSpeaking = true;
+    };
+    audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
+    audio.onended = function() {
+      onEvent({type: 'end', charIndex: utterance.length});
+      isSpeaking = false;
+    };
+    audio.onerror = function() {
+      onEvent({type: "error", errorMessage: audio.error.message});
+      isSpeaking = false;
+    };
+    audio.load();
+  }
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking);
+  }
+  this.pause =
+  this.stop = function() {
+    clearTimeout(waitTimer);
+    audio.pause();
+  }
+  this.resume = function() {
+    audio.play();
+  }
+  this.prefetch = function(utterance, options) {
+    if (!iOS) {
+      prefetchAudio.src = getAudioUrl(utterance, options.lang, options.voice.voiceName);
+      prefetchAudio.load();
+    }
+  }
+  this.setNextStartTime = function(time, options) {
+    if (!iOS)
+      nextStartTime = time || 0;
+  }
+  this.getVoices = function() {
+    return voices;
+  }
+  this.hasVoice = function(voiceName) {
+    return voiceMap[voiceName] != null;
+  }
+  function getAudioUrl(utterance, lang, voiceName) {
+    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voiceName) + "?q=" + encodeURIComponent(utterance);
   }
 }
 (function() {
+  var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
+  var paragraphSplitter = /(?:\s*\r?\n\s*){2,}/;
+
   window.connect = connect;
   window.HtmlDoc = HtmlDoc;
-
-var readAloud = {
-  paraSplitter: /(?:\s*\r?\n\s*){2,}/
-};
 
 function connect(name) {
   if (!window.docReady) window.docReady = makeDoc();
@@ -502,7 +699,7 @@ function connect(name) {
 
 
 function startService(name, doc) {
-  var port = chrome.runtime.connect({name: name});
+  var port = brapi.runtime.connect({name: name});
   port.onMessage.addListener(dispatch.bind(null, {
     raGetInfo: getInfo,
     raGetCurrentIndex: getCurrentIndex,
@@ -521,13 +718,13 @@ function startService(name, doc) {
 
   function getInfo(request) {
     var lang = document.documentElement.lang || $("html").attr("xml:lang");
-    if (lang) lang = lang.replace(/_/g, '-');
+    if (lang) lang = lang.split(",",1)[0].replace(/_/g, '-');
     if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return {
-      redirect: doc.redirect,
       url: location.href,
       title: document.title,
-      lang: lang
+      lang: lang,
+      requireJs: doc.requireJs
     }
   }
 
@@ -538,7 +735,7 @@ function startService(name, doc) {
 
   function getTexts(request) {
     if (request.index < 0) {
-      if (request.index == -100) return getSelectedText().split(readAloud.paraSplitter);
+      if (request.index == -100) return getSelectedText().split(paragraphSplitter);
       else return null;
     }
     else {
@@ -582,11 +779,17 @@ function makeDoc() {
       else if ($(".drive-viewer-paginated-scrollable").length) return new GDriveDoc();
       else return new HtmlDoc();
     }
-    else if (location.hostname == "drive.google.com") return new GDriveDoc();
+    else if (location.hostname == "drive.google.com") {
+      if ($(".drive-viewer-paginated-scrollable").length) return new GDriveDoc();
+      else return new GDrivePreview();
+    }
     else if (/^read\.amazon\./.test(location.hostname)) return new KindleBook();
-    else if (location.hostname == "www.quora.com") return new QuoraPage();
     else if (location.hostname == "www.khanacademy.org") return new KhanAcademy();
-    else if (location.hostname == "bookshelf.vitalsource.com") return new VitalSourceBookshelf();
+    else if (location.pathname.match(/pdf-upload\.html$/)) {
+      var doc = new PdfDoc();
+      doc.ready = Promise.resolve();
+      return doc;
+    }
     else if (location.pathname.match(/\.pdf$/)) return new PdfDoc(location.href);
     else if ($("embed[type='application/pdf']").length) return new PdfDoc($("embed[type='application/pdf']").attr("src"));
     else return new HtmlDoc();
@@ -597,22 +800,19 @@ function makeDoc() {
 function GoogleDoc() {
   var viewport = $(".kix-appview-editor").get(0);
   var pages = $(".kix-page");
+  var selectionState;
 
-  this.ready = readAloud.loadScript(chrome.runtime.getURL("js/googleDocsUtil.js"));
+  this.requireJs = ["js/googleDocsUtil.js"];
 
   this.getCurrentIndex = function() {
-    var doc = googleDocsUtil.getGoogleDocument();
-    if (doc.selectedText) return 9999;
+    if (getSelectedText()) return 9999;
 
     for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > viewport.scrollTop+$(viewport).height()/2) break;
     return i-1;
   }
 
   this.getTexts = function(index, quietly) {
-    if (index == 9999) {
-      var doc = googleDocsUtil.getGoogleDocument();
-      return [doc.selectedText];
-    }
+    if (index == 9999) return [getSelectedText()];
 
     var page = pages.get(index);
     if (page) {
@@ -632,6 +832,25 @@ function GoogleDoc() {
       .map(getInnerText)
       .filter(isNotEmpty);
   }
+
+  function getSelectedText() {
+    var doc = googleDocsUtil.getGoogleDocument();
+    //first time
+    if (!selectionState) selectionState = {caret: doc.caret.index, prev: [], text: doc.selectedText};
+    //if caret has not moved, assume selection state hasn't changed
+    //if caret has moved, update selection state
+    if (selectionState.caret != doc.caret.index) {
+      selectionState.caret = doc.caret.index;
+      selectionState.prev.push(selectionState.text);
+      selectionState.text = doc.selectedText;
+      selectionState.prev = selectionState.prev.filter(function(text) {
+        var index = selectionState.text.indexOf(text);
+        if (index != -1) selectionState.text = selectionState.text.slice(0,index) + selectionState.text.slice(index+text.length);
+        return index != -1;
+      })
+    }
+    return selectionState.text;
+  }
 }
 
 
@@ -640,6 +859,40 @@ function GDriveDoc() {
   var pages = $(".drive-viewer-paginated-page");
 
   this.getCurrentIndex = function() {
+    for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > viewport.scrollTop+$(viewport).height()/2) break;
+    return i-1;
+  }
+
+  this.getTexts = function(index, quietly) {
+    var page = pages.get(index);
+    if (page) {
+      var oldScrollTop = viewport.scrollTop;
+      viewport.scrollTop = $(page).position().top;
+      return tryGetTexts(getTexts.bind(page), 3000)
+        .then(function(result) {
+          if (quietly) viewport.scrollTop = oldScrollTop;
+          return result;
+        })
+    }
+    else return null;
+  }
+
+  function getTexts() {
+    var texts = $("p", this).get()
+      .map(getInnerText)
+      .filter(isNotEmpty);
+    return fixParagraphs(texts);
+  }
+}
+
+
+function GDrivePreview() {
+  var viewport, pages;
+
+  this.getCurrentIndex = function() {
+    var doc = $("[role=document]:visible").eq(0);
+    viewport = doc.parent().get(0);
+    pages = doc.children().slice(doc.children().first().is("[role=button]") ? 2 : 1);
     for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > viewport.scrollTop+$(viewport).height()/2) break;
     return i-1;
   }
@@ -693,7 +946,7 @@ function KindleBook() {
   function getTexts() {
     var texts = [];
     contentFrames.filter(function(frame) {
-      return frame.style.visibility != "hidden";
+      return frame != null && frame.style.visibility != "hidden";
     })
     .forEach(function(frame) {
       var frameHeight = $(frame).height();
@@ -714,239 +967,26 @@ function KindleBook() {
 
 
 function PdfDoc(url) {
-  var viewerBase = "https://assets.lsdsoftware.com/read-aloud/pdf-viewer/web/";
-  var uploadDialog;
-  var foundText;
+  var queue = new EventQueue("PdfDoc");
 
-  if (/^file:/.test(url)) {
-    this.ready = readAloud.loadCss(chrome.runtime.getURL("css/jquery-ui.min.css"))
-      .then(readAloud.loadScript.bind(null, chrome.runtime.getURL("js/jquery-ui.min.js")))
-      .then(createUploadDialog)
-      .then(function(dialog) {uploadDialog = dialog})
-  }
-  else {
-    this.ready = readAloud.loadCss(viewerBase + "viewer.css")
-      .then(loadViewerHtml)
-      .then(showLoadingIcon)
-      .then(appendLocaleResourceLink)
-      .then(readAloud.loadScript.bind(null, viewerBase + "../build/pdf.js"))
-      .then(rebaseUrls)
-      .then(readAloud.loadScript.bind(null, viewerBase + "pdf.viewer.js", viewerJsPreprocessor))
-      .then(loadPdf)
-      .then(hideLoadingIcon)
-  }
+  this.ready = new Promise(function(fulfill) {
+    queue.once("pageScriptLoaded", function() {
+      queue.trigger("loadDocument", url);
+    })
+    queue.once("documentLoaded", fulfill);
+    loadPageScript("https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-viewer.js");
+  })
 
-  function loadViewerHtml() {
-    return new Promise(function(fulfill, reject) {
-      $.ajax(viewerBase + "viewer.html", {
-        dataType: "text",
-        success: function(text) {
-          var start = text.indexOf(">", text.indexOf("<body")) +1;
-          var end = text.indexOf("</body>");
-          document.body.innerHTML = text.slice(start, end);
-          fulfill();
-        },
-        error: function() {
-          reject(new Error("Failed to load viewer html"));
-        }
-      })
+  this.getCurrentIndex = function() {
+    return new Promise(function(fulfill) {
+      queue.once("currentIndexGot", fulfill).trigger("getCurrentIndex");
     })
   }
 
-  function appendLocaleResourceLink() {
-    $('<link>')
-      .appendTo("head")
-      .attr({rel: "resource", type: "application/l10n", href: viewerBase + "locale/locale.properties"});
-  }
-
-  function rebaseUrls() {
-    var wrap = function(prop) {
-      var value = PDFJS[prop];
-      Object.defineProperty(PDFJS, prop, {
-        enumerable: true,
-        configurable: true,
-        get: function() {return viewerBase + value},
-        set: function(val) {value = val}
-      })
-    };
-    wrap("imageResourcesPath");
-    wrap("workerSrc");
-    wrap("cMapUrl");
-  }
-
-  function viewerJsPreprocessor(text) {
-    return text.replace("compressed.tracemonkey-pldi-09.pdf", "");
-  }
-
-  function loadPdf() {
-    return PDFViewerApplication.open(url)
-      .then(function() {
-        return new Promise(function(fulfill) {
-          PDFViewerApplication.eventBus.on("documentload", fulfill);
-        })
-      })
-  }
-
-  function showLoadingIcon() {
-    if (!$(".ra-loading-icon").length) {
-      var holder = $("<div>")
-        .addClass("ra-loading-icon")
-        .css({position: "absolute", left: "50%", top: "50%"})
-        .appendTo(document.body)
-      $("<img>")
-        .attr("src", chrome.runtime.getURL("img/throb.gif"))
-        .css({position: "relative", width: 48, left: -24, top: -24})
-        .appendTo(holder)
-    }
-    $(".ra-loading-icon").show();
-  }
-
-  function hideLoadingIcon() {
-    $(".ra-loading-icon").hide();
-  }
-
-  this.getCurrentIndex = function() {
-    if (uploadDialog) {
-      return 0;
-    }
-    var pageNo = PDFViewerApplication.page;
-    return pageNo ? pageNo-1 : 0;
-  }
-
   this.getTexts = function(index, quietly) {
-    if (uploadDialog) {
-      uploadDialog.show();
-      return null;
-    }
-    var pdf = PDFViewerApplication.pdfDocument;
-    if (index < pdf.numPages) {
-      if (!quietly) PDFViewerApplication.page = index+1;
-      return pdf.getPage(index+1)
-        .then(getPageTexts)
-        .then(function(texts) {
-          if (texts.length) foundText = true;
-          return texts;
-        })
-    }
-    else {
-      if (!foundText) showNoTextExplanation();
-      return null;
-    }
-  }
-
-  function getPageTexts(page) {
-    return page.getTextContent()
-      .then(function(content) {
-        var lines = [];
-        for (var i=0; i<content.items.length; i++) {
-          if (lines.length == 0 || i > 0 && content.items[i-1].transform[5] != content.items[i].transform[5]) lines.push("");
-          lines[lines.length-1] += content.items[i].str;
-        }
-        return lines.map(function(line) {return line.trim()});
-      })
-      .then(fixParagraphs)
-  }
-
-  function createUploadDialog() {
-    var div = $("<div>");
-    $("<p>")
-      .text(formatMessage({code: "uploadpdf_message1", extension_name: chrome.i18n.getMessage("extension_short_name")}))
-      .css("color", "blue")
-      .appendTo(div);
-    $("<p>")
-      .text(formatMessage({code: "uploadpdf_message2", extension_name: chrome.i18n.getMessage("extension_short_name")}))
-      .appendTo(div);
-    var form = $("<form>")
-      .attr("action", "https://support2.lsdsoftware.com/dropmeafile-readaloud/upload")
-      .attr("method", "POST")
-      .attr("enctype", "multipart/form-data")
-      .on("submit", function() {
-        btnSubmit.prop("disabled", true);
-      })
-      .appendTo(div);
-    $("<input>")
-      .attr("type", "file")
-      .attr("name", "fileToUpload")
-      .attr("accept", "application/pdf")
-      .on("change", function() {
-        btnSubmit.prop("disabled", !$(this).val())
-      })
-      .appendTo(form);
-    $("<br>")
-      .appendTo(form);
-    $("<br>")
-      .appendTo(form);
-    var btnSubmit = $("<input>")
-      .attr("type", "submit")
-      .attr("value", chrome.i18n.getMessage("uploadpdf_submit_button"))
-      .prop("disabled", true)
-      .appendTo(form);
-
-    div.dialog({
-        title: chrome.i18n.getMessage("extension_short_name"),
-        width: 450,
-        modal: true,
-        autoOpen: false
-      })
-    return {
-      show: function() {
-        div.dialog("open");
-      }
-    }
-  }
-
-  function showNoTextExplanation() {
-    Promise.resolve()
-      .then(function() {
-        if (!$.ui)
-          return readAloud.loadCss(chrome.runtime.getURL("css/jquery-ui.min.css"))
-            .then(readAloud.loadScript.bind(null, chrome.runtime.getURL("js/jquery-ui.min.js")))
-      })
-      .then(function() {
-        var div = $("<div>");
-        $("<p>")
-          .text("I can't find any text to read.  This is probably because this PDF contains scanned images of text instead of the actual text.  If you're unable to select any text using your mouse, it means they are images.")
-          .css("color", "blue")
-          .appendTo(div);
-        div.dialog({
-            title: chrome.i18n.getMessage("extension_short_name"),
-            width: 450
-          })
-      })
-  }
-
-  function formatMessage(msg) {
-    var message = chrome.i18n.getMessage(msg.code);
-    if (message) message = message.replace(/{(\w+)}/g, function(m, p1) {return msg[p1]});
-    return message;
-  }
-}
-
-
-function QuoraPage() {
-  this.getCurrentIndex = function() {
-    return 0;
-  }
-
-  this.getTexts = function(index) {
-    if (index == 0) return parse();
-    else return null;
-  }
-
-  function parse() {
-    var texts = [];
-    var elem = $(".QuestionArea .question_qtext").get(0);
-    if (elem) texts.push(elem.innerText);
-    $(".AnswerBase")
-      .each(function() {
-        elem = $(this).find(".feed_item_answer_user .user").get(0);
-        if (elem) texts.push("Answer by " + elem.innerText);
-        elem = $(this).find(".rendered_qtext").get(0);
-        if (elem) texts.push.apply(texts, elem.innerText.split(readAloud.paraSplitter));
-        elem = $(this).find(".AnswerFooter").get(0);
-        if (elem) texts.push(elem.innerText);
-      })
-    return texts;
+    return new Promise(function(fulfill) {
+      queue.once("textsGot", fulfill).trigger("getTexts", index, quietly);
+    })
   }
 }
 
@@ -974,23 +1014,8 @@ function KhanAcademy() {
 }
 
 
-function VitalSourceBookshelf() {
-  this.redirect = true;
-
-  this.getCurrentIndex = function() {
-    return 0
-  };
-
-  this.getTexts = function() {
-    var iframe = $("#jigsaw-placeholder > iframe").get(0);
-    if (iframe) location.href = iframe.src;
-    return null;
-  };
-}
-
-
 function HtmlDoc() {
-  var ignoreTags = "select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style, svg, aside, footer, #footer";
+  var ignoreTags = "select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style, svg, aside, footer, #footer, .no-read-aloud";
 
   this.getCurrentIndex = function() {
     return 0;
@@ -1048,7 +1073,7 @@ function HtmlDoc() {
       return node.nodeType == 3 && node.nodeValue.trim().length >= 3;
     };
     var isParagraph = function(node) {
-      return node.nodeType == 1 && $(node).is("p") && getInnerText(node).length >= threshold;
+      return node.nodeType == 1 && $(node).is("p:visible") && getInnerText(node).length >= threshold;
     };
     var hasTextNodes = function(elem) {
       return someChildNodes(elem, isTextNode) && getInnerText(elem).length >= threshold;
@@ -1109,7 +1134,7 @@ function HtmlDoc() {
     $(elem).find("ol, ul").addBack("ol, ul").each(addNumbering);
     var texts = $(elem).data("read-aloud-multi-block")
       ? $(elem).children(":visible").get().map(getText)
-      : getText(elem).split(readAloud.paraSplitter);
+      : getText(elem).split(paragraphSplitter);
     $(elem).find(".read-aloud-numbering").remove();
     toHide.show();
     return texts;
@@ -1235,37 +1260,49 @@ function tryGetTexts(getTexts, millis) {
   }
 }
 
-readAloud.loadCss = function(url) {
+function loadPageScript(url) {
   if (!$("head").length) $("<head>").prependTo("html");
-  $("<link>").appendTo("head").attr({type: "text/css", rel: "stylesheet", href: url});
-  return Promise.resolve();
+  $.ajax({
+    dataType: "script",
+    cache: true,
+    url: url
+  });
 }
 
-readAloud.loadScript = function(url, preprocess) {
-  return new Promise(function(fulfill, reject) {
-    $.ajax(url, {
-      dataType: "text",
-      success: function(text) {
-        eval.call(window, preprocess ? preprocess(text) : text);
-        fulfill();
-      },
-      error: function() {
-        reject(new Error("Failed to load script"));
-      }
+function EventQueue(prefix) {
+  this.on = function(eventType, callback) {
+    document.addEventListener(prefix+eventType, function(event) {
+      callback.apply(null, JSON.parse(event.detail));
     })
-  })
+    return this;
+  }
+
+  this.once = function(eventType, callback) {
+    var handler = function(event) {
+      document.removeEventListener(prefix+eventType, handler);
+      callback.apply(null, JSON.parse(event.detail));
+    };
+    document.addEventListener(prefix+eventType, handler);
+    return this;
+  }
+
+  this.trigger = function(eventType) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    document.dispatchEvent(new CustomEvent(prefix+eventType, {detail: JSON.stringify(args)}));
+    return this;
+  }
 }
 
 })();
 
 function Speech(texts, options) {
-  options.rate = (options.rate || 1) * (isGoogleTranslate(options.voiceName) ? 1.2 : 1);
+  options.rate = (options.rate || 1) * (isGoogleNative(options.voice.voiceName) ? 0.9 : (isGoogleTranslate(options.voice.voiceName) ? 1.1 : 1));
 
   for (var i=0; i<texts.length; i++) if (/\w$/.test(texts[i])) texts[i] += '.';
   if (texts.length) texts = getChunks(texts.join("\n\n"));
 
-  var engine = options.engine || (isGoogleNative(options.voiceName) ? new TimeoutTtsEngine(new ChromeTtsEngine(), 16*1000) : new ChromeTtsEngine());
-  var pauseDuration = isGoogleTranslate(options.voiceName) ? 0 : (650/options.rate);
+  var engine = options.engine || pickEngine();
+  var pauseDuration = isGoogleTranslate(options.voice.voiceName) ? 0 : (650/options.rate);
   var state = "IDLE";
   var index = 0;
   var delayedPlayTimer;
@@ -1280,15 +1317,21 @@ function Speech(texts, options) {
   this.rewind = rewind;
   this.gotoEnd = gotoEnd;
 
+  function pickEngine() {
+    if (isRemoteVoice(options.voice.voiceName)) return remoteTtsEngine;
+    if (isGoogleNative(options.voice.voiceName)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
+    return browserTtsEngine;
+  }
+
   function getChunks(text) {
     var isEA = /^zh|ko|ja/.test(options.lang);
     var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
-    if (isGoogleNative(options.voiceName)) {
-      var wordLimit = (/^de/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
+    if (isGoogleNative(options.voice.voiceName)) {
+      var wordLimit = (/^(de|ru|es|id)/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
       return new WordBreaker(wordLimit, punctuator).breakText(text);
     }
     else {
-      if (isGoogleTranslate(options.voiceName)) return new CharBreaker(200, punctuator).breakText(text);
+      if (isGoogleTranslate(options.voice.voiceName)) return new CharBreaker(200, punctuator).breakText(text);
       else return new CharBreaker(500, punctuator, 200).breakText(text);
     }
   }
@@ -1326,7 +1369,7 @@ function Speech(texts, options) {
       return speak(texts[index],
         function() {
           state = "IDLE";
-          engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
+          if (engine.setNextStartTime) engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
           index++;
           play();
         },
@@ -1335,7 +1378,7 @@ function Speech(texts, options) {
           if (options.onEnd) options.onEnd(err);
         })
         .then(function() {
-          if (texts[index+1]) engine.prefetch(texts[index+1], options);
+          if (texts[index+1] && engine.prefetch) engine.prefetch(texts[index+1], options);
         })
     }
   }
@@ -1386,20 +1429,11 @@ function Speech(texts, options) {
 
   function speak(text, onEnd, onError) {
     return new Promise(function(fulfill) {
-    engine.speak(text, {
-      voiceName: options.voiceName,
-      lang: options.lang,
-      rate: options.rate,
-      pitch: options.pitch,
-      volume: options.volume,
-      requiredEventTypes: ["start", "end"],
-      desiredEventTypes: ["start", "end", "error"],
-    },
-    function(event) {
+      engine.speak(text, options, function(event) {
         if (event.type == "start") fulfill();
         else if (event.type == "end") onEnd();
         else if (event.type == "error") onError(new Error(event.errorMessage || "Unknown TTS error"));
-    });
+      })
     })
   }
 
@@ -1510,7 +1544,7 @@ function LatinPunctuator() {
     return recombine(text.split(/((?:\r?\n\s*){2,})/));
   }
   this.getSentences = function(text) {
-    return recombine(text.split(/([.!?]+[\s\u200b]+)/));
+    return recombine(text.split(/([.!?]+[\s\u200b]+)/), /\b(\w|[A-Z][a-z]|Assn|Ave|Capt|Col|Comdr|Corp|Cpl|Gen|Gov|Hon|Inc|Lieut|Ltd|Rev|Univ|Jan|Feb|Mar|Apr|Aug|Sept|Oct|Nov|Dec|dept|ed|est|vol|vs)\.\s+$/);
   }
   this.getPhrases = function(sentence) {
     return recombine(sentence.split(/([,;:]\s+|\s-+\s+|—\s*)/));
@@ -1527,11 +1561,14 @@ function LatinPunctuator() {
     }
     return result;
   }
-  function recombine(tokens) {
+  function recombine(tokens, nonPunc) {
     var result = [];
     for (var i=0; i<tokens.length; i+=2) {
-      if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
-      else if (tokens[i]) result.push(tokens[i]);
+      var part = (i+1 < tokens.length) ? (tokens[i] + tokens[i+1]) : tokens[i];
+      if (part) {
+        if (nonPunc && result.length && nonPunc.test(result[result.length-1])) result[result.length-1] += part;
+        else result.push(part);
+      }
     }
     return result;
   }
@@ -1579,92 +1616,6 @@ function EastAsianPunctuator() {
       baseEngine.stop();
     }
     this.isSpeaking = baseEngine.isSpeaking;
-    this.prefetch = baseEngine.prefetch;
-    this.setNextStartTime = baseEngine.setNextStartTime;
-  }
-
-  function ChromeTtsEngine() {
-    this.speak = function(text, options, onEvent) {
-      chrome.tts.speak(text, Object.assign({onEvent: onEvent}, options));
-    }
-    this.stop = chrome.tts.stop;
-    this.pause = chrome.tts.pause;
-    this.resume = chrome.tts.resume;
-    this.isSpeaking = chrome.tts.isSpeaking;
-    this.prefetch = function(text, options) {
-      if (isRemoteVoice(options.voiceName)) remoteTtsEngine.prefetch(text, options);
-    }
-    this.setNextStartTime = function(time, options) {
-      if (isRemoteVoice(options.voiceName)) remoteTtsEngine.setNextStartTime(time);
-    }
-  }
-}
-
-(function() {
-  if (window.chrome && chrome.ttsEngine) {
-    var engine = window.remoteTtsEngine = new RemoteTTS(config.serviceUrl);
-    chrome.ttsEngine.onSpeak.addListener(engine.speak);
-    chrome.ttsEngine.onStop.addListener(engine.stop);
-    chrome.ttsEngine.onPause.addListener(engine.pause);
-    chrome.ttsEngine.onResume.addListener(engine.resume);
-  }
-})();
-
-
-function RemoteTTS(host) {
-  var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
-  var audio = window.ttsAudio || (window.ttsAudio = document.createElement("AUDIO"));
-  var prefetchAudio = document.createElement("AUDIO");
-  var nextStartTime = 0;
-  var waitTimer;
-
-  this.speak = function(utterance, options, onEvent) {
-    if (!options.volume) options.volume = 1;
-    if (!options.rate) options.rate = 1;
-    if (!onEvent) onEvent = options.onEvent;
-    audio.pause();
-    if (!iOS) {
-      audio.volume = options.volume;
-      audio.defaultPlaybackRate = options.rate;
-    }
-    audio.src = getAudioUrl(utterance, options.lang, options.voiceName);
-    audio.oncanplay = function() {
-      var waitTime = nextStartTime - new Date().getTime();
-      if (waitTime > 0) waitTimer = setTimeout(audio.play.bind(audio), waitTime);
-      else audio.play();
-    };
-    audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
-    audio.onended = onEvent.bind(null, {type: 'end', charIndex: utterance.length});
-    audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
-    };
-    audio.load();
-  }
-
-  this.isSpeaking = function(callback) {
-    callback(audio.currentTime && !audio.paused && !audio.ended);
-  }
-
-  this.pause =
-  this.stop = function() {
-    clearTimeout(waitTimer);
-    audio.pause();
-  }
-
-  this.resume = function() {
-    audio.play();
-  }
-
-  this.prefetch = function(utterance, options) {
-    prefetchAudio.src = getAudioUrl(utterance, options.lang, options.voiceName);
-  }
-
-  this.setNextStartTime = function(time) {
-    nextStartTime = time || 0;
-  }
-
-  function getAudioUrl(utterance, lang, voiceName) {
-    return host + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voiceName) + "?q=" + encodeURIComponent(utterance);
   }
 }
 
@@ -1672,7 +1623,7 @@ var readAloud = new function() {
   var pauseBtn = document.querySelector(".ra-pause");
   if (pauseBtn) pauseBtn.style.display = "none";
 
-  if (!window.Promise) ajaxGetCb("https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js", eval);
+  if (typeof Promise == 'undefined') ajaxGetCb("https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js", eval);
 
   var speech;
   var voiceProvider = new VoiceProvider();
@@ -1705,20 +1656,17 @@ var readAloud = new function() {
   }
 
   function speak(texts, options) {
-      var voice = voiceProvider.getLocalVoice(options.lang);
-      if (voice) {
-        options.voiceName = voice.name;
-        options.engine = new LocalTTS(voice);
+    return voiceProvider.getVoice(options.lang).then(function(voice) {
+      if (!voice) {
+        alert("Language not supported '" + options.lang + "'");
+        return;
       }
-      else {
-        voice = voiceProvider.getRemoteVoice(options.lang);
-        options.voiceName = voice ? voice.voice_name : "default";
-        options.engine = new RemoteTTS(config.serviceUrl);
-      }
+      options.voice = voice;
       options.onEnd = function() {speech = null; updateButtons()};
       if (speech) speech.stop();
       speech = new Speech(texts, options);
       return speech.play();
+    })
   }
 
   function updateButtons() {
@@ -1726,7 +1674,7 @@ var readAloud = new function() {
       .then(function(playing) {
         $(".ra-play").toggle(!playing);
         $(".ra-pause").toggle(playing);
-        attribution.toggle(playing && isGoogleTranslate(speech.options.voiceName));
+        attribution.toggle(playing && isGoogleTranslate(speech.options.voice.voiceName));
       })
   }
 
@@ -1737,20 +1685,12 @@ var readAloud = new function() {
 
   //voice provider
   function VoiceProvider() {
-    if (window.speechSynthesis) speechSynthesis.getVoices();
-
-    this.getLocalVoice = function(lang) {
-      return window.speechSynthesis ? findVoiceByLang(speechSynthesis.getVoices(), lang) : null;
-    }
-
-    this.getRemoteVoice = function(lang) {
-      if (window.manifest) {
-        var remoteVoices = manifest.tts_engine.voices;
-        return findVoiceByLang(remoteVoices.filter(function(voice) {return isAmazonPolly(voice.voice_name)}), lang)
-          || findVoiceByLang(remoteVoices.filter(function(voice) {return isMicrosoftCloud(voice.voice_name)}), lang)
-          || findVoiceByLang(remoteVoices.filter(function(voice) {return isGoogleTranslate(voice.voice_name)}), lang);
-      }
-      else return null;
+    this.getVoice = function(lang) {
+      return getVoices().then(function(voices) {
+        return findVoiceByLang(voices.filter(function(voice) {return !isRemoteVoice(voice.voiceName)}), lang)
+          || findVoiceByLang(voices.filter(function(voice) {return isMicrosoftCloud(voice.voiceName)}), lang)
+          || findVoiceByLang(voices, lang);
+      })
     }
 
     //from document.js
@@ -1775,37 +1715,6 @@ var readAloud = new function() {
       });
       return match.first || match.second || match.third || match.fourth;
     }
-  }
-
-  //native tts engine
-  function LocalTTS(voice) {
-    var utter;
-
-    this.speak = function(text, options, onEvent) {
-      utter = new SpeechSynthesisUtterance();
-      if (options.lang) utter.lang = options.lang;
-      if (options.pitch) utter.pitch = options.pitch;
-      if (options.rate) utter.rate = options.rate;
-      utter.text = text;
-      utter.voice = voice;
-      if (options.volume) utter.volume = options.volume;
-      utter.onstart = onEvent.bind(null, {type: 'start', charIndex: 0});
-      utter.onerror =
-      utter.onend = onEvent.bind(null, {type: 'end', charIndex: text.length});
-      speechSynthesis.speak(utter);
-    }
-
-    this.isSpeaking = function(callback) {
-      callback(speechSynthesis.speaking);
-    }
-
-    this.stop = function() {
-      if (utter) utter.onend = null;
-      speechSynthesis.cancel();
-    }
-
-    this.prefetch = function() {}
-    this.setNextStartTime = function() {}
   }
 
   //google translate attribution
