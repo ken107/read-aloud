@@ -388,7 +388,7 @@ function HtmlDoc() {
       return node.nodeType == 3 && node.nodeValue.trim().length >= 3;
     };
     var isParagraph = function(node) {
-      return node.nodeType == 1 && $(node).is("p") && getInnerText(node).length >= threshold;
+      return node.nodeType == 1 && $(node).is("p:visible") && getInnerText(node).length >= threshold;
     };
     var hasTextNodes = function(elem) {
       return someChildNodes(elem, isTextNode) && getInnerText(elem).length >= threshold;
