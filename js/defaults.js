@@ -104,12 +104,16 @@ function isMicrosoftCloud(voiceName) {
   return /^Microsoft /.test(voiceName) && voiceName.indexOf(' - ') == -1;
 }
 
+function isOpenFPT(voiceName) {
+  return /^OpenFPT /.test(voiceName);
+}
+
 function isRemoteVoice(voiceName) {
   return remoteTtsEngine.hasVoice(voiceName);
 }
 
 function isPremiumVoice(voiceName) {
-  return isAmazonPolly(voiceName) || isMicrosoftCloud(voiceName);
+  return isAmazonPolly(voiceName) || isMicrosoftCloud(voiceName) || isOpenFPT(voiceName);
 }
 
 function executeFile(file) {
