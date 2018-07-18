@@ -4,7 +4,7 @@ var readAloudManifest = {
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "default_locale": "en",
 
   "browser_action": {
@@ -219,7 +219,12 @@ var readAloudManifest = {
       {"voice_name": "Microsoft US English (David)", "lang": "en-US", "gender": "male", "event_types": ["start", "end", "error"]},
       {"voice_name": "Microsoft US English (Mark)", "lang": "en-US", "gender": "male", "event_types": ["start", "end", "error"]},
       {"voice_name": "Microsoft US English (Zira)", "lang": "en-US", "gender": "female", "event_types": ["start", "end", "error"]},
-      {"voice_name": "Microsoft Vietnamese (An)", "lang": "vi-VI", "gender": "male", "event_types": ["start", "end", "error"]}
+      {"voice_name": "Microsoft Vietnamese (An)", "lang": "vi-VI", "gender": "male", "event_types": ["start", "end", "error"]},
+
+      {"voice_name": "OpenFPT Vietnamese (Thu Dung)", "lang": "vi-VI", "gender": "female", "event_types": ["start", "end", "error"]},
+      {"voice_name": "OpenFPT Vietnamese (Cao Chung)", "lang": "vi-VI", "gender": "male", "event_types": ["start", "end", "error"]},
+      {"voice_name": "OpenFPT Vietnamese (Ha Tieu Mai)", "lang": "vi-VI", "gender": "female", "event_types": ["start", "end", "error"]},
+      {"voice_name": "OpenFPT Vietnamese (Ngoc Lam)", "lang": "vi-VI", "gender": "female", "event_types": ["start", "end", "error"]}
     ]
   }
 }
@@ -329,12 +334,16 @@ function isMicrosoftCloud(voiceName) {
   return /^Microsoft /.test(voiceName) && voiceName.indexOf(' - ') == -1;
 }
 
+function isOpenFPT(voiceName) {
+  return /^OpenFPT /.test(voiceName);
+}
+
 function isRemoteVoice(voiceName) {
   return remoteTtsEngine.hasVoice(voiceName);
 }
 
 function isPremiumVoice(voiceName) {
-  return isAmazonPolly(voiceName) || isMicrosoftCloud(voiceName);
+  return isAmazonPolly(voiceName) || isMicrosoftCloud(voiceName) || isOpenFPT(voiceName);
 }
 
 function executeFile(file) {
@@ -496,6 +505,72 @@ if (!String.prototype.startsWith) {
   String.prototype.startsWith = function(search, pos) {
   return this.substr(!pos || pos < 0 ? 0 : +pos, search.length) === search;
   };
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, 'includes', {
+    value: function(searchElement, fromIndex) {
+      if (this == null) throw new TypeError('"this" is null or not defined');
+      var o = Object(this);
+      var len = o.length >>> 0;
+      if (len === 0) return false;
+      var n = fromIndex | 0;
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+      function sameValueZero(x, y) {
+        return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
+      }
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) return true;
+        k++;
+      }
+      return false;
+    },
+    configurable: true,
+    writable: true
+  });
+}
+
+if (!Array.prototype.find) {
+  Object.defineProperty(Array.prototype, 'find', {
+    value: function(predicate) {
+      if (this == null) throw new TypeError('"this" is null or not defined');
+      var o = Object(this);
+      var len = o.length >>> 0;
+      if (typeof predicate !== 'function') throw new TypeError('predicate must be a function');
+      var thisArg = arguments[1];
+      var k = 0;
+      while (k < len) {
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) return kValue;
+        k++;
+      }
+      return undefined;
+    },
+    configurable: true,
+    writable: true
+  });
+}
+
+if (!Array.prototype.groupBy) {
+  Object.defineProperty(Array.prototype, 'groupBy', {
+    value: function(keySelector, valueReducer) {
+      if (!valueReducer) {
+        valueReducer = function(a,b) {
+          if (!a) a = [];
+          a.push(b);
+          return a;
+        }
+      }
+      var result = {};
+      for (var i=0; i<this.length; i++) {
+        var key = keySelector(this[i]);
+        if (key != null) result[key] = valueReducer(result[key], this[i]);
+      }
+      return result;
+    },
+    configurable: true,
+    writable: true
+  })
 }
 
 function domReady() {
@@ -1296,13 +1371,13 @@ function EventQueue(prefix) {
 })();
 
 function Speech(texts, options) {
-  options.rate = (options.rate || 1) * (isGoogleNative(options.voice.voiceName) ? 0.9 : (isGoogleTranslate(options.voice.voiceName) ? 1.1 : 1));
+  options.rate = (options.rate || 1) * (isGoogleNative(options.voice.voiceName) ? 0.9 : 1);
 
   for (var i=0; i<texts.length; i++) if (/\w$/.test(texts[i])) texts[i] += '.';
   if (texts.length) texts = getChunks(texts.join("\n\n"));
 
   var engine = options.engine || pickEngine();
-  var pauseDuration = isGoogleTranslate(options.voice.voiceName) ? 0 : (650/options.rate);
+  var pauseDuration = 650/options.rate;
   var state = "IDLE";
   var index = 0;
   var delayedPlayTimer;
