@@ -39,6 +39,10 @@
   color: red;
 }
 
+select#voices {
+  min-width: 250px;
+}
+
 #balance {
   display: none;
   color: gray;

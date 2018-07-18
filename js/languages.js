@@ -4,17 +4,17 @@ Promise.all([getVoices(), getSettings(), domReady()]).then(spread(initialize));
 function initialize(voices, settings) {
   setI18nText();
 
-  var langs = voices.map(function(voice) {
-    return voice.lang.split('-', 1)[0];
+  var langs = voices.groupBy(function(voice) {
+    return voice.lang ? voice.lang.split('-',1)[0] : "<any>";
   })
   var isAvailable = function() {
-    return langs.indexOf($(this).data("lang")) != -1;
+    return langs["<any>"] || langs[$(this).data("lang")];
   };
   $("input[data-lang]").filter(isAvailable).parent().css("display", "block");
 
   var selectedLangs = settings.languages ? settings.languages.split(',') : [];
   var isSelected = function() {
-    return selectedLangs.indexOf($(this).data("lang")) != -1;
+    return selectedLangs.includes($(this).data("lang"));
   };
   $("input[data-lang]").filter(isSelected).prop("checked", true);
 

@@ -16,10 +16,10 @@ function initialize(allVoices, settings) {
 
   //voices
   var selectedLangs = settings.languages && settings.languages.split(',');
-  var voices = allVoices.filter(function(voice) {
-    var lang = voice.lang.split('-',1)[0];
-    return !selectedLangs || selectedLangs.indexOf(lang) != -1;
-  });
+  var voices = !selectedLangs ? allVoices : allVoices.filter(
+    function(voice) {
+      return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
+    });
   var groups = groupVoices(voices, function(v) {return isPremiumVoice(v.voiceName)});
   if (!groups[true]) groups[true] = [];
   if (!groups[false]) groups[false] = [];
