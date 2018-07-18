@@ -1,12 +1,12 @@
 
 function Speech(texts, options) {
-  options.rate = (options.rate || 1) * (isGoogleNative(options.voice.voiceName) ? 0.9 : (isGoogleTranslate(options.voice.voiceName) ? 1.1 : 1));
+  options.rate = (options.rate || 1) * (isGoogleNative(options.voice.voiceName) ? 0.9 : 1);
 
   for (var i=0; i<texts.length; i++) if (/\w$/.test(texts[i])) texts[i] += '.';
   if (texts.length) texts = getChunks(texts.join("\n\n"));
 
   var engine = options.engine || pickEngine();
-  var pauseDuration = isGoogleTranslate(options.voice.voiceName) ? 0 : (650/options.rate);
+  var pauseDuration = 650/options.rate;
   var state = "IDLE";
   var index = 0;
   var delayedPlayTimer;
