@@ -181,7 +181,7 @@ function Doc(source, onEnd) {
         .then(function(speech) {
           if (activeSpeech) return;
           activeSpeech = speech;
-          activeSpeech.options.onEnd = function(err) {
+          activeSpeech.onEnd = function(err) {
             if (err) {
               if (onEnd) onEnd(err);
             }

@@ -31,6 +31,7 @@
     "scripts": [
       "js/es6-promise.auto.min.js",
       "js/defaults.js",
+      "js/messaging.js",
       "js/speech.js",
       "js/document.js",
       "js/events.js"

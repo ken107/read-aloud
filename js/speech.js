@@ -5,7 +5,8 @@ function Speech(texts, options) {
   for (var i=0; i<texts.length; i++) if (/\w$/.test(texts[i])) texts[i] += '.';
   if (texts.length) texts = getChunks(texts.join("\n\n"));
 
-  var engine = options.engine || pickEngine();
+  var self = this;
+  var engine = pickEngine();
   var pauseDuration = 650/options.rate;
   var state = "IDLE";
   var index = 0;
@@ -59,7 +60,7 @@ function Speech(texts, options) {
   function play() {
     if (index >= texts.length) {
       state = "IDLE";
-      if (options.onEnd) options.onEnd();
+      if (self.onEnd) self.onEnd();
       return Promise.resolve();
     }
     else if (state == "PAUSED") {
@@ -79,7 +80,7 @@ function Speech(texts, options) {
         },
         function(err) {
           state = "IDLE";
-          if (options.onEnd) options.onEnd(err);
+          if (self.onEnd) self.onEnd(err);
         })
         .then(function() {
           if (texts[index+1] && engine.prefetch) engine.prefetch(texts[index+1], options);

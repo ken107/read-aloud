@@ -33,6 +33,7 @@ var defaults = {
 
 var browserTtsEngine = brapi.tts ? new BrowserTtsEngine() : (typeof speechSynthesis != 'undefined' ? new WebSpeechEngine() : new DummyTtsEngine());
 var remoteTtsEngine = new RemoteTtsEngine(config.serviceUrl, (typeof readAloudManifest != 'undefined') ? readAloudManifest : brapi.runtime.getManifest());
+var googleTranslateTts = new GoogleTranslateTts();
 
 
 function getQueryString() {
@@ -529,4 +530,134 @@ function RemoteTtsEngine(serviceUrl, manifest) {
   function getAudioUrl(utterance, lang, voiceName) {
     return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voiceName) + "?q=" + encodeURIComponent(utterance);
   }
+}
+
+function GoogleTranslateTts() {
+  var prevTab;
+  var translateTab;
+  var promise;
+  this.getEngine = function() {
+    if (!promise) promise = createEngine();
+    return promise;
+  }
+  function createEngine() {
+    return savePrevTab()
+      .then(createTranslateTab)
+      .then(waitForConnect)
+      .then(function(port) {
+        return new Promise(function(fulfill, reject) {
+          var engine = new GoogleTranslateTtsEngine(port,
+            function(isReady) { //onReady
+              if (isReady) fulfill(engine);
+              else reject(new Error("Failed to start TTS worker"));
+            },
+            function() {  //onDisconnect
+              promise = null;
+            })
+        })
+      })
+      .then(extraAction(restorePrevTab))
+      .catch(function(err) {
+        removeTranslateTab();
+        promise = null;
+        throw err;
+      })
+  }
+  function savePrevTab() {
+    return getActiveTab().then(function(tab) {
+      prevTab = tab;
+    })
+  }
+  function restorePrevTab() {
+    setTimeout(function() {
+      brapi.tabs.update(prevTab.id, {active: true})
+    }, 1500)
+  }
+  function createTranslateTab() {
+    return new Promise(function(fulfill, reject) {
+      brapi.tabs.create({url: "https://translate.google.com/"}, function(tab) {
+        if (brapi.runtime.lastError) reject(brapi.runtime.lastError);
+        else fulfill(translateTab = tab);
+      })
+    })
+  }
+  function removeTranslateTab() {
+    if (translateTab) {
+      brapi.tabs.remove(translateTab.id);
+      translateTab = null;
+    }
+  }
+  function injectScripts() {
+    return new Promise(function(fulfill, reject) {
+      brapi.tabs.executeScript(translateTab.id, {file: "js/messaging.js"}, function() {
+        if (brapi.runtime.lastError) reject(brapi.runtime.lastError);
+        else {
+          brapi.tabs.executeScript(translateTab.id, {file: "js/google-translate.js"}, function() {
+            if (brapi.runtime.lastError) reject(brapi.runtime.lastError);
+            else fulfill();
+          })
+        }
+      })
+    })
+  }
+  function waitForConnect() {
+    return new Promise(function(fulfill, reject) {
+      function onConnect(port) {
+        if (port.name == "GoogleTranslateTtsWorker") {
+          brapi.runtime.onConnect.removeListener(onConnect);
+          clearTimeout(timer);
+          fulfill(port);
+        }
+      }
+      function onError(err) {
+        brapi.runtime.onConnect.removeListener(onConnect);
+        clearTimeout(timer);
+        reject(err);
+      }
+      function onTimeout() {
+        brapi.runtime.onConnect.removeListener(onConnect);
+        reject(new Error("Timeout waiting for TTS worker to connect"));
+      }
+      brapi.runtime.onConnect.addListener(onConnect);
+      injectScripts().catch(onError);
+      var timer = setTimeout(onTimeout, 5000);
+    })
+  }
+}
+
+function GoogleTranslateTtsEngine(port, onReady, onDisconnect) {
+  var onEvent;
+  var peer = new RpcPeer(new ExtensionMessagingPeer(port));
+  peer.onInvoke = function(method, arg0) {
+    if (method == "onReady") onReady(arg0);
+    else if (method == "onEvent") {
+      if (onEvent) {
+        onEvent(arg0);
+        if (arg0.type == "end" || arg0.type == "error") onEvent = null;
+      }
+      else console.error("Unexpected event " + JSON.stringify(arg0));
+    }
+    else console.error("Unknown method " + method);
+  }
+  peer.onDisconnect = function() {
+    if (onEvent) {
+      onEvent({type:"error", errorMessage:"Lost connection to GoogleTranslate speech engine"});
+      onEvent = null;
+    }
+    onDisconnect();
+  }
+  this.speak = function(text, options, onEvt) {
+    onEvent = onEvt;
+    peer.invoke("speak", text, options)
+      .then(onEvent.bind(null, {type:"start"}))
+  }
+  this.isSpeaking = function(callback) {
+    peer.invoke("isSpeaking")
+      .then(callback)
+  }
+  this.stop = peer.invoke.bind(peer, "stop");
+  this.pause = peer.invoke.bind(peer, "pause");
+  this.resume = peer.invoke.bind(peer, "resume");
+  this.prefetch = peer.invoke.bind(peer, "prefetch");
+  this.setNextStartTime = peer.invoke.bind(peer, "setNextStartTime");
 }
