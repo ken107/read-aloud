@@ -344,6 +344,20 @@ if (!Array.prototype.groupBy) {
   })
 }
 
+if (!Promise.prototype.finally) {
+  Object.defineProperty(Promise.prototype, 'finally', {
+    value: function(callback) {
+      var promise = this;
+      function chain() {
+        return Promise.resolve(callback()).then(function() {return promise});
+      }
+      return promise.then(chain, chain);
+    },
+    configurable: true,
+    writable: true
+  })
+}
+
 function domReady() {
   return new Promise(function(fulfill) {
     $(fulfill);

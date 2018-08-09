@@ -17,95 +17,91 @@ function SimpleSource(texts) {
 
 
 function TabSource() {
-  var port;
+  var peer;
   var waiting = true;
-  var ready = getActiveTab()
+
+  this.ready = getActiveTab()
     .then(function(tab) {
-      if (!tab.url) return;
-      if (/^file:/.test(tab.url)) {
-        setTabUrl(tab.id, "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html");
-        throw new Error(JSON.stringify({code: "error_upload_pdf"}));
-      }
-      else if (isUnsupportedSite(tab.url)) {
-        throw new Error(JSON.stringify({code: "error_page_unreadable"}));
+      if (tab.url) {
+        if (/^file:/.test(tab.url)) {
+          setTabUrl(tab.id, "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html");
+          throw new Error(JSON.stringify({code: "error_upload_pdf"}));
+        }
+        else if (isUnsupportedSite(tab.url)) {
+          throw new Error(JSON.stringify({code: "error_page_unreadable"}));
+        }
       }
     })
-    .then(connect)
-    .then(send.bind(null, {method: "raGetInfo"}))
-    .then(extraAction(function(result) {
-      if (result.requireJs) {
-        var tasks = result.requireJs.map(function(file) {return executeFile.bind(null, file)});
+    .then(waitForConnect)
+    .then(function(port) {
+      return new Promise(function(fulfill) {
+        peer = new RpcPeer(new ExtensionMessagingPeer(port));
+        peer.onInvoke = function(method, arg0) {
+          if (method == "onReady") fulfill(arg0);
+          else console.error("Unknown method", method);
+        }
+        peer.onDisconnect = function() {
+          peer = null;
+        }
+      })
+    })
+    .then(extraAction(function(info) {
+      if (info.requireJs) {
+        var tasks = info.requireJs.map(function(file) {return executeFile.bind(null, file)});
         return inSequence(tasks);
       }
     }))
-    .then(function(result) {
+    .finally(function() {
       waiting = false;
-      return result;
     })
 
-  this.ready = ready;
   this.isWaiting = function() {
     return waiting;
   }
   this.getCurrentIndex = function() {
-    return send({method: "raGetCurrentIndex"});
+    if (!peer) return Promise.resolve(0);
+    waiting = true;
+    return peer.invoke("getCurrentIndex").finally(function() {waiting = false});
   }
   this.getTexts = function(index, quietly) {
-    return send({method: "raGetTexts", index: index, quietly: quietly});
+    if (!peer) return Promise.resolve(null);
+    waiting = true;
+    return peer.invoke("getTexts", index, quietly).finally(function() {waiting = false});
   }
   this.close = function() {
-    if (port) port.disconnect();
+    if (peer) peer.disconnect();
     return Promise.resolve();
   }
 
-  function connect() {
-    var name = String(Math.random());
+  function waitForConnect() {
     return new Promise(function(fulfill, reject) {
-      function onConnect(result) {
-        if (result.name == name) {
+      function onConnect(port) {
+        if (port.name == "ReadAloudContentScript") {
           brapi.runtime.onConnect.removeListener(onConnect);
-          setPort(result);
-          fulfill();
+          clearTimeout(timer);
+          fulfill(port);
         }
       }
+      function onError(err) {
+        brapi.runtime.onConnect.removeListener(onConnect);
+        clearTimeout(timer);
+        reject(err);
+      }
+      function onTimeout() {
+        brapi.runtime.onConnect.removeListener(onConnect);
+        reject(new Error("Timeout waiting for content script to connect"));
+      }
       brapi.runtime.onConnect.addListener(onConnect);
-      injectScripts(name).catch(reject);
+      injectScripts().catch(onError);
+      var timer = setTimeout(onTimeout, 5000);
     })
   }
 
-  function setPort(p) {
-    port = p;
-    port.requestIdGen = 0;
-    port.requestMap = {};
-    port.onMessage.addListener(onMessage);
-  }
-
-  function onMessage(message) {
-    var callback = port.requestMap[message.id];
-    if (callback) {
-      delete port.requestMap[message.id];
-      callback(message.response);
-    }
-  }
-
-  function send(request) {
-    return new Promise(function(fulfill) {
-      var id = ++port.requestIdGen;
-      port.requestMap[id] = fulfill;
-      port.postMessage({id: id, request: request});
-      waiting = true;
-    })
-    .then(function(response) {
-      waiting = false;
-      return response;
-    })
-  }
-
-  function injectScripts(name) {
+  function injectScripts() {
     return executeFile("js/jquery-3.1.1.min.js")
       .then(executeFile.bind(null, "js/es6-promise.auto.min.js"))
+      .then(executeFile.bind(null, "js/messaging.js"))
       .then(executeFile.bind(null, "js/content.js"))
-      .then(executeScript.bind(null, "connect('" + name + "')"))
   }
 }
 
