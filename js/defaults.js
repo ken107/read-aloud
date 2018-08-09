@@ -126,9 +126,11 @@ function executeFile(file) {
   });
 }
 
-function executeScript(code) {
+function executeScript(details) {
+  var tabId = details.tabId;
+  delete details.tabId;
   return new Promise(function(fulfill, reject) {
-    brapi.tabs.executeScript({code: code}, function(result) {
+    brapi.tabs.executeScript(tabId, details, function(result) {
       if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
       else fulfill(result);
     });
@@ -602,17 +604,8 @@ function GoogleTranslateTts() {
     }
   }
   function injectScripts() {
-    return new Promise(function(fulfill, reject) {
-      brapi.tabs.executeScript(translateTab.id, {file: "js/messaging.js"}, function() {
-        if (brapi.runtime.lastError) reject(brapi.runtime.lastError);
-        else {
-          brapi.tabs.executeScript(translateTab.id, {file: "js/google-translate.js"}, function() {
-            if (brapi.runtime.lastError) reject(brapi.runtime.lastError);
-            else fulfill();
-          })
-        }
-      })
-    })
+    return executeScript({tabId: translateTab.id, file: "js/messaging.js"})
+      .then(executeScript.bind(null, {tabId: translateTab.id, file: "js/google-translate.js"}))
   }
   function waitForConnect() {
     return new Promise(function(fulfill, reject) {
@@ -641,37 +634,108 @@ function GoogleTranslateTts() {
 
 function GoogleTranslateTtsEngine(port, onReady, onDisconnect) {
   var onEvent;
+  var sm = new StateMachine({
+    IDLE: {
+      onReady: function(isReady) {
+        onReady(isReady);
+        return isReady ? "READY" : "DEAD";
+      },
+      onDisconnect: function() {
+        onReady(false);
+        onDisconnect();
+        return "DEAD";
+      }
+    },
+    READY: {
+      speak: function(text, options, onEvt) {
+        onEvent = onEvt;
+        peer.invoke("speak", text, options).then(sm.trigger.bind(sm, "onEvent", {type: "start"}));
+        return "SPEAKING";
+      },
+      onDisconnect: function() {
+        onDisconnect();
+        return "DEAD";
+      },
+    },
+    SPEAKING: {
+      speak: function(text, options, onEvt) {
+        onEvent = onEvt;
+        peer.invoke("speak", text, options).then(sm.trigger.bind(sm, "onEvent", {type: "start"}));
+      },
+      stop: function() {
+        peer.invoke("stop");
+        return "READY";
+      },
+      onEvent: function(event) {
+        onEvent(event);
+        if (event.type == "end" || event.type == "error") return "READY";
+      },
+      onDisconnect: function() {
+        onEvent({type: "error", errorMessage: "Lost connection to GoogleTranslate speech engine"});
+        onDisconnect();
+        return "DEAD";
+      },
+    },
+    DEAD: {
+      onDisconnect: onDisconnect,
+    }
+  })
   var peer = new RpcPeer(new ExtensionMessagingPeer(port));
   peer.onInvoke = function(method, arg0) {
-    if (method == "onReady") onReady(arg0);
-    else if (method == "onEvent") {
-      if (onEvent) {
-        onEvent(arg0);
-        if (arg0.type == "end" || arg0.type == "error") onEvent = null;
-      }
-      else console.error("Unexpected event " + JSON.stringify(arg0));
-    }
+    if (method == "onReady") sm.trigger("onReady", arg0);
+    else if (method == "onEvent") sm.trigger("onEvent", arg0);
     else console.error("Unknown method " + method);
   }
-  peer.onDisconnect = function() {
-    if (onEvent) {
-      onEvent({type:"error", errorMessage:"Lost connection to GoogleTranslate speech engine"});
-      onEvent = null;
-    }
-    onDisconnect();
-  }
+  peer.onDisconnect = sm.trigger.bind(sm, "onDisconnect");
   this.speak = function(text, options, onEvt) {
-    onEvent = onEvt;
-    peer.invoke("speak", text, options)
-      .then(onEvent.bind(null, {type:"start"}))
+    if (options.voice.voiceName) {
+      var manifest = brapi.runtime.getManifest();
+      var voice = manifest.tts_engine.voices.find(function(x) {return x.voice_name == options.voice.voiceName});
+      if (voice) options.lang = voice.lang;
+    }
+    sm.trigger("speak", text, options, onEvt);
   }
   this.isSpeaking = function(callback) {
     peer.invoke("isSpeaking")
       .then(callback)
   }
-  this.stop = peer.invoke.bind(peer, "stop");
+  this.stop = sm.trigger.bind(sm, "stop");
   this.pause = peer.invoke.bind(peer, "pause");
   this.resume = peer.invoke.bind(peer, "resume");
   this.prefetch = peer.invoke.bind(peer, "prefetch");
   this.setNextStartTime = peer.invoke.bind(peer, "setNextStartTime");
+}
+
+function StateMachine(states) {
+  if (!states.IDLE) throw new Error("Missing IDLE state");
+  var currentStateName = "IDLE";
+  var lock = 0;
+  this.trigger = function(eventName) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    if (lock) throw new Error("Cannot trigger an event while inside an event handler");
+    lock++;
+    try {
+      var currentState = states[currentStateName];
+      if (currentState[eventName]) {
+        var nextStateName = (typeof currentState[eventName] == "string") ? currentState[eventName] : currentState[eventName].apply(currentState, args);
+        if (nextStateName) {
+          if (typeof nextStateName == "string") {
+            if (states[nextStateName]) {
+              currentStateName = nextStateName;
+              if (states[currentStateName].onTransitionIn) states[currentStateName].onTransitionIn();
+            }
+            else throw new Error("Unknown next-state " + nextStateName);
+          }
+          else throw new Error("Event handler must return next-state's name or null to stay in same state");
+        }
+      }
+      else throw new Error("No handler '" + eventName + "' in state " + currentStateName);
+    }
+    finally {
+      lock--;
+    }
+  }
+  this.getState = function() {
+    return currentStateName;
+  }
 }

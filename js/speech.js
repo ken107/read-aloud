@@ -6,11 +6,12 @@ function Speech(texts, options) {
   if (texts.length) texts = getChunks(texts.join("\n\n"));
 
   var self = this;
-  var engine = pickEngine();
+  var engine;
   var pauseDuration = 650/options.rate;
   var state = "IDLE";
   var index = 0;
   var delayedPlayTimer;
+  var ready = Promise.resolve(pickEngine()).then(function(x) {engine = x});
 
   this.options = options;
   this.play = play;
@@ -23,6 +24,7 @@ function Speech(texts, options) {
   this.gotoEnd = gotoEnd;
 
   function pickEngine() {
+    if (isGoogleTranslate(options.voice.voiceName)) return googleTranslateTts.getEngine().catch(function(err) {return remoteTtsEngine});
     if (isRemoteVoice(options.voice.voiceName)) return remoteTtsEngine;
     if (isGoogleNative(options.voice.voiceName)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
     return browserTtsEngine;
@@ -71,16 +73,19 @@ function Speech(texts, options) {
     else {
       state = new String("PLAYING");
       state.startTime = new Date().getTime();
-      return speak(texts[index],
-        function() {
-          state = "IDLE";
-          if (engine.setNextStartTime) engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
-          index++;
-          play();
-        },
-        function(err) {
-          state = "IDLE";
-          if (self.onEnd) self.onEnd(err);
+      return ready
+        .then(function() {
+          return speak(texts[index],
+            function() {
+              state = "IDLE";
+              if (engine.setNextStartTime) engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
+              index++;
+              play();
+            },
+            function(err) {
+              state = "IDLE";
+              if (self.onEnd) self.onEnd(err);
+            })
         })
         .then(function() {
           if (texts[index+1] && engine.prefetch) engine.prefetch(texts[index+1], options);
@@ -95,18 +100,22 @@ function Speech(texts, options) {
   }
 
   function pause() {
-    if (engine.pause) {
-      engine.pause();
-      state = "PAUSED";
-      return Promise.resolve();
-    }
-    else return stop();
+    return ready
+      .then(function() {
+        if (engine.pause) {
+          engine.pause();
+          state = "PAUSED";
+        }
+        else return stop();
+      })
   }
 
   function stop() {
-    engine.stop();
-    state = "IDLE";
-    return Promise.resolve();
+    return ready
+      .then(function() {
+        engine.stop();
+        state = "IDLE";
+      })
   }
 
   function forward() {
