@@ -67,5 +67,14 @@
   },
   "languages_back_button": {
     "message": "Torna alle opzioni"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud vorrebbe utilizzare Google Traduttore per la sintesi vocale."
+  },
+  "google_translate_allow_button": {
+    "message": "Permettere"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Si prega di tenere aperta questa pagina web."
   }
 }

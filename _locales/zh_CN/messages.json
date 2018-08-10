@@ -67,5 +67,14 @@
   },
   "languages_back_button": {
     "message": "返回选项"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud希望使用Google Translate进行文本转语音。"
+  },
+  "google_translate_allow_button": {
+    "message": "允许"
+  },
+  "google_translate_keep_page_open": {
+    "message": "请保持此网页打开。"
   }
 }

@@ -92,31 +92,37 @@
   }
 
   function getUserPermissionDialog() {
-    return new Promise(function(fulfill) {
-      jQuery("<div title='Permission Requested'><p>Read Aloud would like to use Google Translate for text-to-speech.</p></div>")
-        .dialog({
-          width: 400,
-          modal: true,
-          buttons: {
-            Allow: function() {
-              $(this).dialog("close");
-              fulfill();
-            }
-          },
-          appendTo: document.body
+    return contentScript.invoke("getMessages", ["google_translate_request_permission", "google_translate_allow_button"])
+      .then(function(messages) {
+        return new Promise(function(fulfill) {
+          var buttons = {};
+          buttons[messages[1]] = function() {
+            $(this).dialog("close");
+            fulfill();
+          }
+          jQuery("<div title='Permission Requested'><p>" + messages[0] + "</p></div>")
+            .dialog({
+              width: 400,
+              modal: true,
+              buttons: buttons,
+              appendTo: document.body
+            })
         })
-    })
+      })
   }
 
   function showKeepOpenMessage() {
-    jQuery("<div title='Notice'><p>Please keep this web page open.</p></div>")
-      .dialog({
-        width: 400,
-        modal: true,
-        closeOnEscape: false,
-        open: function(event, ui) {
-          $(".ui-dialog-titlebar-close", ui.dialog | ui).hide();
-        }
+    return contentScript.invoke("getMessages", ["google_translate_keep_page_open"])
+      .then(function(messages) {
+        jQuery("<div title='Notice'><p>" + messages[0] + "</p></div>")
+          .dialog({
+            width: 400,
+            modal: true,
+            closeOnEscape: false,
+            open: function(event, ui) {
+              $(".ui-dialog-titlebar-close", ui.dialog | ui).hide();
+            }
+          })
       })
   }
 

@@ -67,5 +67,14 @@
   },
   "languages_back_button": {
     "message": "Trở về"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud muốn sử dụng Google Dịch cho chuyển văn bản thành giọng nói."
+  },
+  "google_translate_allow_button": {
+    "message": "Cho phép"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Vui lòng giữ trang web này mở."
   }
 }

@@ -684,6 +684,7 @@ function GoogleTranslateTtsEngine(port, onReady, onDisconnect) {
   peer.onInvoke = function(method, arg0) {
     if (method == "onReady") sm.trigger("onReady", arg0);
     else if (method == "onEvent") sm.trigger("onEvent", arg0);
+    else if (method == "getMessages") return arg0.map(function(key) {return brapi.i18n.getMessage(key)});
     else console.error("Unknown method " + method);
   }
   peer.onDisconnect = sm.trigger.bind(sm, "onDisconnect");

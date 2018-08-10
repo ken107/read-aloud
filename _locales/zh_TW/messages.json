@@ -67,5 +67,14 @@
   },
   "languages_back_button": {
     "message": "返回選項"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud希望使用Google Translate進行文本轉語音。"
+  },
+  "google_translate_allow_button": {
+    "message": "允許"
+  },
+  "google_translate_keep_page_open": {
+    "message": "請保持此網頁打開。"
   }
 }
