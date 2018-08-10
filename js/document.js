@@ -124,6 +124,7 @@ function Doc(source, onEnd) {
   this.getActiveSpeech = getActiveSpeech;
   this.forward = forward;
   this.rewind = rewind;
+  this.seek = seek;
 
   //method close
   function close() {
@@ -353,5 +354,10 @@ function Doc(source, onEnd) {
 
   function rewindPage() {
     return stop().then(function() {currentIndex--; readCurrent(true)});
+  }
+
+  function seek(n) {
+    if (activeSpeech) return activeSpeech.seek(n);
+    else return Promise.reject(new Error("Can't seek, not active"));
   }
 }

@@ -75,7 +75,7 @@ function updateButtons() {
         elem.empty();
         for (var i=0; i<pos.texts.length; i++) {
           var html = escapeHtml(pos.texts[i]).replace(/\r?\n/g, "<br/>");
-          $("<span>").html(html).appendTo(elem);
+          $("<span>").html(html).appendTo(elem).css("cursor", "pointer").click(seek.bind(null, i));
         }
       }
       if (elem.data("index") != pos.index) {
@@ -90,6 +90,10 @@ function updateButtons() {
       }
     }
   }));
+}
+
+function seek(n) {
+  return getBackgroundPage().then(callMethod("seek", n));
 }
 
 function updateSize() {

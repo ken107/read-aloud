@@ -21,6 +21,7 @@ function Speech(texts, options) {
   this.getPosition = getPosition;
   this.forward = forward;
   this.rewind = rewind;
+  this.seek = seek;
   this.gotoEnd = gotoEnd;
 
   function pickEngine() {
@@ -135,6 +136,11 @@ function Speech(texts, options) {
       return play();
     }
     else return Promise.reject(new Error("Can't rewind, at beginning"));
+  }
+
+  function seek(n) {
+    index = n;
+    return play();
   }
 
   function gotoEnd() {

@@ -183,7 +183,8 @@ function inSequence(tasks) {
   return tasks.reduce(function(p, task) {return p.then(task)}, Promise.resolve());
 }
 
-function callMethod(name, args) {
+function callMethod(name) {
+  var args = Array.prototype.slice.call(arguments, 1);
   return function(obj) {
     return obj[name].apply(obj, args);
   };

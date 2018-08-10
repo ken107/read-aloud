@@ -110,6 +110,11 @@ function rewind() {
   else return Promise.reject(new Error("Can't rewind, not active"));
 }
 
+function seek(n) {
+  if (activeDoc) return activeDoc.seek(n);
+  else return Promise.reject(new Error("Can't seek, not active"));
+}
+
 function reportIssue(url, comment) {
   var manifest = brapi.runtime.getManifest();
   return getSettings()
