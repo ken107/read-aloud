@@ -2,35 +2,13 @@
 var showGotoPage;
 
 $(function() {
-  $("#btnPlay").click(function() {
-    getBackgroundPage()
-      .then(function(master) {
-        return master.play(function(err) {
-            if (err) showError(err);
-          })
-          .then(updateButtons)
-          .then(master.getDocInfo)
-          .then(function(docInfo) {return setState("lastUrl", docInfo && docInfo.url)})
-          .catch(function(err) {
-            if (err.stack) {
-              master.reportIssue(null, err.stack.startsWith(err.name) ? err.stack : (err.name + ": " + err.message + "\n" + err.stack));
-            }
-            showError(err);
-          });
-      })
-  });
-  $("#btnPause").click(function() {getBackgroundPage().then(callMethod("pause")).then(updateButtons)});
-  $("#btnStop").click(function() {getBackgroundPage().then(callMethod("stop")).then(updateButtons)});
-  $("#btnSettings").click(function() {location.href = "options.html"});
-  $("#btnForward").click(function() {getBackgroundPage().then(callMethod("forward")).then(updateButtons)});
-  $("#btnRewind").click(function() {getBackgroundPage().then(callMethod("rewind")).then(updateButtons)});
-  $("#resize").click(function() {
-    getSettings(["highlightWindowSize"])
-      .then(function(settings) {
-        updateSettings({highlightWindowSize: ((settings.highlightWindowSize || 0) + 1) % 3});
-        updateSize();
-      })
-  })
+  $("#btnPlay").click(onPlay);
+  $("#btnPause").click(onPause);
+  $("#btnStop").click(onStop);
+  $("#btnSettings").click(onSettings);
+  $("#btnForward").click(onForward);
+  $("#btnRewind").click(onRewind);
+  $("#resize").click(onResize);
 
   updateButtons()
     .then(getBackgroundPage)
@@ -40,13 +18,20 @@ $(function() {
     });
   setInterval(updateButtons, 500);
 
-  updateSize();
+  refreshSize();
   checkAnnouncements();
 });
 
-function showError(err) {
-  if (/^{/.test(err.message)) $("#status").text(formatError(JSON.parse(err.message)) || err.message).show();
-  else $("#status").text(err.message).show();
+function handleError(err) {
+  if (!err) return;
+  if (err.stack) {
+    var details = err.stack;
+    if (!details.startsWith(err.name)) details = err.name + ": " + err.message + "\n" + details;
+    getBackgroundPage().then(callMethod("reportIssue", null, details));
+  }
+  $("#status")
+    .text(/^{/.test(err.message) && formatError(JSON.parse(err.message)) || err.message)
+    .show()
 }
 
 function updateButtons() {
@@ -75,7 +60,7 @@ function updateButtons() {
         elem.empty();
         for (var i=0; i<pos.texts.length; i++) {
           var html = escapeHtml(pos.texts[i]).replace(/\r?\n/g, "<br/>");
-          $("<span>").html(html).appendTo(elem).css("cursor", "pointer").click(seek.bind(null, i));
+          $("<span>").html(html).appendTo(elem).css("cursor", "pointer").click(onSeek.bind(null, i));
         }
       }
       if (elem.data("index") != pos.index) {
@@ -92,12 +77,66 @@ function updateButtons() {
   }));
 }
 
-function seek(n) {
-  return getBackgroundPage().then(callMethod("seek", n));
+function onPlay() {
+  getBackgroundPage()
+    .then(function(master) {
+      return master.play(handleError)
+        .then(updateButtons)
+        .then(master.getDocInfo)
+        .then(function(docInfo) {return setState("lastUrl", docInfo && docInfo.url)})
+        .catch(handleError)
+    })
 }
 
-function updateSize() {
+function onPause() {
+  getBackgroundPage()
+    .then(callMethod("pause"))
+    .then(updateButtons)
+    .catch(handleError)
+}
+
+function onStop() {
+  getBackgroundPage()
+    .then(callMethod("stop"))
+    .then(updateButtons)
+    .catch(handleError)
+}
+
+function onSettings() {
+  location.href = "options.html";
+}
+
+function onForward() {
+  getBackgroundPage()
+    .then(callMethod("forward"))
+    .then(updateButtons)
+    .catch(handleError)
+}
+
+function onRewind() {
+  getBackgroundPage()
+    .then(callMethod("rewind"))
+    .then(updateButtons)
+    .catch(handleError)
+}
+
+function onSeek(n) {
+  getBackgroundPage()
+    .then(callMethod("seek", n))
+    .catch(handleError)
+}
+
+function onResize() {
   getSettings(["highlightWindowSize"])
+    .then(function(settings) {
+      return updateSettings({highlightWindowSize: ((settings.highlightWindowSize || 0) + 1) % 3});
+    })
+    .then(refreshSize)
+    .catch(handleError)
+}
+
+function refreshSize() {
+  return getSettings(["highlightWindowSize"])
     .then(function(settings) {
       switch (settings.highlightWindowSize) {
         case 2: return [720, 420];

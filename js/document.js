@@ -22,6 +22,7 @@ function TabSource() {
 
   this.ready = getActiveTab()
     .then(function(tab) {
+      if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}));
       if (tab.url) {
         if (/^file:/.test(tab.url)) {
           setTabUrl(tab.id, "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html");
