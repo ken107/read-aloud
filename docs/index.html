@@ -1,11 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta property="og:url" content="https://ken107.github.io/read-aloud/" />
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-86484590-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-86484590-2');
+  </script>
+
+  <meta property="og:url" content="https://readaloud.app/" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Read Aloud: A Text-to-Speech Voice Reader" />
   <meta property="og:description" content="A Chrome extension that reads out loud the current web-page article with one click. Supports 40+ languages." />
-  <meta property="og:image" content="https://ken107.github.io/read-aloud/images/marquee.jpg"/>
+  <meta property="og:image" content="https://readaloud.app/images/marquee.jpg"/>
 
   <title>Read Aloud: A Text-to-Speech Voice Reader</title>
   <link rel="stylesheet" type="text/css" href="css/main.css">
@@ -35,9 +44,9 @@
       var theme = $("input[type=radio][name=theme]:checked").val();
       var embedCode = "";
       embedCode += '<style type="text/css">.ra-play, .ra-pause {width: 32px; cursor: pointer;} .ra-pause {display: none;}</style>\n';
-      embedCode += '<img src="https://ken107.github.io/read-aloud/images/play_' + theme + '.png" class="ra-play" onclick="readAloud.play({lang:\'' + lang + '\', pitch:1, rate:1})" />\n';
-      embedCode += '<img src="https://ken107.github.io/read-aloud/images/pause_' + theme + '.png" class="ra-pause" onclick="readAloud.pause()" />\n';
-      embedCode += '<script src="https://ken107.github.io/read-aloud/js/readaloud.min.js" type="text/javascript"><' + '/script>\n';
+      embedCode += '<img src="https://readaloud.app/images/play_' + theme + '.png" class="ra-play" onclick="readAloud.play({lang:\'' + lang + '\', pitch:1, rate:1})" />\n';
+      embedCode += '<img src="https://readaloud.app/images/pause_' + theme + '.png" class="ra-pause" onclick="readAloud.pause()" />\n';
+      embedCode += '<script src="https://readaloud.app/js/readaloud.min.js" type="text/javascript"><' + '/script>\n';
       $("#txt-embed-code").val(embedCode);
     }
   </script>
@@ -49,7 +58,7 @@
   </header>
   <div id="banner">
     <div id="social-buttons">
-      <iframe src="https://www.facebook.com/plugins/share_button.php?href=https%3A%2F%2Fken107.github.io%2Fread-aloud%2F&layout=button&size=small&mobile_iframe=true&appId=577619509004708&width=59&height=20" width="59" height="20" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true"></iframe>
+      <iframe src="https://www.facebook.com/plugins/share_button.php?href=https%3A%2F%2Freadaloud.app%2F&layout=button&size=small&mobile_iframe=true&appId=577619509004708&width=59&height=20" width="59" height="20" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true"></iframe>
       <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
     </div>
     <a href="https://github.com/ken107/read-aloud" class="button">View On GitHub</a>
