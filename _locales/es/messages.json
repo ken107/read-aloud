@@ -69,12 +69,12 @@
     "message": "Volver a la configuración"
   },
   "google_translate_request_permission": {
-    "message": "Read Aloud le gustaría utilizar Google Translate para texto a voz."
+    "message": "Read Aloud le gustaría usar el Traductor de Google para síntesis de voz."
   },
   "google_translate_allow_button": {
     "message": "Permitir"
   },
   "google_translate_keep_page_open": {
-    "message": "Por favor, mantén esta página web abierta."
+    "message": "Read Aloud está usando el Traductor de Google para síntesis de voz. Por favor, mantenga esta pestaña abierta."
   }
 }

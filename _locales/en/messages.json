@@ -75,6 +75,6 @@
     "message": "Allow"
   },
   "google_translate_keep_page_open": {
-    "message": "Please keep this web page open."
+    "message": "Read Aloud is using Google Translate for text-to-speech.  Please keep this tab open."
   }
 }

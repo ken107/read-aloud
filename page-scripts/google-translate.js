@@ -9,9 +9,15 @@
       contentScript.onInvoke = function(method) {
         var args = Array.prototype.slice.call(arguments, 1);
         if (method == "speak") {
+          jQuery("#read-aloud-speaking").text('"' + args[0] + '"');
           return engine.speak(args[0], args[1], function(err) {
+            jQuery("#read-aloud-speaking").text("");
             contentScript.invoke("onEvent", err ? {type:"error", errorMessage: err.message} : {type:"end"});
           })
+        }
+        else if (method == "stop") {
+          jQuery("#read-aloud-speaking").text("");
+          return engine.stop();
         }
         else if (engine[method]) return engine[method].apply(engine, args);
         else throw new Error("Unknown method " + method);
@@ -24,8 +30,8 @@
           .then(loadCss.bind(null, "https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"))
           .then(loadScript.bind(null, "https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"))
           .then(getUserPermissionDialog)
-          .then(function() {contentScript.invoke("onReady", true)})
           .then(showKeepOpenMessage)
+          .then(function() {contentScript.invoke("onReady", true)})
       }
     })
 
@@ -97,15 +103,19 @@
         return new Promise(function(fulfill) {
           var buttons = {};
           buttons[messages[1]] = function() {
-            $(this).dialog("close");
+            jQuery(this).dialog("close");
             fulfill();
           }
-          jQuery("<div title='Permission Requested'><p>" + messages[0] + "</p></div>")
+          jQuery("<div><p>" + messages[0] + "</p></div>")
             .dialog({
+              title: "Read Aloud",
               width: 400,
               modal: true,
               buttons: buttons,
-              appendTo: document.body
+              appendTo: document.body,
+              open: function(event, ui) {
+                jQuery(".ui-dialog-titlebar-close", ui.dialog | ui).hide();
+              }
             })
         })
       })
@@ -114,13 +124,14 @@
   function showKeepOpenMessage() {
     return contentScript.invoke("getMessages", ["google_translate_keep_page_open"])
       .then(function(messages) {
-        jQuery("<div title='Notice'><p>" + messages[0] + "</p></div>")
+        jQuery("<div><p>" + messages[0] + "</p><p id='read-aloud-speaking'></p></div>")
           .dialog({
+            title: "Read Aloud",
             width: 400,
             modal: true,
             closeOnEscape: false,
             open: function(event, ui) {
-              $(".ui-dialog-titlebar-close", ui.dialog | ui).hide();
+              jQuery(".ui-dialog-titlebar-close", ui.dialog | ui).hide();
             }
           })
       })
