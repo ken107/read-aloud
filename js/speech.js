@@ -45,6 +45,7 @@ function Speech(texts, options) {
   }
 
   function getState() {
+    if (!engine) return "LOADING";
     return new Promise(function(fulfill) {
       engine.isSpeaking(function(isSpeaking) {
         if (state == "PLAYING") fulfill(isSpeaking ? "PLAYING" : "LOADING");

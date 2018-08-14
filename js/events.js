@@ -11,11 +11,13 @@ brapi.runtime.onInstalled.addListener(function() {
 
 brapi.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection")
-    stop().then(function() {
-      playText(info.selectionText, function(err) {
-        if (err) console.error(err);
+    stop()
+      .then(function() {
+        return playText(info.selectionText, function(err) {
+          if (err) console.error(err);
+        })
       })
-    })
+      .catch(console.error)
 })
 
 brapi.commands.onCommand.addListener(function(command) {
@@ -23,8 +25,13 @@ brapi.commands.onCommand.addListener(function(command) {
     getPlaybackState()
       .then(function(state) {
         if (state == "PLAYING") return pause();
-        else if (state == "STOPPED" || state == "PAUSED") return play();
+        else if (state == "STOPPED" || state == "PAUSED") {
+          return play(function(err) {
+            if (err) console.error(err);
+          })
+        }
       })
+      .catch(console.error)
   }
   else if (command == "stop") stop();
   else if (command == "forward") forward();
@@ -45,23 +52,33 @@ if (brapi.ttsEngine) (function() {
 function playText(text, onEnd) {
   if (!activeDoc) {
     activeDoc = new Doc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), function(err) {
+      reportError(err);
       closeDoc();
       if (typeof onEnd == "function") onEnd(err);
     })
   }
   return activeDoc.play()
-    .catch(function(err) {closeDoc(); throw err})
+    .catch(function(err) {
+      reportError(err);
+      closeDoc();
+      throw err;
+    })
 }
 
 function play(onEnd) {
   if (!activeDoc) {
     activeDoc = new Doc(new TabSource(), function(err) {
+      reportError(err);
       closeDoc();
       if (typeof onEnd == "function") onEnd(err);
     })
   }
   return activeDoc.play()
-    .catch(function(err) {closeDoc(); throw err})
+    .catch(function(err) {
+      reportError(err);
+      closeDoc();
+      throw err;
+    })
 }
 
 function stop() {
@@ -88,11 +105,6 @@ function getActiveSpeech() {
   else return Promise.resolve(null);
 }
 
-function getDocInfo() {
-  if (activeDoc) return activeDoc.getInfo();
-  else return Promise.resolve(null);
-}
-
 function closeDoc() {
   if (activeDoc) {
     activeDoc.close();
@@ -113,6 +125,16 @@ function rewind() {
 function seek(n) {
   if (activeDoc) return activeDoc.seek(n);
   else return Promise.reject(new Error("Can't seek, not active"));
+}
+
+function reportError(err) {
+  if (err && err.stack) {
+    var details = err.stack;
+    if (!details.startsWith(err.name)) details = err.name + ": " + err.message + "\n" + details;
+    getState("lastUrl")
+      .then(function(url) {return reportIssue(url, details)})
+      .catch(console.error)
+  }
 }
 
 function reportIssue(url, comment) {

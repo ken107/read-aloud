@@ -13,14 +13,19 @@ function SimpleSource(texts) {
   this.close = function() {
     return Promise.resolve();
   }
+  this.getUri = function() {
+    var textLen = texts.reduce(function(sum, text) {return sum+text.length}, 0);
+    return "text-selection:(" + textLen + ")" + encodeURIComponent((texts[0] || "").substr(0, 100));
+  }
 }
 
 
 function TabSource() {
+  var tabPromise = getActiveTab();
   var peer;
   var waiting = true;
 
-  this.ready = getActiveTab()
+  this.ready = tabPromise
     .then(function(tab) {
       if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}));
       if (tab.url) {
@@ -73,6 +78,9 @@ function TabSource() {
     if (peer) peer.disconnect();
     return Promise.resolve();
   }
+  this.getUri = function() {
+    return tabPromise.then(function(tab) {return tab && tab.url});
+  }
 
   function waitForConnect() {
     return new Promise(function(fulfill, reject) {
@@ -111,16 +119,16 @@ function Doc(source, onEnd) {
   var info;
   var currentIndex;
   var activeSpeech;
-  var ready = source.ready.then(function(result) {
-    info = result;
-  })
+  var ready = Promise.resolve(source.getUri())
+    .then(function(uri) {return setState("lastUrl", uri)})
+    .then(function() {return source.ready})
+    .then(function(result) {info = result})
   var hasText;
 
   this.close = close;
   this.play = play;
   this.stop = stop;
   this.pause = pause;
-  this.getInfo = getInfo;
   this.getState = getState;
   this.getActiveSpeech = getActiveSpeech;
   this.forward = forward;
@@ -319,11 +327,6 @@ function Doc(source, onEnd) {
       .then(function() {
         if (activeSpeech) return activeSpeech.pause();
       })
-  }
-
-  //method getInfo
-  function getInfo() {
-    return ready.then(function() {return info});
   }
 
   //method getState

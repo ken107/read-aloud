@@ -24,11 +24,6 @@ $(function() {
 
 function handleError(err) {
   if (!err) return;
-  if (err.stack) {
-    var details = err.stack;
-    if (!details.startsWith(err.name)) details = err.name + ": " + err.message + "\n" + details;
-    getBackgroundPage().then(callMethod("reportIssue", null, details));
-  }
   $("#status")
     .text(/^{/.test(err.message) && formatError(JSON.parse(err.message)) || err.message)
     .show()
@@ -79,13 +74,9 @@ function updateButtons() {
 
 function onPlay() {
   getBackgroundPage()
-    .then(function(master) {
-      return master.play(handleError)
-        .then(updateButtons)
-        .then(master.getDocInfo)
-        .then(function(docInfo) {return setState("lastUrl", docInfo && docInfo.url)})
-        .catch(handleError)
-    })
+    .then(callMethod("play", handleError))
+    .then(updateButtons)
+    .catch(handleError)
 }
 
 function onPause() {

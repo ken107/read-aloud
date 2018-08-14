@@ -1,5 +1,7 @@
 var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
 
+if (!brapi.i18n) brapi.i18n = {getMessage: function(x) {return x}};
+
 var config = {
   serviceUrl: "https://support.lsdsoftware.com",
   entityMap: {
@@ -422,7 +424,9 @@ function BrowserTtsEngine() {
   this.isSpeaking = brapi.tts.isSpeaking;
   this.getVoices = function() {
     return new Promise(function(fulfill) {
-      brapi.tts.getVoices(fulfill);
+      brapi.tts.getVoices(function(voices) {
+        fulfill(voices || []);
+      })
     })
   }
 }
@@ -459,10 +463,10 @@ function WebSpeechEngine() {
   }
   this.getVoices = function() {
     return new Promise(function(fulfill) {
-      var voices = speechSynthesis.getVoices();
+      var voices = speechSynthesis.getVoices() || [];
       if (voices.length) fulfill(voices);
       else speechSynthesis.onvoiceschanged = function() {
-        fulfill(speechSynthesis.getVoices());
+        fulfill(speechSynthesis.getVoices() || []);
       }
     })
     .then(function(voices) {
