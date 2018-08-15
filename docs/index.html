@@ -21,14 +21,21 @@
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script>
+    var queryString = getQueryString();
+
     $(function() {
       $("nav .item").click(function(event) {
         var target = $(event.target).data("target");
-        $("nav .item.active, section.active").toggleClass("active", false);
-        $("nav .item[data-target=" + target + "], section#" + target).toggleClass("active", true);
+        setActiveTab(target);
       })
+      if (queryString.tab) {
+        var target = queryString.tab.toLowerCase();
+        setActiveTab(target);
+      }
+
       $("#ddl-language, input[type=radio][name=theme]").change(updateEmbedCode);
       updateEmbedCode();
+
       $("#txt-embed-code").focus(function() {
         var $this = $(this);
         $this.select();
@@ -38,6 +45,20 @@
         });
       })
     })
+
+    function getQueryString() {
+      var queryString = {};
+      if (location.search) location.search.substr(1).replace(/\+/g, '%20').split('&').forEach(function(tuple) {
+        var tokens = tuple.split('=');
+        queryString[decodeURIComponent(tokens[0])] = tokens[1] && decodeURIComponent(tokens[1]);
+      })
+      return queryString;
+    }
+
+    function setActiveTab(target) {
+      $("nav .item.active, section.active").toggleClass("active", false);
+      $("nav .item[data-target=" + target + "], section#" + target).toggleClass("active", true);
+    }
 
     function updateEmbedCode() {
       var lang = $("#ddl-language").val();
@@ -68,13 +89,16 @@
       <div class="item active" data-target="chrome-extension">Browser Extensions</div>
       <div class="item" data-target="embed-website">Embed in Your Website</div>
       <div class="item" data-target="tts-tool">Voice Narration Tool</div>
-      <div class="item" data-target="support">- Support -</div>
+      <div class="item" data-target="support">Support</div>
     </nav>
     <section id="chrome-extension" class="active">
       <h1>Read Aloud Browser Extensions</h1>
       <p>Read aloud the content of any web page with a single click.</p>
       <a href="https://chrome.google.com/webstore/detail/hdhinadidafjejdhmfkjgnolgimiaplp" class="button">Chrome</a>
       <a href="https://addons.mozilla.org/en-US/firefox/addon/read-aloud/" class="button">Firefox</a>
+      <p style="font-size: smaller">
+        <a href="privacy.html">Privacy Policy</a>
+      </p>
     </section>
     <section id="embed-website">
       <h1>Embed</h1>
