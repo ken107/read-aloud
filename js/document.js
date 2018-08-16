@@ -272,47 +272,6 @@ function Doc(source, onEnd) {
       })
   }
 
-  function getSpeechVoice(voiceName, lang) {
-    return getVoices()
-      .then(function(voices) {
-        if (voiceName) return findVoiceByName(voices, voiceName);
-        else if (lang) {
-          return findVoiceByLang(voices.filter(function(voice) {return isGoogleNative(voice.voiceName)}), lang)
-            || findVoiceByLang(voices.filter(function(voice) {return !isRemoteVoice(voice.voiceName)}), lang)
-            || findVoiceByLang(voices.filter(function(voice) {return !isPremiumVoice(voice.voiceName)}), lang)
-            || findVoiceByLang(voices, lang);
-        }
-        else return null;
-      })
-  }
-
-  function findVoiceByName(voices, name) {
-    for (var i=0; i<voices.length; i++) if (voices[i].voiceName == name) return voices[i];
-    return null;
-  }
-
-  function findVoiceByLang(voices, lang) {
-    var speechLang = parseLang(lang);
-    var match = {};
-    voices.forEach(function(voice) {
-      if (voice.lang) {
-        var voiceLang = parseLang(voice.lang);
-        if (voiceLang.lang == speechLang.lang) {
-          if (voiceLang.rest == speechLang.rest) {
-            if (voice.gender == "female") match.first = match.first || voice;
-            else match.second = match.second || voice;
-          }
-          else if (!voiceLang.rest) match.third = match.third || voice;
-          else {
-            if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = voice;
-            else match.fourth = match.fourth || voice;
-          }
-        }
-      }
-    });
-    return match.first || match.second || match.third || match.fourth;
-  }
-
   //method stop
   function stop() {
     return ready

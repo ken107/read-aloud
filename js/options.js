@@ -20,7 +20,7 @@ function initialize(allVoices, settings) {
     function(voice) {
       return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
     });
-  var groups = groupVoices(voices, function(v) {return isPremiumVoice(v.voiceName)});
+  var groups = groupVoices(voices, isPremiumVoice);
   if (!groups[true]) groups[true] = [];
   if (!groups[false]) groups[false] = [];
   groups[true].sort(voiceSorter);
@@ -128,13 +128,13 @@ function groupVoices(voices, keySelector) {
   return groups;
 }
 
-function voiceSorter(a,b) {
-  if (isRemoteVoice(a.voiceName)) {
-    if (isRemoteVoice(b.voiceName)) return a.voiceName.localeCompare(b.voiceName);
+function voiceSorter(a, b) {
+  if (isRemoteVoice(a)) {
+    if (isRemoteVoice(b)) return a.voiceName.localeCompare(b.voiceName);
     else return 1;
   }
   else {
-    if (isRemoteVoice(b.voiceName)) return -1;
+    if (isRemoteVoice(b)) return -1;
     else return a.voiceName.localeCompare(b.voiceName);
   }
 }

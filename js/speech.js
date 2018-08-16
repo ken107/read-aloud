@@ -1,6 +1,6 @@
 
 function Speech(texts, options) {
-  options.rate = (options.rate || 1) * (isGoogleNative(options.voice.voiceName) ? 0.9 : 1);
+  options.rate = (options.rate || 1) * (isGoogleNative(options.voice) ? 0.9 : 1);
 
   for (var i=0; i<texts.length; i++) if (/\w$/.test(texts[i])) texts[i] += '.';
   if (texts.length) texts = getChunks(texts.join("\n\n"));
@@ -11,7 +11,11 @@ function Speech(texts, options) {
   var state = "IDLE";
   var index = 0;
   var delayedPlayTimer;
-  var ready = Promise.resolve(pickEngine()).then(function(x) {engine = x});
+  var ready = Promise.resolve(pickEngine())
+    .then(function(x) {
+      engine = x;
+      return Promise.resolve(engine.ready);
+    })
 
   this.options = options;
   this.play = play;
@@ -25,21 +29,22 @@ function Speech(texts, options) {
   this.gotoEnd = gotoEnd;
 
   function pickEngine() {
-    if (isGoogleTranslate(options.voice.voiceName)) return googleTranslateTts.getEngine().catch(function(err) {return remoteTtsEngine});
-    if (isRemoteVoice(options.voice.voiceName)) return remoteTtsEngine;
-    if (isGoogleNative(options.voice.voiceName)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
+    if (options.voice.voiceName == "GoogleTranslate Hebrew") return remoteTtsEngine;
+    if (isGoogleTranslate(options.voice)) return googleTranslateTts.getEngine().catch(function(err) {return remoteTtsEngine});
+    if (isRemoteVoice(options.voice)) return remoteTtsEngine;
+    if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
     return browserTtsEngine;
   }
 
   function getChunks(text) {
     var isEA = /^zh|ko|ja/.test(options.lang);
     var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
-    if (isGoogleNative(options.voice.voiceName)) {
+    if (isGoogleNative(options.voice)) {
       var wordLimit = (/^(de|ru|es|id)/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
       return new WordBreaker(wordLimit, punctuator).breakText(text);
     }
     else {
-      if (isGoogleTranslate(options.voice.voiceName)) return new CharBreaker(200, punctuator).breakText(text);
+      if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
       else return new CharBreaker(500, punctuator, 200).breakText(text);
     }
   }
@@ -317,25 +322,4 @@ function EastAsianPunctuator() {
     return result;
   }
 }
-
-  function TimeoutTtsEngine(baseEngine, timeoutMillis) {
-    var timer;
-    this.speak = function(text, options, onEvent) {
-      clearTimeout(timer);
-      timer = setTimeout(function() {
-        baseEngine.stop();
-        onEvent({type: "end", charIndex: text.length});
-      },
-      timeoutMillis);
-      baseEngine.speak(text, options, function(event) {
-          if (event.type == "end" || event.type == "error") clearTimeout(timer);
-          onEvent(event);
-      })
-    }
-    this.stop = function() {
-      clearTimeout(timer);
-      baseEngine.stop();
-    }
-    this.isSpeaking = baseEngine.isSpeaking;
-  }
 }

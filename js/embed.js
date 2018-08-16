@@ -6,13 +6,12 @@ var readAloud = new function() {
   if (typeof Promise == 'undefined') ajaxGetCb("https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js", eval);
 
   var speech;
-  var voiceProvider = new VoiceProvider();
   var attribution = new Attribution();
 
   this.play = function(options) {
     return ready()
       .then(function() {
-        return speech ? speech.play() : speak(new HtmlDoc().getTexts(0), options);
+        return speech ? speech.play() : speak(doc.getTexts(0), options);
       })
       .then(updateButtons)
   };
@@ -36,7 +35,7 @@ var readAloud = new function() {
   }
 
   function speak(texts, options) {
-    return voiceProvider.getVoice(options.lang).then(function(voice) {
+    return getSpeechVoice(options.voice, options.lang).then(function(voice) {
       if (!voice) {
         alert("Language not supported '" + options.lang + "'");
         return;
@@ -54,47 +53,13 @@ var readAloud = new function() {
       .then(function(playing) {
         $(".ra-play").toggle(!playing);
         $(".ra-pause").toggle(playing);
-        attribution.toggle(playing && isGoogleTranslate(speech.options.voice.voiceName));
+        attribution.toggle(playing && isGoogleTranslate(speech.options.voice));
       })
   }
 
   function isPlaying() {
     if (speech) return speech.getState().then(function(state) {return state != "PAUSED"});
     else return Promise.resolve(false);
-  }
-
-  //voice provider
-  function VoiceProvider() {
-    this.getVoice = function(lang) {
-      return getVoices().then(function(voices) {
-        return findVoiceByLang(voices.filter(function(voice) {return !isRemoteVoice(voice.voiceName)}), lang)
-          || findVoiceByLang(voices.filter(function(voice) {return isMicrosoftCloud(voice.voiceName)}), lang)
-          || findVoiceByLang(voices, lang);
-      })
-    }
-
-    //from document.js
-    function findVoiceByLang(voices, lang) {
-      var speechLang = parseLang(lang);
-      var match = {};
-      voices.forEach(function(voice) {
-        if (voice.lang) {
-          var voiceLang = parseLang(voice.lang);
-          if (voiceLang.lang == speechLang.lang) {
-            if (voiceLang.rest == speechLang.rest) {
-              if (voice.gender == "female") match.first = match.first || voice;
-              else match.second = match.second || voice;
-            }
-            else if (!voiceLang.rest) match.third = match.third || voice;
-            else {
-              if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = voice;
-              else match.fourth = match.fourth || voice;
-            }
-          }
-        }
-      });
-      return match.first || match.second || match.third || match.fourth;
-    }
   }
 
   //google translate attribution

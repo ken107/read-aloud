@@ -44,7 +44,7 @@ function updateButtons() {
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING");
-    $("#attribution").toggle(Boolean(speech && isGoogleTranslate(speech.options.voice.voiceName)));
+    $("#attribution").toggle(Boolean(speech && isGoogleTranslate(speech.options.voice) && false));
     $("#highlight, #resize").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
 
     if (settings.showHighlighting && speech) {
