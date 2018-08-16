@@ -1,5 +1,5 @@
 
-var doc = new function() {
+var readAloudDoc = new function() {
   this.getCurrentIndex = function() {
     return 0;
   }

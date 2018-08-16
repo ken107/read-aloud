@@ -34,7 +34,7 @@
   }
 
   function getRequireJs() {
-    if (window.doc) return null;
+    if (window.readAloudDoc) return null;
     if (location.hostname == "docs.google.com") {
       if ($(".kix-appview-editor").length) return ["js/content/googleDocsUtil.js", "js/content/google-doc.js"];
       else if ($(".drive-viewer-paginated-scrollable").length) return ["js/content/google-drive-doc.js"];
@@ -52,7 +52,7 @@
 
   function getCurrentIndex() {
     if (getSelectedText()) return -100;
-    else return doc.getCurrentIndex();
+    else return readAloudDoc.getCurrentIndex();
   }
 
   function getTexts(index, quietly) {
@@ -61,7 +61,7 @@
       else return null;
     }
     else {
-      return Promise.resolve(doc.getTexts(index, quietly))
+      return Promise.resolve(readAloudDoc.getTexts(index, quietly))
         .then(function(texts) {
           if (texts) {
             texts = texts.map(removeLinks);

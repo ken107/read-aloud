@@ -1,5 +1,5 @@
 
-var doc = new function() {
+var readAloudDoc = new function() {
   var viewport = $(".drive-viewer-paginated-scrollable").get(0);
   var pages = $(".drive-viewer-paginated-page");
 

@@ -1,5 +1,5 @@
 
-var doc = new function() {
+var readAloudDoc = new function() {
   var viewport = $(".kix-appview-editor").get(0);
   var pages = $(".kix-page");
   var selectionState;

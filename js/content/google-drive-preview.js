@@ -1,5 +1,5 @@
 
-var doc = new function() {
+var readAloudDoc = new function() {
   var viewport, pages;
 
   this.getCurrentIndex = function() {

@@ -1,5 +1,5 @@
 
-var doc = new function() {
+var readAloudDoc = new function() {
   var mainDoc = document.getElementById("KindleReaderIFrame").contentDocument;
   var btnNext = mainDoc.getElementById("kindleReader_pageTurnAreaRight");
   var btnPrev = mainDoc.getElementById("kindleReader_pageTurnAreaLeft");
