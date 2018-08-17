@@ -4,8 +4,9 @@ var readAloudDoc = new function() {
   var ready = location.pathname.match(/pdf-upload\.html$/)
     ? Promise.resolve()
     : new Promise(function(fulfill) {
+        var url = getPdfUrl();    //must call before loading the page script
         queue.once("pageScriptLoaded", function() {
-          queue.trigger("loadDocument", getPdfUrl());
+          queue.trigger("loadDocument", url);
         })
         queue.once("documentLoaded", fulfill);
         loadPageScript("https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-viewer.js");

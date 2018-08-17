@@ -29,8 +29,7 @@ function Speech(texts, options) {
   this.gotoEnd = gotoEnd;
 
   function pickEngine() {
-    if (options.voice.voiceName == "GoogleTranslate Hebrew") return remoteTtsEngine;
-    if (isGoogleTranslate(options.voice)) return googleTranslateTts.getEngine().catch(function(err) {return remoteTtsEngine});
+    if (isGoogleTranslate(options.voice) && !options.voice.autoSelect && options.voice.voiceName != "GoogleTranslate Hebrew") return googleTranslateTts.getEngine().catch(function(err) {return remoteTtsEngine});
     if (isRemoteVoice(options.voice)) return remoteTtsEngine;
     if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
     return browserTtsEngine;

@@ -102,7 +102,7 @@ function TabSource() {
       }
       brapi.runtime.onConnect.addListener(onConnect);
       injectScripts().catch(onError);
-      var timer = setTimeout(onTimeout, 5000);
+      var timer = setTimeout(onTimeout, 15000);
     })
   }
 
@@ -224,6 +224,10 @@ function Doc(source, onEnd) {
   }
 
   function detectLanguageOf(text) {
+    if (text.length < 50) {
+      //don't detect language if too little text
+      return Promise.resolve(null);
+    }
     return browserDetectLanguage(text)
       .then(function(result) {
         return result || serverDetectLanguage(text);
