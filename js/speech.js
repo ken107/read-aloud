@@ -29,7 +29,14 @@ function Speech(texts, options) {
   this.gotoEnd = gotoEnd;
 
   function pickEngine() {
-    if (isGoogleTranslate(options.voice) && !options.voice.autoSelect && options.voice.voiceName != "GoogleTranslate Hebrew") return googleTranslateTts.getEngine().catch(function(err) {return remoteTtsEngine});
+    if (isGoogleTranslate(options.voice) && !/\s(Hebrew|Telugu)$/.test(options.voice.voiceName)) {
+      return googleTranslateTtsEngine.ready()
+        .then(function() {return googleTranslateTtsEngine})
+        .catch(function(err) {
+          console.error(err);
+          return remoteTtsEngine;
+        })
+    }
     if (isRemoteVoice(options.voice)) return remoteTtsEngine;
     if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
     return browserTtsEngine;

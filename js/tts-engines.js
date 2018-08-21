@@ -1,7 +1,7 @@
 
 var browserTtsEngine = brapi.tts ? new BrowserTtsEngine() : (typeof speechSynthesis != 'undefined' ? new WebSpeechEngine() : new DummyTtsEngine());
 var remoteTtsEngine = new RemoteTtsEngine(config.serviceUrl, (typeof readAloudManifest != 'undefined') ? readAloudManifest : brapi.runtime.getManifest());
-var googleTranslateTts = new GoogleTranslateTts();
+var googleTranslateTtsEngine = new GoogleTranslateTtsEngine();
 
 
 /*
@@ -212,163 +212,77 @@ function RemoteTtsEngine(serviceUrl, manifest) {
   }
 }
 
-
-function GoogleTranslateTts() {
-  var prevTab;
-  var translateTab;
-  var promise;
-  this.getEngine = function() {
-    if (!promise) promise = createEngine();
-    return promise;
-  }
-  function createEngine() {
-    return savePrevTab()
-      .then(createTranslateTab)
-      .then(waitForConnect)
-      .then(function(port) {
-        return new Promise(function(fulfill, reject) {
-          var engine = new GoogleTranslateTtsEngine(port,
-            function(isReady) { //onReady
-              if (isReady) fulfill(engine);
-              else reject(new Error("Failed to start TTS worker"));
-            },
-            function() {  //onDisconnect
-              promise = null;
-            })
-        })
+function GoogleTranslateTtsEngine() {
+  var audio = document.createElement("AUDIO");
+  var prefetchAudio = document.createElement("AUDIO");
+  var isSpeaking = false;
+  this.ready = function() {
+    return getGoogleTranslateToken("test");
+  };
+  this.speak = function(utterance, options, onEvent) {
+    if (!options.volume) options.volume = 1;
+    if (!options.rate) options.rate = 1;
+    audio.pause();
+    audio.volume = options.volume;
+    audio.defaultPlaybackRate = options.rate * 1.1;
+    audio.oncanplay = function() {
+      audio.play();
+      isSpeaking = true;
+    };
+    audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
+    audio.onended = function() {
+      onEvent({type: 'end', charIndex: utterance.length});
+      isSpeaking = false;
+    };
+    audio.onerror = function() {
+      onEvent({type: "error", errorMessage: audio.error.message});
+      isSpeaking = false;
+    };
+    getAudioUrl(utterance, options.voice.lang)
+      .then(function(url) {
+        audio.src = url;
+        audio.load();
       })
-      .then(extraAction(restorePrevTab))
       .catch(function(err) {
-        removeTranslateTab();
-        promise = null;
-        throw err;
+        onEvent({type: "error", errorMessage: err.message});
       })
-  }
-  function savePrevTab() {
-    return getActiveTab().then(function(tab) {
-      prevTab = tab;
-    })
-  }
-  function restorePrevTab() {
-    setTimeout(function() {
-      brapi.tabs.update(prevTab.id, {active: true})
-    }, 1500)
-  }
-  function createTranslateTab() {
-    return new Promise(function(fulfill, reject) {
-      brapi.tabs.create({url: "https://translate.google.com/"}, function(tab) {
-        if (brapi.runtime.lastError) reject(brapi.runtime.lastError);
-        else fulfill(translateTab = tab);
-      })
-    })
-  }
-  function removeTranslateTab() {
-    if (translateTab) {
-      brapi.tabs.remove(translateTab.id);
-      translateTab = null;
-    }
-  }
-  function injectScripts() {
-    return executeScript({tabId: translateTab.id, file: "js/messaging.js"})
-      .then(executeScript.bind(null, {tabId: translateTab.id, file: "js/google-translate.js"}))
-  }
-  function waitForConnect() {
-    return new Promise(function(fulfill, reject) {
-      function onConnect(port) {
-        if (port.name == "GoogleTranslateTtsWorker") {
-          brapi.runtime.onConnect.removeListener(onConnect);
-          clearTimeout(timer);
-          fulfill(port);
-        }
-      }
-      function onError(err) {
-        brapi.runtime.onConnect.removeListener(onConnect);
-        clearTimeout(timer);
-        reject(err);
-      }
-      function onTimeout() {
-        brapi.runtime.onConnect.removeListener(onConnect);
-        reject(new Error("Timeout waiting for TTS worker to connect"));
-      }
-      brapi.runtime.onConnect.addListener(onConnect);
-      injectScripts().catch(onError);
-      var timer = setTimeout(onTimeout, 5000);
-    })
-  }
-}
-
-
-function GoogleTranslateTtsEngine(port, onReady, onDisconnect) {
-  var onEvent;
-  var sm = new StateMachine({
-    IDLE: {
-      onReady: function(isReady) {
-        onReady(isReady);
-        return isReady ? "READY" : "DEAD";
-      },
-      onDisconnect: function() {
-        onReady(false);
-        onDisconnect();
-        return "DEAD";
-      }
-    },
-    READY: {
-      speak: function(text, options, onEvt) {
-        onEvent = onEvt;
-        peer.invoke("speak", text, options).then(sm.trigger.bind(sm, "onEvent", {type: "start"}));
-        return "SPEAKING";
-      },
-      onDisconnect: function() {
-        onDisconnect();
-        return "DEAD";
-      },
-    },
-    SPEAKING: {
-      speak: function(text, options, onEvt) {
-        onEvent = onEvt;
-        peer.invoke("speak", text, options).then(sm.trigger.bind(sm, "onEvent", {type: "start"}));
-      },
-      stop: function() {
-        peer.invoke("stop");
-        return "READY";
-      },
-      onEvent: function(event) {
-        onEvent(event);
-        if (event.type == "end" || event.type == "error") return "READY";
-      },
-      onDisconnect: function() {
-        onEvent({type: "error", errorMessage: "Lost connection to GoogleTranslate speech engine"});
-        onDisconnect();
-        return "DEAD";
-      },
-    },
-    DEAD: {
-      onDisconnect: onDisconnect,
-    }
-  })
-  var peer = new RpcPeer(new ExtensionMessagingPeer(port));
-  peer.onInvoke = function(method, arg0) {
-    if (method == "onReady") sm.trigger("onReady", arg0);
-    else if (method == "onEvent") sm.trigger("onEvent", arg0);
-    else if (method == "getMessages") return arg0.map(function(key) {return brapi.i18n.getMessage(key)});
-    else console.error("Unknown method " + method);
-  }
-  peer.onDisconnect = sm.trigger.bind(sm, "onDisconnect");
-  this.speak = function(text, options, onEvt) {
-    if (options.voice.voiceName) {
-      var manifest = brapi.runtime.getManifest();
-      var voice = manifest.tts_engine.voices.find(function(x) {return x.voice_name == options.voice.voiceName});
-      if (voice) options.lang = voice.lang;
-    }
-    sm.trigger("speak", text, options, onEvt);
-  }
+  };
   this.isSpeaking = function(callback) {
-    peer.invoke("isSpeaking")
-      .then(callback)
+    callback(isSpeaking);
+  };
+  this.pause =
+  this.stop = function() {
+    audio.pause();
+  };
+  this.resume = function() {
+    audio.play();
+  };
+  this.prefetch = function(utterance, options) {
+    getAudioUrl(utterance, options.voice.lang)
+      .then(function(url) {
+        prefetchAudio.src = url;
+        prefetchAudio.load();
+      })
+      .catch(console.error)
+  };
+  this.setNextStartTime = function() {
+  };
+  function getAudioUrl(text, lang) {
+    assert(text && lang);
+    return getGoogleTranslateToken(text)
+      .then(function(tk) {
+        var query = [
+          "ie=UTF-8",
+          "q=" + encodeURIComponent(text),
+          "tl=" + lang,
+          "total=1",
+          "idx=0",
+          "textlen=" + text.length,
+          "tk=" + tk.value,
+          "client=t",
+          "prev=input"
+        ]
+        return "https://translate.google.com/translate_tts?" + query.join("&");
+      })
   }
-  this.stop = sm.trigger.bind(sm, "stop");
-  this.pause = peer.invoke.bind(peer, "pause");
-  this.resume = peer.invoke.bind(peer, "resume");
-  this.prefetch = peer.invoke.bind(peer, "prefetch");
-  this.setNextStartTime = peer.invoke.bind(peer, "setNextStartTime");
 }

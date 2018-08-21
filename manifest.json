@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "default_locale": "en",
 
   "browser_action": {
@@ -35,7 +35,7 @@
     "https://support.lsdsoftware.com/",
     "https://translate.google.com/"
   ],
-  "content_security_policy": "script-src 'self'; object-src 'self'",
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "web_accessible_resources": [
   ],
   "background": {
@@ -43,6 +43,7 @@
       "js/es6-promise.auto.min.js",
       "js/defaults.js",
       "js/messaging.js",
+      "js/google-translate.js",
       "js/tts-engines.js",
       "js/speech.js",
       "js/document.js",
@@ -119,6 +120,7 @@
       {"voice_name": "GoogleTranslate Swahili", "lang": "sw", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Swedish", "lang": "sv", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Tamil", "lang": "ta", "event_types": ["start", "end", "error"]},
+      {"voice_name": "GoogleTranslate Telugu", "lang": "te", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Thai", "lang": "th", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Turkish", "lang": "tr", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Ukrainian", "lang": "uk", "event_types": ["start", "end", "error"]},
