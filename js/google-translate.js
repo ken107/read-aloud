@@ -111,7 +111,7 @@ function updateTKK() {
             resolve();
         } else {
             got('https://translate.google.com').then(function (res) {
-                var code = res.body.match(/TKK=(.*?)\(\)\)'\);/g);
+                var code = res.body.match(/TKK='.*?';/g);
 
                 if (code) {
                     eval(code[0]);
