@@ -78,13 +78,20 @@ function setState(key, value) {
 }
 
 function getVoices() {
-  return browserTtsEngine.getVoices()
-    .then(function(voices) {
+  return Promise.all([
+      browserTtsEngine.getVoices(),
+      getSettings(["awsCreds", "gcpCreds"])
+    ])
+    .then(spread(function(voices, settings) {
       //add the remote voices if browser didn't return them (i.e. because it doesn't support the ttsEngine declaration in the manifest)
       var remoteVoices = remoteTtsEngine.getVoices();
       if (!voices.some(function(voice) {return voice.voiceName == remoteVoices[0].voiceName})) voices = voices.concat(remoteVoices);
+
+      //add custom voices if enabled
+      if (settings.awsCreds) voices = voices.concat(amazonPollyTtsEngine.getVoices());
+      if (settings.gcpCreds) voices = voices.concat(googleWavenetTtsEngine.getVoices());
       return voices;
-    })
+    }))
 }
 
 function isGoogleNative(voice) {
@@ -95,7 +102,7 @@ function isGoogleTranslate(voice) {
   return /^GoogleTranslate /.test(voice.voiceName);
 }
 
-function isAmazonPolly(voice) {
+function isAmazonCloud(voice) {
   return /^Amazon /.test(voice.voiceName);
 }
 
@@ -107,12 +114,20 @@ function isOpenFPT(voice) {
   return /^OpenFPT /.test(voice.voiceName);
 }
 
+function isAmazonPolly(voice) {
+  return /^AmazonPolly /.test(voice.voiceName);
+}
+
+function isGoogleWavenet(voice) {
+  return /^Google(Standard|Wavenet) /.test(voice.voiceName);
+}
+
 function isRemoteVoice(voice) {
   return remoteTtsEngine.hasVoice(voice.voiceName);
 }
 
 function isPremiumVoice(voice) {
-  return isAmazonPolly(voice) || isMicrosoftCloud(voice) || isOpenFPT(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isOpenFPT(voice);
 }
 
 function getSpeechVoice(voiceName, lang) {
@@ -504,4 +519,16 @@ function StateMachine(states) {
   this.getState = function() {
     return currentStateName;
   }
+}
+
+function requestPermissions(perms) {
+  return new Promise(function(fulfill) {
+    brapi.permissions.request(perms, fulfill);
+  })
+}
+
+function hasPermissions(perms) {
+  return new Promise(function(fulfill) {
+    brapi.permissions.contains(perms, fulfill);
+  })
 }

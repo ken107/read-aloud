@@ -35,6 +35,10 @@
     "https://support.lsdsoftware.com/",
     "https://translate.google.com/"
   ],
+  "optional_permissions": [
+    "http://*/",
+    "https://*/"
+  ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "web_accessible_resources": [
   ],
@@ -44,6 +48,7 @@
       "js/defaults.js",
       "js/messaging.js",
       "js/google-translate.js",
+      "js/aws-sdk.js",
       "js/tts-engines.js",
       "js/speech.js",
       "js/document.js",

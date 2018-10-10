@@ -7,10 +7,10 @@ function initialize(voices, settings) {
   var langs = voices.groupBy(function(voice) {
     return voice.lang ? voice.lang.split('-',1)[0] : "<any>";
   })
-  var isAvailable = function() {
-    return langs["<any>"] || langs[$(this).data("lang")];
+  var isUnavailable = function() {
+    return !(langs["<any>"] || langs[$(this).data("lang")]);
   };
-  $("input[data-lang]").filter(isAvailable).parent().css("display", "block");
+  $("input[data-lang]").filter(isUnavailable).parents(".form-check").hide();
 
   var selectedLangs = settings.languages ? settings.languages.split(',') : [];
   var isSelected = function() {

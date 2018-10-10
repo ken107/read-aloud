@@ -37,6 +37,8 @@ function Speech(texts, options) {
           return remoteTtsEngine;
         })
     }
+    if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;
+    if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
     if (isRemoteVoice(options.voice)) return remoteTtsEngine;
     if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
     return browserTtsEngine;
@@ -51,7 +53,7 @@ function Speech(texts, options) {
     }
     else {
       if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
-      else return new CharBreaker(500, punctuator, 200).breakText(text);
+      else return new CharBreaker(750, punctuator, 200).breakText(text);
     }
   }
 

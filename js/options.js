@@ -25,6 +25,7 @@ function initialize(allVoices, settings) {
   if (!groups[false]) groups[false] = [];
   groups[true].sort(voiceSorter);
   groups[false].sort(voiceSorter);
+
   var standard = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_standard"))
     .appendTo($("#voices"));
@@ -34,6 +35,7 @@ function initialize(allVoices, settings) {
       .text(voice.voiceName)
       .appendTo(standard);
   });
+
   $("<optgroup>").appendTo($("#voices"));
   var premium = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
@@ -44,10 +46,21 @@ function initialize(allVoices, settings) {
       .text(voice.voiceName)
       .appendTo(premium);
   });
+
+  $("<optgroup>").appendTo($("#voices"));
+  var custom = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_custom"))
+    .appendTo($("#voices"));
+  $("<option>")
+    .val("@custom")
+    .text(brapi.i18n.getMessage("options_enable_custom_voices"))
+    .appendTo(custom)
+
   $("#voices")
     .val(settings.voiceName || "")
     .change(function() {
-      updateSettings({voiceName: $(this).val()}).then(showSaveConfirmation);
+      if ($(this).val() == "@custom") brapi.tabs.create({url: "custom-voices.html"});
+      else updateSettings({voiceName: $(this).val()}).then(showSaveConfirmation);
     });
 
   $("#languages-edit-button").click(function() {

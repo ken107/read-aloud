@@ -5,7 +5,7 @@ $(function() {
 });
 
 function submit() {
-  $("#btn-submit").hide();
+  $("#btn-submit, #lbl-status, #lbl-error").hide();
   $("#img-spinner").show();
   getBackgroundPage()
     .then(function(master) {
@@ -13,10 +13,10 @@ function submit() {
     })
     .then(function() {
       $("#img-spinner").hide();
-      $("#lbl-status").text("Issue has been reported, thank you!").toggleClass("error", false);
+      $("#lbl-status").text("Issue has been reported, thank you!").show();
     })
     .catch(function() {
       $("#img-spinner").hide();
-      $("#lbl-status").text("Server could not be contacted, please email me directly at hai.phan@gmail.com. Thank you!").toggleClass("error", true);
+      $("#lbl-error").text("Server could not be contacted, please email me directly at hai.phan@gmail.com. Thank you!").show();
     })
 }

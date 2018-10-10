@@ -4,32 +4,50 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Report Issues</title>
-  <link rel="stylesheet" type="text/css" href="css/report.css">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <style>
+  h2 {
+    margin-top: 15px;
+    margin-bottom: 20px;
+  }
+  .container {
+    min-width: 400px;
+  }
+  .status {
+    display: none;
+  }
+  </style>
 
   <script src="js/es6-promise.auto.min.js"></script>
   <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/report.js"></script>
 </head>
 <body>
   <div class="container">
-  <h1>Report Issue</h1>
-
-  <div class="label">I was reading this URL</div>
-  <input id="txt-url" type="text" maxlength="500" />
-
-  <div class="label">This issue occurs</div>
-  <textarea id="txt-comment" rows="3" maxlength="1000"></textarea>
-  <div class="note">
-    Please include your email if you wish to follow up.
-  </div>
-
-  <div class="label"></div>
-  <input id="btn-submit" type="button" value="Submit" />
-  <img id="img-spinner" src="img/loading.gif" />
-
-  <div class="label"></div>
-  <div id="lbl-status"></div>
+    <h2>Report Issue</h2>
+    <form>
+      <div class="form-group">
+        <label for="txt-url">I was reading this URL</label>
+        <input id="txt-url" type="text" class="form-control" maxlength="500" />
+      </div>
+      <div class="form-group">
+        <label for="txt-comment">This issue occurs</label>
+        <textarea id="txt-comment" class="form-control" rows="3" maxlength="1000"></textarea>
+        <small class="form-text text-muted">
+          Please include your email if you wish to follow up.
+        </small>
+      </div>
+      <div class="form-group">
+        <button id="btn-submit" type="button" class="btn btn-primary">Submit</button>
+        <img id="img-spinner" class="status" src="img/loading.gif" />
+      </div>
+      <div class="form-group">
+        <div id="lbl-status" class="status alert alert-success"></div>
+        <div id="lbl-error" class="status alert alert-danger"></div>
+      </div>
+    </form>
   </div>
 </body>
 </html>

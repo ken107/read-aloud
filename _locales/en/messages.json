@@ -20,6 +20,12 @@
   "options_voicegroup_premium": {
     "message": "Premium Voices"
   },
+  "options_voicegroup_custom": {
+    "message": "Custom Voices"
+  },
+  "options_enable_custom_voices": {
+    "message": "Enable Custom Voices"
+  },
   "options_rate_label": {
     "message": "Speed"
   },
