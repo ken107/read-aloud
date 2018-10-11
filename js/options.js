@@ -59,8 +59,27 @@ function initialize(allVoices, settings) {
   $("#voices")
     .val(settings.voiceName || "")
     .change(function() {
-      if ($(this).val() == "@custom") brapi.tabs.create({url: "custom-voices.html"});
-      else updateSettings({voiceName: $(this).val()}).then(showSaveConfirmation);
+      var voiceName = $(this).val();
+      if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
+      else {
+        Promise.resolve()
+          .then(function() {
+            if (isGoogleWavenet({voiceName: voiceName})) {
+              var perms = {origins: ["https://texttospeech.googleapis.com/"]};
+              return hasPermissions(perms)
+                .then(function(granted) {
+                  return granted || requestPermissions(perms);
+                })
+                .then(function(granted) {
+                  if (!granted) throw new Error("Permission denied");
+                })
+            }
+          })
+          .then(function() {
+            return updateSettings({voiceName: voiceName}).then(showSaveConfirmation);
+          })
+          .catch(console.error)
+      }
     });
 
   $("#languages-edit-button").click(function() {

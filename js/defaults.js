@@ -83,13 +83,10 @@ function getVoices() {
       getSettings(["awsCreds", "gcpCreds"])
     ])
     .then(spread(function(voices, settings) {
-      //add the remote voices if browser didn't return them (i.e. because it doesn't support the ttsEngine declaration in the manifest)
-      var remoteVoices = remoteTtsEngine.getVoices();
-      if (!voices.some(function(voice) {return voice.voiceName == remoteVoices[0].voiceName})) voices = voices.concat(remoteVoices);
-
-      //add custom voices if enabled
+      voices = voices.concat(googleTranslateTtsEngine.getVoices());
+      voices = voices.concat(remoteTtsEngine.getVoices());
       if (settings.awsCreds) voices = voices.concat(amazonPollyTtsEngine.getVoices());
-      if (settings.gcpCreds) voices = voices.concat(googleWavenetTtsEngine.getVoices());
+      /*if (settings.gcpCreds)*/ voices = voices.concat(googleWavenetTtsEngine.getVoices());
       return voices;
     }))
 }
@@ -123,7 +120,7 @@ function isGoogleWavenet(voice) {
 }
 
 function isRemoteVoice(voice) {
-  return remoteTtsEngine.hasVoice(voice.voiceName);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isOpenFPT(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice);
 }
 
 function isPremiumVoice(voice) {
