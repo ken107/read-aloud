@@ -51,20 +51,12 @@ function awsSave() {
 }
 
 function testAws(accessKeyId, secretAccessKey) {
-  var perms = {origins: ["https://*.amazonaws.com/"]};
-  return hasPermissions(perms)
-    .then(function(granted) {
-      return granted || requestPermissions(perms);
-    })
-    .then(function(granted) {
-      if (!granted) throw new Error("Access not granted");
       var polly = new AWS.Polly({
         region: "us-east-1",
         accessKeyId: accessKeyId,
         secretAccessKey: secretAccessKey
       })
       return polly.describeVoices().promise();
-    })
 }
 
 
@@ -93,13 +85,5 @@ function gcpSave() {
 }
 
 function testGcp(apiKey) {
-  var perms = {origins: ["https://texttospeech.googleapis.com/"]};
-  return hasPermissions(perms)
-    .then(function(granted) {
-      return granted || requestPermissions(perms);
-    })
-    .then(function(granted) {
-      if (!granted) throw new Error("Access not granted");
       return ajaxGet("https://texttospeech.googleapis.com/v1beta1/voices?key=" + apiKey);
-    })
 }
