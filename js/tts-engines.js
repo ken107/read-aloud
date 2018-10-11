@@ -209,7 +209,7 @@ function RemoteTtsEngine(serviceUrl) {
     return voices;
   }
   function getAudioUrl(utterance, lang, voice) {
-    assert(utterance && lang && voice && clientId && authToken);
+    assert(utterance && lang && voice);
     return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&q=" + encodeURIComponent(utterance);
   }
   var voices = [
@@ -647,7 +647,7 @@ function GoogleWavenetTtsEngine() {
     Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
-        else return getAudioUrl(utterance, options.lang, options.voice, options.pitch);
+        else return getAudioUrl(utterance, options.voice, options.pitch);
       })
       .then(function(url) {
         audio.src = url;
@@ -668,7 +668,7 @@ function GoogleWavenetTtsEngine() {
     audio.play();
   };
   this.prefetch = function(utterance, options) {
-    getAudioUrl(utterance, options.lang, options.voice, options.pitch)
+    getAudioUrl(utterance, options.voice, options.pitch)
       .then(function(url) {
         prefetchAudio = [utterance, options, url];
       })
@@ -679,8 +679,8 @@ function GoogleWavenetTtsEngine() {
   this.getVoices = function() {
     return voices;
   }
-  function getAudioUrl(text, lang, voice, pitch) {
-    assert(text && lang && voice && pitch != null);
+  function getAudioUrl(text, voice, pitch) {
+    assert(text && voice && pitch != null);
     var matches = voice.voiceName.match(/^Google(\w+) .* \((\w+)\)$/);
     var voiceName = voice.lang + "-" + matches[1] + "-" + matches[2];
     return getSettings(["gcpCreds"])
@@ -691,7 +691,7 @@ function GoogleWavenetTtsEngine() {
             text: text
           },
           voice: {
-            languageCode: lang,
+            languageCode: voice.lang,
             name: voiceName
           },
           audioConfig: {
