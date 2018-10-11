@@ -75,7 +75,10 @@
     "message": "Cannot read aloud this website"
   },
   "error_login_required": {
-    "message": "Please login to use the Premium Voices"
+    "message": "Please sign in to use the Premium Voices"
+  },
+  "error_voice_unavailable": {
+    "message": "Voice unavailable, please pick another"
   },
   "languages_heading": {
     "message": "Select Languages"

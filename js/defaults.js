@@ -87,6 +87,7 @@ function getVoices() {
       voices = voices.concat(remoteTtsEngine.getVoices());
       if (settings.awsCreds) voices = voices.concat(amazonPollyTtsEngine.getVoices());
       /*if (settings.gcpCreds)*/ voices = voices.concat(googleWavenetTtsEngine.getVoices());
+      voices = voices.concat(ibmWatsonTtsEngine.getVoices());
       return voices;
     }))
 }
@@ -119,8 +120,12 @@ function isGoogleWavenet(voice) {
   return /^Google(Standard|Wavenet) /.test(voice.voiceName);
 }
 
+function isIbmWatson(voice) {
+  return /^IBM-Watson /.test(voice.voiceName);
+}
+
 function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isOpenFPT(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isOpenFPT(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
 }
 
 function isPremiumVoice(voice) {

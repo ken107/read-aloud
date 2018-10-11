@@ -71,6 +71,9 @@
   "error_login_required": {
     "message": "Vui lòng đăng nhập để sử dụng các giọng chất lượng cao"
   },
+  "error_voice_unavailable": {
+    "message": "Giọng nói không khả dụng, vui lòng chọn một giọng nói khác"
+  },
   "languages_heading": {
     "message": "Chọn ngôn ngữ"
   },

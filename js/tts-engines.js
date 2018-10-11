@@ -4,6 +4,7 @@ var remoteTtsEngine = new RemoteTtsEngine(config.serviceUrl);
 var googleTranslateTtsEngine = new GoogleTranslateTtsEngine();
 var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
 var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
+var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
 
 
 /*
@@ -149,7 +150,7 @@ function RemoteTtsEngine(serviceUrl) {
   var authToken;
   var clientId;
   this.ready = function() {
-    return new Promise(function(fulfill) {brapi.identity.getAuthToken(fulfill)})
+    return getAuthToken()
       .then(function(token) {
         if (!token) throw new Error(JSON.stringify({code: "error_login_required"}));
         authToken = token;
@@ -521,7 +522,7 @@ function AmazonPollyTtsEngine() {
   function getAudioUrl(text, lang, voice, pitch) {
     assert(text && lang && voice && pitch != null);
     var matches = voice.voiceName.match(/^AmazonPolly .* \((\w+)\)$/);
-    const voiceId = matches[1];
+    var voiceId = matches[1];
     return getPolly()
       .then(function(polly) {
         return polly.synthesizeSpeech({
@@ -681,7 +682,7 @@ function GoogleWavenetTtsEngine() {
   function getAudioUrl(text, lang, voice, pitch) {
     assert(text && lang && voice && pitch != null);
     var matches = voice.voiceName.match(/^Google(\w+) .* \((\w+)\)$/);
-    const voiceName = voice.lang + "-" + matches[1] + "-" + matches[2];
+    var voiceName = voice.lang + "-" + matches[1] + "-" + matches[2];
     return getSettings(["gcpCreds"])
       .then(function(items) {return items.gcpCreds})
       .then(function(creds) {
@@ -765,6 +766,76 @@ function GoogleWavenetTtsEngine() {
       {"voice_name": "GoogleStandard French (B)", "lang": "fr-FR", "gender": "male", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleStandard French (C)", "lang": "fr-FR", "gender": "female", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleStandard French (D)", "lang": "fr-FR", "gender": "male", "event_types": ["start", "end", "error"]}
+    ]
+    .map(function(item) {
+      return {voiceName: item.voice_name, lang: item.lang};
+    })
+}
+
+
+function IbmWatsonTtsEngine() {
+  var audio = document.createElement("AUDIO");
+  var isSpeaking = false;
+  this.speak = function(utterance, options, onEvent) {
+    if (!options.volume) options.volume = 1;
+    if (!options.rate) options.rate = 1;
+    audio.pause();
+    audio.volume = options.volume;
+    audio.defaultPlaybackRate = options.rate * 1.1;
+    audio.oncanplay = function() {
+      audio.play();
+      isSpeaking = true;
+    };
+    audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
+    audio.onended = function() {
+      onEvent({type: 'end', charIndex: utterance.length});
+      isSpeaking = false;
+    };
+    audio.onerror = function() {
+      onEvent({type: "error", errorMessage: audio.error.message});
+      isSpeaking = false;
+    };
+    audio.src = getAudioUrl(utterance, options.voice);
+    audio.load();
+  };
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking);
+  };
+  this.pause =
+  this.stop = function() {
+    audio.pause();
+  };
+  this.resume = function() {
+    audio.play();
+  };
+  this.prefetch = function(utterance, options) {
+  };
+  this.setNextStartTime = function() {
+  };
+  this.getVoices = function() {
+    return voices;
+  }
+  function getAudioUrl(text, voice) {
+    assert(text && voice);
+    var matches = voice.voiceName.match(/^IBM-Watson .* \((\w+)\)$/);
+    var voiceName = voice.lang + "_" + matches[1] + "Voice";
+    return "https://text-to-speech-demo.ng.bluemix.net/api/synthesize?text=" + encodeURIComponent(text) + "&voice=" + encodeURIComponent(voiceName) + "&accept=" + encodeURIComponent("audio/mp3");
+  }
+  var voices = [
+      {"voice_name": "IBM-Watson American English (Allison)", "lang": "en-US", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson American English (Lisa)", "lang": "en-US", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson American English (Michael)", "lang": "en-US", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson British English (Kate)", "lang": "en-GB", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson Castilian Spanish (Enrique)", "lang": "es-ES", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson Castilian Spanish (Laura)", "lang": "es-ES", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson Latin American Spanish (Sofia)", "lang": "es-LA", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson North American Spanish (Sofia)", "lang": "es-US", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson German (Dieter)", "lang": "de-DE", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson German (Birgit)", "lang": "de-DE", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson French (Renee)", "lang": "fr-FR", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson Italian (Francesca)", "lang": "it-IT", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson Japanese (Emi)", "lang": "ja-JP", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson Brazilian Portuguese (Isabela)", "lang": "pt-BR", "event_types": ["start", "end", "error"]}
     ]
     .map(function(item) {
       return {voiceName: item.voice_name, lang: item.lang};

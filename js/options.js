@@ -14,6 +14,7 @@ function initialize(allVoices, settings, authToken) {
     })
   });
 
+
   //voices
   var selectedLangs = settings.languages && settings.languages.split(',');
   var voices = !selectedLangs ? allVoices : allVoices.filter(
@@ -35,6 +36,12 @@ function initialize(allVoices, settings, authToken) {
       .text(voice.voiceName)
       .appendTo(standard);
   });
+  googleWavenetTtsEngine.ready()
+    .catch(function(err) {
+      standard.children("option")
+        .filter(function() {return isGoogleWavenet({voiceName: $(this).val()})})
+        .remove()
+    })
 
   $("<optgroup>").appendTo($("#voices"));
   var premium = $("<optgroup>")
@@ -84,6 +91,7 @@ var populatePremium = function() {
   })
   $("#voice-info").hide();
 
+
   //rate
   $("#rate-edit-button").click(function() {
     $("#rate, #rate-input-div").toggle();
@@ -113,6 +121,7 @@ var populatePremium = function() {
     updateSettings({rate: Number($("#rate-input").val())}).then(showSaveConfirmation);
   }
 
+
   //pitch
   $("#pitch")
     .slider("value", settings.pitch || defaults.pitch)
@@ -120,12 +129,14 @@ var populatePremium = function() {
       updateSettings({pitch: $(this).slider("value")}).then(showSaveConfirmation);
     })
 
+
   //volume
   $("#volume")
     .slider("value", settings.volume || defaults.volume)
     .on("slidechange", function() {
       updateSettings({volume: $(this).slider("value")}).then(showSaveConfirmation);
     })
+
 
   //showHighlighting
   $("[name=highlighting]")
@@ -136,10 +147,14 @@ var populatePremium = function() {
       updateSettings({showHighlighting: Number($(this).val())}).then(showSaveConfirmation);
     })
 
+
   //buttons
   $("#reset").click(function() {
-    clearSettings().then(() => location.reload());
+    clearSettings().then(function() {
+      location.reload();
+    })
   });
+
 
   //hot key
   $("#hotkeys-link").click(function() {

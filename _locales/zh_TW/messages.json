@@ -71,6 +71,9 @@
   "error_login_required": {
     "message": "請登錄以使用高級語音"
   },
+  "error_voice_unavailable": {
+    "message": "語音不可用，請選擇另一個"
+  },
   "languages_heading": {
     "message": "選擇語言"
   },

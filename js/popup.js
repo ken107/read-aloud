@@ -27,7 +27,16 @@ function handleError(err) {
   if (/^{/.test(err.message)) {
     var errInfo = JSON.parse(err.message);
     $("#status").text(formatError(errInfo)).show();
-    if (errInfo.code == "error_login_required") brapi.identity.getAuthToken({interactive: true});
+    if (errInfo.code == "error_login_required") {
+      getAuthToken({interactive: true})
+        .then(function(token) {
+          if (token) {
+            $("#status").hide();
+            $("#btnPlay").click();
+          }
+        })
+        .catch(console.error)
+    }
   }
   else {
     $("#status").text(err.message).show();

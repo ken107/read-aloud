@@ -42,9 +42,10 @@ function Speech(texts, options) {
         .then(function() {return googleWavenetTtsEngine})
         .catch(function(err) {
           console.error(err);
-          throw new Error("Voice unavailable, please pick another");
+          throw new Error(JSON.stringify({code: "error_voice_unavailable"}));
         })
     }
+    if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
     if (isRemoteVoice(options.voice)) {
       return remoteTtsEngine.ready()
         .then(function() {return remoteTtsEngine})

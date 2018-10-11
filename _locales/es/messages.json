@@ -69,7 +69,10 @@
     "message": "No puedo leer en voz alta este sitio web"
   },
   "error_login_required": {
-    "message": "Por favor inicie sesión para usar las voces premium"
+    "message": "Por favor inicie sesión para utilizar las voces premium"
+  },
+  "error_voice_unavailable": {
+    "message": "Voz no disponible, por favor elija otro"
   },
   "languages_heading": {
     "message": "Seleccionar idiomas"
