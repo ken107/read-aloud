@@ -20,6 +20,12 @@
   "options_voicegroup_premium": {
     "message": "Voci Premium"
   },
+  "options_enable_premium_voices": {
+    "message": "Abilita Voci Premium"
+  },
+  "options_premium_voices_enabled": {
+    "message": "Le voci premium sono abilitate"
+  },
   "options_rate_label": {
     "message": "Velocità"
   },
@@ -61,6 +67,9 @@
   },
   "error_page_unreadable": {
     "message": "Non posso leggere ad alta voce questo sito"
+  },
+  "error_login_required": {
+    "message": "Effettua il login per usare le voci premium"
   },
   "languages_heading": {
     "message": "Seleziona le lingue"

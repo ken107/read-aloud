@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.4.7",
+  "version": "1.4.8",
   "default_locale": "en",
 
   "browser_action": {
@@ -30,9 +30,6 @@
     "storage",
     "tts",
     "ttsEngine",
-    "https://www.googleapis.com/",
-    "https://support.readaloud.app/",
-    "https://support.lsdsoftware.com/",
     "https://translate.google.com/"
   ],
   "optional_permissions": [

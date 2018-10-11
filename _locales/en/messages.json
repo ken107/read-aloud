@@ -23,6 +23,12 @@
   "options_voicegroup_custom": {
     "message": "Custom Voices"
   },
+  "options_enable_premium_voices": {
+    "message": "Enable Premium Voices"
+  },
+  "options_premium_voices_enabled": {
+    "message": "Premium voices are enabled"
+  },
   "options_enable_custom_voices": {
     "message": "Enable Custom Voices"
   },
@@ -67,6 +73,9 @@
   },
   "error_page_unreadable": {
     "message": "Cannot read aloud this website"
+  },
+  "error_login_required": {
+    "message": "Please login to use the Premium Voices"
   },
   "languages_heading": {
     "message": "Select Languages"

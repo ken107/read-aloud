@@ -1,8 +1,8 @@
 
-Promise.all([getVoices(), getSettings(), domReady()])
+Promise.all([getVoices(), getSettings(), getAuthToken(), domReady()])
   .then(spread(initialize));
 
-function initialize(allVoices, settings) {
+function initialize(allVoices, settings, authToken) {
   setI18nText();
 
   //sliders
@@ -40,12 +40,17 @@ function initialize(allVoices, settings) {
   var premium = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
     .appendTo($("#voices"));
+var populatePremium = function() {
+  premium.empty();
   groups[true].forEach(function(voice) {
     $("<option>")
       .val(voice.voiceName)
       .text(voice.voiceName)
       .appendTo(premium);
   });
+}
+  if (authToken) populatePremium();
+  else $("<option>").val("@premium").text(brapi.i18n.getMessage("options_enable_premium_voices")).appendTo(premium);
 
   $("<optgroup>").appendTo($("#voices"));
   var custom = $("<optgroup>")
@@ -61,12 +66,23 @@ function initialize(allVoices, settings) {
     .change(function() {
       var voiceName = $(this).val();
       if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
+      else if (voiceName == "@premium") {
+        $("#voice-info").removeClass().addClass("notice").text(brapi.i18n.getMessage("error_login_required")).show();
+        getAuthToken({interactive: true})
+          .then(function(token) {
+            if (token) {
+              populatePremium();
+              $("#voice-info").removeClass().addClass("success").text(brapi.i18n.getMessage("options_premium_voices_enabled")).show();
+            }
+          })
+      }
       else updateSettings({voiceName: voiceName}).then(showSaveConfirmation);
     });
 
   $("#languages-edit-button").click(function() {
     location.href = "languages.html";
   })
+  $("#voice-info").hide();
 
   //rate
   $("#rate-edit-button").click(function() {

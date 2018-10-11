@@ -24,9 +24,14 @@ $(function() {
 
 function handleError(err) {
   if (!err) return;
-  $("#status")
-    .text(/^{/.test(err.message) && formatError(JSON.parse(err.message)) || err.message)
-    .show()
+  if (/^{/.test(err.message)) {
+    var errInfo = JSON.parse(err.message);
+    $("#status").text(formatError(errInfo)).show();
+    if (errInfo.code == "error_login_required") brapi.identity.getAuthToken({interactive: true});
+  }
+  else {
+    $("#status").text(err.message).show();
+  }
 }
 
 function updateButtons() {

@@ -14,7 +14,6 @@ function Speech(texts, options) {
   var ready = Promise.resolve(pickEngine())
     .then(function(x) {
       engine = x;
-      return Promise.resolve(engine.ready);
     })
 
   this.options = options;
@@ -38,8 +37,18 @@ function Speech(texts, options) {
         })
     }
     if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;
-    if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
-    if (isRemoteVoice(options.voice)) return remoteTtsEngine;
+    if (isGoogleWavenet(options.voice)) {
+      return googleWavenetTtsEngine.ready()
+        .then(function() {return googleWavenetTtsEngine})
+        .catch(function(err) {
+          console.error(err);
+          throw new Error("Voice unavailable, please pick another");
+        })
+    }
+    if (isRemoteVoice(options.voice)) {
+      return remoteTtsEngine.ready()
+        .then(function() {return remoteTtsEngine})
+    }
     if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
     return browserTtsEngine;
   }

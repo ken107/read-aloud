@@ -529,3 +529,12 @@ function hasPermissions(perms) {
     brapi.permissions.contains(perms, fulfill);
   })
 }
+
+function getAuthToken(opts) {
+  return new Promise(function(fulfill, reject) {
+    brapi.identity.getAuthToken(opts, function(token) {
+      if (brapi.runtime.lastError);
+      fulfill(token);
+    })
+  })
+}

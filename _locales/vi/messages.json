@@ -20,6 +20,12 @@
   "options_voicegroup_premium": {
     "message": "Các giọng chất lượng cao"
   },
+  "options_enable_premium_voices": {
+    "message": "Bật các giọng chất lượng cao"
+  },
+  "options_premium_voices_enabled": {
+    "message": "Các giọng chất lượng cao đã được bật"
+  },
   "options_rate_label": {
     "message": "Tốc độ đọc"
   },
@@ -61,6 +67,9 @@
   },
   "error_page_unreadable": {
     "message": "Không thể đọc to trang web này"
+  },
+  "error_login_required": {
+    "message": "Vui lòng đăng nhập để sử dụng các giọng chất lượng cao"
   },
   "languages_heading": {
     "message": "Chọn ngôn ngữ"

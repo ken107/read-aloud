@@ -20,6 +20,12 @@
   "options_voicegroup_premium": {
     "message": "優質的聲音"
   },
+  "options_enable_premium_voices": {
+    "message": "啟用高級音色"
+  },
+  "options_premium_voices_enabled": {
+    "message": "高級語音已啟用"
+  },
   "options_rate_label": {
     "message": "朗讀速度"
   },
@@ -61,6 +67,9 @@
   },
   "error_page_unreadable": {
     "message": "不能大聲朗讀這個網站"
+  },
+  "error_login_required": {
+    "message": "請登錄以使用高級語音"
   },
   "languages_heading": {
     "message": "選擇語言"

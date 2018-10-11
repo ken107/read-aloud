@@ -28,7 +28,6 @@ interface Voice {
 }
 
 interface TtsEngine {
-  ready: Promise
   speak: function(text: string, opts: Options, onEvent: (e:Event) => void): void
   stop: function(): void
   pause: function(): void
@@ -147,10 +146,17 @@ function RemoteTtsEngine(serviceUrl) {
   var isSpeaking = false;
   var nextStartTime = 0;
   var waitTimer;
+  var authToken;
   var clientId;
-  this.ready = getUniqueClientId().then(function(id) {
-    clientId = id;
-  })
+  this.ready = function() {
+    return new Promise(function(fulfill) {brapi.identity.getAuthToken(fulfill)})
+      .then(function(token) {
+        if (!token) throw new Error(JSON.stringify({code: "error_login_required"}));
+        authToken = token;
+      })
+      .then(getUniqueClientId)
+      .then(function(id) {clientId = id})
+  }
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;
     if (!options.rate) options.rate = 1;
@@ -202,8 +208,8 @@ function RemoteTtsEngine(serviceUrl) {
     return voices;
   }
   function getAudioUrl(utterance, lang, voice) {
-    assert(utterance && lang && voice && clientId);
-    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + (voice.autoSelect ? '&a=1' : '') + "&q=" + encodeURIComponent(utterance);
+    assert(utterance && lang && voice && clientId && authToken);
+    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&q=" + encodeURIComponent(utterance);
   }
   var voices = [
       {"voice_name": "Amazon Australian English (Nicole)", "lang": "en-AU", "gender": "female", "event_types": ["start", "end", "error"]},
@@ -610,6 +616,13 @@ function GoogleWavenetTtsEngine() {
   var audio = document.createElement("AUDIO");
   var prefetchAudio;
   var isSpeaking = false;
+  this.ready = function() {
+    return getSettings(["gcpCreds"])
+      .then(function(items) {return items.gcpCreds})
+      .then(function(creds) {
+        if (!creds) return ajaxGet("https://cxl-services.appspot.com/proxy?url=https%3A%2F%2Ftexttospeech.googleapis.com%2Fv1beta1%2Fvoices");
+      })
+  }
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;
     if (!options.rate) options.rate = 1;
