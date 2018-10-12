@@ -537,6 +537,7 @@ function hasPermissions(perms) {
 
 function getAuthToken(opts) {
   return new Promise(function(fulfill, reject) {
+    if (!brapi.identity.getAuthToken) return fulfill(null);
     brapi.identity.getAuthToken(opts, function(token) {
       if (brapi.runtime.lastError);
       fulfill(token);
