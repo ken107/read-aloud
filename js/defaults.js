@@ -295,7 +295,7 @@ function ajaxGetCb(sUrl, fulfill, reject) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState == XMLHttpRequest.DONE) {
         if (xhr.status == 200) fulfill(xhr.responseText);
-        else reject && reject(new Error(xhr.responseText));
+        else reject && reject(new Error(xhr.responseText || xhr.statusText || xhr.status));
       }
     };
     xhr.send(null);
@@ -309,7 +309,7 @@ function ajaxPost(sUrl, oData, sType) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState == XMLHttpRequest.DONE) {
         if (xhr.status == 200) fulfill(xhr.responseText);
-        else reject(new Error(xhr.responseText));
+        else reject(new Error(xhr.responseText || xhr.statusText || xhr.status));
       }
     };
     xhr.send(sType == "json" ? JSON.stringify(oData) : urlEncode(oData));
@@ -537,7 +537,7 @@ function hasPermissions(perms) {
 
 function getAuthToken(opts) {
   return new Promise(function(fulfill, reject) {
-    if (!brapi.identity.getAuthToken) return fulfill(null);
+    if (!brapi.identity || !brapi.identity.getAuthToken) return fulfill(null);
     brapi.identity.getAuthToken(opts, function(token) {
       if (brapi.runtime.lastError);
       fulfill(token);

@@ -151,10 +151,7 @@ function RemoteTtsEngine(serviceUrl) {
   var clientId;
   this.ready = function() {
     return getAuthToken()
-      .then(function(token) {
-        if (!token) throw new Error(JSON.stringify({code: "error_login_required"}));
-        authToken = token;
-      })
+      .then(function(token) {authToken = token})
       .then(getUniqueClientId)
       .then(function(id) {clientId = id})
   }

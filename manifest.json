@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.4.10",
+  "version": "1.4.11",
   "default_locale": "en",
 
   "browser_action": {
@@ -20,6 +20,8 @@
   "oauth2": {
     "client_id": "311515340069-gr48lfk7ufpg8ath9qkfsatq60tr6147.apps.googleusercontent.com",
     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile",
       "https://www.googleapis.com/auth/chromewebstore.readonly"
     ]
   },
