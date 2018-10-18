@@ -2,6 +2,7 @@
 var activeDoc;
 
 brapi.runtime.onInstalled.addListener(function() {
+  if (brapi.contextMenus)
   brapi.contextMenus.create({
     id: "read-selection",
     title: brapi.i18n.getMessage("context_read_selection"),
@@ -9,6 +10,7 @@ brapi.runtime.onInstalled.addListener(function() {
   });
 })
 
+if (brapi.contextMenus)
 brapi.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection")
     stop()
@@ -20,6 +22,7 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
       .catch(console.error)
 })
 
+if (brapi.commands)
 brapi.commands.onCommand.addListener(function(command) {
   if (command == "play") {
     getPlaybackState()

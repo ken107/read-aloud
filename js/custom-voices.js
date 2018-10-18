@@ -3,11 +3,11 @@ $(function() {
   getSettings(["awsCreds", "gcpCreds"])
     .then(function(items) {
       if (items.awsCreds) {
-        $("#aws-access-key-id").val(obsfucate(items.awsCreds.accessKeyId));
-        $("#aws-secret-access-key").val(obsfucate(items.awsCreds.secretAccessKey));
+        $("#aws-access-key-id").val(obfuscate(items.awsCreds.accessKeyId));
+        $("#aws-secret-access-key").val(obfuscate(items.awsCreds.secretAccessKey));
       }
       if (items.gcpCreds) {
-        $("#gcp-api-key").val(obsfucate(items.gcpCreds.apiKey));
+        $("#gcp-api-key").val(obfuscate(items.gcpCreds.apiKey));
       }
     })
   $(".status").hide();
@@ -15,7 +15,7 @@ $(function() {
   $("#gcp-save-button").click(gcpSave);
 })
 
-function obsfucate(key) {
+function obfuscate(key) {
   return key.replace(/./g, function(m, i) {
     return i < key.length-5 ? "*" : m;
   })
@@ -33,6 +33,8 @@ function awsSave() {
         $("#aws-progress").hide();
         updateSettings({awsCreds: {accessKeyId: accessKeyId, secretAccessKey: secretAccessKey}});
         $("#aws-success").text("Amazon Polly voices are enabled.").show();
+        $("#aws-access-key-id").val(obfuscate(accessKeyId));
+        $("#aws-secret-access-key").val(obfuscate(secretAccessKey));
       })
       .catch(function(err) {
         $("#aws-progress").hide();
@@ -70,6 +72,7 @@ function gcpSave() {
         $("#gcp-progress").hide();
         updateSettings({gcpCreds: {apiKey: apiKey}});
         $("#gcp-success").text("Google Wavenet voices are enabled.").show();
+        $("#gcp-api-key").val(obfuscate(apiKey));
       })
       .catch(function(err) {
         $("#gcp-progress").hide();

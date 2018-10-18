@@ -33,7 +33,11 @@ function Speech(texts, options) {
         .then(function() {return googleTranslateTtsEngine})
         .catch(function(err) {
           console.error(err);
-          return remoteTtsEngine;
+          return remoteTtsEngine.ready()
+            .then(function() {
+              options.voice.autoSelect = true;
+              return remoteTtsEngine;
+            })
         })
     }
     if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;

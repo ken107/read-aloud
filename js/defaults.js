@@ -140,6 +140,7 @@ function getSpeechVoice(voiceName, lang) {
       if (!voice && lang) {
         voice = findVoiceByLang(voices.filter(isGoogleNative), lang)
           || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
+          || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
           || findVoiceByLang(voices.filter(negate(isPremiumVoice)), lang)
           || findVoiceByLang(voices, lang);
         if (voice && isRemoteVoice(voice)) voice = Object.assign({autoSelect: true}, voice);
@@ -295,7 +296,7 @@ function ajaxGetCb(sUrl, fulfill, reject) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState == XMLHttpRequest.DONE) {
         if (xhr.status == 200) fulfill(xhr.responseText);
-        else reject && reject(new Error(xhr.responseText || xhr.statusText || xhr.status));
+        else reject && reject(new Error(xhr.responseText || xhr.statusText || xhr.status || ("Failed to fetch " + sUrl.substr(0, 100))));
       }
     };
     xhr.send(null);
@@ -309,7 +310,7 @@ function ajaxPost(sUrl, oData, sType) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState == XMLHttpRequest.DONE) {
         if (xhr.status == 200) fulfill(xhr.responseText);
-        else reject(new Error(xhr.responseText || xhr.statusText || xhr.status));
+        else reject(new Error(xhr.responseText || xhr.statusText || xhr.status || ("Failed to fetch " + sUrl.substr(0, 100))));
       }
     };
     xhr.send(sType == "json" ? JSON.stringify(oData) : urlEncode(oData));

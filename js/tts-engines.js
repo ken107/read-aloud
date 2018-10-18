@@ -141,6 +141,7 @@ function TimeoutTtsEngine(baseEngine, timeoutMillis) {
 
 
 function RemoteTtsEngine(serviceUrl) {
+  var manifest = brapi.runtime.getManifest();
   var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
   var audio = document.createElement("AUDIO");
   var prefetchAudio = document.createElement("AUDIO");
@@ -207,7 +208,7 @@ function RemoteTtsEngine(serviceUrl) {
   }
   function getAudioUrl(utterance, lang, voice) {
     assert(utterance && lang && voice);
-    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&q=" + encodeURIComponent(utterance);
+    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&v=" + manifest.version + "&q=" + encodeURIComponent(utterance);
   }
   var voices = [
       {"voice_name": "Amazon Australian English (Nicole)", "lang": "en-AU", "gender": "female", "event_types": ["start", "end", "error"]},
