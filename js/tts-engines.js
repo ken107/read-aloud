@@ -337,11 +337,10 @@ function GoogleTranslateTtsEngine() {
     audio.pause();
     audio.volume = options.volume;
     audio.defaultPlaybackRate = options.rate * 1.1;
-    audio.oncanplay = function() {
-      audio.play();
+    audio.onplay = function() {
+      onEvent({type: 'start', charIndex: 0});
       isSpeaking = true;
     };
-    audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
     audio.onended = function() {
       onEvent({type: 'end', charIndex: utterance.length});
       isSpeaking = false;
@@ -353,7 +352,7 @@ function GoogleTranslateTtsEngine() {
     getAudioUrl(utterance, options.voice.lang)
       .then(function(url) {
         audio.src = url;
-        audio.load();
+        audio.play();
       })
       .catch(function(err) {
         onEvent({type: "error", errorMessage: err.message});
@@ -469,11 +468,10 @@ function AmazonPollyTtsEngine() {
     audio.pause();
     audio.volume = options.volume;
     audio.defaultPlaybackRate = options.rate;
-    audio.oncanplay = function() {
-      audio.play();
+    audio.onplay = function() {
+      onEvent({type: 'start', charIndex: 0});
       isSpeaking = true;
     };
-    audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
     audio.onended = function() {
       onEvent({type: 'end', charIndex: utterance.length});
       isSpeaking = false;
@@ -489,7 +487,7 @@ function AmazonPollyTtsEngine() {
       })
       .then(function(url) {
         audio.src = url;
-        audio.load();
+        audio.play();
       })
       .catch(function(err) {
         onEvent({type: "error", errorMessage: err.message});
@@ -629,11 +627,10 @@ function GoogleWavenetTtsEngine() {
     audio.pause();
     audio.volume = options.volume;
     audio.defaultPlaybackRate = options.rate;
-    audio.oncanplay = function() {
-      audio.play();
+    audio.onplay = function() {
+      onEvent({type: 'start', charIndex: 0});
       isSpeaking = true;
     };
-    audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
     audio.onended = function() {
       onEvent({type: 'end', charIndex: utterance.length});
       isSpeaking = false;
@@ -649,7 +646,7 @@ function GoogleWavenetTtsEngine() {
       })
       .then(function(url) {
         audio.src = url;
-        audio.load();
+        audio.play();
       })
       .catch(function(err) {
         onEvent({type: "error", errorMessage: err.message});
@@ -780,11 +777,10 @@ function IbmWatsonTtsEngine() {
     audio.pause();
     audio.volume = options.volume;
     audio.defaultPlaybackRate = options.rate * 1.1;
-    audio.oncanplay = function() {
-      audio.play();
+    audio.onplay = function() {
+      onEvent({type: 'start', charIndex: 0});
       isSpeaking = true;
     };
-    audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
     audio.onended = function() {
       onEvent({type: 'end', charIndex: utterance.length});
       isSpeaking = false;
@@ -794,7 +790,7 @@ function IbmWatsonTtsEngine() {
       isSpeaking = false;
     };
     audio.src = getAudioUrl(utterance, options.voice);
-    audio.load();
+    audio.play();
   };
   this.isSpeaking = function(callback) {
     callback(isSpeaking);
