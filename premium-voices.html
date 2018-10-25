@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="css/common.css">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <style>
+  h2 {
+    margin-top: 10px;
+    margin-bottom: 40px;
+  }
+  .card {
+    margin-bottom: 40px;
+  }
+  .card-header {
+    text-transform: capitalize;
+    background-color: rgba(0, 0, 0, .66);
+    color: white;
+  }
+  .card-header > .material-icons {
+    vertical-align: middle;
+  }
+  #subscription-status .remaining {
+    color: #080;
+  }
+  #subscription-status .last-purchase-line, #subscription-status .purchase-status-line {
+    font-size: smaller;
+    color: #6c757d;
+    display: none;
+  }
+  #purchase-subscription .alert {
+    display: none;
+  }
+  #purchase-subscription table.items {
+    margin-bottom: 0;
+  }
+  #faq .card-body > div {
+    margin-bottom: 1rem;
+  }
+  #faq table {
+    width: 100%;
+  }
+  </style>
+
+  <script src="js/es6-promise.auto.min.js"></script>
+  <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/aws-sdk.js"></script>
+  <script src="js/buy.js"></script>
+  <script src="js/defaults.js"></script>
+  <script src="js/tts-engines.js"></script>
+  <script src="js/premium-voices.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Enable Premium Voices</h2>
+    <div class="text-secondary main-message">
+    </div>
+
+    <div id="test-voices" class="card">
+      <div class="card-header">
+        <i class="material-icons">graphic_eq</i>
+        <strong>Voices</strong>
+      </div>
+      <div class="card-body">
+        <form>
+          <table>
+            <tr>
+              <td>
+                <select class="form-control voices"></select>
+              </td>
+              <td style="width: 1%">
+                <button type="button" class="btn btn-test">Test</button>
+              </td>
+            </tr>
+          </table>
+        </form>
+      </div>
+    </div>
+
+    <div id="subscription-status" class="card">
+      <div class="card-header">
+        <i class="material-icons">verified_user</i>
+        <strong>Balance</strong>
+      </div>
+      <div class="card-body">
+        <div class="remaining-line">
+          Characters Remaining: <span class="remaining"></span>
+        </div>
+        <div class="last-purchase-line">
+        </div>
+        <div class="purchase-status-line">
+        </div>
+      </div>
+    </div>
+
+    <div id="purchase-subscription" class="card">
+      <div class="card-header">
+        <i class="material-icons">shopping_cart</i>
+        <strong>Purchase</strong>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-danger"></div>
+        <table class="table items">
+          <tbody>
+            <tr>
+              <th>Item</th>
+              <th>Description</th>
+              <th>Price</th>
+              <th></th>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="faq" class="card">
+      <div class="card-header">
+        <strong>FAQ</strong>
+      </div>
+      <div class="card-body">
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-1">How much is 1,000,000 characters?</a>
+          <div id="faq-1" class="collapse" data-parent="#faq">
+            <table>
+              <tr>
+                <th>Example</th>
+                <th>Text Length</th>
+                <th>Speech Duration</th>
+              </tr>
+              <tr>
+                <td>Average email message</td>
+                <td>3,100 characters</td>
+                <td>4 min</td>
+              </tr>
+              <tr>
+                <td>Typical news article</td>
+                <td>6,500 characters, three pages</td>
+                <td>9 min</td>
+              </tr>
+              <tr>
+                <td>"A Christmas Carol" by Charles Dickens</td>
+                <td>165,000 characters, 64 pages</td>
+                <td>3 hours 50 min</td>
+              </tr>
+              <tr>
+                <td>"Adventures of Huckleberry Finn" by Mark Twain</td>
+                <td>600,000 characters, 224 pages</td>
+                <td>13 hours 50 min</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-2">Why not provide these voices for free?</a>
+          <div id="faq-2" class="collapse" data-parent="#faq">
+            These voices are served from our cloud servers, and have associated costs.
+            We're doing our best to bring them to you at the lowest possible price.
+          </div>
+        </div>
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-3">Where do I view my order history?</a>
+          <div id="faq-3" class="collapse" data-parent="#faq">
+            You can view your past orders on <a href="https://pay.google.com/" target="_blank">pay.google.com</a>.
+          </div>
+        </div>
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-4">Can I purchase a voice for unlimited use?</a>
+          <div id="faq-4" class="collapse" data-parent="#faq">
+            Yes, you can purchase the Amazon voices from <a href="https://harposoftware.com/" target="_blank">Harpo Software</a>.
+            They are previously called IVONA voices.
+          </div>
+        </div>
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-5">How do I get support?</a>
+          <div id="faq-5" class="collapse" data-parent="#faq">
+            Please email <a href="mailto:support@lsdsoftware.com">support@lsdsoftware.com</a> if you need help.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
