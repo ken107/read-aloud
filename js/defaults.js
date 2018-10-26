@@ -129,7 +129,7 @@ function isRemoteVoice(voice) {
 }
 
 function isPremiumVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isOpenFPT(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice);
 }
 
 function getSpeechVoice(voiceName, lang) {
@@ -553,4 +553,8 @@ function getAuthToken(opts) {
       fulfill(token);
     })
   })
+}
+
+function getAccountInfo(authToken) {
+  return ajaxGet(config.serviceUrl + "/read-aloud/get-account?t=" + authToken).then(JSON.parse);
 }

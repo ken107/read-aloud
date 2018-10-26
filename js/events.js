@@ -55,14 +55,14 @@ if (brapi.ttsEngine) (function() {
 function playText(text, onEnd) {
   if (!activeDoc) {
     activeDoc = new Doc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), function(err) {
-      reportError(err);
+      handleError(err);
       closeDoc();
       if (typeof onEnd == "function") onEnd(err);
     })
   }
   return activeDoc.play()
     .catch(function(err) {
-      reportError(err);
+      handleError(err);
       closeDoc();
       throw err;
     })
@@ -71,14 +71,14 @@ function playText(text, onEnd) {
 function play(onEnd) {
   if (!activeDoc) {
     activeDoc = new Doc(new TabSource(), function(err) {
-      reportError(err);
+      handleError(err);
       closeDoc();
       if (typeof onEnd == "function") onEnd(err);
     })
   }
   return activeDoc.play()
     .catch(function(err) {
-      reportError(err);
+      handleError(err);
       closeDoc();
       throw err;
     })
@@ -128,6 +128,12 @@ function rewind() {
 function seek(n) {
   if (activeDoc) return activeDoc.seek(n);
   else return Promise.reject(new Error("Can't seek, not active"));
+}
+
+function handleError(err) {
+  var code = /^{/.test(err.message) ? JSON.parse(err.message).code : err.message;
+  if (code == "error_payment_required") clearSettings(["voiceName"]);
+  reportError(err);
 }
 
 function reportError(err) {

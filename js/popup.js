@@ -30,10 +30,7 @@ function handleError(err) {
     if (errInfo.code == "error_login_required") {
       getAuthToken({interactive: true})
         .then(function(token) {
-          if (token) {
-            $("#status").hide();
-            $("#btnPlay").click();
-          }
+          if (token) $("#btnPlay").click();
         })
         .catch(console.error)
     }
@@ -87,6 +84,7 @@ function updateButtons() {
 }
 
 function onPlay() {
+  $("#status").hide();
   getBackgroundPage()
     .then(callMethod("play", handleError))
     .then(updateButtons)

@@ -20,8 +20,8 @@
   "options_voicegroup_premium": {
     "message": "Premium Voices"
   },
-  "options_voicegroup_custom": {
-    "message": "Custom Voices"
+  "options_voicegroup_additional": {
+    "message": "Additional Voices"
   },
   "options_enable_premium_voices": {
     "message": "Enable Premium Voices"
@@ -79,6 +79,9 @@
   },
   "error_voice_unavailable": {
     "message": "Voice unavailable, please pick another"
+  },
+  "error_payment_required": {
+    "message": "Out of credit"
   },
   "languages_heading": {
     "message": "Select Languages"

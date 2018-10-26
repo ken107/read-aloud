@@ -1,8 +1,8 @@
 
-Promise.all([getVoices(), getSettings(), getAuthToken(), domReady()])
+Promise.all([getVoices(), getSettings(), domReady()])
   .then(spread(initialize));
 
-function initialize(allVoices, settings, authToken) {
+function initialize(allVoices, settings) {
   setI18nText();
 
   //sliders
@@ -21,16 +21,20 @@ function initialize(allVoices, settings, authToken) {
     function(voice) {
       return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
     });
-  var groups = groupVoices(voices, isPremiumVoice);
-  if (!groups[true]) groups[true] = [];
-  if (!groups[false]) groups[false] = [];
-  groups[true].sort(voiceSorter);
-  groups[false].sort(voiceSorter);
+  var groups = Object.assign({
+      premium: [],
+      standard: [],
+    },
+    voices.groupBy(function(voice) {
+      if (isPremiumVoice(voice)) return "premium";
+      else return "standard";
+    }))
+  for (var name in groups) groups[name].sort(voiceSorter);
 
   var standard = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_standard"))
     .appendTo($("#voices"));
-  groups[false].forEach(function(voice) {
+  groups.standard.forEach(function(voice) {
     $("<option>")
       .val(voice.voiceName)
       .text(voice.voiceName)
@@ -47,42 +51,42 @@ function initialize(allVoices, settings, authToken) {
   var premium = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
     .appendTo($("#voices"));
-var populatePremium = function() {
-  premium.empty();
-  groups[true].forEach(function(voice) {
+  groups.premium.forEach(function(voice) {
     $("<option>")
       .val(voice.voiceName)
       .text(voice.voiceName)
       .appendTo(premium);
   });
-}
-  if (authToken) populatePremium();
-  else $("<option>").val("@premium").text(brapi.i18n.getMessage("options_enable_premium_voices")).appendTo(premium);
+  getAuthToken()
+    .then(function(token) {
+      return token ? getAccountInfo(token) : {balance: 0};
+    })
+    .then(function(account) {
+      if (!account.balance) {
+        premium.prev().remove();
+        premium.remove();
+      }
+    })
 
   $("<optgroup>").appendTo($("#voices"));
-  var custom = $("<optgroup>")
-    .attr("label", brapi.i18n.getMessage("options_voicegroup_custom"))
+  var additional = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_additional"))
     .appendTo($("#voices"));
+  $("<option>")
+    .val("@premium")
+    .text(brapi.i18n.getMessage("options_enable_premium_voices"))
+    .appendTo(additional)
   $("<option>")
     .val("@custom")
     .text(brapi.i18n.getMessage("options_enable_custom_voices"))
-    .appendTo(custom)
+    .appendTo(additional)
 
   $("#voices")
     .val(settings.voiceName || "")
     .change(function() {
       var voiceName = $(this).val();
       if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
-      else if (voiceName == "@premium") {
-        $("#voice-info").removeClass().addClass("notice").text(brapi.i18n.getMessage("error_login_required")).show();
-        getAuthToken({interactive: true})
-          .then(function(token) {
-            if (token) {
-              populatePremium();
-              $("#voice-info").removeClass().addClass("success").text(brapi.i18n.getMessage("options_premium_voices_enabled")).show();
-            }
-          })
-      }
+      else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
       else updateSettings({voiceName: voiceName}).then(showSaveConfirmation);
     });
 
@@ -163,15 +167,6 @@ var populatePremium = function() {
 }
 
 
-function groupVoices(voices, keySelector) {
-  var groups = {};
-  for (var i=0; i<voices.length; i++) {
-    var key = keySelector(voices[i]);
-    if (groups[key]) groups[key].push(voices[i]);
-    else groups[key] = [voices[i]];
-  }
-  return groups;
-}
 
 function voiceSorter(a, b) {
   if (isRemoteVoice(a)) {

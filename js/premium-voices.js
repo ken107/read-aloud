@@ -17,6 +17,7 @@
     populateItemTable(items);
 
     $("#test-voices .btn-test").click(onTestVoice);
+    $(".page-loading").hide();
 
     if (pendingPurchaseSku) {
       getAuthToken({interactive: true})
@@ -64,10 +65,6 @@
       .then(function(purchases) {
         return purchases.find(function(x) {return x.sku == sku});
       })
-  }
-
-  function getAccountInfo(authToken) {
-    return ajaxGet(config.serviceUrl + "/read-aloud/get-account?t=" + authToken).then(JSON.parse);
   }
 
   function preparePurchase(sku, authToken) {

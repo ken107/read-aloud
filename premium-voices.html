@@ -39,6 +39,32 @@
   #faq table {
     width: 100%;
   }
+  .page-loading {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: black;
+    opacity: .5;
+  }
+  .page-loading .spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -60px;
+    margin-top: -60px;
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
   </style>
 
   <script src="js/es6-promise.auto.min.js"></script>
@@ -154,7 +180,7 @@
           <a href data-toggle="collapse" data-target="#faq-2">Why not provide these voices for free?</a>
           <div id="faq-2" class="collapse" data-parent="#faq">
             These voices are served from our cloud servers, and have associated costs.
-            We're doing our best to bring them to you at the lowest possible price.
+            We're doing our best to bring them to you at the lowest price possible.
           </div>
         </div>
         <div>
@@ -178,6 +204,10 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="page-loading">
+    <div class="spinner"></div>
   </div>
 </body>
 </html>
