@@ -156,7 +156,7 @@ function RemoteTtsEngine(serviceUrl) {
       .then(getUniqueClientId)
       .then(function(id) {clientId = id})
       .then(function() {
-        if (!options.voice.autoSelect) {
+        if (isPremiumVoice(options.voice) && !options.voice.autoSelect) {
           if (!authToken) throw new Error(JSON.stringify({code: "error_login_required"}));
           return getAccountInfo(authToken)
             .then(function(account) {
