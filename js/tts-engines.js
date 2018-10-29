@@ -144,7 +144,6 @@ function RemoteTtsEngine(serviceUrl) {
   var manifest = brapi.runtime.getManifest();
   var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
   var audio = document.createElement("AUDIO");
-  var prefetchAudio = document.createElement("AUDIO");
   var isSpeaking = false;
   var nextStartTime = 0;
   var waitTimer;
@@ -204,8 +203,7 @@ function RemoteTtsEngine(serviceUrl) {
   }
   this.prefetch = function(utterance, options) {
     if (!iOS) {
-      prefetchAudio.src = getAudioUrl(utterance, options.lang, options.voice);
-      prefetchAudio.load();
+      ajaxGet(getAudioUrl(utterance, options.lang, options.voice, true));
     }
   }
   this.setNextStartTime = function(time, options) {
@@ -215,9 +213,9 @@ function RemoteTtsEngine(serviceUrl) {
   this.getVoices = function() {
     return voices;
   }
-  function getAudioUrl(utterance, lang, voice) {
+  function getAudioUrl(utterance, lang, voice, prefetch) {
     assert(utterance && lang && voice);
-    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&v=" + manifest.version + "&q=" + encodeURIComponent(utterance);
+    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&v=" + manifest.version + "&pf=" + (prefetch ? 1 : 0) + "&q=" + encodeURIComponent(utterance);
   }
   var voices = [
       {"voice_name": "Amazon Australian English (Nicole)", "lang": "en-AU", "gender": "female", "event_types": ["start", "end", "error"]},
