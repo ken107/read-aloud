@@ -5,7 +5,7 @@
   Promise.all([
     getItems(),
     getVoices().then(function(voices) {return voices.filter(isPremiumVoice)}),
-    getAuthToken().then(function(token) {return token ? getAccountInfo(token) : {balance: 0}}),
+    getAuthToken().then(function(token) {return token ? getAccountInfo(token) : null}),
     getState("pendingPurchaseSku"),
     domReady()
   ])
@@ -17,6 +17,7 @@
     populateItemTable(items);
 
     $("#test-voices .btn-test").click(onTestVoice);
+    $("#subscription-status .btn-login").click(onLogin);
     $(".page-loading").hide();
 
     if (pendingPurchaseSku) {
@@ -116,8 +117,15 @@
 
   function populateSubscriptionStatus(account) {
     var card = $("#subscription-status");
-    card.find(".remaining").text(numberWithCommas(account.balance));
-    if (account.lastPurchaseDate) {
+    if (account) {
+      card.find(".btn-login").hide();
+      card.find(".remaining-line").html("Characters Remaining: <span class='remaining'>" + numberWithCommas(account.balance) + "</span>").show();
+    }
+    else {
+      card.find(".btn-login").show();
+      card.find(".remaining-line").hide();
+    }
+    if (account && account.lastPurchaseDate) {
       card.find(".last-purchase-line").text("Last purchase made on " + formatLastPurchaseDate(account.lastPurchaseDate)).show();
     }
     else {
@@ -224,6 +232,16 @@
       audio.play();
       btnTest.text("Stop");
     }
+  }
+
+  function onLogin() {
+    getAuthToken({interactive: true})
+      .then(function(token) {
+        if (token) return getAccountInfo(token).then(populateSubscriptionStatus);
+      })
+      .catch(function(err) {
+        alert(err.message);
+      })
   }
 
 
