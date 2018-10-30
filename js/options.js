@@ -88,12 +88,13 @@ function initialize(allVoices, settings) {
       if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
       else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
       else updateSettings({voiceName: voiceName}).then(showSaveConfirmation);
+      updateVoiceInfo(voiceName);
     });
 
   $("#languages-edit-button").click(function() {
     location.href = "languages.html";
   })
-  $("#voice-info").hide();
+  updateVoiceInfo(settings.voiceName);
 
 
   //rate
@@ -181,4 +182,13 @@ function voiceSorter(a, b) {
 
 function showSaveConfirmation() {
   $(".status.success").finish().show().delay(500).fadeOut();
+}
+
+function updateVoiceInfo(voiceName) {
+  if (voiceName && isGoogleWavenet({voiceName: voiceName})) {
+    $("#voice-info")
+      .html("Note: This voice may become unavailable at any time. <a href='http://blog.readaloud.app/2018/10/the-state-of-text-to-speech-technology.html' target='_blank'>Read more</a> about it on our blog.")
+      .show()
+  }
+  else $("#voice-info").hide();
 }

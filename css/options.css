@@ -42,13 +42,10 @@
 select#voices {
   min-width: 250px;
 }
-#voice-info.notice {
-  color: blue;
-  font-weight: bold;
-}
-#voice-info.success {
-  color: #080;
-  font-weight: bold;
+#voice-info {
+  margin-top: 5px;
+  color: gray;
+  width: 280px;
 }
 
 #balance {
