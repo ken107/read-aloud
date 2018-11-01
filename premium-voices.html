@@ -21,6 +21,10 @@
   .card-header > .material-icons {
     vertical-align: middle;
   }
+  #subscription-status .free-tier-line {
+    font-size: smaller;
+    color: #6c757d;
+  }
   #subscription-status .remaining {
     color: #080;
   }
@@ -112,9 +116,12 @@
         <strong>Balance</strong>
       </div>
       <div class="card-body">
-        <button type="button" class="btn btn-primary btn-login">Login</button>
         <div class="remaining-line">
         </div>
+        <div class="free-tier-line">
+          Your account now includes 100,000 free characters per month.
+        </div>
+        <button type="button" class="btn btn-primary btn-login">Login</button>
         <div class="last-purchase-line">
         </div>
         <div class="purchase-status-line">
@@ -204,6 +211,15 @@
           <a href data-toggle="collapse" data-target="#faq-5">How do I get support?</a>
           <div id="faq-5" class="collapse" data-parent="#faq">
             Please email <a href="mailto:support@lsdsoftware.com">support@lsdsoftware.com</a> if you need help.
+          </div>
+        </div>
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-6">How does the free tier work?</a>
+          <div id="faq-6" class="collapse" data-parent="#faq">
+            The free characters will always be used <i>before</i> the purchased characters are used.
+            So let's say you have purchased 2M characters and you have 100,000 free characters,
+            the 100,000 free characters will be used up first before the 2M is used.
+            At the start of each month, the balance of free characters will be reset back to 100,000.
           </div>
         </div>
       </div>

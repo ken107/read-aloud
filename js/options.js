@@ -59,10 +59,10 @@ function initialize(allVoices, settings) {
   });
   getAuthToken()
     .then(function(token) {
-      return token ? getAccountInfo(token) : {balance: 0};
+      return token ? getAccountInfo(token) : null;
     })
     .then(function(account) {
-      if (!account.balance) {
+      if (account && !account.balance) {
         premium.prev().remove();
         premium.remove();
       }

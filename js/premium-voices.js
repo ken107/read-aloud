@@ -119,7 +119,7 @@
     var card = $("#subscription-status");
     if (account) {
       card.find(".btn-login").hide();
-      card.find(".remaining-line").html("Characters Remaining: <span class='remaining'>" + numberWithCommas(account.balance) + "</span>").show();
+      card.find(".remaining-line").html("Total Characters Remaining: <span class='remaining'>" + numberWithCommas(account.balance) + "</span>").show();
     }
     else {
       card.find(".btn-login").show();

@@ -556,5 +556,10 @@ function getAuthToken(opts) {
 }
 
 function getAccountInfo(authToken) {
-  return ajaxGet(config.serviceUrl + "/read-aloud/get-account?t=" + authToken).then(JSON.parse);
+  return ajaxGet(config.serviceUrl + "/read-aloud/get-account?t=" + authToken)
+    .then(JSON.parse)
+    .then(function(account) {
+      account.balance += account.freeBalance;
+      return account;
+    })
 }
