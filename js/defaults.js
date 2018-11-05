@@ -296,7 +296,11 @@ function ajaxGetCb(sUrl, fulfill, reject) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState == XMLHttpRequest.DONE) {
         if (xhr.status == 200) fulfill(xhr.responseText);
-        else reject && reject(new Error(xhr.responseText || xhr.statusText || xhr.status || ("Failed to fetch " + sUrl.substr(0, 100))));
+        else if (reject) {
+          var err = new Error(xhr.responseText || xhr.statusText || xhr.status || ("Failed to fetch " + sUrl.substr(0, 100)));
+          err.xhr = xhr;
+          reject(err);
+        }
       }
     };
     xhr.send(null);
@@ -555,11 +559,21 @@ function getAuthToken(opts) {
   })
 }
 
+function removeCachedAuthToken(authToken) {
+  return new Promise(function(fulfill) {
+    brapi.identity.removeCachedAuthToken({token: authToken}, fulfill);
+  })
+}
+
 function getAccountInfo(authToken) {
   return ajaxGet(config.serviceUrl + "/read-aloud/get-account?t=" + authToken)
     .then(JSON.parse)
     .then(function(account) {
       account.balance += account.freeBalance;
       return account;
+    })
+    .catch(function(err) {
+      if (err.xhr && err.xhr.status == 401) return removeCachedAuthToken(authToken).then(function() {return null});
+      else throw err;
     })
 }

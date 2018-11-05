@@ -9,7 +9,10 @@
     getState("pendingPurchaseSku"),
     domReady()
   ])
-  .then(spread(initialize));
+  .then(spread(initialize))
+  .catch(function(err) {
+    alert("An internal error occurred, please try again later.\n" + err.message);
+  })
 
   function initialize(items, voices, account, pendingPurchaseSku) {
     populateTestVoices(voices);
