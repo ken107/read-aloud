@@ -1,14 +1,17 @@
 
 var activeDoc;
 
-brapi.runtime.onInstalled.addListener(function() {
+brapi.runtime.onInstalled.addListener(installContextMenus);
+if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
+
+function installContextMenus() {
   if (brapi.contextMenus)
   brapi.contextMenus.create({
     id: "read-selection",
     title: brapi.i18n.getMessage("context_read_selection"),
     contexts: ["selection"]
   });
-})
+}
 
 if (brapi.contextMenus)
 brapi.contextMenus.onClicked.addListener(function(info, tab) {
