@@ -30,9 +30,19 @@ function TabSource() {
       if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}));
       if (tab.url) {
         var url = tab.url.replace(/\?.*/, '');
-        if (url.startsWith("file:") && url.endsWith(".pdf")) {
-          setTabUrl(tab.id, "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html");
-          throw new Error(JSON.stringify({code: "error_upload_pdf"}));
+        if (url.startsWith("file:")) {
+          if (url.endsWith(".pdf")) {
+            setTabUrl(tab.id, "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html");
+            throw new Error(JSON.stringify({code: "error_upload_pdf"}));
+          }
+          else {
+            return new Promise(function(fulfill) {
+              brapi.extension.isAllowedFileSchemeAccess(fulfill);
+            })
+            .then(function(allowed) {
+              if (!allowed) throw new Error(JSON.stringify({code: "error_file_access"}));
+            })
+          }
         }
         else if (isUnsupportedSite(tab.url)) {
           throw new Error(JSON.stringify({code: "error_page_unreadable"}));

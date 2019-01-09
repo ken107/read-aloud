@@ -275,7 +275,11 @@ function assert(truthy, message) {
 
 function formatError(err) {
   var message = brapi.i18n && brapi.i18n.getMessage(err.code) || err.code;
-  if (message) message = message.replace(/{(\w+)}/g, function(m, p1) {return err[p1]});
+  if (message) {
+    message = message
+      .replace(/{(\w+)}/g, function(m, p1) {return err[p1]})
+      .replace(/\[(.*?)\]\((.*?)\)/g, "<a href='#$2'>$1</a>")
+  }
   return message;
 }
 

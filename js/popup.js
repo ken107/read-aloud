@@ -26,7 +26,16 @@ function handleError(err) {
   if (!err) return;
   if (/^{/.test(err.message)) {
     var errInfo = JSON.parse(err.message);
-    $("#status").text(formatError(errInfo)).show();
+
+    $("#status").html(formatError(errInfo)).show();
+    $("#status a").click(function() {
+      switch ($(this).attr("href")) {
+        case "#open-extension-settings":
+          brapi.tabs.create({url: "chrome://extensions/?id=" + brapi.runtime.id});
+          break;
+      }
+    })
+
     if (errInfo.code == "error_login_required") {
       getAuthToken({interactive: true})
         .then(function(token) {
