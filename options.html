@@ -4,57 +4,88 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Read Aloud Options</title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
   <link rel="stylesheet" type="text/css" href="css/common.css">
   <link rel="stylesheet" type="text/css" href="css/options.css">
 
   <script src="js/es6-promise.auto.min.js"></script>
   <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
   <script src="js/jquery-ui.min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/tts-engines.js"></script>
   <script src="js/options.js"></script>
 </head>
 <body>
-  <h1 data-i18n="options_heading"></h1>
+  <div class="container-fluid">
+    <h2 data-i18n="options_heading"></h2>
 
-  <span id="hotkeys-link" data-i18n="options_hotkeys_link"></span>
+    <div class="form-group">
+      <span id="hotkeys-link" data-i18n="options_hotkeys_link"></span>
+    </div>
 
-  <div class="label">
-    <span data-i18n="options_voice_label"></span>
-    <i id="languages-edit-button" class="material-icons">mode_edit</i>
+    <div class="layout">
+      <div>
+        <span data-i18n="options_voice_label"></span>
+        <button id="languages-edit-button" type="button" class="btn btn-sm btn-light">
+          <i class="material-icons">mode_edit</i>
+        </button>
+      </div>
+      <div>
+        <select id="voices" class="form-control">
+          <option value="">Auto select</option>
+        </select>
+        <small id="voice-info" class="form-text text-muted">
+          Note: This voice may become unavailable at any time.
+          <a href='http://blog.readaloud.app/2018/10/the-state-of-text-to-speech-technology.html' target='_blank'>Read more</a> about it on our blog.
+        </small>
+      </div>
+
+      <div>
+        <span data-i18n="options_rate_label"></span>
+        <button id="rate-edit-button" type="button" class="btn btn-sm btn-light">
+          <i class="material-icons">mode_edit</i>
+        </button>
+      </div>
+      <div>
+        <div id="rate" class="slider" data-min="-1" data-max="1" data-step="0.05" data-pow="3"></div>
+        <div id="rate-input-div">
+          <input id="rate-input" class="form-control" type="text" maxlength="5" />
+        </div>
+        <small id="rate-warning" class="form-text warning" data-i18n="options_rate_warning"></small>
+      </div>
+
+      <div class="pitch-visible">
+        <span data-i18n="options_pitch_label"></span>
+      </div>
+      <div class="pitch-visible">
+        <div id="pitch" class="slider" data-min="0" data-max="2" data-step="0.05"></div>
+      </div>
+
+      <div>
+        <span data-i18n="options_show_highlighting"></span>
+      </div>
+      <div class="btn-group btn-group-toggle" data-toggle="buttons">
+        <label class="btn btn-sm btn-light">
+          <input type="radio" name="highlighting" value="1" /> On
+        </label>
+        <label class="btn btn-sm btn-light">
+          <input type="radio" name="highlighting" value="0" /> Off
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group buttons">
+      <button type="button" id="test-voice" class="btn btn-info">
+        <div class="spinner"></div>
+        <span data-i18n="options_test_button"></span>
+      </button>
+      <button type="button" id="reset" class="btn btn-warning" data-i18n="options_reset_button"></button>
+      <span class="green-check">
+        <i class="material-icons">check</i>
+      </span>
+    </div>
   </div>
-  <select id="voices">
-    <option value="">Auto select</option>
-  </select>
-  <div id="voice-info"></div>
-
-  <div class="label">
-    <span data-i18n="options_rate_label"></span>
-    <i id="rate-edit-button" class="material-icons">mode_edit</i>
-  </div>
-  <div id="rate" class="slider" data-min="-1" data-max="1" data-step="0.05" data-pow="3"></div>
-  <div id="rate-input-div">
-    <input id="rate-input" type="text" maxlength="5" />x
-  </div>
-  <div id="rate-warning" class="warning" data-i18n="options_rate_warning"></div>
-
-  <div class="label" data-i18n="options_pitch_label"></div>
-  <div id="pitch" class="slider" data-min="0" data-max="2" data-step="0.05"></div>
-
-  <div class="label" data-i18n="options_volume_label"></div>
-  <div id="volume" class="slider" data-min="0" data-max="1" data-step="0.025"></div>
-
-  <div class="label" data-i18n="options_show_highlighting"></div>
-  <label><input type="radio" name="highlighting" value="1" />On</label>
-  <label><input type="radio" name="highlighting" value="0" />Off</label>
-
-  <div class="buttons"></div>
-  <button id="test-voice">
-    <div class="spinner"></div>
-    <span data-i18n="options_test_button"></span>
-  </button>
-  <button id="reset" data-i18n="options_reset_button"></button>
-  <span class="status success">&#x2714;</span>
 </body>
 </html>

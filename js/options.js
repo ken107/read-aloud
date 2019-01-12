@@ -4,6 +4,7 @@ Promise.all([getVoices(), getSettings(), domReady()])
 
 function initialize(allVoices, settings) {
   setI18nText();
+  updateDependents(settings);
 
   //sliders
   $(".slider").each(function() {
@@ -16,85 +17,18 @@ function initialize(allVoices, settings) {
 
 
   //voices
-  var selectedLangs = settings.languages && settings.languages.split(',');
-  var voices = !selectedLangs ? allVoices : allVoices.filter(
-    function(voice) {
-      return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
-    });
-  var groups = Object.assign({
-      premium: [],
-      standard: [],
-    },
-    voices.groupBy(function(voice) {
-      if (isPremiumVoice(voice)) return "premium";
-      else return "standard";
-    }))
-  for (var name in groups) groups[name].sort(voiceSorter);
-
-  var standard = $("<optgroup>")
-    .attr("label", brapi.i18n.getMessage("options_voicegroup_standard"))
-    .appendTo($("#voices"));
-  groups.standard.forEach(function(voice) {
-    $("<option>")
-      .val(voice.voiceName)
-      .text(voice.voiceName)
-      .appendTo(standard);
-  });
-  googleWavenetTtsEngine.ready()
-    .catch(function(err) {
-      standard.children("option")
-        .filter(function() {return isGoogleWavenet({voiceName: $(this).val()})})
-        .remove()
-    })
-
-  $("<optgroup>").appendTo($("#voices"));
-  var premium = $("<optgroup>")
-    .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
-    .appendTo($("#voices"));
-  groups.premium.forEach(function(voice) {
-    $("<option>")
-      .val(voice.voiceName)
-      .text(voice.voiceName)
-      .appendTo(premium);
-  });
-  getAuthToken()
-    .then(function(token) {
-      return token ? getAccountInfo(token) : null;
-    })
-    .then(function(account) {
-      if (account && !account.balance) {
-        premium.prev().remove();
-        premium.remove();
-      }
-    })
-
-  $("<optgroup>").appendTo($("#voices"));
-  var additional = $("<optgroup>")
-    .attr("label", brapi.i18n.getMessage("options_voicegroup_additional"))
-    .appendTo($("#voices"));
-  $("<option>")
-    .val("@premium")
-    .text(brapi.i18n.getMessage("options_enable_premium_voices"))
-    .appendTo(additional)
-  $("<option>")
-    .val("@custom")
-    .text(brapi.i18n.getMessage("options_enable_custom_voices"))
-    .appendTo(additional)
-
+  populateVoices(allVoices, settings);
   $("#voices")
     .val(settings.voiceName || "")
     .change(function() {
       var voiceName = $(this).val();
       if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
       else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
-      else updateSettings({voiceName: voiceName}).then(showSaveConfirmation);
-      updateVoiceInfo(voiceName);
+      else saveSettings({voiceName: voiceName});
     });
-
   $("#languages-edit-button").click(function() {
     location.href = "languages.html";
   })
-  updateVoiceInfo(settings.voiceName);
 
 
   //rate
@@ -106,8 +40,7 @@ function initialize(allVoices, settings) {
     .on("slidechange", function() {
       var val = Math.pow($(this).data("pow"), $(this).slider("value"));
       $("#rate-input").val(val.toFixed(3));
-      $("#rate-warning").toggle(val > 2);
-      saveRateSetting();
+      saveSettings({rate: Number($("#rate-input").val())});
     });
   $("#rate-input")
     .val(settings.rate || defaults.rate)
@@ -117,39 +50,27 @@ function initialize(allVoices, settings) {
       else if (val < .1) $(this).val(.1);
       else if (val > 10) $(this).val(10);
       else $("#rate-edit-button").hide();
-      $("#rate-warning").toggle(val > 2);
-      saveRateSetting();
+      saveSettings({rate: Number($("#rate-input").val())});
     });
-  $("#rate-warning")
-    .toggle((settings.rate || defaults.rate) > 2);
-  function saveRateSetting() {
-    updateSettings({rate: Number($("#rate-input").val())}).then(showSaveConfirmation);
-  }
 
 
   //pitch
   $("#pitch")
     .slider("value", settings.pitch || defaults.pitch)
     .on("slidechange", function() {
-      updateSettings({pitch: $(this).slider("value")}).then(showSaveConfirmation);
-    })
-
-
-  //volume
-  $("#volume")
-    .slider("value", settings.volume || defaults.volume)
-    .on("slidechange", function() {
-      updateSettings({volume: $(this).slider("value")}).then(showSaveConfirmation);
+      saveSettings({pitch: $(this).slider("value")});
     })
 
 
   //showHighlighting
   $("[name=highlighting]")
     .prop("checked", function() {
-      return $(this).val() == (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting);
+      var active = $(this).val() == (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting);
+      if (active) $(this).parent().addClass('active');
+      return active;
     })
     .change(function() {
-      updateSettings({showHighlighting: Number($(this).val())}).then(showSaveConfirmation);
+      saveSettings({showHighlighting: Number($(this).val())});
     })
 
 
@@ -194,6 +115,79 @@ function initialize(allVoices, settings) {
 
 
 
+function populateVoices(allVoices, settings) {
+  //get voices filtered by selected languages
+  var selectedLangs = settings.languages && settings.languages.split(',');
+  var voices = !selectedLangs ? allVoices : allVoices.filter(
+    function(voice) {
+      return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
+    });
+
+  //group by standard/premium
+  var groups = Object.assign({
+      premium: [],
+      standard: [],
+    },
+    voices.groupBy(function(voice) {
+      if (isPremiumVoice(voice)) return "premium";
+      else return "standard";
+    }))
+  for (var name in groups) groups[name].sort(voiceSorter);
+
+  //create the standard optgroup
+  var standard = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_standard"))
+    .appendTo($("#voices"));
+  groups.standard.forEach(function(voice) {
+    $("<option>")
+      .val(voice.voiceName)
+      .text(voice.voiceName)
+      .appendTo(standard);
+  });
+  googleWavenetTtsEngine.ready()
+    .catch(function(err) {
+      standard.children("option")
+        .filter(function() {return isGoogleWavenet({voiceName: $(this).val()})})
+        .remove()
+    })
+
+  //create the premium optgroup
+  $("<optgroup>").appendTo($("#voices"));
+  var premium = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
+    .appendTo($("#voices"));
+  groups.premium.forEach(function(voice) {
+    $("<option>")
+      .val(voice.voiceName)
+      .text(voice.voiceName)
+      .appendTo(premium);
+  });
+  getAuthToken()
+    .then(function(token) {
+      return token ? getAccountInfo(token) : null;
+    })
+    .then(function(account) {
+      if (account && !account.balance) {
+        premium.prev().remove();
+        premium.remove();
+      }
+    })
+
+  //create the additional optgroup
+  $("<optgroup>").appendTo($("#voices"));
+  var additional = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_additional"))
+    .appendTo($("#voices"));
+  $("<option>")
+    .val("@premium")
+    .text(brapi.i18n.getMessage("options_enable_premium_voices"))
+    .appendTo(additional)
+  $("<option>")
+    .val("@custom")
+    .text(brapi.i18n.getMessage("options_enable_custom_voices"))
+    .appendTo(additional)
+}
+
 function voiceSorter(a, b) {
   if (isRemoteVoice(a)) {
     if (isRemoteVoice(b)) return a.voiceName.localeCompare(b.voiceName);
@@ -205,15 +199,30 @@ function voiceSorter(a, b) {
   }
 }
 
-function showSaveConfirmation() {
-  $(".status.success").finish().show().delay(500).fadeOut();
+
+
+function saveSettings(delta) {
+  getBackgroundPage()
+    .then(function(master) {
+      master.stop();
+    })
+  return updateSettings(delta)
+    .then(showConfirmation)
+    .then(getSettings)
+    .then(updateDependents)
 }
 
-function updateVoiceInfo(voiceName) {
-  if (voiceName && isGoogleWavenet({voiceName: voiceName})) {
-    $("#voice-info")
-      .html("Note: This voice may become unavailable at any time. <a href='http://blog.readaloud.app/2018/10/the-state-of-text-to-speech-technology.html' target='_blank'>Read more</a> about it on our blog.")
-      .show()
-  }
+function showConfirmation() {
+  $(".green-check").finish().show().delay(500).fadeOut();
+}
+
+function updateDependents(settings) {
+  if (settings.voiceName && isGoogleWavenet(settings)) $("#voice-info").show();
   else $("#voice-info").hide();
+
+  if (settings.voiceName && isRemoteVoice(settings)) $(".pitch-visible").hide();
+  else $(".pitch-visible").show();
+
+  if ((!settings.voiceName || !isRemoteVoice(settings)) && settings.rate > 2) $("#rate-warning").show();
+  else $("#rate-warning").hide();
 }
