@@ -47,6 +47,9 @@
   "options_save_button": {
     "message": "儲存"
   },
+  "options_test_button": {
+    "message": "去測試"
+  },
   "options_reset_button": {
     "message": "重新設定"
   },

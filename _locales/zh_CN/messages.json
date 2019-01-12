@@ -47,6 +47,9 @@
   "options_save_button": {
     "message": "储存"
   },
+  "options_test_button": {
+    "message": "去测试"
+  },
   "options_reset_button": {
     "message": "重设"
   },

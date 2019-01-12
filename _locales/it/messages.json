@@ -47,6 +47,9 @@
   "options_save_button": {
     "message": "Salva"
   },
+  "options_test_button": {
+    "message": "Testare"
+  },
   "options_reset_button": {
     "message": "Reset"
   },

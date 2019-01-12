@@ -53,6 +53,9 @@
   "options_save_button": {
     "message": "Save"
   },
+  "options_test_button": {
+    "message": "Test"
+  },
   "options_reset_button": {
     "message": "Reset"
   },

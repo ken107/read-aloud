@@ -47,6 +47,9 @@
   "options_save_button": {
     "message": "Guardar"
   },
+  "options_test_button": {
+    "message": "Probar"
+  },
   "options_reset_button": {
     "message": "Reiniciar"
   },

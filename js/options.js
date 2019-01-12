@@ -154,6 +154,31 @@ function initialize(allVoices, settings) {
 
 
   //buttons
+  $("#test-voice").click(function() {
+    var voiceName = $("#voices").val();
+    var voice = voiceName && findVoiceByName(allVoices, voiceName);
+    var lang = voice ? voice.lang : "en-US";
+    $("#test-voice .spinner").show();
+    ajaxGet(config.serviceUrl + "/read-aloud/get-demo-speech-text/" + lang).then(JSON.parse)
+      .then(function(result) {
+        return getBackgroundPage()
+          .then(function(master) {
+            return master.stop()
+              .then(function() {
+                return master.playText(result.text);
+              })
+          })
+      })
+      .catch(function(err) {
+        console.error(err);
+        alert("An error occurred: " + err.message);
+      })
+      .finally(function() {
+        $("#test-voice .spinner").hide();
+      })
+  })
+  $("#test-voice .spinner").hide();
+
   $("#reset").click(function() {
     clearSettings().then(function() {
       location.reload();

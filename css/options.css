@@ -77,3 +77,19 @@ select#voices {
   cursor: pointer;
   text-decoration: underline;
 }
+
+.spinner {
+  display: inline-block;
+  vertical-align: bottom;
+  border: 3px solid lightgray;
+  border-top: 3px solid gray;
+  border-radius: 50%;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

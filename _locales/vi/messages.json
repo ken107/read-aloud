@@ -47,6 +47,9 @@
   "options_save_button": {
     "message": "Lưu"
   },
+  "options_test_button": {
+    "message": "Kiểm Tra"
+  },
   "options_reset_button": {
     "message": "Reset"
   },
