@@ -30,7 +30,9 @@ var defaults = {
   rate: 1.0,
   pitch: 1.0,
   volume: 1.0,
-  showHighlighting: 0,
+  showHighlighting: 1,
+  highlightFontSize: 4,
+  highlightWindowSize: 2,
 };
 
 
@@ -45,7 +47,7 @@ function getQueryString() {
 
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
+    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize"], fulfill);
   });
 }
 
@@ -57,7 +59,7 @@ function updateSettings(items) {
 
 function clearSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages"], fulfill);
+    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize"], fulfill);
   });
 }
 

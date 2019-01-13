@@ -8,7 +8,10 @@ $(function() {
   $("#btnSettings").click(onSettings);
   $("#btnForward").click(onForward);
   $("#btnRewind").click(onRewind);
-  $("#resize").click(onResize);
+  $("#decrease-font-size").click(changeFontSize.bind(null, -1));
+  $("#increase-font-size").click(changeFontSize.bind(null, +1));
+  $("#decrease-window-size").click(changeWindowSize.bind(null, -1));
+  $("#increase-window-size").click(changeWindowSize.bind(null, +1));
 
   updateButtons()
     .then(getBackgroundPage)
@@ -64,10 +67,9 @@ function updateButtons() {
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING");
-    $("#attribution").toggle(Boolean(speech && isGoogleTranslate(speech.options.voice) && false));
-    $("#highlight, #resize").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
+    $("#highlight, #toolbar").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
 
-    if (settings.showHighlighting && speech) {
+    if ((settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && speech) {
       var pos = speech.getPosition();
       var elem = $("#highlight");
       if (elem.data("texts") != pos.texts) {
@@ -138,27 +140,54 @@ function onSeek(n) {
     .catch(handleError)
 }
 
-function onResize() {
+function changeFontSize(delta) {
+  getSettings(["highlightFontSize"])
+    .then(function(settings) {
+      var newSize = (settings.highlightFontSize || defaults.highlightFontSize) + delta;
+      if (newSize >= 1 && newSize <= 8) return updateSettings({highlightFontSize: newSize}).then(refreshSize);
+    })
+    .catch(handleError)
+}
+
+function changeWindowSize(delta) {
   getSettings(["highlightWindowSize"])
     .then(function(settings) {
-      return updateSettings({highlightWindowSize: ((settings.highlightWindowSize || 0) + 1) % 3});
+      var newSize = (settings.highlightWindowSize || defaults.highlightWindowSize) + delta;
+      if (newSize >= 1 && newSize <= 3) return updateSettings({highlightWindowSize: newSize}).then(refreshSize);
     })
-    .then(refreshSize)
     .catch(handleError)
 }
 
 function refreshSize() {
-  return getSettings(["highlightWindowSize"])
+  return getSettings(["highlightFontSize", "highlightWindowSize"])
     .then(function(settings) {
-      switch (settings.highlightWindowSize) {
-        case 2: return [720, 420];
-        case 1: return [520, 390];
-        default: return [400, 300];
-      }
+      var fontSize = getFontSize(settings);
+      var windowSize = getWindowSize(settings);
+      $("#highlight").css({
+        "font-size": fontSize,
+        width: windowSize[0],
+        height: windowSize[1]
+      })
     })
-    .then(function(size) {
-      $("#highlight").css({width: size[0], height: size[1]});
-    })
+  function getFontSize(settings) {
+    switch (settings.highlightFontSize || defaults.highlightFontSize) {
+      case 1: return ".9em";
+      case 2: return "1em";
+      case 3: return "1.1em";
+      case 4: return "1.2em";
+      case 5: return "1.3em";
+      case 6: return "1.4em";
+      case 7: return "1.5em";
+      default: return "1.6em";
+    }
+  }
+  function getWindowSize(settings) {
+    switch (settings.highlightWindowSize || defaults.highlightWindowSize) {
+      case 1: return [400, 300];
+      case 2: return [520, 390];
+      default: return [720, 420];
+    }
+  }
 }
 
 function checkAnnouncements() {
