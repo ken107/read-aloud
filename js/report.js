@@ -1,4 +1,12 @@
 $(function() {
+  var queryString = getQueryString();
+  if (queryString.referer) {
+    $("button.close").show()
+      .click(function() {
+        location.href = queryString.referer;
+      })
+  }
+
   getState("lastUrl").then(function(url) {$("#txt-url").val(url)});
   $("#txt-comment").focus();
   $("#btn-submit").click(submit);

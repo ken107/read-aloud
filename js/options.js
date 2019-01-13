@@ -6,6 +6,16 @@ function initialize(allVoices, settings) {
   setI18nText();
   updateDependents(settings);
 
+  //close button
+  var queryString = getQueryString();
+  if (queryString.referer) {
+    $("button.close").show()
+      .click(function() {
+        location.href = queryString.referer;
+      })
+  }
+  
+
   //sliders
   $(".slider").each(function() {
     $(this).slider({

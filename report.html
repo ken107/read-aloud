@@ -16,6 +16,10 @@
   .status {
     display: none;
   }
+  button.close {
+    float: right;
+    display: none;
+  }
   </style>
 
   <script src="js/es6-promise.auto.min.js"></script>
@@ -26,6 +30,9 @@
 </head>
 <body>
   <div class="container">
+    <button type="button" class="close" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
     <h2>Report Issue</h2>
     <form>
       <div class="form-group">

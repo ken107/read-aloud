@@ -1,4 +1,9 @@
 
+button.close {
+  float: right;
+  display: none;
+}
+
 h2 {
   margin-top: 1rem;
 }

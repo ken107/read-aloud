@@ -115,7 +115,7 @@ function onStop() {
 }
 
 function onSettings() {
-  location.href = "options.html";
+  location.href = "options.html?referer=popup.html";
 }
 
 function onForward() {
