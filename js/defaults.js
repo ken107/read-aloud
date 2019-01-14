@@ -31,7 +31,7 @@ var defaults = {
   pitch: 1.0,
   volume: 1.0,
   showHighlighting: 1,
-  highlightFontSize: 4,
+  highlightFontSize: 3,
   highlightWindowSize: 2,
 };
 

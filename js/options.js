@@ -14,7 +14,7 @@ function initialize(allVoices, settings) {
         location.href = queryString.referer;
       })
   }
-  
+
 
   //sliders
   $(".slider").each(function() {
@@ -76,21 +76,32 @@ function initialize(allVoices, settings) {
   $("[name=highlighting]")
     .prop("checked", function() {
       var active = $(this).val() == (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting);
-      if (active) $(this).parent().addClass('active');
+      if (active) $(this).parent(".btn").addClass("active");
       return active;
     })
     .change(function() {
+      $("[name=highlighting]").parent(".btn").removeClass("active");
+      $(this).parent(".btn").addClass("active");
       saveSettings({showHighlighting: Number($(this).val())});
     })
 
 
   //buttons
+  var demoSpeech = {};
   $("#test-voice").click(function() {
     var voiceName = $("#voices").val();
     var voice = voiceName && findVoiceByName(allVoices, voiceName);
-    var lang = voice ? voice.lang : "en-US";
+    var lang = (voice && voice.lang || "en-US").split("-")[0];
     $("#test-voice .spinner").show();
-    ajaxGet(config.serviceUrl + "/read-aloud/get-demo-speech-text/" + lang).then(JSON.parse)
+    Promise.resolve(demoSpeech[lang])
+      .then(function(speech) {
+        if (speech) return speech;
+        return ajaxGet(config.serviceUrl + "/read-aloud/get-demo-speech-text/" + lang)
+          .then(JSON.parse)
+          .then(function(result) {
+            return demoSpeech[lang] = result;
+          })
+      })
       .then(function(result) {
         return getBackgroundPage()
           .then(function(master) {
