@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.4.25",
+  "version": "1.5.0",
   "default_locale": "en",
 
   "browser_action": {
@@ -32,12 +32,12 @@
     "storage",
     "tts",
     "ttsEngine",
-    "https://translate.google.com/",
-    "file://*/*"
+    "https://translate.google.com/"
   ],
   "optional_permissions": [
     "http://*/",
-    "https://*/"
+    "https://*/",
+    "file://*/*"
   ],
   "content_security_policy": "script-src 'self'; object-src 'self'",
   "web_accessible_resources": [

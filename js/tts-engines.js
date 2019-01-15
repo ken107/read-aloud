@@ -149,6 +149,7 @@ function RemoteTtsEngine(serviceUrl) {
   var waitTimer;
   var authToken;
   var clientId;
+  var speakPromise;
   this.ready = function(options) {
     return getAuthToken()
       .then(function(token) {authToken = token})
@@ -174,12 +175,13 @@ function RemoteTtsEngine(serviceUrl) {
       audio.defaultPlaybackRate = options.rate;
     }
     audio.src = getAudioUrl(utterance, options.lang, options.voice);
-    audio.oncanplay = function() {
+    speakPromise = new Promise(function(fulfill) {audio.oncanplay = fulfill})
+      .then(function() {
       var waitTime = nextStartTime - new Date().getTime();
       if (waitTime > 0) waitTimer = setTimeout(audio.play.bind(audio), waitTime);
       else audio.play();
       isSpeaking = true;
-    };
+      })
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
     audio.onended = function() {
       onEvent({type: 'end', charIndex: utterance.length});
@@ -196,8 +198,10 @@ function RemoteTtsEngine(serviceUrl) {
   }
   this.pause =
   this.stop = function() {
+    speakPromise.then(function() {
     clearTimeout(waitTimer);
     audio.pause();
+    })
   }
   this.resume = function() {
     audio.play();
@@ -356,6 +360,7 @@ function GoogleTranslateTtsEngine() {
   var audio = document.createElement("AUDIO");
   var prefetchAudio = document.createElement("AUDIO");
   var isSpeaking = false;
+  var speakPromise;
   this.ready = function() {
     return getGoogleTranslateToken("test");
   };
@@ -377,7 +382,7 @@ function GoogleTranslateTtsEngine() {
       onEvent({type: "error", errorMessage: audio.error.message});
       isSpeaking = false;
     };
-    getAudioUrl(utterance, options.voice.lang)
+    speakPromise = getAudioUrl(utterance, options.voice.lang)
       .then(function(url) {
         audio.src = url;
         audio.play();
@@ -391,7 +396,7 @@ function GoogleTranslateTtsEngine() {
   };
   this.pause =
   this.stop = function() {
-    audio.pause();
+    speakPromise.then(function() {audio.pause()});
   };
   this.resume = function() {
     audio.play();
@@ -489,6 +494,7 @@ function AmazonPollyTtsEngine() {
   var audio = document.createElement("AUDIO");
   var prefetchAudio;
   var isSpeaking = false;
+  var speakPromise;
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;
     if (!options.rate) options.rate = 1;
@@ -508,7 +514,7 @@ function AmazonPollyTtsEngine() {
       onEvent({type: "error", errorMessage: audio.error.message});
       isSpeaking = false;
     };
-    Promise.resolve()
+    speakPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.lang, options.voice, options.pitch);
@@ -526,7 +532,7 @@ function AmazonPollyTtsEngine() {
   };
   this.pause =
   this.stop = function() {
-    audio.pause();
+    speakPromise.then(function() {audio.pause()});
   };
   this.resume = function() {
     audio.play();
@@ -641,6 +647,7 @@ function GoogleWavenetTtsEngine() {
   var audio = document.createElement("AUDIO");
   var prefetchAudio;
   var isSpeaking = false;
+  var speakPromise;
   this.ready = function() {
     return getSettings(["gcpCreds"])
       .then(function(items) {return items.gcpCreds})
@@ -667,7 +674,7 @@ function GoogleWavenetTtsEngine() {
       onEvent({type: "error", errorMessage: audio.error.message});
       isSpeaking = false;
     };
-    Promise.resolve()
+    speakPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.voice, options.pitch);
@@ -685,7 +692,7 @@ function GoogleWavenetTtsEngine() {
   };
   this.pause =
   this.stop = function() {
-    audio.pause();
+    speakPromise.then(function() {audio.pause()});
   };
   this.resume = function() {
     audio.play();

@@ -130,6 +130,7 @@ function Speech(texts, options) {
     return ready
       .then(function() {
         if (engine.pause) {
+          clearTimeout(delayedPlayTimer);
           engine.pause();
           state = "PAUSED";
         }
@@ -140,6 +141,7 @@ function Speech(texts, options) {
   function stop() {
     return ready
       .then(function() {
+        clearTimeout(delayedPlayTimer);
         engine.stop();
         state = "IDLE";
       })
