@@ -24,6 +24,9 @@ var config = {
     'https://ereader.chegg.com',
     /^https:\/\/\w+\.vitalsource\.com/,
   ],
+  audio: document.createElement("AUDIO"),
+  prefetchAudio: document.createElement("AUDIO"),
+  audioInitialized: false,
 }
 
 var defaults = {
@@ -581,5 +584,15 @@ function getAccountInfo(authToken) {
     .catch(function(err) {
       if (err.xhr && err.xhr.status == 401) return removeCachedAuthToken(authToken).then(function() {return null});
       else throw err;
+    })
+}
+
+function prepareAudio() {
+  if (config.audioInitialized) return Promise.resolve();
+  config.audio.src = brapi.runtime.getURL("sounds/silence.mp3");
+  config.prefetchAudio.src = brapi.runtime.getURL("sounds/silence.mp3");
+  return Promise.all([config.audio.play(), config.prefetchAudio.play()])
+    .then(function() {
+      config.audioInitialized = true;
     })
 }

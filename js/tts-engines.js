@@ -143,7 +143,7 @@ function TimeoutTtsEngine(baseEngine, timeoutMillis) {
 function RemoteTtsEngine(serviceUrl) {
   var manifest = brapi.runtime.getManifest();
   var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
-  var audio = document.createElement("AUDIO");
+  var audio = config.audio;
   var isSpeaking = false;
   var nextStartTime = 0;
   var waitTimer;
@@ -357,8 +357,8 @@ function RemoteTtsEngine(serviceUrl) {
 
 
 function GoogleTranslateTtsEngine() {
-  var audio = document.createElement("AUDIO");
-  var prefetchAudio = document.createElement("AUDIO");
+  var audio = config.audio;
+  var prefetchAudio = config.prefetchAudio;
   var isSpeaking = false;
   var speakPromise;
   this.ready = function() {
@@ -491,7 +491,7 @@ function GoogleTranslateTtsEngine() {
 
 function AmazonPollyTtsEngine() {
   var pollyPromise;
-  var audio = document.createElement("AUDIO");
+  var audio = config.audio;
   var prefetchAudio;
   var isSpeaking = false;
   var speakPromise;
@@ -644,7 +644,7 @@ function AmazonPollyTtsEngine() {
 
 
 function GoogleWavenetTtsEngine() {
-  var audio = document.createElement("AUDIO");
+  var audio = config.audio;
   var prefetchAudio;
   var isSpeaking = false;
   var speakPromise;
@@ -820,7 +820,7 @@ function GoogleWavenetTtsEngine() {
 
 
 function IbmWatsonTtsEngine() {
-  var audio = document.createElement("AUDIO");
+  var audio = config.audio;
   var isSpeaking = false;
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;

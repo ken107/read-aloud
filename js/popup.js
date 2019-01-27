@@ -1,7 +1,12 @@
 
 var showGotoPage;
+var master;
 
-$(function() {
+Promise.all([getBackgroundPage(), domReady()])
+  .then(function(res) {master = res[0]})
+  .then(initialize)
+
+function initialize() {
   $("#btnPlay").click(onPlay);
   $("#btnPause").click(onPause);
   $("#btnStop").click(onStop);
@@ -14,8 +19,7 @@ $(function() {
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
 
   updateButtons()
-    .then(getBackgroundPage)
-    .then(callMethod("getPlaybackState"))
+    .then(master.getPlaybackState)
     .then(function(state) {
       if (state != "PLAYING") $("#btnPlay").click();
     });
@@ -23,7 +27,7 @@ $(function() {
 
   refreshSize();
   checkAnnouncements();
-});
+}
 
 function handleError(err) {
   if (!err) return;
@@ -53,13 +57,11 @@ function handleError(err) {
 }
 
 function updateButtons() {
-  return getBackgroundPage().then(function(master) {
     return Promise.all([
       getSettings(),
       master.getPlaybackState(),
       master.getActiveSpeech()
     ])
-  })
   .then(spread(function(settings, state, speech) {
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
@@ -96,22 +98,19 @@ function updateButtons() {
 
 function onPlay() {
   $("#status").hide();
-  getBackgroundPage()
-    .then(callMethod("play", handleError))
+  master.play(handleError)
     .then(updateButtons)
     .catch(handleError)
 }
 
 function onPause() {
-  getBackgroundPage()
-    .then(callMethod("pause"))
+  master.pause()
     .then(updateButtons)
     .catch(handleError)
 }
 
 function onStop() {
-  getBackgroundPage()
-    .then(callMethod("stop"))
+  master.stop()
     .then(updateButtons)
     .catch(handleError)
 }
@@ -121,22 +120,19 @@ function onSettings() {
 }
 
 function onForward() {
-  getBackgroundPage()
-    .then(callMethod("forward"))
+  master.forward()
     .then(updateButtons)
     .catch(handleError)
 }
 
 function onRewind() {
-  getBackgroundPage()
-    .then(callMethod("rewind"))
+  master.rewind()
     .then(updateButtons)
     .catch(handleError)
 }
 
 function onSeek(n) {
-  getBackgroundPage()
-    .then(callMethod("seek", n))
+  master.seek(n)
     .catch(handleError)
 }
 

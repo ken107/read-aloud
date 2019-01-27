@@ -63,7 +63,8 @@ function playText(text, onEnd) {
       if (typeof onEnd == "function") onEnd(err);
     })
   }
-  return activeDoc.play()
+  return prepareAudio()
+    .then(activeDoc.play.bind(activeDoc))
     .catch(function(err) {
       handleError(err);
       closeDoc();
@@ -79,7 +80,8 @@ function play(onEnd) {
       if (typeof onEnd == "function") onEnd(err);
     })
   }
-  return activeDoc.play()
+  return prepareAudio()
+    .then(activeDoc.play.bind(activeDoc))
     .catch(function(err) {
       handleError(err);
       closeDoc();
