@@ -126,10 +126,17 @@ function Speech(texts, options) {
     return Promise.resolve();
   }
 
+  function canPause() {
+    return engine.pause && !(
+      isChromeOSNative(options.voice) ||
+      options.voice.voiceName == "US English Female TTS (by Google)"
+    )
+  }
+
   function pause() {
     return ready
       .then(function() {
-        if (engine.pause) {
+        if (canPause()) {
           clearTimeout(delayedPlayTimer);
           engine.pause();
           state = "PAUSED";

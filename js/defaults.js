@@ -98,6 +98,10 @@ function isGoogleNative(voice) {
   return /^Google\s/.test(voice.voiceName);
 }
 
+function isChromeOSNative(voice) {
+  return /^Chrome\sOS\s/.test(voice.voiceName);
+}
+
 function isGoogleTranslate(voice) {
   return /^GoogleTranslate /.test(voice.voiceName);
 }
