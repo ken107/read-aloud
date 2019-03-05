@@ -165,7 +165,7 @@ function refreshSize() {
       var windowSize = getWindowSize(settings);
       $("#highlight").css({
         "font-size": fontSize,
-        width: windowSize[0],
+        width: isMobileOS() ? "100%" : windowSize[0],
         height: windowSize[1]
       })
     })
@@ -183,9 +183,9 @@ function refreshSize() {
   }
   function getWindowSize(settings) {
     switch (settings.highlightWindowSize || defaults.highlightWindowSize) {
-      case 1: return [400, 300];
-      case 2: return [520, 390];
-      default: return [720, 420];
+      case 1: return [430, 330];
+      case 2: return [550, 420];
+      default: return [750, 450];
     }
   }
 }
