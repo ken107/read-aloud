@@ -36,7 +36,8 @@
   function getRequireJs() {
     if (window.readAloudDoc) return null;
     if (location.hostname == "docs.google.com") {
-      if ($(".kix-appview-editor").length) return ["js/content/googleDocsUtil.js", "js/content/google-doc.js"];
+      if (/^\/presentation\/d\//.test(location.pathname)) return ["js/content/google-slides.js"];
+      else if ($(".kix-appview-editor").length) return ["js/content/googleDocsUtil.js", "js/content/google-doc.js"];
       else if ($(".drive-viewer-paginated-scrollable").length) return ["js/content/google-drive-doc.js"];
       else return ["js/content/html-doc.js"];
     }
@@ -142,4 +143,24 @@ function loadPageScript(url) {
     cache: true,
     url: url
   });
+}
+
+function simulateMouseEvent(element, eventName, coordX, coordY) {
+  element.dispatchEvent(new MouseEvent(eventName, {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    clientX: coordX,
+    clientY: coordY,
+    button: 0
+  }));
+}
+
+function simulateClick(elementToClick) {
+  var box = elementToClick.getBoundingClientRect(),
+      coordX = box.left + (box.right - box.left) / 2,
+      coordY = box.top + (box.bottom - box.top) / 2;
+  simulateMouseEvent (elementToClick, "mousedown", coordX, coordY);
+  simulateMouseEvent (elementToClick, "mouseup", coordX, coordY);
+  simulateMouseEvent (elementToClick, "click", coordX, coordY);
 }
