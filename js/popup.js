@@ -36,6 +36,12 @@ function handleError(err) {
         case "#open-extension-settings":
           brapi.tabs.create({url: "chrome://extensions/?id=" + brapi.runtime.id});
           break;
+        case "#request-permissions":
+          requestPermissions(errInfo.perms)
+            .then(function(granted) {
+              if (granted) $("#btnPlay").click();
+            })
+          break;
       }
     })
 
@@ -45,6 +51,9 @@ function handleError(err) {
           if (token) $("#btnPlay").click();
         })
         .catch(console.error)
+    }
+    else if (errInfo.code == "error_upload_pdf") {
+      setTabUrl(undefined, "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html");
     }
   }
   else {

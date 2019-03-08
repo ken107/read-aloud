@@ -64,7 +64,7 @@
     else {
       return Promise.resolve(readAloudDoc.getTexts(index, quietly))
         .then(function(texts) {
-          if (texts) {
+          if (texts && Array.isArray(texts)) {
             texts = texts.map(removeLinks);
             if (!quietly) console.log(texts.join("\n\n"));
           }
@@ -128,12 +128,12 @@ function tryGetTexts(getTexts, millis) {
       if (texts && !texts.length && millis-500 > 0) return tryGetTexts(getTexts, millis-500);
       else return texts;
     })
+}
 
-  function waitMillis(millis) {
-    return new Promise(function(fulfill) {
-      setTimeout(fulfill, millis);
-    });
-  }
+function waitMillis(millis) {
+  return new Promise(function(fulfill) {
+    setTimeout(fulfill, millis);
+  })
 }
 
 function loadPageScript(url) {

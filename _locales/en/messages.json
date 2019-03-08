@@ -80,6 +80,9 @@
   "error_file_access": {
     "message": "You need to grant Read Aloud access to file URLs in extension [settings](open-extension-settings)"
   },
+  "error_add_permissions": {
+    "message": "You need to grant Read Aloud additional [permissions](request-permissions) for this website"
+  },
   "error_login_required": {
     "message": "Please sign in to use the Premium Voices"
   },

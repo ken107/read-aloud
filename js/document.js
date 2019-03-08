@@ -21,33 +21,80 @@ function SimpleSource(texts) {
 
 
 function TabSource() {
+  var handlers = [
+    {
+      match: function(url) {
+        return config.unsupportedSites.some(function(site) {
+          return (typeof site == "string" && url.startsWith(site)) || (site instanceof RegExp && site.test(url));
+        })
+      },
+      validate: function() {
+        throw new Error(JSON.stringify({code: "error_page_unreadable"}));
+      }
+    },
+    {
+      match: function(url) {
+        return /^file:.*\.pdf$/i.test(url.split("?")[0]);
+      },
+      validate: function() {
+        throw new Error(JSON.stringify({code: "error_upload_pdf"}));
+      }
+    },
+    {
+      match: function(url) {
+        return /^file:/.test(url);
+      },
+      validate: function() {
+        return new Promise(function(fulfill) {
+          brapi.extension.isAllowedFileSchemeAccess(fulfill);
+        })
+        .then(function(allowed) {
+          if (!allowed) throw new Error(JSON.stringify({code: "error_file_access"}));
+        })
+      }
+    },
+    {
+      match: function(url) {
+        return /^https:\/\/play.google.com\/books\/reader/.test(url)
+      },
+      validate: function() {
+        var perms = {
+          permissions: ["webNavigation"],
+          origins: ["https://books.googleusercontent.com/"]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
+          })
+      },
+      getFrameId: function(frames) {
+        var frame = frames.find(function(frame) {
+          return frame.url.startsWith("https://books.googleusercontent.com/");
+        })
+        return frame && frame.frameId;
+      },
+      extraScripts: ["js/content/google-play-book.js"]
+    },
+  ]
+
+
   var tabPromise = getActiveTab();
-  var peer;
+  var tab, frameId, extraScripts, peer;
   var waiting = true;
 
   this.ready = tabPromise
-    .then(function(tab) {
-      if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}));
-      if (tab.url) {
-        var url = tab.url.replace(/\?.*/, '');
-        if (url.startsWith("file:")) {
-          if (url.endsWith(".pdf")) {
-            setTabUrl(tab.id, "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html");
-            throw new Error(JSON.stringify({code: "error_upload_pdf"}));
-          }
-          else {
-            return new Promise(function(fulfill) {
-              brapi.extension.isAllowedFileSchemeAccess(fulfill);
-            })
-            .then(function(allowed) {
-              if (!allowed) throw new Error(JSON.stringify({code: "error_file_access"}));
-            })
-          }
-        }
-        else if (isUnsupportedSite(tab.url)) {
-          throw new Error(JSON.stringify({code: "error_page_unreadable"}));
-        }
-      }
+    .then(function(res) {
+      if (!res) throw new Error(JSON.stringify({code: "error_page_unreadable"}));
+      tab = res;
+    })
+    .then(function() {
+      var handler = tab.url && handlers.find(function(handler) {return handler.match(tab.url)});
+      return handler && handler.validate()
+        .then(function() {
+          extraScripts = handler.extraScripts;
+          if (handler.getFrameId)
+            return getAllFrames(tab.id).then(handler.getFrameId).then(function(res) {frameId = res});
+        })
     })
     .then(waitForConnect)
     .then(function(port) {
@@ -64,7 +111,7 @@ function TabSource() {
     })
     .then(extraAction(function(info) {
       if (info.requireJs) {
-        var tasks = info.requireJs.map(function(file) {return executeFile.bind(null, file)});
+        var tasks = info.requireJs.map(function(file) {return inject.bind(null, file)});
         return inSequence(tasks);
       }
     }))
@@ -83,7 +130,9 @@ function TabSource() {
   this.getTexts = function(index, quietly) {
     if (!peer) return Promise.resolve(null);
     waiting = true;
-    return peer.invoke("getTexts", index, quietly).finally(function() {waiting = false});
+    return peer.invoke("getTexts", index, quietly)
+      .then(function(res) {return res && res.inject ? getFrameTexts(res.inject) : res})
+      .finally(function() {waiting = false})
   }
   this.close = function() {
     if (peer) peer.disconnect();
@@ -116,12 +165,20 @@ function TabSource() {
       var timer = setTimeout(onTimeout, 15000);
     })
   }
-
   function injectScripts() {
-    return executeFile("js/jquery-3.1.1.min.js")
-      .then(executeFile.bind(null, "js/es6-promise.auto.min.js"))
-      .then(executeFile.bind(null, "js/messaging.js"))
-      .then(executeFile.bind(null, "js/content.js"))
+    return inject("js/jquery-3.1.1.min.js")
+      .then(inject.bind(null, "js/es6-promise.auto.min.js"))
+      .then(inject.bind(null, "js/messaging.js"))
+      .then(function() {
+        if (extraScripts) {
+          var tasks = extraScripts.map(function(file) {return inject.bind(null, file)});
+          return inSequence(tasks);
+        }
+      })
+      .then(inject.bind(null, "js/content.js"))
+  }
+  function inject(file) {
+    return executeScript({file: file, tabId: tab.id, frameId: frameId});
   }
 }
 
