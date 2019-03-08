@@ -75,26 +75,63 @@ function TabSource() {
       },
       extraScripts: ["js/content/google-play-book.js"]
     },
+    {
+      match: function(url) {
+        return /^https:\/\/\w+\.(vitalsource|chegg)\.com\/#\/books\//.test(url);
+      },
+      validate: function() {
+        var perms = {
+          permissions: ["webNavigation"],
+          origins: ["https://jigsaw.vitalsource.com/", "https://jigsaw.chegg.com/"]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
+          })
+      },
+      getTexts: function(tab) {
+        function tryGetFrame(millis) {
+          return getAllFrames(tab.id)
+            .then(function(frames) {
+              return frames.find(function(frame) {return frame.frameId && frame.parentFrameId});
+            })
+            .then(function(frame) {
+              if (!frame && millis > 0) return waitMillis(500).then(tryGetFrame.bind(null, millis-500));
+              else return frame;
+            })
+        }
+        return tryGetFrame(5000)
+          .then(function(frame) {
+            if (frame) return getFrameTexts(tab.id, frame.frameId, ["js/jquery-3.1.1.min.js", "js/es6-promise.auto.min.js", "js/messaging.js", "js/content/vitalsource-book.js"]);
+            else return null;
+          })
+      },
+      extraScripts: ["js/content/vitalsource-book.js"]
+    },
+    {
+      match: function() {
+        return true;
+      },
+      validate: function() {
+      }
+    }
   ]
 
 
   var tabPromise = getActiveTab();
-  var tab, frameId, extraScripts, peer;
+  var tab, handler, frameId, peer;
   var waiting = true;
 
   this.ready = tabPromise
     .then(function(res) {
       if (!res) throw new Error(JSON.stringify({code: "error_page_unreadable"}));
       tab = res;
+      handler = handlers.find(function(h) {return h.match(tab.url || "")});
+      return handler.validate();
     })
     .then(function() {
-      var handler = tab.url && handlers.find(function(handler) {return handler.match(tab.url)});
-      return handler && handler.validate()
-        .then(function() {
-          extraScripts = handler.extraScripts;
-          if (handler.getFrameId)
-            return getAllFrames(tab.id).then(handler.getFrameId).then(function(res) {frameId = res});
-        })
+      if (handler.getFrameId)
+        return getAllFrames(tab.id).then(handler.getFrameId).then(function(res) {frameId = res});
     })
     .then(waitForConnect)
     .then(function(port) {
@@ -131,7 +168,10 @@ function TabSource() {
     if (!peer) return Promise.resolve(null);
     waiting = true;
     return peer.invoke("getTexts", index, quietly)
-      .then(function(res) {return res && res.inject ? getFrameTexts(res.inject) : res})
+      .then(function(res) {
+        if (handler.getTexts) return handler.getTexts(tab);
+        else return res;
+      })
       .finally(function() {waiting = false})
   }
   this.close = function() {
@@ -170,8 +210,8 @@ function TabSource() {
       .then(inject.bind(null, "js/es6-promise.auto.min.js"))
       .then(inject.bind(null, "js/messaging.js"))
       .then(function() {
-        if (extraScripts) {
-          var tasks = extraScripts.map(function(file) {return inject.bind(null, file)});
+        if (handler.extraScripts) {
+          var tasks = handler.extraScripts.map(function(file) {return inject.bind(null, file)});
           return inSequence(tasks);
         }
       })

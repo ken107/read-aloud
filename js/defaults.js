@@ -20,8 +20,6 @@ var config = {
   unsupportedSites: [
     'https://chrome.google.com/webstore',
     'https://addons.mozilla.org',
-    'https://ereader.chegg.com',
-    /^https:\/\/\w+\.vitalsource\.com/,
   ],
 }
 
@@ -191,6 +189,7 @@ function executeFile(file) {
 }
 
 function executeScript(details) {
+  console.log(details);
   var tabId = details.tabId;
   delete details.tabId;
   return new Promise(function(fulfill, reject) {
@@ -598,5 +597,36 @@ function isMobileOS() {
 function getAllFrames(tabId) {
   return new Promise(function(fulfill) {
     brapi.webNavigation.getAllFrames({tabId: tabId}, fulfill);
+  })
+}
+
+function getFrameTexts(tabId, frameId, scripts) {
+  return new Promise(function(fulfill, reject) {
+    function onConnect(port) {
+      if (port.name == "ReadAloudGetTextsScript") {
+        brapi.runtime.onConnect.removeListener(onConnect);
+        var peer = new RpcPeer(new ExtensionMessagingPeer(port));
+        peer.onInvoke = function(method, arg0) {
+          clearTimeout(timer);
+          if (method == "onTexts") fulfill(arg0);
+          else reject(new Error("Unexpected"));
+        }
+      }
+    }
+    function onError(err) {
+      brapi.runtime.onConnect.removeListener(onConnect);
+      clearTimeout(timer);
+      reject(err);
+    }
+    function onTimeout() {
+      brapi.runtime.onConnect.removeListener(onConnect);
+      reject(new Error("Timeout waiting for content script to connect"));
+    }
+    brapi.runtime.onConnect.addListener(onConnect);
+    var tasks = scripts.map(function(file) {
+      return executeScript.bind(null, {file: file, tabId: tabId, frameId: frameId});
+    })
+    inSequence(tasks).catch(onError);
+    var timer = setTimeout(onTimeout, 15000);
   })
 }
