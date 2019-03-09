@@ -218,7 +218,9 @@ function TabSource() {
       .then(inject.bind(null, "js/content.js"))
   }
   function inject(file) {
-    return executeScript({file: file, tabId: tab.id, frameId: frameId});
+    var details = {file: file, tabId: tab.id};
+    if (frameId) details.frameId = frameId;
+    return executeScript(details);
   }
 }
 
