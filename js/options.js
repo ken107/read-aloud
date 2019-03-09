@@ -173,6 +173,7 @@ function populateVoices(allVoices, settings) {
     })
 
   //create the premium optgroup
+  if (getBrowser() == "chrome") {
   $("<optgroup>").appendTo($("#voices"));
   var premium = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
@@ -193,16 +194,19 @@ function populateVoices(allVoices, settings) {
         premium.remove();
       }
     })
+  }
 
   //create the additional optgroup
   $("<optgroup>").appendTo($("#voices"));
   var additional = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_additional"))
     .appendTo($("#voices"));
+  if (getBrowser() == "chrome") {
   $("<option>")
     .val("@premium")
     .text(brapi.i18n.getMessage("options_enable_premium_voices"))
     .appendTo(additional)
+  }
   $("<option>")
     .val("@custom")
     .text(brapi.i18n.getMessage("options_enable_custom_voices"))
