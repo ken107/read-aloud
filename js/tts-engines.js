@@ -867,12 +867,15 @@ function IbmWatsonTtsEngine() {
     assert(text && voice);
     var matches = voice.voiceName.match(/^IBM-Watson .* \((\w+)\)$/);
     var voiceName = voice.lang + "_" + matches[1] + "Voice";
-    return "https://text-to-speech-demo.ng.bluemix.net/api/synthesize?text=" + encodeURIComponent(text) + "&voice=" + encodeURIComponent(voiceName) + "&accept=" + encodeURIComponent("audio/mp3");
+    return "https://text-to-speech-demo.ng.bluemix.net/api/v1/synthesize?text=" + encodeURIComponent(text) + "&voice=" + encodeURIComponent(voiceName) + "&download=true&accept=" + encodeURIComponent("audio/mp3");
   }
   var voices = [
       {"voice_name": "IBM-Watson American English (Allison)", "lang": "en-US", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson American English (AllisonV2)", "lang": "en-US", "event_types": ["start", "end", "error"]},
       {"voice_name": "IBM-Watson American English (Lisa)", "lang": "en-US", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson American English (LisaV2)", "lang": "en-US", "event_types": ["start", "end", "error"]},
       {"voice_name": "IBM-Watson American English (Michael)", "lang": "en-US", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson American English (MichaelV2)", "lang": "en-US", "event_types": ["start", "end", "error"]},
       {"voice_name": "IBM-Watson British English (Kate)", "lang": "en-GB", "event_types": ["start", "end", "error"]},
       {"voice_name": "IBM-Watson Castilian Spanish (Enrique)", "lang": "es-ES", "event_types": ["start", "end", "error"]},
       {"voice_name": "IBM-Watson Castilian Spanish (Laura)", "lang": "es-ES", "event_types": ["start", "end", "error"]},
@@ -882,6 +885,7 @@ function IbmWatsonTtsEngine() {
       {"voice_name": "IBM-Watson German (Birgit)", "lang": "de-DE", "event_types": ["start", "end", "error"]},
       {"voice_name": "IBM-Watson French (Renee)", "lang": "fr-FR", "event_types": ["start", "end", "error"]},
       {"voice_name": "IBM-Watson Italian (Francesca)", "lang": "it-IT", "event_types": ["start", "end", "error"]},
+      {"voice_name": "IBM-Watson Italian (FrancescaV2)", "lang": "it-IT", "event_types": ["start", "end", "error"]},
       {"voice_name": "IBM-Watson Japanese (Emi)", "lang": "ja-JP", "event_types": ["start", "end", "error"]},
       {"voice_name": "IBM-Watson Brazilian Portuguese (Isabela)", "lang": "pt-BR", "event_types": ["start", "end", "error"]}
     ]
