@@ -55,7 +55,7 @@ function TabSource() {
     },
     {
       match: function(url) {
-        return /^https:\/\/play.google.com\/books\/reader/.test(url)
+        return /^https:\/\/play.google.com\/books\/reader/.test(url) || /^https:\/\/books.google.com\/ebooks\/app#reader/.test(url);
       },
       validate: function() {
         var perms = {

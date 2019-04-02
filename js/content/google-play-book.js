@@ -1,7 +1,7 @@
 
 var readAloudDoc = new function() {
-  var btnNext = document.getElementsByClassName("gb-pagination-controls-right")[0];
-  var btnPrev = document.getElementsByClassName("gb-pagination-controls-left")[0];
+  var btnNext = $(".gb-pagination-controls-right").get(0);
+  var btnPrev = $(".gb-pagination-controls-left").get(0);
   var currentIndex = 0;
 
   this.getCurrentIndex = function() {
@@ -16,7 +16,10 @@ var readAloudDoc = new function() {
   }
 
   function getTexts() {
-    return Array.prototype.slice.call(document.getElementsByTagName("p"))
-      .map(function(elem) {return elem.innerText})
+    var dontRead = $("sup").hide();
+    var texts = $("p, .title-chapter, .subtitle-chapter, .p, .p-indent").get()
+      .map(function(elem) {return elem.innerText.trim()})
+    dontRead.show();
+    return texts;
   }
 }
