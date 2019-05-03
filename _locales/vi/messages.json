@@ -72,7 +72,7 @@
     "message": "Không thể đọc to trang web này"
   },
   "error_login_required": {
-    "message": "Vui lòng đăng nhập để sử dụng các giọng chất lượng cao"
+    "message": "Vui lòng [đăng nhập](sign-in) để sử dụng các giọng chất lượng cao"
   },
   "error_voice_unavailable": {
     "message": "Giọng nói không khả dụng, vui lòng chọn một giọng nói khác"

@@ -84,7 +84,7 @@
     "message": "You need to grant Read Aloud additional [permissions](request-permissions) for this website"
   },
   "error_login_required": {
-    "message": "Please sign in to use the Premium Voices"
+    "message": "Please [sign in](sign-in) to use the Premium Voices"
   },
   "error_voice_unavailable": {
     "message": "Voice unavailable, please pick another"

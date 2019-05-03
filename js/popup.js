@@ -42,17 +42,19 @@ function handleError(err) {
               if (granted) $("#btnPlay").click();
             })
           break;
+        case "#sign-in":
+          getAuthToken({interactive: true})
+            .then(function(token) {
+              if (token) $("#btnPlay").click();
+            })
+            .catch(function(err) {
+              $("#status").text(err.message).show();
+            })
+          break;
       }
     })
 
-    if (errInfo.code == "error_login_required") {
-      getAuthToken({interactive: true})
-        .then(function(token) {
-          if (token) $("#btnPlay").click();
-        })
-        .catch(console.error)
-    }
-    else if (errInfo.code == "error_upload_pdf") {
+    if (errInfo.code == "error_upload_pdf") {
       setTabUrl(undefined, "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html");
     }
   }

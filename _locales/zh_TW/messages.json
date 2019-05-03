@@ -84,7 +84,7 @@
     "message": "您需要授權 Read Aloud 額外的權限以存取此網站"
   },
   "error_login_required": {
-    "message": "請登錄以使用高級語音"
+    "message": "請[登錄](sign-in)以使用高級語音"
   },
   "error_voice_unavailable": {
     "message": "無法使用此語音，請選擇其他語音"
