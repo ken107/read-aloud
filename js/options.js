@@ -245,7 +245,7 @@ function updateDependents(settings) {
   if (settings.voiceName && isGoogleWavenet(settings)) $("#voice-info").show();
   else $("#voice-info").hide();
 
-  if (settings.voiceName && isRemoteVoice(settings)) $(".pitch-visible").hide();
+  if (settings.voiceName && isRemoteVoice(settings) && !isGoogleWavenet(settings)) $(".pitch-visible").hide();
   else $(".pitch-visible").show();
 
   if ((!settings.voiceName || !isRemoteVoice(settings)) && settings.rate > 2) $("#rate-warning").show();
