@@ -34,12 +34,23 @@ var defaults = {
 
 
 function getQueryString() {
+  return location.search ? parseQueryString(location.search) : {};
+}
+
+function parseQueryString(search) {
+  if (search.charAt(0) != '?') throw new Error("Invalid argument");
   var queryString = {};
-  if (location.search) location.search.substr(1).replace(/\+/g, '%20').split('&').forEach(function(tuple) {
+  search.substr(1).replace(/\+/g, '%20').split('&').forEach(function(tuple) {
     var tokens = tuple.split('=');
     queryString[decodeURIComponent(tokens[0])] = tokens[1] && decodeURIComponent(tokens[1]);
   })
   return queryString;
+}
+
+function parseUrl(url) {
+  var parser = document.createElement("A");
+  parser.href = url;
+  return parser;
 }
 
 function getSettings(names) {
@@ -220,6 +231,22 @@ function getActiveTab() {
 function setTabUrl(tabId, url) {
   return new Promise(function(fulfill) {
     brapi.tabs.update(tabId, {url: url}, fulfill);
+  })
+}
+
+function createTab(url, waitForLoad) {
+  return new Promise(function(fulfill) {
+    brapi.tabs.create({url: url}, function(tab) {
+      if (!waitForLoad) fulfill(tab);
+      else brapi.tabs.onUpdated.addListener(onUpdated);
+
+      function onUpdated(tabId, changeInfo) {
+        if (changeInfo.status == "complete" && tabId == tab.id) {
+          brapi.tabs.onUpdated.removeListener(onUpdated);
+          fulfill(tab);
+        }
+      }
+    })
   })
 }
 
@@ -539,11 +566,8 @@ function StateMachine(states) {
 }
 
 function requestPermissions(perms) {
-  return new Promise(function(fulfill, reject) {
-    brapi.permissions.request(perms, function(granted) {
-      if (granted) fulfill();
-      else reject(new Error("Permission not granted"));
-    })
+  return new Promise(function(fulfill) {
+    brapi.permissions.request(perms, fulfill);
   })
 }
 

@@ -164,3 +164,65 @@ function reportIssue(url, comment) {
       })
     })
 }
+
+function authWavenet() {
+  createTab("https://cloud.google.com/text-to-speech/#streaming_demo_section", true)
+    .then(function(tab) {
+      addRequestListener();
+      brapi.tabs.onRemoved.addListener(onTabRemoved);
+      return showInstructions();
+
+      function addRequestListener() {
+        brapi.webRequest.onBeforeRequest.addListener(onRequest, {
+          urls: ["https://cxl-services.appspot.com/proxy*"],
+          tabId: tab.id
+        })
+      }
+      function onTabRemoved(tabId) {
+        if (tabId == tab.id) {
+          brapi.tabs.onRemoved.removeListener(onTabRemoved);
+          brapi.webRequest.onBeforeRequest.removeListener(onRequest);
+        }
+      }
+      function onRequest(details) {
+        var parser = parseUrl(details.url);
+        var qs = parser.search ? parseQueryString(parser.search) : {};
+        if (qs.token) {
+          updateSettings({gcpToken: qs.token});
+          showSuccess();
+        }
+      }
+      function showInstructions() {
+        return executeScript({
+          tabId: tab.id,
+          code: [
+            "var elem = document.createElement('DIV')",
+            "elem.id = 'ra-notice'",
+            "elem.style.position = 'fixed'",
+            "elem.style.top = '0'",
+            "elem.style.left = '0'",
+            "elem.style.right = '0'",
+            "elem.style.backgroundColor = 'yellow'",
+            "elem.style.padding = '20px'",
+            "elem.style.fontSize = 'larger'",
+            "elem.style.zIndex = 999000",
+            "elem.style.textAlign = 'center'",
+            "elem.innerHTML = 'Please click the blue SPEAK-IT button, then check the I-AM-NOT-A-ROBOT checkbox.'",
+            "document.body.appendChild(elem)",
+          ]
+          .join(";\n")
+        })
+      }
+      function showSuccess() {
+        return executeScript({
+          tabId: tab.id,
+          code: [
+            "var elem = document.getElementById('ra-notice')",
+            "elem.style.backgroundColor = '#0d0'",
+            "elem.innerHTML = 'Successful, you can now use Google Wavenet voices. You may close this tab.'"
+          ]
+          .join(";\n")
+        })
+      }
+    })
+}

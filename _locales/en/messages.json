@@ -92,6 +92,9 @@
   "error_payment_required": {
     "message": "Out of credit"
   },
+  "error_wavenet_auth_required": {
+    "message": "You need to grant additional [permissions](auth-wavenet) to enable Google Wavenet voices"
+  },
   "languages_heading": {
     "message": "Select Languages"
   },

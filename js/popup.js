@@ -51,6 +51,15 @@ function handleError(err) {
               $("#status").text(err.message).show();
             })
           break;
+        case "#auth-wavenet":
+          requestPermissions({
+              permissions: ["webRequest"],
+              origins: ["https://cloud.google.com/", "https://cxl-services.appspot.com/"]
+            })
+            .then(function(granted) {
+              if (granted) getBackgroundPage().then(callMethod("authWavenet"));
+            })
+          break;
       }
     })
 

@@ -42,10 +42,6 @@ function Speech(texts, options) {
     if (isGoogleWavenet(options.voice)) {
       return googleWavenetTtsEngine.ready()
         .then(function() {return googleWavenetTtsEngine})
-        .catch(function(err) {
-          console.error(err);
-          throw new Error(JSON.stringify({code: "error_voice_unavailable"}));
-        })
     }
     if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
     if (isRemoteVoice(options.voice)) {

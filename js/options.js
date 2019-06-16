@@ -165,12 +165,6 @@ function populateVoices(allVoices, settings) {
       .text(voice.voiceName)
       .appendTo(standard);
   });
-  googleWavenetTtsEngine.ready()
-    .catch(function(err) {
-      standard.children("option")
-        .filter(function() {return isGoogleWavenet({voiceName: $(this).val()})})
-        .remove()
-    })
 
   //create the premium optgroup
   if (getBrowser() == "chrome") {

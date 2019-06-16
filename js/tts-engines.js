@@ -655,7 +655,7 @@ function GoogleWavenetTtsEngine() {
     return getSettings(["gcpCreds"])
       .then(function(items) {return items.gcpCreds})
       .then(function(creds) {
-        if (!creds) return ajaxGet("https://cxl-services.appspot.com/proxy?url=https%3A%2F%2Ftexttospeech.googleapis.com%2Fv1beta1%2Fvoices");
+        if (!creds) return getAudioUrl("hello", {voiceName: "GoogleWavenet US English (Alan)", lang: "en-US"}, 1);
       })
   }
   this.speak = function(utterance, options, onEvent) {
@@ -716,9 +716,8 @@ function GoogleWavenetTtsEngine() {
     assert(text && voice && pitch != null);
     var matches = voice.voiceName.match(/^Google(\w+) .* \((\w+)\)$/);
     var voiceName = voice.lang + "-" + matches[1] + "-" + matches[2][0];
-    return getSettings(["gcpCreds"])
-      .then(function(items) {return items.gcpCreds})
-      .then(function(creds) {
+    return getSettings(["gcpCreds", "gcpToken"])
+      .then(function(settings) {
         var postData = {
           input: {
             text: text
@@ -732,8 +731,13 @@ function GoogleWavenetTtsEngine() {
             pitch: (pitch-1)*20
           }
         }
-        if (!creds) return ajaxPost("https://cxl-services.appspot.com/proxy?url=https%3A%2F%2Ftexttospeech.googleapis.com%2Fv1beta1%2Ftext%3Asynthesize", postData, "json");
-        else return ajaxPost("https://texttospeech.googleapis.com/v1beta1/text:synthesize?key=" + creds.apiKey, postData, "json");
+        if (settings.gcpCreds) return ajaxPost("https://texttospeech.googleapis.com/v1beta1/text:synthesize?key=" + settings.gcpCreds.apiKey, postData, "json");
+        if (!settings.gcpToken) throw new Error(JSON.stringify({code: "error_wavenet_auth_required"}));
+        return ajaxPost("https://cxl-services.appspot.com/proxy?url=https://texttospeech.googleapis.com/v1beta1/text:synthesize&token=" + settings.gcpToken, postData, "json")
+          .catch(function(err) {
+            console.error(err);
+            throw new Error(JSON.stringify({code: "error_wavenet_auth_required"}));
+          })
       })
       .then(function(responseText) {
         var data = JSON.parse(responseText);
