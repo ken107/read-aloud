@@ -93,6 +93,7 @@ function initialize(allVoices, settings) {
     var voice = voiceName && findVoiceByName(allVoices, voiceName);
     var lang = (voice && voice.lang || "en-US").split("-")[0];
     $("#test-voice .spinner").show();
+    $("#status").hide();
     Promise.resolve(demoSpeech[lang])
       .then(function(speech) {
         if (speech) return speech;
@@ -112,8 +113,7 @@ function initialize(allVoices, settings) {
           })
       })
       .catch(function(err) {
-        console.error(err);
-        alert("An error occurred: " + err.message);
+        handleError(err);
       })
       .finally(function() {
         $("#test-voice .spinner").hide();
@@ -244,4 +244,27 @@ function updateDependents(settings) {
 
   if ((!settings.voiceName || !isRemoteVoice(settings)) && settings.rate > 2) $("#rate-warning").show();
   else $("#rate-warning").hide();
+}
+
+function handleError(err) {
+  if (/^{/.test(err.message)) {
+    var errInfo = JSON.parse(err.message);
+    $("#status").html(formatError(errInfo)).show();
+    $("#status a").click(function() {
+      switch ($(this).attr("href")) {
+        case "#auth-wavenet":
+          requestPermissions({
+              permissions: ["webRequest"],
+              origins: ["https://cloud.google.com/", "https://cxl-services.appspot.com/"]
+            })
+            .then(function(granted) {
+              if (granted) getBackgroundPage().then(callMethod("authWavenet"));
+            })
+          break;
+      }
+    })
+  }
+  else {
+    $("#status").text(err.message).show();
+  }
 }
