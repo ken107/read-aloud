@@ -3,14 +3,7 @@ var readAloudDoc = new function() {
   var queue = new EventQueue("PdfDoc");
   var ready = location.pathname.match(/pdf-upload\.html$/)
     ? Promise.resolve()
-    : new Promise(function(fulfill) {
-        var url = getPdfUrl();    //must call before loading the page script
-        queue.once("pageScriptLoaded", function() {
-          queue.trigger("loadDocument", url);
-        })
-        queue.once("documentLoaded", fulfill);
-        loadPageScript("https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-viewer.js");
-      })
+    : Promise.reject(new Error(JSON.stringify({code: "error_upload_pdf"})))
 
   this.getCurrentIndex = function() {
     return ready.then(function() {
