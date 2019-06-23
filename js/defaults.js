@@ -21,6 +21,10 @@ var config = {
     'https://chrome.google.com/webstore',
     'https://addons.mozilla.org',
   ],
+  wavenetPerms: {
+    permissions: ["webRequest"],
+    origins: ["https://cloud.google.com/", "https://cxl-services.appspot.com/"]
+  },
 }
 
 var defaults = {

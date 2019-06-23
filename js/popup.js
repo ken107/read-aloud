@@ -52,10 +52,7 @@ function handleError(err) {
             })
           break;
         case "#auth-wavenet":
-          requestPermissions({
-              permissions: ["webRequest"],
-              origins: ["https://cloud.google.com/", "https://cxl-services.appspot.com/"]
-            })
+          requestPermissions(config.wavenetPerms)
             .then(function(granted) {
               if (granted) getBackgroundPage().then(callMethod("authWavenet"));
             })
