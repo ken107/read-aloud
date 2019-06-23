@@ -253,6 +253,11 @@ function handleError(err) {
     $("#status a").click(function() {
       switch ($(this).attr("href")) {
         case "#auth-wavenet":
+          if (getBrowser() == "firefox") {
+            createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet");
+            window.close();
+            break;
+          }
           requestPermissions(config.wavenetPerms)
             .then(function(granted) {
               if (granted) getBackgroundPage().then(callMethod("authWavenet"));
