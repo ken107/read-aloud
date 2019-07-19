@@ -658,3 +658,26 @@ function getFrameTexts(tabId, frameId, scripts) {
     var timer = setTimeout(onTimeout, 15000);
   })
 }
+
+function promiseTimeout(millis, errorMsg, promise) {
+  return new Promise(function(fulfill, reject) {
+    var timedOut = false;
+    var timer = setTimeout(onTimeout, millis);
+    promise.then(onFulfill, onReject);
+
+    function onFulfill(value) {
+      if (timedOut) return;
+      clearTimeout(timer);
+      fulfill(value);
+    }
+    function onReject(err) {
+      if (timedOut) return;
+      clearTimeout(timer);
+      reject(err);
+    }
+    function onTimeout() {
+      timedOut = true;
+      reject(new Error(errorMsg));
+    }
+  })
+}

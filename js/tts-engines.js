@@ -96,16 +96,20 @@ function WebSpeechEngine() {
     callback(speechSynthesis.speaking);
   }
   this.getVoices = function() {
-    return new Promise(function(fulfill) {
+    return promiseTimeout(1500, "Timeout WebSpeech getVoices", new Promise(function(fulfill) {
       var voices = speechSynthesis.getVoices() || [];
       if (voices.length) fulfill(voices);
       else speechSynthesis.onvoiceschanged = function() {
         fulfill(speechSynthesis.getVoices() || []);
       }
-    })
+    }))
     .then(function(voices) {
       for (var i=0; i<voices.length; i++) voices[i].voiceName = voices[i].name;
       return voices;
+    })
+    .catch(function(err) {
+      console.error(err);
+      return [];
     })
   }
 }
