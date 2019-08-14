@@ -72,6 +72,14 @@ function initialize(allVoices, settings) {
     })
 
 
+  //volume
+  $("#volume")
+    .slider("value", settings.volume || defaults.volume)
+    .on("slidechange", function() {
+      saveSettings({volume: $(this).slider("value")});
+    })
+
+
   //showHighlighting
   $("[name=highlighting]")
     .prop("checked", function() {
