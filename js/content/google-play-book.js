@@ -12,7 +12,7 @@ var readAloudDoc = new function() {
     var delta = Math.abs(index-currentIndex);
     for (; currentIndex<index; currentIndex++) simulateClick(btnNext);
     for (; currentIndex>index; currentIndex--) simulateClick(btnPrev);
-    return waitMillis(500+delta*500).then(getTexts);
+    return waitMillis(1500+delta*500).then(getTexts);
   }
 
   function getTexts() {
