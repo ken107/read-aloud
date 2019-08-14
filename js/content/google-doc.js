@@ -30,7 +30,8 @@ var readAloudDoc = new function() {
   function getTexts() {
     return $(".kix-paragraphrenderer", this).get()
       .map(getInnerText)
-      .filter(isNotEmpty);
+      .filter(isNotEmpty)
+      .map(removeDumbChars)
   }
 
   function getSelectedText() {
@@ -49,6 +50,10 @@ var readAloudDoc = new function() {
         return index != -1;
       })
     }
-    return selectionState.text;
+    return removeDumbChars(selectionState.text);
+  }
+
+  function removeDumbChars(text) {
+    return text && text.replace(/\u200c/g, '');
   }
 }
