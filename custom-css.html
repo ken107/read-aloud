@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="css/common.css">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <style>
+  .card {
+    margin-top: 30px;
+  }
+  .card-body {
+    padding-bottom: .25rem;
+  }
+  #custom-css-code {
+    height: 20em;
+  }
+  </style>
+
+  <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/aws-sdk.js"></script>
+  <script src="js/defaults.js"></script>
+  <script src="js/custom-css.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Edit Custom CSS</h2>
+
+    <div class="card">
+      <div class="card-header">
+        Custom CSS in popup
+      </div>
+      <div class="card-body">
+        <form>
+          <div class="form-group">
+            <textarea class="form-control" id="custom-css-code" placeholder="Custom CSS code"></textarea>
+          </div>
+          <div class="form-group">
+            <button type="button" class="btn btn-primary" id="css-save-button">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

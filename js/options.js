@@ -140,6 +140,11 @@ function initialize(allVoices, settings) {
   $("#hotkeys-link").click(function() {
     brapi.tabs.create({url: getHotkeySettingsUrl()});
   });
+
+  //hot key
+  $("#css-link").click(function() {
+    brapi.tabs.create({url: 'custom-css.html'});
+  });
 }
 
 
