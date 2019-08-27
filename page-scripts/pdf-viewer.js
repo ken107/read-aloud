@@ -215,7 +215,10 @@
     if ($("#ra-upload-dialog").length) return;
 
     var div = $("<div>").attr("id", "ra-upload-dialog");
-    $("<br>").appendTo(div);
+    $("<div>")
+      .text("*PDF files are opened directly in the browser and not actually uploaded to server.")
+      .css({color: "red", "font-size": "smaller", "margin": "1em 0 2em 0"})
+      .appendTo(div);
     $("<input>")
       .attr("type", "file")
       .attr("name", "fileToUpload")
