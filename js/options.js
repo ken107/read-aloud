@@ -260,6 +260,15 @@ function handleError(err) {
     $("#status").html(formatError(errInfo)).show();
     $("#status a").click(function() {
       switch ($(this).attr("href")) {
+        case "#sign-in":
+          getAuthToken({interactive: true})
+            .then(function(token) {
+              if (token) $("#test-voice").click();
+            })
+            .catch(function(err) {
+              $("#status").text(err.message).show();
+            })
+          break;
         case "#auth-wavenet":
           requestPermissions(config.wavenetPerms)
             .then(function(granted) {
