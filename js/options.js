@@ -72,6 +72,14 @@ function initialize(allVoices, settings) {
     })
 
 
+  //volume
+  $("#volume")
+    .slider("value", settings.volume || defaults.volume)
+    .on("slidechange", function() {
+      saveSettings({volume: $(this).slider("value")});
+    })
+
+
   //showHighlighting
   $("[name=highlighting]")
     .prop("checked", function() {
@@ -252,6 +260,15 @@ function handleError(err) {
     $("#status").html(formatError(errInfo)).show();
     $("#status a").click(function() {
       switch ($(this).attr("href")) {
+        case "#sign-in":
+          getAuthToken({interactive: true})
+            .then(function(token) {
+              if (token) $("#test-voice").click();
+            })
+            .catch(function(err) {
+              $("#status").text(err.message).show();
+            })
+          break;
         case "#auth-wavenet":
           if (getBrowser() == "firefox") {
             createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet");

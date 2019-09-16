@@ -23,8 +23,8 @@ function ReadAloudDoc() {
 
   this.getTexts = function(index) {
     var tasks = [];
-    for (; currentIndex<index; currentIndex++) tasks.push(function() {$btnNext.click()}, waitMillis.bind(null, 800));
-    for (; currentIndex>index; currentIndex--) tasks.push(function() {$btnPrev.click()}, waitMillis.bind(null, 800));
+    for (; currentIndex<index; currentIndex++) tasks.push(function() {$btnNext.click()}, waitMillis.bind(null, 2500));
+    for (; currentIndex>index; currentIndex--) tasks.push(function() {$btnPrev.click()}, waitMillis.bind(null, 2500));
     return tasks.reduce(function(p, task) {return p.then(task)}, Promise.resolve())
       .then(function() {
         return ["The text to read is in another frame."];

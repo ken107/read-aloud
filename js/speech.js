@@ -118,7 +118,7 @@ function Speech(texts, options) {
 
   function delayedPlay() {
     clearTimeout(delayedPlayTimer);
-    delayedPlayTimer = setTimeout(play, 750);
+    delayedPlayTimer = setTimeout(function() {stop().then(play)}, 750);
     return Promise.resolve();
   }
 
@@ -160,11 +160,11 @@ function Speech(texts, options) {
 
   function rewind() {
     if (state == "PLAYING" && new Date().getTime()-state.startTime > 3*1000) {
-      return play();
+      return stop().then(play);
     }
     else if (index > 0) {
       index--;
-      return play();
+      return stop().then(play);
     }
     else return Promise.reject(new Error("Can't rewind, at beginning"));
   }

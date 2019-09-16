@@ -166,7 +166,7 @@ function reportIssue(url, comment) {
 }
 
 function authWavenet() {
-  createTab("https://cloud.google.com/text-to-speech/#streaming_demo_section", true)
+  createTab("https://cloud.google.com/text-to-speech/#convert-your-text-to-speech-right-now", true)
     .then(function(tab) {
       addRequestListener();
       brapi.tabs.onRemoved.addListener(onTabRemoved);

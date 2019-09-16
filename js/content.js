@@ -47,6 +47,7 @@
     }
     else if (/^read\.amazon\./.test(location.hostname)) return ["js/content/kindle-book.js"];
     else if (location.hostname == "www.khanacademy.org") return ["js/content/khan-academy.js"];
+    else if (location.hostname == "www.ixl.com") return ["js/content/ixl.js"];
     else if (location.pathname.match(/pdf-upload\.html$/) || location.pathname.match(/\.pdf$/) || $("embed[type='application/pdf']").length) return ["js/content/pdf-doc.js"];
     else return ["js/content/html-doc.js"];
   }
