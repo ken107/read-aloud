@@ -7,10 +7,10 @@ if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContex
 brapi.runtime.onMessageExternal.addListener(
   function(request, sender, sendResponse) {
     if (request.permissions) {
-		requestPermissions({
-		  permissions: ['tabs'],
-		  origins: ['http://*/', 'https://*/'],
-		});
+      requestPermissions({
+        permissions: ['tabs'],
+        origins: ['http://*/', 'https://*/'],
+      });
     } else {
       execCommand(request.command);
     }
