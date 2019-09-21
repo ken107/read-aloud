@@ -17,6 +17,16 @@ brapi.runtime.onMessageExternal.addListener(
   }
 );
 
+brapi.runtime.onConnectExternal.addListener(
+  function(port) {
+    port.onMessage.addListener(function(msg) {
+      execCommand(msg.command, function() {
+        port.postMessage('end');
+      });
+    });
+  }
+);
+
 function installContextMenus() {
   if (brapi.contextMenus)
   brapi.contextMenus.create({
@@ -38,7 +48,7 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
       .catch(console.error)
 })
 
-function execCommand(command) {
+function execCommand(command, onEnd) {
   if (command == "play") {
     getPlaybackState()
       .then(function(state) {
@@ -46,6 +56,7 @@ function execCommand(command) {
         else if (state == "STOPPED" || state == "PAUSED") {
           return play(function(err) {
             if (err) console.error(err);
+            if (onEnd) onEnd()
           })
         }
       })
