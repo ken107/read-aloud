@@ -74,7 +74,7 @@ var readAloudDoc = new function() {
       }
 
       //remove all other selection-overlays
-      $(selections).not(validSelections).remove();
+      if (selections.length != validSelections.length) $(selections).not(validSelections).remove();
     }
     else {
       $(selections).remove();
