@@ -76,6 +76,9 @@ var readAloudDoc = new function() {
       //remove all other selection-overlays
       $(selections).not(validSelections).remove();
     }
+    else {
+      $(selections).remove();
+    }
   }
 
   function binarySearch(arr, testFn) {
