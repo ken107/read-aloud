@@ -50,7 +50,7 @@ var readAloudDoc = new function() {
     //find one selection-overlay inside viewport
     var index = binarySearch(selections, function(el) {
       var viewportOffset = el.getBoundingClientRect();
-      if (viewportOffset.top < 0) return 1;
+      if (viewportOffset.top < 120) return 1;
       if (viewportOffset.top >= windowHeight) return -1;
       return 0;
     })
