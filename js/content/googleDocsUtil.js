@@ -194,6 +194,7 @@ var googleDocsUtil = (function () {
       letterSpans.push(textNode);
       container.appendChild(textNode);
     }
+    container.style.whiteSpace = "nowrap";
     simulateElement.appendChild(container);
 
     // The caret is usually at the edge of the letter, we find the edge we are closest to.
