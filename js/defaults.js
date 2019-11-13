@@ -96,18 +96,20 @@ function setState(key, value) {
 }
 
 function getVoices() {
-  return Promise.all([
-      browserTtsEngine.getVoices(),
-      getSettings(["awsCreds", "gcpCreds"])
-    ])
-    .then(spread(function(voices, settings) {
-      voices = voices.concat(googleTranslateTtsEngine.getVoices());
-      voices = voices.concat(remoteTtsEngine.getVoices());
-      if (settings.awsCreds) voices = voices.concat(amazonPollyTtsEngine.getVoices());
-      /*if (settings.gcpCreds)*/ voices = voices.concat(googleWavenetTtsEngine.getVoices());
-      voices = voices.concat(ibmWatsonTtsEngine.getVoices());
-      return voices;
-    }))
+  return getSettings(["awsCreds", "gcpCreds"])
+    .then(function(settings) {
+      return Promise.all([
+        browserTtsEngine.getVoices(),
+        googleTranslateTtsEngine.getVoices(),
+        remoteTtsEngine.getVoices(),
+        settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
+        googleWavenetTtsEngine.getVoices(),
+        ibmWatsonTtsEngine.getVoices(),
+      ])
+    })
+    .then(function(arr) {
+      return Array.prototype.concat.apply([], arr);
+    })
 }
 
 function isGoogleNative(voice) {
