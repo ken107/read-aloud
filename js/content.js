@@ -1,7 +1,7 @@
 
-(function() {
-  var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
+var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
 
+(function() {
   var port = brapi.runtime.connect({name: "ReadAloudContentScript"});
   var peer = new RpcPeer(new ExtensionMessagingPeer(port));
   peer.onInvoke = function(method) {
@@ -155,4 +155,16 @@ function simulateClick(elementToClick) {
   simulateMouseEvent (elementToClick, "mousedown", coordX, coordY);
   simulateMouseEvent (elementToClick, "mouseup", coordX, coordY);
   simulateMouseEvent (elementToClick, "click", coordX, coordY);
+}
+
+function getSettings(names) {
+  return new Promise(function(fulfill) {
+    brapi.storage.local.get(names, fulfill);
+  });
+}
+
+function updateSettings(items) {
+  return new Promise(function(fulfill) {
+    brapi.storage.local.set(items, fulfill);
+  });
 }

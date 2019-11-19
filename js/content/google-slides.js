@@ -1,6 +1,12 @@
 
 var readAloudDoc = new function() {
   var scroller = $(".punch-filmstrip-scroll").get(0);
+  var autoFlip;
+  getSettings(["googleSlidesAutoFlip"])
+    .then(function(items) {
+      autoFlip = items.googleSlidesAutoFlip;
+    })
+    .then(createOptionsPanel)
 
   this.getCurrentIndex = function() {
     var currentSlide = getCurrentSlide();
@@ -9,7 +15,7 @@ var readAloudDoc = new function() {
 
   this.getTexts = function(index, quietly) {
     var slide = getSlides()[index];
-    if (slide) {
+    if (slide && (autoFlip || slide == getCurrentSlide())) {
       if (!quietly) {
         simulateClick(slide);
         scroller.scrollTop = $(slide).offset().top - $(scroller.firstChild).offset().top;
@@ -36,5 +42,23 @@ var readAloudDoc = new function() {
 
   function getCurrentSlide() {
     return $(".punch-filmstrip-thumbnail-background[fill]").parent().get(0);
+  }
+
+  function createOptionsPanel() {
+    if ($(".ra-options").length) return;
+    var label = $("<label> Go to next slide automatically</label>")
+      .addClass("ra-options")
+      .css({
+        marginLeft: "2em",
+        color: "purple",
+      })
+      .appendTo("#docs-menubar")
+    $("<input type='checkbox'>")
+      .prop("checked", !!autoFlip)
+      .prependTo(label)
+      .change(function() {
+        autoFlip = this.checked;
+        updateSettings({googleSlidesAutoFlip: autoFlip});
+      })
   }
 }

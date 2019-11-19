@@ -4,6 +4,29 @@ var activeDoc;
 brapi.runtime.onInstalled.addListener(installContextMenus);
 if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
 
+brapi.runtime.onMessageExternal.addListener(
+  function(request, sender, sendResponse) {
+    if (request.permissions) {
+      requestPermissions({
+        permissions: ['tabs'],
+        origins: ['http://*/', 'https://*/'],
+      });
+    } else {
+      execCommand(request.command);
+    }
+  }
+);
+
+brapi.runtime.onConnectExternal.addListener(
+  function(port) {
+    port.onMessage.addListener(function(msg) {
+      execCommand(msg.command, function() {
+        port.postMessage('end');
+      });
+    });
+  }
+);
+
 function installContextMenus() {
   if (brapi.contextMenus)
   brapi.contextMenus.create({
@@ -25,8 +48,7 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
       .catch(console.error)
 })
 
-if (brapi.commands)
-brapi.commands.onCommand.addListener(function(command) {
+function execCommand(command, onEnd) {
   if (command == "play") {
     getPlaybackState()
       .then(function(state) {
@@ -34,6 +56,7 @@ brapi.commands.onCommand.addListener(function(command) {
         else if (state == "STOPPED" || state == "PAUSED") {
           return play(function(err) {
             if (err) console.error(err);
+            if (onEnd) onEnd()
           })
         }
       })
@@ -42,7 +65,10 @@ brapi.commands.onCommand.addListener(function(command) {
   else if (command == "stop") stop();
   else if (command == "forward") forward();
   else if (command == "rewind") rewind();
-})
+}
+
+if (brapi.commands)
+brapi.commands.onCommand.addListener(execCommand);
 
 if (brapi.ttsEngine) (function() {
   brapi.ttsEngine.onSpeak.addListener(function(utterance, options, onEvent) {

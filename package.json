@@ -23,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/ken107/read-aloud/issues"
   },
-  "homepage": "https://addon.readaloud.app",
+  "homepage": "https://readaloud.app",
   "dependencies": {
     "opencollective-postinstall": "^2.0.2",
     "opencollective": "^1.0.3"
