@@ -154,7 +154,7 @@ function RemoteTtsEngine(serviceUrl) {
   var authToken;
   var clientId;
   var speakPromise;
-  this.ready = function(options) {
+  function ready(options) {
     return getAuthToken()
       .then(function(token) {authToken = token})
       .then(getUniqueClientId)
@@ -178,13 +178,24 @@ function RemoteTtsEngine(serviceUrl) {
       audio.volume = options.volume;
       audio.defaultPlaybackRate = options.rate;
     }
-    audio.src = getAudioUrl(utterance, options.lang, options.voice);
-    speakPromise = new Promise(function(fulfill) {audio.oncanplay = fulfill})
+    speakPromise = ready(options)
       .then(function() {
-      var waitTime = nextStartTime - new Date().getTime();
-      if (waitTime > 0) waitTimer = setTimeout(audio.play.bind(audio), waitTime);
-      else audio.play();
-      isSpeaking = true;
+        audio.src = getAudioUrl(utterance, options.lang, options.voice);
+        return new Promise(function(fulfill) {audio.oncanplay = fulfill});
+      })
+      .then(function() {
+        var waitTime = nextStartTime - Date.now();
+        if (waitTime > 0) return new Promise(function(f) {waitTimer = setTimeout(f, waitTime)});
+      })
+      .then(function() {
+        isSpeaking = true;
+        return audio.play();
+      })
+      .catch(function(err) {
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
       })
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
     audio.onended = function() {
@@ -389,10 +400,13 @@ function GoogleTranslateTtsEngine() {
     speakPromise = getAudioUrl(utterance, options.voice.lang)
       .then(function(url) {
         audio.src = url;
-        audio.play();
+        return audio.play();
       })
       .catch(function(err) {
-        onEvent({type: "error", errorMessage: err.message});
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
       })
   };
   this.isSpeaking = function(callback) {
@@ -528,10 +542,13 @@ function AmazonPollyTtsEngine() {
       })
       .then(function(url) {
         audio.src = url;
-        audio.play();
+        return audio.play();
       })
       .catch(function(err) {
-        onEvent({type: "error", errorMessage: err.message});
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
       })
   };
   this.isSpeaking = function(callback) {
@@ -718,13 +735,6 @@ function GoogleWavenetTtsEngine() {
   var prefetchAudio;
   var isSpeaking = false;
   var speakPromise;
-  this.ready = function() {
-    return getSettings(["gcpCreds"])
-      .then(function(items) {return items.gcpCreds})
-      .then(function(creds) {
-        if (!creds) return getAudioUrl("hello", {voiceName: "GoogleWavenet US English (Alan)", lang: "en-US"}, 1);
-      })
-  }
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;
     if (!options.rate) options.rate = 1;
@@ -751,10 +761,13 @@ function GoogleWavenetTtsEngine() {
       })
       .then(function(url) {
         audio.src = url;
-        audio.play();
+        return audio.play();
       })
       .catch(function(err) {
-        onEvent({type: "error", errorMessage: err.message});
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
       })
   };
   this.isSpeaking = function(callback) {
@@ -1046,7 +1059,16 @@ function IbmWatsonTtsEngine() {
       isSpeaking = false;
     };
     audio.src = getAudioUrl(utterance, options.voice);
-    audio.play();
+    Promise.resolve()
+      .then(function() {
+        return audio.play();
+      })
+      .catch(function(err) {
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
+      })
   };
   this.isSpeaking = function(callback) {
     callback(isSpeaking);
