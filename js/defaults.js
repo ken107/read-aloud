@@ -3,7 +3,7 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
 polyfills();
 
 var config = {
-  serviceUrl: "https://support.lsdsoftware.com",
+  serviceUrl: "https://support.readaloud.app",
   entityMap: {
     '&': '&amp;',
     '<': '&lt;',
