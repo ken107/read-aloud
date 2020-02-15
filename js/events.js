@@ -252,3 +252,9 @@ function authWavenet() {
       }
     })
 }
+
+function userGestureActivate() {
+  var audio = document.createElement("AUDIO");
+  audio.src = "data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==";
+  audio.play();
+}

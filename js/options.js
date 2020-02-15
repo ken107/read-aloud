@@ -280,6 +280,13 @@ function handleError(err) {
               if (granted) getBackgroundPage().then(callMethod("authWavenet"));
             })
           break;
+        case "#user-gesture":
+          getBackgroundPage()
+            .then(callMethod("userGestureActivate"))
+            .then(function() {
+              $("#test-voice").click();
+            })
+          break;
       }
     })
   }

@@ -34,20 +34,13 @@ function Speech(texts, options) {
         .catch(function(err) {
           console.error(err);
           options.voice.autoSelect = true;
-          return remoteTtsEngine.ready(options)
-            .then(function() {return remoteTtsEngine})
+          return remoteTtsEngine;
         })
     }
     if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;
-    if (isGoogleWavenet(options.voice)) {
-      return googleWavenetTtsEngine.ready()
-        .then(function() {return googleWavenetTtsEngine})
-    }
+    if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
     if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
-    if (isRemoteVoice(options.voice)) {
-      return remoteTtsEngine.ready(options)
-        .then(function() {return remoteTtsEngine})
-    }
+    if (isRemoteVoice(options.voice)) return remoteTtsEngine;
     if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
     return browserTtsEngine;
   }
@@ -179,11 +172,35 @@ function Speech(texts, options) {
   }
 
   function speak(text, onEnd, onError) {
-    return new Promise(function(fulfill) {
+    var state = "IDLE";
+    return new Promise(function(fulfill, reject) {
       engine.speak(text, options, function(event) {
-        if (event.type == "start") fulfill();
-        else if (event.type == "end") onEnd();
-        else if (event.type == "error") onError(new Error(event.errorMessage || "Unknown TTS error"));
+        if (event.type == "start") {
+          if (state == "IDLE") {
+            fulfill();
+            state = "STARTED";
+          }
+        }
+        else if (event.type == "end") {
+          if (state == "IDLE") {
+            reject(new Error("TTS engine end event before start event"));
+            state = "ERROR";
+          }
+          else if (state == "STARTED") {
+            onEnd();
+            state = "ENDED";
+          }
+        }
+        else if (event.type == "error") {
+          if (state == "IDLE") {
+            reject(new Error(event.errorMessage || "Unknown TTS error"));
+            state = "ERROR";
+          }
+          else if (state == "STARTED") {
+            onError(new Error(event.errorMessage || "Unknown TTS error"));
+            state = "ERROR";
+          }
+        }
       })
     })
   }

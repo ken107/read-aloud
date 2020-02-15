@@ -154,7 +154,7 @@ function RemoteTtsEngine(serviceUrl) {
   var authToken;
   var clientId;
   var speakPromise;
-  this.ready = function(options) {
+  function ready(options) {
     return getAuthToken()
       .then(function(token) {authToken = token})
       .then(getUniqueClientId)
@@ -178,13 +178,24 @@ function RemoteTtsEngine(serviceUrl) {
       audio.volume = options.volume;
       audio.defaultPlaybackRate = options.rate;
     }
-    audio.src = getAudioUrl(utterance, options.lang, options.voice);
-    speakPromise = new Promise(function(fulfill) {audio.oncanplay = fulfill})
+    speakPromise = ready(options)
       .then(function() {
-      var waitTime = nextStartTime - new Date().getTime();
-      if (waitTime > 0) waitTimer = setTimeout(audio.play.bind(audio), waitTime);
-      else audio.play();
-      isSpeaking = true;
+        audio.src = getAudioUrl(utterance, options.lang, options.voice);
+        return new Promise(function(fulfill) {audio.oncanplay = fulfill});
+      })
+      .then(function() {
+        var waitTime = nextStartTime - Date.now();
+        if (waitTime > 0) return new Promise(function(f) {waitTimer = setTimeout(f, waitTime)});
+      })
+      .then(function() {
+        isSpeaking = true;
+        return audio.play();
+      })
+      .catch(function(err) {
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
       })
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
     audio.onended = function() {
@@ -389,10 +400,13 @@ function GoogleTranslateTtsEngine() {
     speakPromise = getAudioUrl(utterance, options.voice.lang)
       .then(function(url) {
         audio.src = url;
-        audio.play();
+        return audio.play();
       })
       .catch(function(err) {
-        onEvent({type: "error", errorMessage: err.message});
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
       })
   };
   this.isSpeaking = function(callback) {
@@ -528,10 +542,13 @@ function AmazonPollyTtsEngine() {
       })
       .then(function(url) {
         audio.src = url;
-        audio.play();
+        return audio.play();
       })
       .catch(function(err) {
-        onEvent({type: "error", errorMessage: err.message});
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
       })
   };
   this.isSpeaking = function(callback) {
@@ -570,15 +587,12 @@ function AmazonPollyTtsEngine() {
   }
   function getAudioUrl(text, lang, voice, pitch) {
     assert(text && lang && voice && pitch != null);
-    var matches = voice.voiceName.match(/^AmazonPolly .* \((\w+)\)$/);
+    var matches = voice.voiceName.match(/^AmazonPolly .* \((\w+)\)( \+\w+)?$/);
     var voiceId = matches[1];
+    var style = matches[2] && matches[2].substr(2);
     return getPolly()
       .then(function(polly) {
-        return polly.synthesizeSpeech({
-          OutputFormat: "mp3",
-          Text: text,
-          VoiceId: voiceId
-        })
+        return polly.synthesizeSpeech(getOpts(text, voiceId, style))
         .promise()
       })
       .then(function(data) {
@@ -600,6 +614,42 @@ function AmazonPollyTtsEngine() {
         })
       })
   }
+  function getOpts(text, voiceId, style) {
+    switch (style) {
+      case "newscaster":
+        return {
+          OutputFormat: "mp3",
+          Text: '<speak><amazon:domain name="news">' + escapeXml(text) + '</amazon:domain></speak>',
+          TextType: "ssml",
+          VoiceId: voiceId,
+          Engine: "neural"
+        }
+      case "neural":
+        return {
+          OutputFormat: "mp3",
+          Text: text,
+          VoiceId: voiceId,
+          Engine: "neural"
+        }
+      default:
+        return {
+          OutputFormat: "mp3",
+          Text: text,
+          VoiceId: voiceId
+        }
+    }
+  }
+  function escapeXml(unsafe) {
+    return unsafe.replace(/[<>&'"]/g, function (c) {
+      switch (c) {
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '&': return '&amp;';
+          case '\'': return '&apos;';
+          case '"': return '&quot;';
+      }
+    })
+  }
   var voices = [
     {"voiceName":"AmazonPolly Turkish (Filiz)","lang":"tr-TR","gender":"female"},
     {"voiceName":"AmazonPolly Swedish (Astrid)","lang":"sv-SE","gender":"female"},
@@ -611,6 +661,7 @@ function AmazonPollyTtsEngine() {
     {"voiceName":"AmazonPolly Brazilian Portuguese (Vitoria)","lang":"pt-BR","gender":"female"},
     {"voiceName":"AmazonPolly Brazilian Portuguese (Ricardo)","lang":"pt-BR","gender":"male"},
     {"voiceName":"AmazonPolly Brazilian Portuguese (Camila)","lang":"pt-BR","gender":"female"},
+    {"voiceName":"AmazonPolly Brazilian Portuguese (Camila) +neural","lang":"pt-BR","gender":"female"},
     {"voiceName":"AmazonPolly Polish (Maja)","lang":"pl-PL","gender":"female"},
     {"voiceName":"AmazonPolly Polish (Jan)","lang":"pl-PL","gender":"male"},
     {"voiceName":"AmazonPolly Polish (Jacek)","lang":"pl-PL","gender":"male"},
@@ -633,24 +684,38 @@ function AmazonPollyTtsEngine() {
     {"voiceName":"AmazonPolly US Spanish (Penelope)","lang":"es-US","gender":"female"},
     {"voiceName":"AmazonPolly US Spanish (Miguel)","lang":"es-US","gender":"male"},
     {"voiceName":"AmazonPolly US Spanish (Lupe)","lang":"es-US","gender":"female"},
+    {"voiceName":"AmazonPolly US Spanish (Lupe) +neural","lang":"es-US","gender":"female"},
     {"voiceName":"AmazonPolly Mexican Spanish (Mia)","lang":"es-MX","gender":"female"},
     {"voiceName":"AmazonPolly Castilian Spanish (Lucia)","lang":"es-ES","gender":"female"},
     {"voiceName":"AmazonPolly Castilian Spanish (Enrique)","lang":"es-ES","gender":"male"},
     {"voiceName":"AmazonPolly Castilian Spanish (Conchita)","lang":"es-ES","gender":"female"},
     {"voiceName":"AmazonPolly Welsh English (Geraint)","lang":"en-GB-WLS","gender":"male"},
     {"voiceName":"AmazonPolly US English (Salli)","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Salli) +neural","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly US English (Matthew)","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Matthew) +neural","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Matthew) +newscaster","lang":"en-US","gender":"male"},
     {"voiceName":"AmazonPolly US English (Kimberly)","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Kimberly) +neural","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly US English (Kendra)","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Kendra) +neural","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly US English (Justin)","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Justin) +neural","lang":"en-US","gender":"male"},
     {"voiceName":"AmazonPolly US English (Joey)","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Joey) +neural","lang":"en-US","gender":"male"},
     {"voiceName":"AmazonPolly US English (Joanna)","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Joanna) +neural","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Joanna) +newscaster","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly US English (Ivy)","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Ivy) +neural","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly Indian English (Raveena)","lang":"en-IN","gender":"female"},
     {"voiceName":"AmazonPolly Indian English (Aditi)","lang":"en-IN","gender":"female"},
     {"voiceName":"AmazonPolly British English (Emma)","lang":"en-GB","gender":"female"},
+    {"voiceName":"AmazonPolly British English (Emma) +neural","lang":"en-GB","gender":"female"},
     {"voiceName":"AmazonPolly British English (Brian)","lang":"en-GB","gender":"male"},
+    {"voiceName":"AmazonPolly British English (Brian) +neural","lang":"en-GB","gender":"male"},
     {"voiceName":"AmazonPolly British English (Amy)","lang":"en-GB","gender":"female"},
+    {"voiceName":"AmazonPolly British English (Amy) +neural","lang":"en-GB","gender":"female"},
     {"voiceName":"AmazonPolly Australian English (Russell)","lang":"en-AU","gender":"male"},
     {"voiceName":"AmazonPolly Australian English (Nicole)","lang":"en-AU","gender":"female"},
     {"voiceName":"AmazonPolly German (Vicki)","lang":"de-DE","gender":"female"},
@@ -670,13 +735,6 @@ function GoogleWavenetTtsEngine() {
   var prefetchAudio;
   var isSpeaking = false;
   var speakPromise;
-  this.ready = function() {
-    return getSettings(["gcpCreds"])
-      .then(function(items) {return items.gcpCreds})
-      .then(function(creds) {
-        if (!creds) return getAudioUrl("hello", {voiceName: "GoogleWavenet US English (Alan)", lang: "en-US"}, 1);
-      })
-  }
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;
     if (!options.rate) options.rate = 1;
@@ -703,10 +761,13 @@ function GoogleWavenetTtsEngine() {
       })
       .then(function(url) {
         audio.src = url;
-        audio.play();
+        return audio.play();
       })
       .catch(function(err) {
-        onEvent({type: "error", errorMessage: err.message});
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
       })
   };
   this.isSpeaking = function(callback) {
@@ -998,7 +1059,16 @@ function IbmWatsonTtsEngine() {
       isSpeaking = false;
     };
     audio.src = getAudioUrl(utterance, options.voice);
-    audio.play();
+    Promise.resolve()
+      .then(function() {
+        return audio.play();
+      })
+      .catch(function(err) {
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
+      })
   };
   this.isSpeaking = function(callback) {
     callback(isSpeaking);
