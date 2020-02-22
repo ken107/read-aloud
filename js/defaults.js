@@ -23,11 +23,7 @@ var config = {
   ],
   wavenetPerms: {
     permissions: ["webRequest"],
-    origins: [
-      "https://cloud.google.com/",
-      "https://cloud-dot-google-developers.appspot.com/",
-      "https://cxl-services.appspot.com/",
-    ]
+    origins: ["https://*/"]
   },
 }
 
