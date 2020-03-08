@@ -59,7 +59,7 @@ function parseUrl(url) {
 
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize"], fulfill);
+    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices"], fulfill);
   });
 }
 
@@ -71,7 +71,7 @@ function updateSettings(items) {
 
 function clearSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize"], fulfill);
+    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices"], fulfill);
   });
 }
 
@@ -153,10 +153,16 @@ function isPremiumVoice(voice) {
 }
 
 function getSpeechVoice(voiceName, lang) {
-  return getVoices()
-    .then(function(voices) {
+  return Promise.all([getVoices(), getSettings(["preferredVoices"])])
+    .then(function(res) {
+      var voices = res[0];
+      var preferredVoiceByLang = res[1].preferredVoices || {};
       var voice;
-      if (voiceName) voice = findVoiceByName(voices, voiceName);
+      if (voiceName) voice = findVoiceByName(voices, voiceName, lang);
+      if (!voice && lang) {
+        voiceName = preferredVoiceByLang[lang.split("-")[0]];
+        if (voiceName) voice = findVoiceByName(voices, voiceName);
+      }
       if (!voice && lang) {
         voice = findVoiceByLang(voices.filter(isGoogleNative), lang)
           || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
@@ -169,8 +175,8 @@ function getSpeechVoice(voiceName, lang) {
     })
 }
 
-function findVoiceByName(voices, name) {
-  for (var i=0; i<voices.length; i++) if (voices[i].voiceName == name) return voices[i];
+function findVoiceByName(voices, name, lang) {
+  for (var i=0; i<voices.length; i++) if (voices[i].voiceName == name && (!lang || !voices[i].lang || lang.split("-")[0] == voices[i].lang.split("-")[0])) return voices[i];
   return null;
 }
 
@@ -462,7 +468,11 @@ if (!Array.prototype.groupBy) {
       var result = {};
       for (var i=0; i<this.length; i++) {
         var key = keySelector(this[i]);
-        if (key != null) result[key] = valueReducer(result[key], this[i]);
+        if (key != null) {
+          var value = valueReducer(result[key], this[i]);
+          if (value !== undefined) result[key] = value;
+          else delete result[key];
+        }
       }
       return result;
     },
