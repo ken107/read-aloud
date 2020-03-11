@@ -158,7 +158,7 @@ function getSpeechVoice(voiceName, lang) {
       var voices = res[0];
       var preferredVoiceByLang = res[1].preferredVoices || {};
       var voice;
-      if (voiceName) voice = findVoiceByName(voices, voiceName, lang);
+      if (voiceName) voice = findVoiceByName(voices, voiceName);
       if (!voice && lang) {
         voiceName = preferredVoiceByLang[lang.split("-")[0]];
         if (voiceName) voice = findVoiceByName(voices, voiceName);
@@ -175,8 +175,8 @@ function getSpeechVoice(voiceName, lang) {
     })
 }
 
-function findVoiceByName(voices, name, lang) {
-  for (var i=0; i<voices.length; i++) if (voices[i].voiceName == name && (!lang || !voices[i].lang || lang.split("-")[0] == voices[i].lang.split("-")[0])) return voices[i];
+function findVoiceByName(voices, name) {
+  for (var i=0; i<voices.length; i++) if (voices[i].voiceName == name) return voices[i];
   return null;
 }
 
