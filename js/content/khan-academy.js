@@ -12,7 +12,7 @@ var readAloudDoc = new function() {
   function parse() {
     var elems = $("h1:first")
       .add($("> :not(ul, ol), > ul > li, > ol > li", ".paragraph:not(.paragraph .paragraph)"))
-    var dontRead = elems.find(".katex").hide();
+    var dontRead = elems.find(".katex, legend").hide();
     var texts = elems.get()
       .map(function(elem) {
         var text = getInnerText(elem);
