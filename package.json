@@ -7,8 +7,7 @@
   },
   "scripts": {
     "package": "zip -u -r build/package.zip _locales css img js *.html manifest.json || true",
-    "sync-page-scripts": "rsync -avz js/messaging.js page-scripts/ && aws s3 sync --profile s3 --delete --metadata-directive REPLACE --cache-control max-age=86400,public page-scripts s3://lsdsoftware-assets/read-aloud/page-scripts",
-    "postinstall": "opencollective-postinstall"
+    "sync-page-scripts": "rsync -avz js/messaging.js page-scripts/ && aws s3 sync --profile s3 --delete --metadata-directive REPLACE --cache-control max-age=86400,public page-scripts s3://lsdsoftware-assets/read-aloud/page-scripts"
   },
   "repository": {
     "type": "git",
@@ -23,13 +22,5 @@
   "bugs": {
     "url": "https://github.com/ken107/read-aloud/issues"
   },
-  "homepage": "https://readaloud.app",
-  "dependencies": {
-    "opencollective-postinstall": "^2.0.2",
-    "opencollective": "^1.0.3"
-  },
-  "collective": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/read-aloud"
-  }
+  "homepage": "https://readaloud.app"
 }
