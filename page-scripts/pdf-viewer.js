@@ -114,9 +114,8 @@
       .then(loadViewerHtml)
       .then(showLoadingIcon)
       .then(appendLocaleResourceLink)
-      .then(loadScript.bind(null, viewerBase + "../build/pdf.js"))
-      .then(rebaseUrls)
       .then(loadScript.bind(null, viewerBase + "pdf.viewer.js", viewerJsPreprocessor))
+      .then(rebaseUrls)
       .then(waitUntilInitialized)
       .then(hideLoadingIcon)
 
@@ -173,7 +172,7 @@
         })
       };
       wrap("imageResourcesPath");
-      wrap("workerSrc");
+      PDFJS.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.108/pdf.worker.min.js"
       wrap("cMapUrl");
     }
 
