@@ -21,6 +21,7 @@
 
     $("#test-voices .btn-test").click(onTestVoice);
     $("#subscription-status .btn-login").click(onLogin);
+    $("[data-toggle]").click(onToggle);
     $(".page-loading").hide();
 
     if (pendingPurchaseSku) {
@@ -245,6 +246,16 @@
       .catch(function(err) {
         alert(err.message);
       })
+  }
+
+  function onToggle() {
+    var target = $(this).data("target");
+    var parent = $(target).data("parent");
+    var current = $(parent).data("current");
+    $(current).slideToggle(200);
+    $(target).slideToggle(200);
+    $(parent).data("current", target);
+    return false;
   }
 
 

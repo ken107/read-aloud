@@ -4,12 +4,10 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Read Aloud Options</title>
-  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
   <link rel="stylesheet" type="text/css" href="css/common.css">
   <link rel="stylesheet" type="text/css" href="css/options.css">
 
   <script src="js/jquery-3.1.1.min.js"></script>
-  <script src="js/jquery-ui.min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/tts-engines.js"></script>
   <script src="js/options.js"></script>
@@ -49,7 +47,7 @@
         </button>
       </div>
       <div>
-        <div id="rate" class="slider" data-min="-1" data-max="1" data-step="0.05" data-pow="3"></div>
+        <div id="rate" class="slider" data-min="-1" data-max="1" data-steps="40" data-pow="3"></div>
         <div id="rate-input-div">
           <input id="rate-input" class="form-control" type="text" maxlength="5" />
         </div>
@@ -60,14 +58,14 @@
         <span data-i18n="options_pitch_label"></span>
       </div>
       <div class="pitch-visible">
-        <div id="pitch" class="slider" data-min="0" data-max="2" data-step="0.05"></div>
+        <div id="pitch" class="slider" data-min="0" data-max="2" data-steps="40"></div>
       </div>
 
       <div>
         <span data-i18n="options_volume_label"></span>
       </div>
       <div>
-        <div id="volume" class="slider" data-min="0.25" data-max="1" data-step="0.025"></div>
+        <div id="volume" class="slider" data-min="0.2" data-max="1" data-steps="40"></div>
       </div>
 
       <div>

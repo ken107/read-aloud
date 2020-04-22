@@ -16,14 +16,22 @@ function initialize(allVoices, settings) {
   }
 
 
-  //sliders
-  $(".slider").each(function() {
-    $(this).slider({
-      min: $(this).data("min"),
-      max: $(this).data("max"),
-      step: $(this).data("step")
-    })
-  });
+  //rate slider
+  createSlider($("#rate").get(0), Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")), function(value) {
+    value = Math.pow($("#rate").data("pow"), value);
+    $("#rate-input").val(value.toFixed(3));
+    saveSettings({rate: Number($("#rate-input").val())});
+  })
+
+  //pitch slider
+  createSlider($("#pitch").get(0), settings.pitch || defaults.pitch, function(value) {
+    saveSettings({pitch: value});
+  })
+
+  //volume slider
+  createSlider($("#volume").get(0), settings.volume || defaults.volume, function(value) {
+    saveSettings({volume: value});
+  })
 
 
   //voices
@@ -41,17 +49,10 @@ function initialize(allVoices, settings) {
   })
 
 
-  //rate
+  //rate input
   $("#rate-edit-button").click(function() {
     $("#rate, #rate-input-div").toggle();
   });
-  $("#rate")
-    .slider("value", Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")))
-    .on("slidechange", function() {
-      var val = Math.pow($(this).data("pow"), $(this).slider("value"));
-      $("#rate-input").val(val.toFixed(3));
-      saveSettings({rate: Number($("#rate-input").val())});
-    });
   $("#rate-input")
     .val(settings.rate || defaults.rate)
     .change(function() {
@@ -62,22 +63,6 @@ function initialize(allVoices, settings) {
       else $("#rate-edit-button").hide();
       saveSettings({rate: Number($("#rate-input").val())});
     });
-
-
-  //pitch
-  $("#pitch")
-    .slider("value", settings.pitch || defaults.pitch)
-    .on("slidechange", function() {
-      saveSettings({pitch: $(this).slider("value")});
-    })
-
-
-  //volume
-  $("#volume")
-    .slider("value", settings.volume || defaults.volume)
-    .on("slidechange", function() {
-      saveSettings({volume: $(this).slider("value")});
-    })
 
 
   //showHighlighting
@@ -292,5 +277,79 @@ function handleError(err) {
   }
   else {
     $("#status").text(err.message).show();
+  }
+}
+
+
+
+function createSlider(elem, defaultValue, onChange, onSlideChange) {
+  var min = $(elem).data("min") || 0;
+  var max = $(elem).data("max") || 1;
+  var step = 1 / ($(elem).data("steps") || 20);
+  var $bg = $(elem).empty().toggleClass("slider", true);
+  var $bar = $("<div class='bar'>").appendTo(elem);
+  var $knob = $("<div class='knob'>").appendTo(elem);
+  setPosition((defaultValue-min) / (max-min));
+
+  $bg.click(function(e) {
+    var pos = calcPosition(e);
+    setPosition(pos);
+    onChange(min + pos*(max-min));
+  })
+  $knob.click(function() {
+    return false;
+  })
+  $knob.on("mousedown touchstart", function() {
+    onSlideStart(function(e) {
+      var pos = calcPosition(e);
+      setPosition(pos);
+      if (onSlideChange) onSlideChange(min + pos*(max-min));
+    },
+    function(e) {
+      var pos = calcPosition(e);
+      setPosition(pos);
+      onChange(min + pos*(max-min));
+    })
+    return false;
+  })
+
+  function setPosition(pos) {
+    var percent = (100 * pos) + "%";
+    $knob.css("left", percent);
+    $bar.css("width", percent);
+  }
+  function calcPosition(e) {
+    var rect = $bg.get(0).getBoundingClientRect();
+    var position = (e.clientX - rect.left) / rect.width;
+    position = Math.min(1, Math.max(position, 0));
+    return step * Math.round(position / step);
+  }
+}
+
+function onSlideStart(onSlideMove, onSlideStop) {
+  $(document).on("mousemove", onSlideMove);
+  $(document).on("mouseup mouseleave", onStop);
+  $(document).on("touchmove", onTouchMove);
+  $(document).on("touchend touchcancel", onTouchEnd);
+
+  function onTouchMove(e) {
+    e.clientX = e.originalEvent.changedTouches[0].clientX;
+    e.clientY = e.originalEvent.changedTouches[0].clientY;
+    onSlideMove(e);
+    return false;
+  }
+  function onTouchEnd(e) {
+    e.clientX = e.originalEvent.changedTouches[0].clientX;
+    e.clientY = e.originalEvent.changedTouches[0].clientY;
+    onStop(e);
+    return false;
+  }
+  function onStop(e) {
+    $(document).off("mousemove", onSlideMove);
+    $(document).off("mouseup mouseleave", onStop);
+    $(document).off("touchmove", onTouchMove);
+    $(document).off("touchend touchcancel", onTouchEnd);
+    if (onSlideStop) onSlideStop(e);
+    return false;
   }
 }
