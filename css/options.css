@@ -236,3 +236,27 @@ input[type=checkbox], input[type=radio] {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.slider {
+  position: relative;
+  height: .8em;
+  border-radius: 1em;
+  background-image: linear-gradient(#888, #959595, #a7a7a7, #b4b4b4);
+  margin: 0 .25em;
+}
+.slider > .bar {
+  position: absolute;
+  height: 100%;
+  border-radius: 1em;
+  background: linear-gradient(#59928b, #84d1c9, #3e8790);
+}
+.slider > .knob {
+  position: absolute;
+  cursor: ew-resize;
+  margin: -.4em 0 0 -.5em;
+  width: 1em;
+  height: 1.6em;
+  border-radius: .4em;
+  background: linear-gradient(to right, #2a737b, #77bbb3, #77bbb3, #2a737b);
+  touch-action: none;
+}
