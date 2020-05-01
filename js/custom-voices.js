@@ -53,7 +53,7 @@ function awsSave() {
 }
 
 function testAws(accessKeyId, secretAccessKey) {
-      var polly = new AWS.Polly({
+      var polly = new AwsPolly({
         region: "us-east-1",
         accessKeyId: accessKeyId,
         secretAccessKey: secretAccessKey

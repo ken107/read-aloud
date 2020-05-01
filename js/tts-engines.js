@@ -595,8 +595,7 @@ function AmazonPollyTtsEngine() {
         return polly.synthesizeSpeech(getOpts(text, voiceId, style))
         .promise()
       })
-      .then(function(data) {
-        var blob = new Blob([data.AudioStream], {type: data.ContentType});
+      .then(function(blob) {
         return URL.createObjectURL(blob);
       })
   }
@@ -607,7 +606,7 @@ function AmazonPollyTtsEngine() {
     return getSettings(["awsCreds"])
       .then(function(items) {
         if (!items.awsCreds) throw new Error("Missing AWS credentials");
-        return new AWS.Polly({
+        return new AwsPolly({
           region: "us-east-1",
           accessKeyId: items.awsCreds.accessKeyId,
           secretAccessKey: items.awsCreds.secretAccessKey
