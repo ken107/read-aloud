@@ -1103,7 +1103,7 @@ function IbmWatsonTtsEngine() {
     assert(text && voice);
     var matches = voice.voiceName.match(/^IBM-Watson .* \((\w+)\)$/);
     var voiceName = voice.lang + "_" + matches[1] + "Voice";
-    return "https://text-to-speech-demo.ng.bluemix.net/api/v2/synthesize?text=" + encodeURIComponent(text) + "&voice=" + encodeURIComponent(voiceName) + "&download=true&accept=" + encodeURIComponent("audio/mp3");
+    return "https://text-to-speech-demo.ng.bluemix.net/api/v3/synthesize?text=" + encodeURIComponent(text) + "&voice=" + encodeURIComponent(voiceName) + "&download=true&accept=" + encodeURIComponent("audio/mp3");
   }
   var voices = [
     {"voiceName": "IBM-Watson American English (Allison)", "lang": "en-US", "gender": "female"},
