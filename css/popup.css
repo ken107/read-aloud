@@ -1,6 +1,7 @@
 
 body {
   margin: 20px 15px 10px 15px;
+  background: #4F4F4F;
 }
 
 #speech-info {
@@ -12,6 +13,7 @@ body {
   text-align: center;
   margin: 15px;
   white-space: nowrap;
+  background: #4F4F4F;
 }
 #buttons > img {
   vertical-align: top;
@@ -19,19 +21,17 @@ body {
 
 .button-1 {
   cursor: pointer;
-  border: 2px outset;
   border-radius: 5px;
-  background-color: #e4e4e4;
   font-size: x-large;
-  color: #757575;
+  color: #C5C5C5;
   padding: 3px;
-  text-shadow: 1px 1px white;
+  box-shadow: -2px -2px 6px rgba(189, 189, 189, 0.15), 2px 2px 6px rgba(0, 0, 0, 0.2);
 }
 .button-1:active {
-  border: 2px inset;
+  box-shadow: -2px -2px 6px rgba(0, 0, 0, 0.2), 2px 2px 6px rgba(189, 189, 189, 0.15);
 }
 .button-1:hover {
-  color: #606060;
+  color: #F8F8F8;
 }
 
 #btnRewind, #btnForward {
@@ -43,17 +43,17 @@ body {
 #highlight {
   width: 350px;
   height: 300px;
-  border: 1px solid lightgray;
   padding: 1rem;
-  background-color: #ffefd5;
+  background-color: #686868;
   line-height: 1.35em;
   overflow: auto;
   word-wrap: break-word;
   position: relative;
   box-sizing: border-box;
+  color: #FFF;
 }
 #highlight span.active {
-  background: yellow;
+  background: #3D0770;
 }
 
 #toolbar {
@@ -80,17 +80,20 @@ body {
   padding: .25rem .5rem;
   font-size: .875rem;
   line-height: 1.5;
-  color: #212529;
-  background-color: #f8f9fa;
-  border: 1px solid transparent;
+  color: #C5C5C5;
+  background-color: #4F4F4F;
   font-weight: 400;
   user-select: none;
   cursor: pointer;
-  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  border-width: 0;
+  box-shadow: -2px -2px 6px rgba(189, 189, 189, 0.15), 2px 2px 6px rgba(0, 0, 0, 0.2);
 }
 #toolbar .btn:hover {
-  background-color: #e2e6ea;
-  border-color: #dae0e5;
+  background-color: #4F4F4F;
+  color: #FFF;
+}
+#toolbar .btn:active {
+  box-shadow: -2px -2px 6px rgba(0, 0, 0, 0.2), 2px 2px 6px rgba(189, 189, 189, 0.15);
 }
 #toolbar .material-icons {
   font-size: 1em;
