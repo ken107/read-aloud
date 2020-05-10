@@ -1,32 +1,62 @@
+
 <div align="center">
 	<img src="img/icon.png" width="128" height="128">
-    <br>
-    <img src="docs/images/logo-text-trans.png" width="391" height="66">
-    <br>
-	A Browser Extension for Text to Speech Voice Reader
+	<br>
+	<img src="docs/images/logo-text-trans.png" width="391" height="66">
+	<br>
+	A <b>Text to Speech Voice Reader</b> extension for your browser!
 </div>
+
 <div align="center">
-    <a href="https://readaloud.app/">Website</a> | <a href="https://chrome.google.com/webstore/detail/read-aloud-a-text-to-spee/hdhinadidafjejdhmfkjgnolgimiaplp">Chrome Web Store</a> | <a href="https://addons.mozilla.org/en-US/firefox/addon/read-aloud/">Firefox Addon</a>
-    <br>
+	<a href="https://chrome.google.com/webstore/detail/read-aloud-a-text-to-spee/hdhinadidafjejdhmfkjgnolgimiaplp">Chrome Web Store</a> | <a href="https://addons.mozilla.org/en-US/firefox/addon/read-aloud/">Firefox Addon</a> | <a href="https://blog.readaloud.app/">Blog</a> | <a href="https://readaloud.app/">Website</a> 
 </div>
+
+<br>
+
 <div align="center">
     <br> github stats:
-    <a href="https://badgen.net/github/stars/ken107/read-aloud"><img src="https://badgen.net/github/stars/ken107/read-aloud" width="68" height="20" border="0"> </a>
-    <a href="https://badgen.net/github/open-issues/ken107/read-aloud"><img src="https://badgen.net/github/open-issues/ken107/read-aloud" width="99" height="20" border="0"> </a>
-    <a href="https://badgen.net/github/open-prs/ken107/read-aloud"><img src="https://badgen.net/github/open-prs/ken107/read-aloud" width="78" height="20" border="0"> </a>
-    <a href="https://badgen.net/github/tag/ken107/read-aloud"><img src="https://badgen.net/github/tag/ken107/read-aloud" width="115" height="20" border="0"> </a>
-    <a href="https://badgen.net/github/license/ken107/read-aloud/"><img src="https://badgen.net/github/license/ken107/read-aloud/" width="78" height="20" border="0"></a>
-</div>
-<div align="center">
+    <img src="https://badgen.net/github/stars/ken107/read-aloud" >
+    <img src="https://badgen.net/github/open-issues/ken107/read-aloud" >
+    <img src="https://badgen.net/github/open-prs/ken107/read-aloud" >
+    <img src="https://badgen.net/github/tag/ken107/read-aloud" >
+    <img src="https://badgen.net/github/license/ken107/read-aloud/" >
     <br> chrome web store stats:
-    <a href="https://badgen.net/chrome-web-store/users/hdhinadidafjejdhmfkjgnolgimiaplp"><img src="https://badgen.net/chrome-web-store/users/hdhinadidafjejdhmfkjgnolgimiaplp" width="66" height="20" border="0"> </a>
-    <a href="https://badgen.net/chrome-web-store/rating/hdhinadidafjejdhmfkjgnolgimiaplp"><img src="https://badgen.net/chrome-web-store/rating/hdhinadidafjejdhmfkjgnolgimiaplp" width="90" height="20" border="0"> </a>
-    <a href="https://badgen.net/chrome-web-store/rating-count/hdhinadidafjejdhmfkjgnolgimiaplp"><img src="https://badgen.net/chrome-web-store/rating-count/hdhinadidafjejdhmfkjgnolgimiaplp" border="0"> </a>
-    <a href="https://badgen.net/chrome-web-store/v/hdhinadidafjejdhmfkjgnolgimiaplp"><img src="https://badgen.net/chrome-web-store/v/hdhinadidafjejdhmfkjgnolgimiaplp" width="163" height="20" border="0"></a>
+    <img src="https://badgen.net/chrome-web-store/users/hdhinadidafjejdhmfkjgnolgimiaplp" >
+    <img src="https://badgen.net/chrome-web-store/rating/hdhinadidafjejdhmfkjgnolgimiaplp" >
+    <img src="https://badgen.net/chrome-web-store/rating-count/hdhinadidafjejdhmfkjgnolgimiaplp" >
+    <img src="https://badgen.net/chrome-web-store/v/hdhinadidafjejdhmfkjgnolgimiaplp" >
+    <br> firefox addon stats:
+    <img src="https://badgen.net/amo/users/read-aloud" >
+    <img src="https://badgen.net/amo/rating/read-aloud" >
+    <img src="https://badgen.net/amo/reviews/read-aloud" >
+    <img src="https://badgen.net/amo/v/read-aloud" >
 </div>
+
 <br>
-<div align="center"> <sub>A little browser extension built with ❤︎ by <a href="https://github.com/ken107">Hai Phan</a> and <a href="https://github.com/ken107/read-aloud/graphs/contributors">contributors</a> </sub></div>
+
+<div align="center">
+	<sub>A little browser extension built with ❤︎ by <a href="https://github.com/ken107">Hai Phan</a> and <a href="https://github.com/ken107/read-aloud/graphs/contributors">contributors</a> </sub>
+</div>
+
 <hr />
+
+## Reviews
+>First impressions are super. Natural flowing voice and very helpful for multitasking and also giving my eyes a rest. 
+
+*Giuseppe*
+
+> Thank you so much for this extension. I absolutely swear by it whenever I need to read any large chunk of text. The combination of hearing it in a clear voice (...)  Its fantastic, thank you so much.
+
+*Abi*
+
+> LOVE this extension. I remember better when i hear a story vs reading
+
+*David*
+
+> This is a phenomenal extension. Better than anything else I tryed so far. Simple, easy, customizable (...) I would recommend this whole heartedly to anyone who has dyslexia like me, or any other reasons for not beeing able to read comfortably at all times.
+
+*Merlin*
+
 
 ## Overview
 Read Aloud is a Chrome and Firefox extension that uses text-to-speech technology to convert webpage text to audio.&nbsp; It works on a variety of websites, including news sites, blogs, fan fiction, publications, textbooks, school and class websites, online universities and course materials.
@@ -76,10 +106,10 @@ You can get the latest available Read Aloud Extension version from the [Chrome W
 ### Firefox
 You can get the latest version of Read Aloud Extension from the [Mozilla Add-ons website](https://addons.mozilla.org/en-US/firefox/addon/read-aloud/).
 
-## Contribution
+## Contribute
 
 - Star this GitHub repo :star:
-- Tweet about it.
+- Post about it on your social media (Twitter / Blogs / Facebook / Instagram etc).
 - Leave a positive review on the [Chrome Web Store](https://chrome.google.com/webstore/detail/read-aloud-a-text-to-spee/hdhinadidafjejdhmfkjgnolgimiaplp) or [Firefox Addon](https://addons.mozilla.org/en-US/firefox/addon/read-aloud/) pages.
 - Create pull requests, submit bugs, suggest new features or documentation updates 🛠 
 	- To do so, go to [this page](https://github.com/ken107/read-aloud/issues) and click the *New issue* button.
