@@ -99,8 +99,7 @@ function getVoices() {
         googleTranslateTtsEngine.getVoices(),
         remoteTtsEngine.getVoices(),
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
-        googleWavenetTtsEngine.getVoices(),
-        ibmWatsonTtsEngine.getVoices(),
+        settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
       ])
     })
     .then(function(arr) {

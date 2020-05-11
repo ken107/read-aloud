@@ -796,6 +796,14 @@ function GoogleWavenetTtsEngine() {
         return items.wavenetVoices || voices;
       })
   }
+  this.getFreeVoices = function() {
+    return this.getVoices()
+      .then(function(items) {
+        return items.filter(function(item) {
+          return item.voiceName.match(/^GoogleStandard /);
+        })
+      })
+  }
   function updateVoices() {
     ajaxGet(config.serviceUrl + "/read-aloud/list-voices/google")
       .then(JSON.parse)
