@@ -1,6 +1,6 @@
 
 $(function() {
-  getSettings(["awsCreds", "gcpCreds"])
+  getSettings(["awsCreds", "gcpCreds", "ibmCreds"])
     .then(function(items) {
       if (items.awsCreds) {
         $("#aws-access-key-id").val(obfuscate(items.awsCreds.accessKeyId));
@@ -9,10 +9,15 @@ $(function() {
       if (items.gcpCreds) {
         $("#gcp-api-key").val(obfuscate(items.gcpCreds.apiKey));
       }
+      if (items.ibmCreds) {
+        $("#ibm-api-key").val(obfuscate(items.ibmCreds.apiKey));
+        $("#ibm-url").val(obfuscate(items.ibmCreds.url));
+      }
     })
   $(".status").hide();
   $("#aws-save-button").click(awsSave);
   $("#gcp-save-button").click(gcpSave);
+  $("#ibm-save-button").click(ibmSave);
 })
 
 function obfuscate(key) {
@@ -89,4 +94,46 @@ function gcpSave() {
 
 function testGcp(apiKey) {
       return ajaxGet("https://texttospeech.googleapis.com/v1beta1/voices?key=" + apiKey);
+}
+
+
+function ibmSave() {
+  $(".status").hide();
+  var apiKey = $("#ibm-api-key").val().trim();
+  var url = $("#ibm-url").val().trim();
+  if (apiKey && url) {
+    $("#ibm-progress").show();
+    testIbm(apiKey, url)
+      .then(function() {
+        $("#ibm-progress").hide();
+        updateSettings({ibmCreds: {apiKey: apiKey, url: url}});
+        $("#ibm-success").text("IBM Watson voices are enabled.").show();
+        $("#ibm-api-key").val(obfuscate(apiKey));
+        $("#ibm-url").val(obfuscate(url));
+      })
+      .catch(function(err) {
+        $("#ibm-progress").hide();
+        $("#ibm-error").text("Test failed: " + err.message).show();
+      })
+  }
+  else if (!apiKey && !url) {
+    clearSettings(["ibmCreds"])
+      .then(function() {
+        $("#ibm-success").text("IBM Watson voices are disabled.").show();
+      })
+  }
+  else {
+    $("#ibm-error").text("Missing required fields.").show();
+  }
+}
+
+function testIbm(apiKey, url) {
+  return requestPermissions({origins: [url + "/*"]})
+    .then(function(granted) {
+      if (!granted) throw new Error("Permission not granted");
+      return getBackgroundPage();
+    })
+    .then(function(master) {
+      return master.ibmWatsonTtsEngine.fetchVoices(apiKey, url);
+    })
 }

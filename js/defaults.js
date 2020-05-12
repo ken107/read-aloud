@@ -100,6 +100,7 @@ function getVoices() {
         remoteTtsEngine.getVoices(),
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
+        ibmWatsonTtsEngine.getVoices(),
       ])
     })
     .then(function(arr) {
@@ -337,13 +338,16 @@ function ajaxGet(sUrl) {
 }
 
 function ajaxGetCb(sUrl, fulfill, reject) {
+  var opts = typeof sUrl == "string" ? {url: sUrl} : sUrl;
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", sUrl, true);
+    xhr.open("GET", opts.url, true);
+    if (opts.headers) for (var name in opts.headers) xhr.setRequestHeader(name, opts.headers[name]);
+    if (opts.responseType) xhr.responseType = opts.responseType;
     xhr.onreadystatechange = function() {
       if (xhr.readyState == XMLHttpRequest.DONE) {
-        if (xhr.status == 200) fulfill(xhr.responseText);
+        if (xhr.status == 200) fulfill(xhr.response);
         else if (reject) {
-          var err = new Error(xhr.responseText || xhr.statusText || xhr.status || ("Failed to fetch " + sUrl.substr(0, 100)));
+          var err = new Error(xhr.responseText || xhr.statusText || xhr.status || ("Failed to fetch " + opts.url.substr(0, 100)));
           err.xhr = xhr;
           reject(err);
         }

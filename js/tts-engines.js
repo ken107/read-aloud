@@ -624,6 +624,14 @@ function AmazonPollyTtsEngine() {
           VoiceId: voiceId,
           Engine: "neural"
         }
+      case "conversational":
+        return {
+          OutputFormat: "mp3",
+          Text: '<speak><amazon:domain name="conversational">' + escapeXml(text) + '</amazon:domain></speak>',
+          TextType: "ssml",
+          VoiceId: voiceId,
+          Engine: "neural"
+        }
       case "neural":
         return {
           OutputFormat: "mp3",
@@ -685,6 +693,7 @@ function AmazonPollyTtsEngine() {
     {"voiceName":"AmazonPolly US Spanish (Miguel)","lang":"es-US","gender":"male"},
     {"voiceName":"AmazonPolly US Spanish (Lupe)","lang":"es-US","gender":"female"},
     {"voiceName":"AmazonPolly US Spanish (Lupe) +neural","lang":"es-US","gender":"female"},
+    {"voiceName":"AmazonPolly US Spanish (Lupe) +newscaster","lang":"es-US","gender":"female"},
     {"voiceName":"AmazonPolly Mexican Spanish (Mia)","lang":"es-MX","gender":"female"},
     {"voiceName":"AmazonPolly Castilian Spanish (Lucia)","lang":"es-ES","gender":"female"},
     {"voiceName":"AmazonPolly Castilian Spanish (Enrique)","lang":"es-ES","gender":"male"},
@@ -695,6 +704,7 @@ function AmazonPollyTtsEngine() {
     {"voiceName":"AmazonPolly US English (Matthew)","lang":"en-US","gender":"male"},
     {"voiceName":"AmazonPolly US English (Matthew) +neural","lang":"en-US","gender":"male"},
     {"voiceName":"AmazonPolly US English (Matthew) +newscaster","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Matthew) +conversational","lang":"en-US","gender":"male"},
     {"voiceName":"AmazonPolly US English (Kimberly)","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly US English (Kimberly) +neural","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly US English (Kendra)","lang":"en-US","gender":"female"},
@@ -706,6 +716,7 @@ function AmazonPollyTtsEngine() {
     {"voiceName":"AmazonPolly US English (Joanna)","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly US English (Joanna) +neural","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly US English (Joanna) +newscaster","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Joanna) +conversational","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly US English (Ivy)","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly US English (Ivy) +neural","lang":"en-US","gender":"female"},
     {"voiceName":"AmazonPolly Indian English (Raveena)","lang":"en-IN","gender":"female"},
@@ -1048,9 +1059,11 @@ function GoogleWavenetTtsEngine() {
 function IbmWatsonTtsEngine() {
   var audio = document.createElement("AUDIO");
   var isSpeaking = false;
+  var speakPromise;
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;
     if (!options.rate) options.rate = 1;
+    if (!options.pitch) options.pitch = 1;
     audio.pause();
     audio.volume = options.volume;
     audio.defaultPlaybackRate = options.rate * 1.1;
@@ -1066,9 +1079,9 @@ function IbmWatsonTtsEngine() {
       onEvent({type: "error", errorMessage: audio.error.message});
       isSpeaking = false;
     };
-    audio.src = getAudioUrl(utterance, options.voice);
-    Promise.resolve()
-      .then(function() {
+    speakPromise = getAudioUrl(utterance, options.voice)
+      .then(function(url) {
+        audio.src = url;
         return audio.play();
       })
       .catch(function(err) {
@@ -1083,7 +1096,7 @@ function IbmWatsonTtsEngine() {
   };
   this.pause =
   this.stop = function() {
-    audio.pause();
+    speakPromise.then(function() {audio.pause()});
   };
   this.resume = function() {
     audio.play();
@@ -1093,67 +1106,59 @@ function IbmWatsonTtsEngine() {
   this.setNextStartTime = function() {
   };
   this.getVoices = function() {
-    return getSettings(["watsonVoices"])
+    return getSettings(["watsonVoices", "ibmCreds"])
       .then(function(items) {
-        if (!items.watsonVoices || Date.now()-items.watsonVoices[0].ts > 24*3600*1000) updateVoices();
-        return items.watsonVoices || voices;
+        if (!items.ibmCreds) return [];
+        if (items.watsonVoices && Date.now()-items.watsonVoices[0].ts < 24*3600*1000) return items.watsonVoices;
+        return fetchVoices(items.ibmCreds.apiKey, items.ibmCreds.url)
+          .then(function(list) {
+            list[0].ts = Date.now();
+            updateSettings({watsonVoices: list}).catch(console.error);
+            return list;
+          })
+          .catch(function(err) {
+            console.error(err);
+            return [];
+          })
       })
   }
-  function updateVoices() {
-    ajaxGet(config.serviceUrl + "/read-aloud/list-voices/ibm")
-      .then(JSON.parse)
-      .then(function(list) {
-        list[0].ts = Date.now();
-        updateSettings({watsonVoices: list});
-      })
-  }
+  this.fetchVoices = fetchVoices;
+
   function getAudioUrl(text, voice) {
     assert(text && voice);
     var matches = voice.voiceName.match(/^IBM-Watson .* \((\w+)\)$/);
     var voiceName = voice.lang + "_" + matches[1] + "Voice";
-    return "https://text-to-speech-demo.ng.bluemix.net/api/v3/synthesize?text=" + encodeURIComponent(text) + "&voice=" + encodeURIComponent(voiceName) + "&download=true&accept=" + encodeURIComponent("audio/mp3");
+    return getSettings(["ibmCreds"])
+      .then(function(settings) {
+        return ajaxGet({
+          url: settings.ibmCreds.url + "/v1/synthesize?text=" + encodeURIComponent(text) + "&voice=" + encodeURIComponent(voiceName) + "&accept=" + encodeURIComponent("audio/mpeg"),
+          headers: {
+            Authorization: "Basic " + btoa("apikey:" + settings.ibmCreds.apiKey)
+          },
+          responseType: "blob"
+        })
+      })
+      .then(function(blob) {
+        return URL.createObjectURL(blob);
+      })
   }
-  var voices = [
-    {"voiceName": "IBM-Watson American English (Allison)", "lang": "en-US", "gender": "female"},
-    {"voiceName": "IBM-Watson American English (AllisonV3)", "lang": "en-US", "gender": "female"},
-    {"voiceName": "IBM-Watson American English (EmilyV3)", "lang": "en-US", "gender": "female"},
-    {"voiceName": "IBM-Watson American English (HenryV3)", "lang": "en-US", "gender": "male"},
-    {"voiceName": "IBM-Watson American English (KevinV3)", "lang": "en-US", "gender": "male"},
-    {"voiceName": "IBM-Watson American English (Lisa)", "lang": "en-US", "gender": "female"},
-    {"voiceName": "IBM-Watson American English (LisaV3)", "lang": "en-US", "gender": "female"},
-    {"voiceName": "IBM-Watson American English (Michael)", "lang": "en-US", "gender": "male"},
-    {"voiceName": "IBM-Watson American English (MichaelV3)", "lang": "en-US", "gender": "male"},
-    {"voiceName": "IBM-Watson American English (OliviaV3)", "lang": "en-US", "gender": "female"},
-    {"voiceName": "IBM-Watson Arabic (Omar)", "lang": "ar-AR", "gender": "male"},
-    {"voiceName": "IBM-Watson British English (Kate)", "lang": "en-GB", "gender": "female"},
-    {"voiceName": "IBM-Watson British English (KateV3)", "lang": "en-GB", "gender": "female"},
-    {"voiceName": "IBM-Watson Castilian Spanish (Enrique)", "lang": "es-ES", "gender": "male"},
-    {"voiceName": "IBM-Watson Castilian Spanish (EnriqueV3)", "lang": "es-ES", "gender": "male"},
-    {"voiceName": "IBM-Watson Castilian Spanish (Laura)", "lang": "es-ES", "gender": "female"},
-    {"voiceName": "IBM-Watson Castilian Spanish (LauraV3)", "lang": "es-ES", "gender": "female"},
-    {"voiceName": "IBM-Watson Chinese, Mandarin (LiNa)", "lang": "zh-CN", "gender": "female"},
-    {"voiceName": "IBM-Watson Chinese, Mandarin (WangWei)", "lang": "zh-CN", "gender": "male"},
-    {"voiceName": "IBM-Watson Chinese, Mandarin (ZhangJing)", "lang": "zh-CN", "gender": "female"},
-    {"voiceName": "IBM-Watson Dutch (Emma)", "lang": "nl-NL", "gender": "female"},
-    {"voiceName": "IBM-Watson Dutch (Liam)", "lang": "nl-NL", "gender": "male"},
-    {"voiceName": "IBM-Watson Latin American Spanish (Sofia)", "lang": "es-LA", "gender": "female"},
-    {"voiceName": "IBM-Watson Latin American Spanish (SofiaV3)", "lang": "es-LA", "gender": "female"},
-    {"voiceName": "IBM-Watson North American Spanish (Sofia)", "lang": "es-US", "gender": "female"},
-    {"voiceName": "IBM-Watson North American Spanish (SofiaV3)", "lang": "es-US", "gender": "female"},
-    {"voiceName": "IBM-Watson German (Dieter)", "lang": "de-DE", "gender": "male"},
-    {"voiceName": "IBM-Watson German (DieterV3)", "lang": "de-DE", "gender": "male"},
-    {"voiceName": "IBM-Watson German (Birgit)", "lang": "de-DE", "gender": "female"},
-    {"voiceName": "IBM-Watson German (BirgitV3)", "lang": "de-DE", "gender": "female"},
-    {"voiceName": "IBM-Watson German (ErikaV3)", "lang": "de-DE", "gender": "female"},
-    {"voiceName": "IBM-Watson French (Renee)", "lang": "fr-FR", "gender": "female"},
-    {"voiceName": "IBM-Watson French (ReneeV3)", "lang": "fr-FR", "gender": "female"},
-    {"voiceName": "IBM-Watson Italian (Francesca)", "lang": "it-IT", "gender": "female"},
-    {"voiceName": "IBM-Watson Italian (FrancescaV3)", "lang": "it-IT", "gender": "female"},
-    {"voiceName": "IBM-Watson Japanese (Emi)", "lang": "ja-JP", "gender": "female"},
-    {"voiceName": "IBM-Watson Japanese (EmiV3)", "lang": "ja-JP", "gender": "female"},
-    {"voiceName": "IBM-Watson Korean (Youngmi)", "lang": "ko-KR", "gender": "female"},
-    {"voiceName": "IBM-Watson Korean (Yuna)", "lang": "ko-KR", "gender": "female"},
-    {"voiceName": "IBM-Watson Brazilian Portuguese (Isabela)", "lang": "pt-BR", "gender": "female"},
-    {"voiceName": "IBM-Watson Brazilian Portuguese (IsabelaV3)", "lang": "pt-BR", "gender": "female"}
-  ]
+  function fetchVoices(apiKey, url) {
+    return ajaxGet({
+        url: url + "/v1/voices",
+        headers: {
+          Authorization: "Basic " + btoa("apikey:" + apiKey)
+        }
+      })
+      .then(JSON.parse)
+      .then(function(data) {
+        return data.voices.map(item => {
+          item.description = item.description.replace(/Chinese \((Mandarin|Cantonese)\)/, "Chinese, $1");
+          return {
+            voiceName: "IBM-Watson " + item.description.split(/: | male| female| \(/)[1] + " (" + item.name.slice(item.language.length+1, -5) + ")",
+            lang: item.language,
+            gender: item.gender,
+          }
+        })
+      })
+  }
 }

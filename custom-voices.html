@@ -67,6 +67,30 @@
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-header">
+        Enter IBM API key to enable IBM Watson voices.
+      </div>
+      <div class="card-body">
+        <form>
+          <div class="form-group">
+            <input type="text" class="form-control" id="ibm-api-key" placeholder="API key" />
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" id="ibm-url" placeholder="URL" />
+          </div>
+          <div class="form-group">
+            <button type="button" class="btn btn-primary" id="ibm-save-button">Save</button>
+          </div>
+          <div class="form-group">
+            <img id="ibm-progress" class="status progress" src="img/loading.gif" />
+            <div id="ibm-success" class="status alert alert-success"></div>
+            <div id="ibm-error" class="status alert alert-danger"></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 </body>
 </html>
