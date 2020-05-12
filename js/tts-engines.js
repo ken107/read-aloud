@@ -98,6 +98,7 @@ function WebSpeechEngine() {
   this.getVoices = function() {
     return promiseTimeout(1500, "Timeout WebSpeech getVoices", new Promise(function(fulfill) {
       var voices = speechSynthesis.getVoices() || [];
+      brapi.extension.getBackgroundPage().console.log(voices);
       if (voices.length) fulfill(voices);
       else speechSynthesis.onvoiceschanged = function() {
         fulfill(speechSynthesis.getVoices() || []);
@@ -573,8 +574,7 @@ function AmazonPollyTtsEngine() {
   this.getVoices = function() {
     return getSettings(["pollyVoices"])
       .then(function(items) {
-        if (!items.pollyVoices || Date.now()-items.pollyVoices[0].ts > 24*3600*1000) updateVoices();
-        return items.pollyVoices || voices;
+        return voices;
       })
   }
   function updateVoices() {
@@ -792,8 +792,7 @@ function GoogleWavenetTtsEngine() {
   this.getVoices = function() {
     return getSettings(["wavenetVoices"])
       .then(function(items) {
-        if (!items.wavenetVoices || Date.now()-items.wavenetVoices[0].ts > 24*3600*1000) updateVoices();
-        return items.wavenetVoices || voices;
+        return voices;
       })
   }
   function updateVoices() {
@@ -1087,8 +1086,7 @@ function IbmWatsonTtsEngine() {
   this.getVoices = function() {
     return getSettings(["watsonVoices"])
       .then(function(items) {
-        if (!items.watsonVoices || Date.now()-items.watsonVoices[0].ts > 24*3600*1000) updateVoices();
-        return items.watsonVoices || voices;
+        return voices;
       })
   }
   function updateVoices() {

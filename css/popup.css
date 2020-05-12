@@ -53,7 +53,9 @@ body {
   color: #FFF;
 }
 #highlight span.active {
-  background: #3D0770;
+  background-color: #3D0770;
+  display: inline-block;
+  padding: 5px;
 }
 
 #toolbar {
