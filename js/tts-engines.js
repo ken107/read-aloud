@@ -1131,7 +1131,7 @@ function IbmWatsonTtsEngine() {
     return getSettings(["ibmCreds"])
       .then(function(settings) {
         return ajaxGet({
-          url: settings.ibmCreds.url + "/v1/synthesize?text=" + encodeURIComponent(text) + "&voice=" + encodeURIComponent(voiceName) + "&accept=" + encodeURIComponent("audio/mpeg"),
+          url: settings.ibmCreds.url + "/v1/synthesize?text=" + encodeURIComponent(escapeHtml(text)) + "&voice=" + encodeURIComponent(voiceName) + "&accept=" + encodeURIComponent("audio/mpeg"),
           headers: {
             Authorization: "Basic " + btoa("apikey:" + settings.ibmCreds.apiKey)
           },

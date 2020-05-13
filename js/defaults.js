@@ -347,7 +347,7 @@ function ajaxGetCb(sUrl, fulfill, reject) {
       if (xhr.readyState == XMLHttpRequest.DONE) {
         if (xhr.status == 200) fulfill(xhr.response);
         else if (reject) {
-          var err = new Error(xhr.responseText || xhr.statusText || xhr.status || ("Failed to fetch " + opts.url.substr(0, 100)));
+          var err = new Error("Failed to fetch " + opts.url.substr(0, 100));
           err.xhr = xhr;
           reject(err);
         }
@@ -364,7 +364,7 @@ function ajaxPost(sUrl, oData, sType) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState == XMLHttpRequest.DONE) {
         if (xhr.status == 200) fulfill(xhr.responseText);
-        else reject(new Error(xhr.responseText || xhr.statusText || xhr.status || ("Failed to fetch " + sUrl.substr(0, 100))));
+        else reject(new Error("Failed to fetch " + sUrl.substr(0, 100)));
       }
     };
     xhr.send(sType == "json" ? JSON.stringify(oData) : urlEncode(oData));
