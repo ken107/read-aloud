@@ -113,3 +113,11 @@ You can get the latest version of Read Aloud Extension from the [Mozilla Add-ons
 - Leave a positive review on the [Chrome Web Store](https://chrome.google.com/webstore/detail/read-aloud-a-text-to-spee/hdhinadidafjejdhmfkjgnolgimiaplp) or [Firefox Addon](https://addons.mozilla.org/en-US/firefox/addon/read-aloud/) pages.
 - Create pull requests, submit bugs, suggest new features or documentation updates 🛠 
 	- To do so, go to [this page](https://github.com/ken107/read-aloud/issues) and click the *New issue* button.
+
+
+## Credits
+
+### Images
+
+ - [Streamline Labs](https://lab.streamlineicons.com/)
+ - [Freepik](https://www.freepik.com/free-vector/colorful-memphis-design-background-vector_3893585.htm)
