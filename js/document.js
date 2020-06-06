@@ -46,7 +46,8 @@ function TabSource() {
       },
       validate: function() {
         return new Promise(function(fulfill) {
-          brapi.extension.isAllowedFileSchemeAccess(fulfill);
+          //brapi.extension.isAllowedFileSchemeAccess(fulfill);
+          fulfill(true);
         })
         .then(function(allowed) {
           if (!allowed) throw new Error(JSON.stringify({code: "error_file_access"}));
