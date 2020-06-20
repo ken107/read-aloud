@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.31.2",
+  "version": "1.32.0",
   "default_locale": "en",
 
   "browser_action": {
@@ -43,8 +43,6 @@
     "file://*/*"
   ],
   "content_security_policy": "script-src 'self'; object-src 'self'",
-  "web_accessible_resources": [
-  ],
   "background": {
     "scripts": [
       "js/defaults.js",
