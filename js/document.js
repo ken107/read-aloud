@@ -111,14 +111,14 @@ function TabSource() {
     },
     {
       match: function(url) {
-        return /^chrome-extension:\/\/jhhclmfgfllimlhabjkgkeebkbiadflb\/reader.html/.test(url);
+        return /^moz-extension:\/\/.*\/reader.html/.test(url);
       },
       validate: function() {
       },
       connect: function() {
         function call(method) {
           return new Promise(function(fulfill) {
-            brapi.runtime.sendMessage("jhhclmfgfllimlhabjkgkeebkbiadflb", {name: method}, fulfill);
+            brapi.runtime.sendMessage("{5384767E-00D9-40E9-B72F-9CC39D655D6F}", {name: method}, fulfill);
           })
         }
         function parseXhtml(xml) {
