@@ -109,6 +109,59 @@ function TabSource() {
       extraScripts: ["js/content/vitalsource-book.js"]
     },
     {
+      match: function(url) {
+        return /^chrome-extension:\/\/jhhclmfgfllimlhabjkgkeebkbiadflb\/reader.html/.test(url);
+      },
+      validate: function() {
+      },
+      connect: function() {
+        function call(method) {
+          return new Promise(function(fulfill) {
+            brapi.runtime.sendMessage("jhhclmfgfllimlhabjkgkeebkbiadflb", {name: method}, fulfill);
+          })
+        }
+        function parseXhtml(xml) {
+          var dom = new DOMParser().parseFromString(xml, "text/xml");
+          var nodes = dom.body.querySelectorAll("h1, h2, h3, h4, h5, h6, p");
+          return Array.prototype.slice.call(nodes)
+            .map(function(node) {
+              return node.innerText && node.innerText.trim().replace(/\r?\n/g, " ");
+            })
+            .filter(function(text) {
+              return text;
+            })
+        }
+        var currentPage = 0;
+        peer = {
+          invoke: function(method, index) {
+            if (method == "getCurrentIndex") return Promise.resolve(currentPage);
+            else if (method == "getTexts") {
+              var promise = Promise.resolve({success: true, paged: true});
+              for (; currentPage<index; currentPage++) promise = promise.then(call.bind(null, "pageForward"));
+              for (; currentPage>index; currentPage--) promise = promise.then(call.bind(null, "pageBackward"));
+              return promise
+                .then(function(res) {
+                  if (!res.success) throw new Error("Failed to flip EPUB page");
+                  return res.paged ? call("getPageText") : {success: true, text: null};
+                })
+                .then(function(res) {
+                  if (!res.success) throw new Error("Failed to get EPUB text");
+                  return res.text && parseXhtml(res.text);
+                })
+            }
+            else return Promise.reject(new Error("Bad method"));
+          },
+          disconnect: function() {}
+        }
+        return call("getDocumentInfo")
+          .then(extraAction(function(res) {
+            if (!res.success) throw new Error("Failed to get EPUB document info");
+            if (res.lang && !/^[a-z][a-z](-[A-Z][A-Z])?$/.test(res.lang)) res.lang = null;
+            if (res.lang) res.detectedLang = res.lang;   //prevent lang detection
+          }))
+      }
+    },
+    {
       match: function() {
         return true;
       },
@@ -133,8 +186,10 @@ function TabSource() {
       if (handler.getFrameId)
         return getAllFrames(tab.id).then(handler.getFrameId).then(function(res) {frameId = res});
     })
-    .then(waitForConnect)
-    .then(function(port) {
+    .then(function() {
+      if (handler.connect) return handler.connect();
+      return waitForConnect()
+        .then(function(port) {
       return new Promise(function(fulfill) {
         peer = new RpcPeer(new ExtensionMessagingPeer(port));
         peer.onInvoke = function(method, arg0) {
@@ -145,6 +200,7 @@ function TabSource() {
           peer = null;
         }
       })
+        })
     })
     .then(extraAction(function(info) {
       if (info.requireJs) {
@@ -316,7 +372,17 @@ function Doc(source, onEnd) {
     var minChars = 1000;
     var maxPages = 10;
     var output = combineTexts("", texts);
-    return output.length<minChars ? accumulateMore(output, currentIndex+1).then(detectLanguageOf) : detectLanguageOf(output);
+    if (output.length < minChars) {
+      return accumulateMore(output, currentIndex+1)
+        .then(detectLanguageOf)
+        .then(extraAction(function() {
+          //for sources that couldn't flip page silently, flip back to the current page
+          return source.getTexts(currentIndex, true);
+        }))
+    }
+    else {
+      return detectLanguageOf(output);
+    }
 
     function combineTexts(output, texts) {
       for (var i=0; i<texts.length && output.length<minChars; i++) output += (texts[i] + " ");
