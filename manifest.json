@@ -16,15 +16,6 @@
     "48": "img/icon-48.png",
     "128": "img/icon.png"
   },
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnuixucDtRgOw5uj5Bj8e+mAOxk2JAe0soL61VPOJz49awD8TGg4bUedgPkwHlLFpN1YayanQPOixIa+ePnSgSaXiV0SSdKYp4f1SUDGf1Z9Q7Ya+onaLN6aAcv7HAUQ9+JQK8aPNIyMHRm/Clx8zjwbILXzILbmuMvkRva7A78k0HULb+LxNGMeV9F7Q0U8WdZrfS2VNBpDVnDqGqVL93TDz1UsTvaA+uX0S5ZeXeZIwOzUMsuyiSBMPoQC5cUxszmJVtjj92EY1/AonZr22Cp8J5KBiCYJBsJqQ+Dt15cXz3gtCkBbChdlNbG8pLDneDNmEdF8EIVrziO346+qU0QIDAQAB",
-  "oauth2": {
-    "client_id": "311515340069-gr48lfk7ufpg8ath9qkfsatq60tr6147.apps.googleusercontent.com",
-    "scopes": [
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile",
-      "https://www.googleapis.com/auth/chromewebstore.readonly"
-    ]
-  },
   "permissions": [
     "activeTab",
     "contextMenus",
