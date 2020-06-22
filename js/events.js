@@ -1,5 +1,7 @@
 
 var activeDoc;
+var silenceLoop = new Audio("sound/silence.mp3");
+silenceLoop.loop = true;
 
 brapi.runtime.onInstalled.addListener(installContextMenus);
 if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
@@ -82,13 +84,7 @@ if (brapi.ttsEngine) (function() {
 
 
 function playText(text, onEnd) {
-  if (!activeDoc) {
-    activeDoc = new Doc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), function(err) {
-      handleError(err);
-      closeDoc();
-      if (typeof onEnd == "function") onEnd(err);
-    })
-  }
+  if (!activeDoc) openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), onEnd);
   return activeDoc.play()
     .catch(function(err) {
       handleError(err);
@@ -98,13 +94,7 @@ function playText(text, onEnd) {
 }
 
 function play(onEnd) {
-  if (!activeDoc) {
-    activeDoc = new Doc(new TabSource(), function(err) {
-      handleError(err);
-      closeDoc();
-      if (typeof onEnd == "function") onEnd(err);
-    })
-  }
+  if (!activeDoc) openDoc(new TabSource(), onEnd);
   return activeDoc.play()
     .catch(function(err) {
       handleError(err);
@@ -137,10 +127,20 @@ function getActiveSpeech() {
   else return Promise.resolve(null);
 }
 
+function openDoc(source, onEnd) {
+  activeDoc = new Doc(source, function(err) {
+    handleError(err);
+    closeDoc();
+    if (typeof onEnd == "function") onEnd(err);
+  })
+  silenceLoop.play();
+}
+
 function closeDoc() {
   if (activeDoc) {
     activeDoc.close();
     activeDoc = null;
+    silenceLoop.pause();
   }
 }
 
