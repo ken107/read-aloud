@@ -17,8 +17,9 @@ var readAloudDoc = new function() {
 
   function getTexts() {
     var dontRead = $("sup").hide();
-    var texts = $("p, .title-chapter, .subtitle-chapter, .p, .p-indent").get()
+    var texts = $("p, .title-chapter, .subtitle-chapter, .p, .p-indent, .tx, .tx1").get()
       .map(function(elem) {return elem.innerText.trim()})
+      .filter(function(text) {return text})
     dontRead.show();
     return texts;
   }
