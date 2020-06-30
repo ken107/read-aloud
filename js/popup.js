@@ -93,7 +93,7 @@ function updateButtons() {
     if ((settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && speechPos) {
       var pos = speechPos;
       var elem = $("#highlight");
-      if (elem.data("texts") != pos.texts) {
+      if (!elem.data("texts") || elem.data("texts").length != pos.texts.length || elem.data("texts").some(function(text,i) {return text != pos.texts[i]})) {
         elem.data({texts: pos.texts, index: -1});
         elem.empty();
         for (var i=0; i<pos.texts.length; i++) {
