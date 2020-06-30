@@ -6,6 +6,53 @@ silenceLoop.loop = true;
 brapi.runtime.onInstalled.addListener(installContextMenus);
 if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
 
+
+/**
+ * IPC handlers
+ */
+var handlers = {
+  playText: playText,
+  play: play,
+  stop: stop,
+  pause: pause,
+  getPlaybackState: getPlaybackState,
+  forward: forward,
+  rewind: rewind,
+  seek: seek,
+  reportIssue: reportIssue,
+  authWavenet: authWavenet,
+  ibmFetchVoices: function(apiKey, url) {
+    return ibmWatsonTtsEngine.fetchVoices(apiKey, url);
+  },
+  getSpeechPosition: function() {
+    return getActiveSpeech()
+      .then(function(speech) {
+        return speech && speech.getPosition();
+      })
+  },
+}
+
+brapi.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    var handler = handlers[request.method];
+    if (handler) {
+      Promise.resolve(handler.apply(null, request.args))
+        .then(sendResponse)
+        .catch(function(err) {
+          sendResponse({error: err.message});
+        })
+      return true;
+    }
+    else {
+      sendResponse({error: "BAD_METHOD"});
+    }
+  }
+);
+
+
+/**
+ * RPC handlers
+ */
 brapi.runtime.onMessageExternal.addListener(
   function(request, sender, sendResponse) {
     if (request.permissions) {
@@ -29,6 +76,10 @@ brapi.runtime.onConnectExternal.addListener(
   }
 );
 
+
+/**
+ * Context menu installer & handlers
+ */
 function installContextMenus() {
   if (brapi.contextMenus)
   brapi.contextMenus.create({
@@ -50,6 +101,10 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
       .catch(console.error)
 })
 
+
+/**
+ * Shortcut keys handlers
+ */
 function execCommand(command, onEnd) {
   if (command == "play") {
     getPlaybackState()
@@ -72,6 +127,10 @@ function execCommand(command, onEnd) {
 if (brapi.commands)
 brapi.commands.onCommand.addListener(execCommand);
 
+
+/**
+ * chrome.ttsEngine handlers
+ */
 if (brapi.ttsEngine) (function() {
   brapi.ttsEngine.onSpeak.addListener(function(utterance, options, onEvent) {
     options = Object.assign({}, options, {voice: {voiceName: options.voiceName}});
@@ -83,6 +142,10 @@ if (brapi.ttsEngine) (function() {
 })()
 
 
+
+/**
+ * METHODS
+ */
 function playText(text, onEnd) {
   if (!activeDoc) openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), onEnd);
   return activeDoc.play()

@@ -97,12 +97,9 @@ function initialize(allVoices, settings) {
           })
       })
       .then(function(result) {
-        return getBackgroundPage()
-          .then(function(master) {
-            return master.stop()
-              .then(function() {
-                return master.playText(result.text);
-              })
+        return bgPageInvoke("stop")
+          .then(function() {
+            return bgPageInvoke("playText", [result.text]);
           })
       })
       .catch(function(err) {
@@ -214,10 +211,7 @@ function voiceSorter(a, b) {
 
 
 function saveSettings(delta) {
-  getBackgroundPage()
-    .then(function(master) {
-      master.stop();
-    })
+  bgPageInvoke("stop");
   return updateSettings(delta)
     .then(showConfirmation)
     .then(getSettings)
@@ -257,7 +251,7 @@ function handleError(err) {
         case "#auth-wavenet":
           requestPermissions(config.wavenetPerms)
             .then(function(granted) {
-              if (granted) getBackgroundPage().then(callMethod("authWavenet"));
+              if (granted) bgPageInvoke("authWavenet");
             })
           break;
         case "#user-gesture":

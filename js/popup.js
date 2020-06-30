@@ -14,8 +14,7 @@ $(function() {
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
 
   updateButtons()
-    .then(getBackgroundPage)
-    .then(callMethod("getPlaybackState"))
+    .then(bgPageInvoke.bind(null, "getPlaybackState"))
     .then(function(state) {
       if (state != "PLAYING") $("#btnPlay").click();
     });
@@ -54,7 +53,7 @@ function handleError(err) {
         case "#auth-wavenet":
           requestPermissions(config.wavenetPerms)
             .then(function(granted) {
-              if (granted) getBackgroundPage().then(callMethod("authWavenet"));
+              if (granted) bgPageInvoke("authWavenet");
             })
           break;
         case "#user-gesture":
@@ -77,14 +76,12 @@ function handleError(err) {
 }
 
 function updateButtons() {
-  return getBackgroundPage().then(function(master) {
     return Promise.all([
       getSettings(),
-      master.getPlaybackState(),
-      master.getActiveSpeech()
+      bgPageInvoke("getPlaybackState"),
+      bgPageInvoke("getSpeechPosition")
     ])
-  })
-  .then(spread(function(settings, state, speech) {
+  .then(spread(function(settings, state, speechPos) {
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
@@ -93,8 +90,8 @@ function updateButtons() {
     $("#btnForward, #btnRewind").toggle(state == "PLAYING");
     $("#highlight, #toolbar").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
 
-    if ((settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && speech) {
-      var pos = speech.getPosition();
+    if ((settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && speechPos) {
+      var pos = speechPos;
       var elem = $("#highlight");
       if (elem.data("texts") != pos.texts) {
         elem.data({texts: pos.texts, index: -1});
@@ -120,22 +117,19 @@ function updateButtons() {
 
 function onPlay() {
   $("#status").hide();
-  getBackgroundPage()
-    .then(callMethod("play", handleError))
+  bgPageInvoke("play")
     .then(updateButtons)
     .catch(handleError)
 }
 
 function onPause() {
-  getBackgroundPage()
-    .then(callMethod("pause"))
+  bgPageInvoke("pause")
     .then(updateButtons)
     .catch(handleError)
 }
 
 function onStop() {
-  getBackgroundPage()
-    .then(callMethod("stop"))
+  bgPageInvoke("stop")
     .then(updateButtons)
     .catch(handleError)
 }
@@ -145,22 +139,19 @@ function onSettings() {
 }
 
 function onForward() {
-  getBackgroundPage()
-    .then(callMethod("forward"))
+  bgPageInvoke("forward")
     .then(updateButtons)
     .catch(handleError)
 }
 
 function onRewind() {
-  getBackgroundPage()
-    .then(callMethod("rewind"))
+  bgPageInvoke("rewind")
     .then(updateButtons)
     .catch(handleError)
 }
 
 function onSeek(n) {
-  getBackgroundPage()
-    .then(callMethod("seek", n))
+  bgPageInvoke("seek", [n])
     .catch(handleError)
 }
 
