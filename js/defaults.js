@@ -37,6 +37,9 @@ var defaults = {
 };
 
 
+/**
+ * HELPERS
+ */
 function getQueryString() {
   return location.search ? parseQueryString(location.search) : {};
 }
@@ -57,6 +60,10 @@ function parseUrl(url) {
   return parser;
 }
 
+
+/**
+ * SETTINGS
+ */
 function getSettings(names) {
   return new Promise(function(fulfill) {
     brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices"], fulfill);
@@ -91,6 +98,10 @@ function setState(key, value) {
   });
 }
 
+
+/**
+ * VOICES
+ */
 function getVoices() {
   return getSettings(["awsCreds", "gcpCreds"])
     .then(function(settings) {
@@ -202,6 +213,10 @@ function findVoiceByLang(voices, lang) {
   return match.first || match.second || match.third || match.fourth;
 }
 
+
+/**
+ * HELPERS
+ */
 function executeFile(file) {
   return new Promise(function(fulfill, reject) {
     brapi.tabs.executeScript({file: file}, function(result) {
@@ -389,6 +404,10 @@ function objectAssign(target, varArgs) { // .length of function is 2
   return to;
 }
 
+
+/**
+ * POLYFILLS
+ */
 function polyfills() {
 if (typeof Object.assign != 'function') {
   // Must be writable: true, enumerable: false, configurable: true
@@ -499,6 +518,10 @@ if (!Promise.prototype.finally) {
 }
 }
 
+
+/**
+ * HELPERS
+ */
 function domReady() {
   return new Promise(function(fulfill) {
     $(fulfill);
@@ -697,6 +720,19 @@ function promiseTimeout(millis, errorMsg, promise) {
   })
 }
 
+function bgPageInvoke(method, args) {
+  return new Promise(function(fulfill, reject) {
+    brapi.runtime.sendMessage({method: method, args: args}, function(res) {
+      if (res && res.error) reject(new Error(res.error));
+      else fulfill(res);
+    })
+  })
+}
+
+
+/**
+ * AWS client
+ */
 const AwsPolly = (function() {
   const encoder = new TextEncoder('utf-8')
 

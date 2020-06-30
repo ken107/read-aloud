@@ -131,9 +131,8 @@ function testIbm(apiKey, url) {
   return requestPermissions({origins: [url + "/*"]})
     .then(function(granted) {
       if (!granted) throw new Error("Permission not granted");
-      return getBackgroundPage();
     })
-    .then(function(master) {
-      return master.ibmWatsonTtsEngine.fetchVoices(apiKey, url);
+    .then(function() {
+      return bgPageInvoke("ibmFetchVoices", [apiKey, url]);
     })
 }
