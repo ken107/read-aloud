@@ -17,10 +17,33 @@ var readAloudDoc = new function() {
 
   function getTexts() {
     var dontRead = $("sup").hide();
-    var texts = $("p, .title-chapter, .subtitle-chapter, .p, .p-indent, .tx, .tx1").get()
-      .map(function(elem) {return elem.innerText.trim()})
-      .filter(function(text) {return text})
+    var texts = [];
+    $(".gb-segment").children(":visible").get()
+      .forEach(function(elem) {
+        if ($(elem).is(".liste")) handleList(elem, texts);
+        else handleOther(elem, texts);
+      })
     dontRead.show();
     return texts;
+  }
+
+  function handleList(elem, texts) {
+    var addNumbering = !hasNumbering(elem);
+    $(elem).children().get()
+      .forEach(function(child, index) {
+        var text = child.innerText.trim();
+        if (addNumbering) texts.push((index +1) + ". " + text);
+        else texts.push(text);
+      })
+  }
+
+  function hasNumbering(elem) {
+    var firstChild = $(elem).children().get(0);
+    return firstChild && firstChild.innerText.trim().match(/^[(]?(\d|[a-zA-Z][).])/);
+  }
+
+  function handleOther(elem, texts) {
+    var text = elem.innerText.trim();
+    if (text) texts.push(text);
   }
 }
