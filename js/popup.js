@@ -87,7 +87,7 @@ function updateButtons() {
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
-    $("#btnForward, #btnRewind").toggle(state == "PLAYING");
+    $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
     $("#highlight, #toolbar").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
 
     if ((settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && speechPos) {
