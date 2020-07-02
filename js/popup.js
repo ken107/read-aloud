@@ -97,13 +97,13 @@ function updateButtons() {
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
-    $("#btnForward, #btnRewind").toggle(state == "PLAYING");
+    $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
     $("#highlight, #toolbar").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
 
     if ((settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && speechPos) {
       var pos = speechPos;
       var elem = $("#highlight");
-      if (elem.data("texts") != pos.texts) {
+      if (!elem.data("texts") || elem.data("texts").length != pos.texts.length || elem.data("texts").some(function(text,i) {return text != pos.texts[i]})) {
         elem.data({texts: pos.texts, index: -1});
         elem.empty();
         for (var i=0; i<pos.texts.length; i++) {
