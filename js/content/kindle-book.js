@@ -1,14 +1,5 @@
 
 var readAloudDoc = new function() {
-  var mainDoc = document.getElementById("KindleReaderIFrame").contentDocument;
-  var btnNext = mainDoc.getElementById("kindleReader_pageTurnAreaRight");
-  var btnPrev = mainDoc.getElementById("kindleReader_pageTurnAreaLeft");
-  var contentFrames = [
-    mainDoc.getElementById("column_0_frame_0"),
-    mainDoc.getElementById("column_0_frame_1"),
-    mainDoc.getElementById("column_1_frame_0"),
-    mainDoc.getElementById("column_1_frame_1")
-  ];
   var currentIndex = 0;
   var lastText;
 
@@ -17,23 +8,37 @@ var readAloudDoc = new function() {
   }
 
   this.getTexts = function(index) {
-    for (; currentIndex<index; currentIndex++) $(btnNext).click();
-    for (; currentIndex>index; currentIndex--) $(btnPrev).click();
+    var mainDoc = getMainDoc();
+    for (; currentIndex<index; currentIndex++) $("#kindleReader_pageTurnAreaRight", mainDoc).click();
+    for (; currentIndex>index; currentIndex--) $("#kindleReader_pageTurnAreaLeft", mainDoc).click();
     return tryGetTexts(getTexts, 4000);
   }
 
   function getTexts() {
+    var mainDoc = getMainDoc();
     var texts = [];
-    contentFrames.filter(function(frame) {
-      return frame != null && frame.style.visibility != "hidden";
+    $("#column_0_frame_0, #column_0_frame_1, #column_1_frame_0, #column_1_frame_1", mainDoc)
+    .filter(function() {
+      return this.style.visibility != "hidden";
     })
-    .forEach(function(frame) {
+    .each(function() {
+      var frame = this;
       var frameHeight = $(frame).height();
-      $("h1, h2, h3, h4, h5, h6, .was-a-p", frame.contentDocument).each(function() {
+      var dontRead = $("sup", frame.contentDocument).hide();
+      $(".k4w", frame.contentDocument).parent().addClass("read-aloud");
+      $(".read-aloud .read-aloud", frame.contentDocument).removeClass("read-aloud");
+      $(".read-aloud", frame.contentDocument).each(function() {
         var top = $(this).offset().top;
         var bottom = top + $(this).height();
-        if (top >= 0 && top < frameHeight) texts.push($(this).text());
+        if (top >= 0 && top < frameHeight) {
+          var text = this.innerText.trim();
+          if (text) {
+            if ($(this).is("li")) texts.push(($(this).index() +1) + ". " + text);
+            else texts.push(text);
+          }
+        }
       })
+      dontRead.show();
     })
     var out = [];
     for (var i=0; i<texts.length; i++) {
@@ -41,5 +46,9 @@ var readAloudDoc = new function() {
     }
     lastText = out[out.length-1];
     return out;
+  }
+
+  function getMainDoc() {
+    return document.getElementById("KindleReaderIFrame").contentDocument;
   }
 }
