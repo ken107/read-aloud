@@ -2,7 +2,7 @@
 function Speech(texts, options) {
   options.rate = (options.rate || 1) * (isGoogleNative(options.voice) ? 0.9 : 1);
 
-  for (var i=0; i<texts.length; i++) if (/\w$/.test(texts[i])) texts[i] += '.';
+  for (var i=0; i<texts.length; i++) if (/[\w)]$/.test(texts[i])) texts[i] += '.';
   if (texts.length) texts = getChunks(texts.join("\n\n"));
 
   var self = this;
