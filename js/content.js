@@ -34,7 +34,7 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
   }
 
   function getRequireJs() {
-    if (window.readAloudDoc) return null;
+    if (typeof readAloudDoc != "undefined") return null;
     if (location.hostname == "docs.google.com") {
       if (/^\/presentation\/d\//.test(location.pathname)) return ["js/content/google-slides.js"];
       else if ($(".kix-appview-editor").length) return ["js/content/googleDocsUtil.js", "js/content/google-doc.js"];
