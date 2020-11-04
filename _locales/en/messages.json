@@ -6,7 +6,7 @@
     "message": "Read Aloud"
   },
   "extension_description": {
-    "message": "Read out loud the current web-page article with one click. Supports 40+ languages."
+    "message": "Read aloud the current web-page article with one click, using text to speech (TTS). Supports 40+ languages."
   },
   "options_heading": {
     "message": "Options"
