@@ -630,13 +630,14 @@ function getAuthToken(opts) {
   if (!opts) opts = {};
   return getSettings(["authToken"])
     .then(function(settings) {
-      return settings.authToken || login().then(extraAction(saveToken));
+      return settings.authToken || (opts.interactive ? interactiveLogin().then(extraAction(saveToken)) : null);
     })
-  function login() {
+  //Note: Cognito webAuthFlow is always interactive (if user already logged in, it shows button "Sign in as <email>" or  "Continue with Google/Facebook/etc")
+  function interactiveLogin() {
     return new Promise(function(fulfill, reject) {
       if (!brapi.identity || !brapi.identity.launchWebAuthFlow) return fulfill(null);
       brapi.identity.launchWebAuthFlow({
-        interactive: opts.interactive,
+        interactive: true,
         url: config.webAuthUrl + "/login.html?returnUrl=" + brapi.identity.getRedirectURL()
       },
       function(responseUrl) {
@@ -674,8 +675,8 @@ function clearAuthToken() {
             else fulfill();
           }
           else {
-            if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
-            else fulfill();
+            if (brapi.runtime.lastError) console.warn(new Error(brapi.runtime.lastError.message));
+            fulfill();
           }
         })
       })

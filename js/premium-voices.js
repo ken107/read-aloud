@@ -231,7 +231,7 @@
     }
     else {
       var voice = card.find("select.voices").val().split(",");
-      audio.src = "https://support.lsdsoftware.com/read-aloud/speak/" + voice[0] + "/" + encodeURIComponent(voice[1]) + "?q=demo";
+      audio.src = config.serviceUrl + "/read-aloud/speak/" + voice[0] + "/" + encodeURIComponent(voice[1]) + "?q=demo";
       audio.onended = onTestVoice;
       audio.play();
       btnTest.text("Stop");
