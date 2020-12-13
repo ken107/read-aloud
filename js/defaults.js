@@ -160,7 +160,7 @@ function isRemoteVoice(voice) {
 }
 
 function isPremiumVoice(voice) {
-  return isAmazonCloud(voice) || (isMicrosoftCloud(voice) && voice.voiceName != "Microsoft Vietnamese (An)");
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice);
 }
 
 function getSpeechVoice(voiceName, lang) {
