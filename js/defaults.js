@@ -4,6 +4,7 @@ polyfills();
 
 var config = {
   serviceUrl: "https://support.readaloud.app",
+  webAuthUrl: "https://readaloud.app",
   entityMap: {
     '&': '&amp;',
     '<': '&lt;',
@@ -626,13 +627,59 @@ function removePermissions(perms) {
 }
 
 function getAuthToken(opts) {
-  return new Promise(function(fulfill, reject) {
-    if (!brapi.identity || !brapi.identity.getAuthToken) return fulfill(null);
-    brapi.identity.getAuthToken(opts, function(token) {
-      if (brapi.runtime.lastError);
-      fulfill(token);
+  if (!opts) opts = {};
+  return getSettings(["authToken"])
+    .then(function(settings) {
+      return settings.authToken || login().then(extraAction(saveToken));
     })
-  })
+  function login() {
+    return new Promise(function(fulfill, reject) {
+      if (!brapi.identity || !brapi.identity.launchWebAuthFlow) return fulfill(null);
+      brapi.identity.launchWebAuthFlow({
+        interactive: opts.interactive,
+        url: config.webAuthUrl + "/login.html?returnUrl=" + brapi.identity.getRedirectURL()
+      },
+      function(responseUrl) {
+        if (responseUrl) {
+          var index = responseUrl.indexOf("?");
+          var res = parseQueryString(responseUrl.substr(index));
+          if (res.error) reject(new Error(res.error_description || res.error));
+          else fulfill(res.token);
+        }
+        else {
+          if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
+          else fulfill(null);
+        }
+      })
+    })
+  }
+  function saveToken(token) {
+    if (token) return updateSettings({authToken: token});
+  }
+}
+
+function clearAuthToken() {
+  return clearSettings(["authToken"])
+    .then(function() {
+      return new Promise(function(fulfill) {
+        brapi.identity.launchWebAuthFlow({
+          interactive: false,
+          url: config.webAuthUrl + "/logout.html?returnUrl=" + brapi.identity.getRedirectURL()
+        },
+        function(responseUrl) {
+          if (responseUrl) {
+            var index = responseUrl.indexOf("?");
+            var res = index != -1 ? parseQueryString(responseUrl.substr(index)) : {};
+            if (res.error) reject(new Error(res.error_description || res.error));
+            else fulfill();
+          }
+          else {
+            if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
+            else fulfill();
+          }
+        })
+      })
+    })
 }
 
 function removeCachedAuthToken(authToken) {
@@ -727,4 +774,10 @@ function bgPageInvoke(method, args) {
       else fulfill(res);
     })
   })
+}
+
+function obfuscateEmail(email) {
+  var tokens = email.split("@");
+  var len = (tokens[0].length -1) >> 1;
+  return tokens[0].slice(0, tokens[0].length -len -1) + "*".repeat(len) + tokens[0].slice(-1) + "@" + tokens[1];
 }

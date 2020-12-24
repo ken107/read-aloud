@@ -62,6 +62,15 @@
   "options_success_status": {
     "message": "Changes saved."
   },
+  "options_logged_in_as": {
+    "message": "Logged in as"
+  },
+  "options_account_button": {
+    "message": "Account"
+  },
+  "options_logout_button": {
+    "message": "Logout"
+  },
   "context_read_selection": {
     "message": "Read aloud selected text"
   },

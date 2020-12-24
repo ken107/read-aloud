@@ -15,6 +15,24 @@ function initialize(allVoices, settings) {
       })
   }
 
+  //account button
+  $("#account-button")
+    .click(function() {
+      brapi.tabs.create({url: "premium-voices.html"});
+      return false;
+    })
+
+  //logout button
+  $("#logout-button")
+    .click(function() {
+      clearAuthToken()
+        .then(function() {
+          showAccountInfo(null);
+        })
+        .catch(console.error)
+      return false;
+    })
+
 
   //rate slider
   createSlider($("#rate").get(0), Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")), function(value) {
@@ -173,6 +191,7 @@ function populateVoices(allVoices, settings) {
       return token ? getAccountInfo(token) : null;
     })
     .then(function(account) {
+      showAccountInfo(account);
       if (account && !account.balance) {
         premium.prev().remove();
         premium.remove();
@@ -242,7 +261,10 @@ function handleError(err) {
         case "#sign-in":
           getAuthToken({interactive: true})
             .then(function(token) {
-              if (token) $("#test-voice").click();
+              if (token) {
+                $("#test-voice").click();
+                getAccountInfo(token).then(showAccountInfo);
+              }
             })
             .catch(function(err) {
               $("#status").text(err.message).show();
@@ -266,6 +288,16 @@ function handleError(err) {
   }
   else {
     $("#status").text(err.message).show();
+  }
+}
+
+function showAccountInfo(account) {
+  if (account) {
+    $("#account-email").text(obfuscateEmail(account.email));
+    $("#account-info").show();
+  }
+  else {
+    $("#account-info").hide();
   }
 }
 
