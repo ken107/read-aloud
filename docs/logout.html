@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="js/utils.js"></script>
+        <script>
+            var redirectUri = location.href.split("?")[0];
+
+            if (queryString.returnUrl) {
+                if (validateReturnUrl(queryString.returnUrl)) {
+                    setCookie("returnUrl", queryString.returnUrl);
+                    location.href = "https://auth.readaloud.app/logout?client_id=dvh1lahgi55696ppgsmn142vd&logout_uri=" + encodeURIComponent(redirectUri);
+                }
+            }
+            else {
+                location.href = getCookie("returnUrl") + location.search;
+            }
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
