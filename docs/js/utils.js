@@ -1,4 +1,8 @@
 
+var config = {
+    serviceUrl: "https://support.readaloud.app"
+};
+
 queryString = {};
 if (location.search)
     location.search.substr(1).split('&').forEach(function(token) {
@@ -52,4 +56,34 @@ function setCookie(name, value, expiredays) {
     }
     document.cookie = cookie;
     if (getCookie(name) != value) document.cookie = cookie + "; SameSite=None; Secure";
+}
+
+function repeat(action, opt) {
+    if (!opt) opt = {};
+    return iter(0);
+
+    function iter(n) {
+        return Promise.resolve()
+            .then(action)
+            .then(function(result) {
+                if (opt.until && opt.until(result)) return result;
+                if (opt.max && n+1 >= opt.max) return result;
+                if (!opt.delay) return iter(n+1);
+                return new Promise(function(f) {setTimeout(f, opt.delay)}).then(iter.bind(null, n+1));
+            })
+    }
+}
+
+if (!Promise.prototype.finally) {
+    Object.defineProperty(Promise.prototype, 'finally', {
+        value: function(callback) {
+            var promise = this;
+            function chain() {
+                return Promise.resolve(callback()).then(function() {return promise});
+            }
+            return promise.then(chain, chain);
+        },
+        configurable: true,
+        writable: true
+    })
 }

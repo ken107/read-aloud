@@ -4,7 +4,7 @@ polyfills();
 
 var config = {
   serviceUrl: "https://support.readaloud.app",
-  webAuthUrl: "https://readaloud.app",
+  webAppUrl: "https://readaloud.app",
   entityMap: {
     '&': '&amp;',
     '<': '&lt;',
@@ -638,7 +638,7 @@ function getAuthToken(opts) {
       if (!brapi.identity || !brapi.identity.launchWebAuthFlow) return fulfill(null);
       brapi.identity.launchWebAuthFlow({
         interactive: true,
-        url: config.webAuthUrl + "/login.html?returnUrl=" + brapi.identity.getRedirectURL()
+        url: config.webAppUrl + "/login.html?returnUrl=" + brapi.identity.getRedirectURL()
       },
       function(responseUrl) {
         if (responseUrl) {
@@ -665,7 +665,7 @@ function clearAuthToken() {
       return new Promise(function(fulfill) {
         brapi.identity.launchWebAuthFlow({
           interactive: false,
-          url: config.webAuthUrl + "/logout.html?returnUrl=" + brapi.identity.getRedirectURL()
+          url: config.webAppUrl + "/logout.html?returnUrl=" + brapi.identity.getRedirectURL()
         },
         function(responseUrl) {
           if (responseUrl) {
@@ -683,12 +683,6 @@ function clearAuthToken() {
     })
 }
 
-function removeCachedAuthToken(authToken) {
-  return new Promise(function(fulfill) {
-    brapi.identity.removeCachedAuthToken({token: authToken}, fulfill);
-  })
-}
-
 function getAccountInfo(authToken) {
   return ajaxGet(config.serviceUrl + "/read-aloud/get-account?t=" + authToken)
     .then(JSON.parse)
@@ -697,7 +691,7 @@ function getAccountInfo(authToken) {
       return account;
     })
     .catch(function(err) {
-      if (err.xhr && err.xhr.status == 401) return removeCachedAuthToken(authToken).then(function() {return null});
+      if (err.xhr && err.xhr.status == 401) return clearSettings(["authToken"]).then(function() {return null});
       else throw err;
     })
 }
@@ -775,10 +769,4 @@ function bgPageInvoke(method, args) {
       else fulfill(res);
     })
   })
-}
-
-function obfuscateEmail(email) {
-  var tokens = email.split("@");
-  var len = (tokens[0].length -1) >> 1;
-  return tokens[0].slice(0, tokens[0].length -len -1) + "*".repeat(len) + tokens[0].slice(-1) + "@" + tokens[1];
 }

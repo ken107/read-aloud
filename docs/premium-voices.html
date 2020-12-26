@@ -2,85 +2,14 @@
 <html>
 <head>
   <title>Premium Voices</title>
-  <link rel="stylesheet" type="text/css" href="css/common.css">
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-  <style>
-  h2 {
-    margin-top: 10px;
-  }
-  .main-message {
-    margin-bottom: 40px;
-  }
-  .card {
-    margin-bottom: 40px;
-  }
-  .card-header {
-    text-transform: capitalize;
-    background-color: rgba(0, 0, 0, .66);
-    color: white;
-  }
-  .card-header > .material-icons {
-    vertical-align: middle;
-  }
-  #test-voices .buy-harpo {
-    font-size: smaller;
-  }
-  #subscription-status .free-tier-line {
-    font-size: smaller;
-    color: #6c757d;
-  }
-  #subscription-status .remaining {
-    color: #080;
-  }
-  #subscription-status .last-purchase-line, #subscription-status .purchase-status-line {
-    font-size: smaller;
-    color: #6c757d;
-    display: none;
-  }
-  #purchase-subscription .alert {
-    display: none;
-  }
-  #purchase-subscription table.items {
-    margin-bottom: 0;
-  }
-  #faq .card-body > div {
-    margin-bottom: 1rem;
-  }
-  #faq table {
-    width: 100%;
-  }
-  .page-loading {
-    position: fixed;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    background-color: black;
-    opacity: .5;
-  }
-  .page-loading .spinner {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    margin-left: -60px;
-    margin-top: -60px;
-    border: 16px solid #f3f3f3; /* Light grey */
-    border-top: 16px solid #3498db; /* Blue */
-    border-radius: 50%;
-    width: 120px;
-    height: 120px;
-    animation: spin 2s linear infinite;
-  }
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  </style>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="css/premium-voices.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
-  <script src="js/jquery-3.1.1.min.js"></script>
-  <script src="js/buy.js"></script>
-  <script src="js/defaults.js"></script>
-  <script src="js/tts-engines.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://assets.lsdsoftware.com/lib/databind.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="js/utils.js"></script>
   <script src="js/premium-voices.js"></script>
 </head>
 <body>
@@ -90,56 +19,59 @@
       Please <a target="_blank" href="https://blog.readaloud.app/2018/10/the-state-of-text-to-speech-technology.html">read our blog</a> to understand why we're charging money for these voices.
     </div>
 
-    <div id="test-voices" class="card">
+    <div class="card test-voices">
       <div class="card-header">
         <i class="material-icons">graphic_eq</i>
         <strong>Voices</strong>
       </div>
       <div class="card-body">
-        <form>
-          <table>
-            <tr>
-              <td>
-                <select class="form-control voices"></select>
-              </td>
-              <td style="width: 1%">
-                <button type="button" class="btn btn-secondary btn-test">Test</button>
-              </td>
-            </tr>
-          </table>
-        </form>
+        <table>
+          <tr>
+            <td>
+              <select class="form-control voices" name="voice" bind-statement-1="this.populateTestVoices(thisElem)" bind-event-change="#selectedVoice = JSON.parse(thisElem.value)"></select>
+            </td>
+            <td style="width: 1%">
+              <button type="button" class="btn btn-secondary btn-test" bind-event-click="onTestVoice(thisElem)">Test</button>
+            </td>
+          </tr>
+        </table>
         <div class="buy-harpo text-secondary mt-2">
           If you like a particular voice, we highly recommend buying the voice completely for unlimited personal use from <a href="https://harposoftware.com/en/2-main/s-1/index/brand-ivona/language-english_usa" target="_blank">Harpo Software</a>.
         </div>
       </div>
     </div>
 
-    <div id="subscription-status" class="card">
+    <div class="card subscription-status" bind-repeater-if="#account ? 1 : 0">
       <div class="card-header">
         <i class="material-icons">verified_user</i>
         <strong>Balance</strong>
       </div>
       <div class="card-body">
+        <div class="logged-in-as-line">
+          You're logged in as <strong>{{#account.email}}</strong>
+        </div>
         <div class="remaining-line">
+          Total Characters Remaining: <span class='remaining'>{{Number(#account.balance).toLocaleString()}}</span>
         </div>
         <div class="free-tier-line">
-          Your account now includes 100,000 free characters per month.
+          Your account includes 100,000 free characters per month.
         </div>
-        <button type="button" class="btn btn-primary btn-login">Login</button>
-        <div class="last-purchase-line">
+        <div class="last-purchase-line" bind-repeater-if="!#purchasePending && #account.lastPurchaseDate ? 1 : 0">
+          Last purchase made on {{this.formatLastPurchaseDate(#account.lastPurchaseDate)}}
         </div>
-        <div class="purchase-status-line">
+        <div class="purchase-status-line" bind-repeater-if="#purchasePending ? 1 : 0">
+          A new purchase is PENDING <span class="spinner-border text-secondary"></span>
         </div>
       </div>
     </div>
 
-    <div id="purchase-subscription" class="card">
+    <div class="card purchase-subscription">
       <div class="card-header">
         <i class="material-icons">shopping_cart</i>
         <strong>Purchase</strong>
       </div>
       <div class="card-body">
-        <div class="alert alert-danger"></div>
+        <div class="alert alert-danger" bind-statement-1="$(thisElem).toggle(!!#error)">{{#error.message}}</div>
         <table class="table items">
           <tbody>
             <tr>
@@ -147,6 +79,24 @@
               <th>Description</th>
               <th>Price</th>
               <th></th>
+            </tr>
+            <tr>
+              <td>Read Aloud Premium Voices - 3M</td>
+              <td>3,000,000 characters</td>
+              <td>1.00 USD</td>
+              <td>
+                <form class="form-inline" bind-repeater-if="#account && !#purchasePending ? 1 : 0" bind-event-submit="this.onBuy(thisElem.qty.value); return false">
+                  <span class="input-group ml-auto">
+                    <span class="input-group-prepend">
+                      <span class="input-group-text">Qty:</span>
+                    </span>
+                    <input type="number" value="1" min="1" max="10" class="form-control" name="qty">
+                    <span class="input-group-append">
+                      <button type="submit" class="btn btn-primary">Buy</button>
+                    </span>
+                  </span>
+                </form>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -214,8 +164,8 @@
           <a href data-toggle="collapse" data-target="#faq-6">How does the free tier work?</a>
           <div id="faq-6" class="collapse" data-parent="#faq">
             The free characters will always be used <i>before</i> the purchased characters are used.
-            So let's say you have purchased 2M characters and you have 100,000 free characters,
-            the 100,000 free characters will be used up first before the 2M is used.
+            So let's say you have purchased 3M characters and you have 100,000 free characters,
+            the 100,000 free characters will be used up first before the 3M is used.
             At the start of each month, the balance of free characters will be reset back to 100,000.
           </div>
         </div>
@@ -224,7 +174,7 @@
   </div>
 
   <div class="page-loading">
-    <div class="spinner"></div>
+    <div class="spinner-border text-light"></div>
   </div>
 </body>
 </html>
