@@ -188,6 +188,19 @@ input[type=checkbox], input[type=radio] {
   color: #6c755d!important;
 }
 
+.alert {
+  position: relative;
+  padding: .75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: .25rem;
+}
+.alert-info {
+  color: #0c5460;
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
+
 .green-check {
   float: right;
   font-weight: bold;
@@ -259,4 +272,9 @@ input[type=checkbox], input[type=radio] {
   border-radius: .4em;
   background: linear-gradient(to right, #2a737b, #77bbb3, #77bbb3, #2a737b);
   touch-action: none;
+}
+
+#account-info {
+  display: none;
+  font-size: smaller;
 }
