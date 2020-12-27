@@ -4,6 +4,7 @@ polyfills();
 
 var config = {
   serviceUrl: "https://support.readaloud.app",
+  webAppUrl: "https://readaloud.app",
   entityMap: {
     '&': '&amp;',
     '<': '&lt;',
@@ -160,7 +161,7 @@ function isRemoteVoice(voice) {
 }
 
 function isPremiumVoice(voice) {
-  return isAmazonCloud(voice) || (isMicrosoftCloud(voice) && voice.voiceName != "Microsoft Vietnamese (An)");
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice);
 }
 
 function getSpeechVoice(voiceName, lang) {
@@ -626,19 +627,60 @@ function removePermissions(perms) {
 }
 
 function getAuthToken(opts) {
-  return new Promise(function(fulfill, reject) {
-    if (!brapi.identity || !brapi.identity.getAuthToken) return fulfill(null);
-    brapi.identity.getAuthToken(opts, function(token) {
-      if (brapi.runtime.lastError);
-      fulfill(token);
+  if (!opts) opts = {};
+  return getSettings(["authToken"])
+    .then(function(settings) {
+      return settings.authToken || (opts.interactive ? interactiveLogin().then(extraAction(saveToken)) : null);
     })
-  })
+  //Note: Cognito webAuthFlow is always interactive (if user already logged in, it shows button "Sign in as <email>" or  "Continue with Google/Facebook/etc")
+  function interactiveLogin() {
+    return new Promise(function(fulfill, reject) {
+      if (!brapi.identity || !brapi.identity.launchWebAuthFlow) return fulfill(null);
+      brapi.identity.launchWebAuthFlow({
+        interactive: true,
+        url: config.webAppUrl + "/login.html?returnUrl=" + brapi.identity.getRedirectURL()
+      },
+      function(responseUrl) {
+        if (responseUrl) {
+          var index = responseUrl.indexOf("?");
+          var res = parseQueryString(responseUrl.substr(index));
+          if (res.error) reject(new Error(res.error_description || res.error));
+          else fulfill(res.token);
+        }
+        else {
+          if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
+          else fulfill(null);
+        }
+      })
+    })
+  }
+  function saveToken(token) {
+    if (token) return updateSettings({authToken: token});
+  }
 }
 
-function removeCachedAuthToken(authToken) {
-  return new Promise(function(fulfill) {
-    brapi.identity.removeCachedAuthToken({token: authToken}, fulfill);
-  })
+function clearAuthToken() {
+  return clearSettings(["authToken"])
+    .then(function() {
+      return new Promise(function(fulfill) {
+        brapi.identity.launchWebAuthFlow({
+          interactive: false,
+          url: config.webAppUrl + "/logout.html?returnUrl=" + brapi.identity.getRedirectURL()
+        },
+        function(responseUrl) {
+          if (responseUrl) {
+            var index = responseUrl.indexOf("?");
+            var res = index != -1 ? parseQueryString(responseUrl.substr(index)) : {};
+            if (res.error) reject(new Error(res.error_description || res.error));
+            else fulfill();
+          }
+          else {
+            if (brapi.runtime.lastError) console.warn(new Error(brapi.runtime.lastError.message));
+            fulfill();
+          }
+        })
+      })
+    })
 }
 
 function getAccountInfo(authToken) {
@@ -649,7 +691,7 @@ function getAccountInfo(authToken) {
       return account;
     })
     .catch(function(err) {
-      if (err.xhr && err.xhr.status == 401) return removeCachedAuthToken(authToken).then(function() {return null});
+      if (err.xhr && err.xhr.status == 401) return clearSettings(["authToken"]).then(function() {return null});
       else throw err;
     })
 }

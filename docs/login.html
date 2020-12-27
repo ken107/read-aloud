@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="js/utils.js"></script>
+        <script>
+            var redirectUri = location.href.split("?")[0];
+
+            if (queryString.returnUrl) {
+                if (validateReturnUrl(queryString.returnUrl)) {
+                    location.href = "https://auth.readaloud.app/login?client_id=dvh1lahgi55696ppgsmn142vd&response_type=code&scope=email+openid&redirect_uri=" + encodeURIComponent(redirectUri) + "&state=" + encodeURIComponent(queryString.returnUrl);
+                }
+            }
+            else {
+                if (queryString.code) {
+                    ajaxGet("https://support.readaloud.app/read-aloud/login?code=" + queryString.code + "&redirect_uri=" + encodeURIComponent(redirectUri))
+                        .then(JSON.parse)
+                        .then(function(token) {
+                            location.href = queryString.state + "?token=" + token;
+                        })
+                }
+                else {
+                    location.href = queryString.state + location.search;
+                }
+            }
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

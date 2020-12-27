@@ -15,6 +15,28 @@ function initialize(allVoices, settings) {
       })
   }
 
+  //account button
+  $("#account-button")
+    .click(function() {
+      getAuthToken({interactive: true})
+        .then(function(token) {
+          brapi.tabs.create({url: config.webAppUrl + "/premium-voices.html?t=" + token});
+        })
+        .catch(handleError)
+      return false;
+    })
+
+  //logout button
+  $("#logout-button")
+    .click(function() {
+      clearAuthToken()
+        .then(function() {
+          showAccountInfo(null);
+        })
+        .catch(console.error)
+      return false;
+    })
+
 
   //rate slider
   createSlider($("#rate").get(0), Math.log(settings.rate || defaults.rate) / Math.log($("#rate").data("pow")), function(value) {
@@ -157,7 +179,6 @@ function populateVoices(allVoices, settings) {
   });
 
   //create the premium optgroup
-  if (getBrowser() == "chrome") {
   $("<optgroup>").appendTo($("#voices"));
   var premium = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
@@ -173,24 +194,18 @@ function populateVoices(allVoices, settings) {
       return token ? getAccountInfo(token) : null;
     })
     .then(function(account) {
+      showAccountInfo(account);
       if (account && !account.balance) {
         premium.prev().remove();
         premium.remove();
       }
     })
-  }
 
   //create the additional optgroup
   $("<optgroup>").appendTo($("#voices"));
   var additional = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_additional"))
     .appendTo($("#voices"));
-  if (getBrowser() == "chrome") {
-  $("<option>")
-    .val("@premium")
-    .text(brapi.i18n.getMessage("options_enable_premium_voices"))
-    .appendTo(additional)
-  }
   $("<option>")
     .val("@custom")
     .text(brapi.i18n.getMessage("options_enable_custom_voices"))
@@ -242,7 +257,10 @@ function handleError(err) {
         case "#sign-in":
           getAuthToken({interactive: true})
             .then(function(token) {
-              if (token) $("#test-voice").click();
+              if (token) {
+                $("#test-voice").click();
+                getAccountInfo(token).then(showAccountInfo);
+              }
             })
             .catch(function(err) {
               $("#status").text(err.message).show();
@@ -271,6 +289,16 @@ function handleError(err) {
   }
   else {
     $("#status").text(err.message).show();
+  }
+}
+
+function showAccountInfo(account) {
+  if (account) {
+    $("#account-email").text(account.email);
+    $("#account-info").show();
+  }
+  else {
+    $("#account-info").hide();
   }
 }
 

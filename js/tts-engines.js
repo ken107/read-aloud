@@ -359,11 +359,6 @@ function RemoteTtsEngine(serviceUrl) {
       {"voice_name": "Microsoft US English (Mark)", "lang": "en-US", "gender": "male", "event_types": ["start", "end", "error"]},
       {"voice_name": "Microsoft US English (Zira)", "lang": "en-US", "gender": "female", "event_types": ["start", "end", "error"]},
       {"voice_name": "Microsoft Vietnamese (An)", "lang": "vi-VI", "gender": "male", "event_types": ["start", "end", "error"]},
-
-      {"voice_name": "OpenFPT Vietnamese (Thu Dung)", "lang": "vi-VI", "gender": "female", "event_types": ["start", "end", "error"]},
-      {"voice_name": "OpenFPT Vietnamese (Cao Chung)", "lang": "vi-VI", "gender": "male", "event_types": ["start", "end", "error"]},
-      {"voice_name": "OpenFPT Vietnamese (Ha Tieu Mai)", "lang": "vi-VI", "gender": "female", "event_types": ["start", "end", "error"]},
-      {"voice_name": "OpenFPT Vietnamese (Ngoc Lam)", "lang": "vi-VI", "gender": "female", "event_types": ["start", "end", "error"]}
     ]
     .map(function(item) {
       return {voiceName: item.voice_name, lang: item.lang};
