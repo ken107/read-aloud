@@ -368,11 +368,11 @@ function RemoteTtsEngine(serviceUrl) {
 
 function GoogleTranslateTtsEngine() {
   var audio = document.createElement("AUDIO");
-  var prefetchAudio = document.createElement("AUDIO");
+  var prefetchAudio;
   var isSpeaking = false;
   var speakPromise;
   this.ready = function() {
-    return getGoogleTranslateToken("test");
+    return googleTranslateReady();
   };
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;
@@ -392,7 +392,11 @@ function GoogleTranslateTtsEngine() {
       onEvent({type: "error", errorMessage: audio.error.message});
       isSpeaking = false;
     };
-    speakPromise = getAudioUrl(utterance, options.voice.lang)
+    speakPromise = Promise.resolve()
+      .then(function() {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
+        else return getAudioUrl(utterance, options.voice.lang);
+      })
       .then(function(url) {
         audio.src = url;
         return audio.play();
@@ -417,8 +421,7 @@ function GoogleTranslateTtsEngine() {
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.voice.lang)
       .then(function(url) {
-        prefetchAudio.src = url;
-        prefetchAudio.load();
+        prefetchAudio = [utterance, options, url];
       })
       .catch(console.error)
   };
@@ -429,21 +432,7 @@ function GoogleTranslateTtsEngine() {
   }
   function getAudioUrl(text, lang) {
     assert(text && lang);
-    return getGoogleTranslateToken(text)
-      .then(function(tk) {
-        var query = [
-          "ie=UTF-8",
-          "q=" + encodeURIComponent(text),
-          "tl=" + lang,
-          "total=1",
-          "idx=0",
-          "textlen=" + text.length,
-          "tk=" + tk.value,
-          "client=t",
-          "prev=input"
-        ]
-        return "https://translate.google.com/translate_tts?" + query.join("&");
-      })
+    return googleTranslateSynthesizeSpeech(text, lang);
   }
   var voices = [
       {"voice_name": "GoogleTranslate Afrikaans", "lang": "af", "event_types": ["start", "end", "error"]},
