@@ -42,7 +42,8 @@ function handleError(err) {
             })
           break;
         case "#sign-in":
-          getAuthToken({interactive: true})
+          getBackgroundPage()
+            .then(callMethod("getAuthToken", {interactive: true}))
             .then(function(token) {
               if (token) $("#btnPlay").click();
             })
