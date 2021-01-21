@@ -106,6 +106,16 @@ You can get the latest available Read Aloud Extension version from the [Chrome W
 ### Firefox
 You can get the latest version of Read Aloud Extension from the [Mozilla Add-ons website](https://addons.mozilla.org/en-US/firefox/addon/read-aloud/).
 
+#### Firefox install from source
+
+1. Create a build directory with `mkdir build`
+2. Run `npm run-script package`
+3. Extract the resulting zip file. You should see a `manifest.json` which will be used later.
+4. In Firefox, first make sure there isn't an existing read-aloud add-on already installed
+5. type `about:debugging` in the Address bar and enter.
+6. Click on "This Firefox" then click "Load Unpackaged Extension"
+7. Select the `manifest.json` file produced earlier.
+
 ## Contribute
 
 - Star this GitHub repo :star:
