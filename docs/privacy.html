@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html>
 <head>
   <style>
   body {
@@ -23,18 +24,17 @@
 
     <h2>What data we collect and why we collect it</h2>
 
-    <h3>Personal information</h3>
-    If you use one of the Premium Voices, you'll be asked to sign in to your Google account and grant Read Aloud access to your basic user profile, which includes name and email address.
+    <h4>Personal information</h4>
+    If you use one of the Premium Voices, you'll be asked to sign in, either by creating an account, or using your Google, Facebook, or Apple account.
+    Read Aloud will have access to your basic user profile, which includes your name and email address.
     We require this information for usage tracking, since the Premium Voices requires making a purchase when usage exceeds the monthly free tier.
     If you don't use the Premium Voices, you don't need to sign in, and no information is collected.
 
-    <h3>Browsing history</h3>
+    <h4>Browsing history</h4>
     <p>We do not track the user's browsing history.
     We realize the importance of privacy, so we make sure our extensions require only the minimum set of browser permissions to operate.</p>
 
-    <p>In particular, during installation, it does not ask for the "Read your browsing history" or the "Read and change all your data on the websites you visit" permissions, both of which could be used to track the user's browsing history.</p>
-
-    <h3>Text converted to speech</h3>
+    <h4>Text converted to speech</h4>
     <p>When you select one of the standard text-to-speech voices, the speech synthesis occurs locally on your computer and is never sent to the internet.
       And neither the input text nor the synthesized speech are saved or stored on your computer.</p>
 
@@ -42,13 +42,13 @@
       The server may use your anonymized IP address and User-Agent data for purpose of analytics, abuse management, and service improvement.
       The server may cache the input text, as well as the synthesized speech, for short amounts of time as part of its normal operation; it does not save them to any type of permanent storage.</p>
 
-    <h3>Geolocation</h3>
+    <h4>Geolocation</h4>
     If you select a voice that is synthesized on our server, your anonymized IP address may be used for geolocation for analytics purposes.
 
-    <h3>Issue reporting and contact forms</h3>
+    <h4>Issue reporting and contact forms</h4>
     If you use the in-app report-issue function or use the contact form on our support website, your comments and information may be kept in our support database for a maximum of 6 months.
 
-    <h3>Analytics</h3>
+    <h4>Analytics</h4>
     The browser will collect basic extension usage data, including when the extension is installed, invoked, and uninstalled.
     The extension may also use its own counters to analyze usage patterns.
     This information is anonymized and do not present privacy concerns.
@@ -73,8 +73,8 @@
 
     <h2>What data breach procedures we have in place</h2>
     In the event of a data breach, we will notify all affected users of any personal information that may have been exposed, which includes name and email address.
-    Since we use Google open authentication, we don't have any password or security data stored on our servers.
-    We will reset all access tokens in temporary storage, and shut off access to all services until the breach has been contained.
+    Since we use Amazon Cognito as our authentication provider, we don't have any password or security data stored on our servers that could be compromised.
+    We will reset all access tokens in temporary storage, and shut off access to all services until the breach is contained.
 
     <h2>What third parties we receive data from</h2>
     None.
