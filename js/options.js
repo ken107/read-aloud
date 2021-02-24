@@ -179,6 +179,7 @@ function populateVoices(allVoices, settings) {
   });
 
   //create the premium optgroup
+  if (brapi.identity && brapi.identity.launchWebAuthFlow) {
   $("<optgroup>").appendTo($("#voices"));
   var premium = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
@@ -189,6 +190,7 @@ function populateVoices(allVoices, settings) {
       .text(voice.voiceName)
       .appendTo(premium);
   });
+  }
   getAuthToken()
     .then(function(token) {
       return token ? getAccountInfo(token) : null;
