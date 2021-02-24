@@ -13,7 +13,8 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
     if (handlers[method]) return handlers[method].apply(handlers, args);
     else console.error("Unknown method", method);
   }
-  $(function() {
+  if (document.readyState != 'loading') peer.invoke("onReady", getInfo());
+  else $(function() {
     peer.invoke("onReady", getInfo());
   })
 
