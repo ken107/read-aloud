@@ -62,7 +62,7 @@ function initialize(allVoices, settings) {
     .val(settings.voiceName || "")
     .change(function() {
       var voiceName = $(this).val();
-      if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
+      if (voiceName == "@custom") location.href = "custom-voices.html";
       else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
       else saveSettings({voiceName: voiceName});
     });
