@@ -81,16 +81,14 @@ brapi.runtime.onConnectExternal.addListener(
  * Context menu installer & handlers
  */
 function installContextMenus() {
-  if (brapi.contextMenus)
-  brapi.contextMenus.create({
+  brapi.menus.create({
     id: "read-selection",
     title: brapi.i18n.getMessage("context_read_selection"),
     contexts: ["selection"]
   });
 }
 
-if (brapi.contextMenus)
-brapi.contextMenus.onClicked.addListener(function(info, tab) {
+brapi.menus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection")
     stop()
       .then(function() {

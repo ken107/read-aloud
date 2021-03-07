@@ -1,5 +1,5 @@
 
-var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
+var brapi = browser;
 
 (function() {
   var port = brapi.runtime.connect({name: "ReadAloudContentScript"});
