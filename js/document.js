@@ -163,6 +163,81 @@ function TabSource() {
       }
     },
     {
+      match: function(url) {
+        return true
+      },
+      validate: function() {
+      },
+      connect: function(tab) {
+        const listPromise = brapi.messageDisplay.getDisplayedMessages(tab.id)
+          .then(list => list.length ? list : brapi.mailTabs.getSelectedMessages(tab.id).then(x => x.messages))
+        var currentIndex = 0;
+        peer = {
+          invoke: (method, index, quietly) => {
+            if (method == "getCurrentIndex") {
+              return listPromise
+                .then(list => {
+                  if (list.length == 0) throw new Error("No message selected")
+                  return currentIndex
+                })
+            }
+            else if (method == "getTexts") {
+              if (!quietly) currentIndex = index
+              return listPromise
+                .then(list => list[index])
+                .then(message => {
+                  if (!message) return null
+                  const intro = [(index +1) + ". From " + message.author + ". " + message.subject + "."]
+                  return brapi.messages.getFull(message.id)
+                    .then(part => this.getPartTexts(part))
+                    .then(texts => texts.flat(10))
+                    .then(texts => intro.concat(texts))
+                })
+            }
+          },
+          disconnect: function() {}
+        }
+        return Promise.resolve({
+          lang: null
+        })
+      },
+      getPartTexts: function(messagePart) {
+        switch (messagePart.contentType) {
+          case "message/rfc822":
+          case "multipart/mixed":
+          case "multipart/digest":
+          case "multipart/parallel": {
+            return Promise.all(messagePart.parts.map(x => this.getPartTexts(x)))
+          }
+          case "multipart/alternative": {
+            var part = messagePart.parts.find(x => x.contentType.startsWith("text/plain"))
+            if (part) return this.parseTextBody(part.body)
+            part = messagePart.parts.find(x => x.contentType.startsWith("text/html"))
+            if (part) return this.parseHtmlBody(part.body)
+            return []
+          }
+          case "text/plain": {
+            return this.parseTextBody(messagePart.body)
+          }
+          case "text/html":
+          case "text/xml":
+          case "application/xml":
+          case "application/xhtml+xml": {
+            const doc = this.domParser.parseFromString(messagePart.body, messagePart.contentType)
+            return this.parseTextBody(doc.body.innerText)
+          }
+          default: {
+            console.warn("Ignoring part with contentType", messagePart.contentType)
+          }
+        }
+      },
+      parseTextBody: function(body) {
+        return body
+          .split(/(?:\s*\r?\n\s*){2,}/)
+      },
+      domParser: new DOMParser()
+    },
+    {
       match: function() {
         return true;
       },
@@ -188,7 +263,7 @@ function TabSource() {
         return getAllFrames(tab.id).then(handler.getFrameId).then(function(res) {frameId = res});
     })
     .then(function() {
-      if (handler.connect) return handler.connect();
+      if (handler.connect) return handler.connect(tab);
       return waitForConnect()
         .then(function(port) {
       return new Promise(function(fulfill) {
