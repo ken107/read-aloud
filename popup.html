@@ -1,52 +1,48 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Read Aloud</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Read Aloud</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
-  <link rel="stylesheet" type="text/css" href="css/common.css">
-  <link rel="stylesheet" type="text/css" href="css/popup.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto" />
+    <link rel="stylesheet" type="text/css" href="css/common.css" />
+    <link rel="stylesheet" type="text/css" href="css/popup.css" />
 
-  <script src="js/jquery-3.1.1.min.js"></script>
-  <script src="js/defaults.js"></script>
-  <script src="js/popup.js"></script>
-</head>
-<body>
-  <div id="status">
-  </div>
-  <div id="buttons">
-    <i class="material-icons button-1" id="btnRewind">&#xe020;</i>
-    <img src="img/loading.gif" id="imgLoading" />
-    <i class="material-icons button-1" id="btnPlay">&#xe037;</i>
-    <i class="material-icons button-1" id="btnPause">pause</i>
-    <i class="material-icons button-1" id="btnStop">stop</i>
-    <i class="material-icons button-1" id="btnSettings">settings</i>
-    <i class="material-icons button-1" id="btnForward">&#xe01f;</i>
-  </div>
-  <div id="highlight">
-  </div>
-  <div id="toolbar">
-    <div class="btn-group">
-      <button id="decrease-font-size" type="button" class="btn btn-sm btn-light">
-        A-
-      </button>
-      <button id="increase-font-size" type="button" class="btn btn-sm btn-light">
-        A+
-      </button>
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="js/defaults.js"></script>
+    <script src="js/popup.js"></script>
+  </head>
+  <body>
+    <div id="status"></div>
+    <div id="buttons">
+      <i class="material-icons button-1" id="btnRewind">&#xe020;</i>
+      <img src="img/loading.gif" id="imgLoading" />
+      <i class="material-icons button-1" id="btnPlay">&#xe037;</i>
+      <i class="material-icons button-1" id="btnPause">pause</i>
+      <i class="material-icons button-1" id="btnStop">stop</i>
+      <i class="material-icons button-1" id="btnSettings">settings</i>
+      <i class="material-icons button-1" id="btnForward">&#xe01f;</i>
     </div>
-    <div class="btn-group">
-      <button id="decrease-window-size" type="button" class="btn btn-sm btn-light">
-        <i class="material-icons">remove</i>
-      </button>
-      <button id="increase-window-size" type="button" class="btn btn-sm btn-light">
-        <i class="material-icons">add</i>
-      </button>
+    <div id="highlight"></div>
+    <div id="toolbar">
+      <div class="btn-group">
+        <button id="decrease-font-size" type="button" class="btn btn-sm btn-light">A-</button>
+        <button id="increase-font-size" type="button" class="btn btn-sm btn-light">A+</button>
+      </div>
+      <div class="btn-group">
+        <button id="decrease-window-size" type="button" class="btn btn-sm btn-light">
+          <i class="material-icons">remove</i>
+        </button>
+        <button id="increase-window-size" type="button" class="btn btn-sm btn-light">
+          <i class="material-icons">add</i>
+        </button>
+      </div>
     </div>
-  </div>
-  <div id="footer">
-    <a href="report.html?referer=popup.html">report issues</a>
-  </div>
-</body>
+    <div id="footer">
+      <a href="https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html" target="_blank" rel="noopener noreferrer">Read PDF</a>
+      <br />
+      <a href="report.html?referer=popup.html">report issues</a>
+    </div>
+  </body>
 </html>
