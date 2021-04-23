@@ -125,7 +125,9 @@ function execCommand(command, onEnd) {
 }
 
 if (brapi.commands)
-brapi.commands.onCommand.addListener(execCommand);
+brapi.commands.onCommand.addListener(function(command) {
+  execCommand(command)
+})
 
 
 /**
