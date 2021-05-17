@@ -202,7 +202,7 @@ var googleDocsUtil = (function () {
   function getLocalCaretIndex(caretX, element, simulateElement) {
     //Creates a span DOM for each letter
     var text = cleanDocumentText(element.innerText);
-    var container = document.createElement('div');
+    var container = document.createElement('span');
     var letterSpans = [];
     for (var i = 0; i < text.length; i++) {
       var textNode = document.createElement('span');
@@ -217,6 +217,7 @@ var googleDocsUtil = (function () {
     simulateElement.appendChild(container);
 
     // The caret is usually at the edge of the letter, we find the edge we are closest to.
+    var isRTL = getComputedStyle(simulateElement).getPropertyValue("direction") == "rtl";
     var index = 0;
     var currentMinimumDistance = -1;
     var containerRect = container.getBoundingClientRect();
@@ -231,12 +232,12 @@ var googleDocsUtil = (function () {
       var rightDistance = Math.abs(caretX - right);
 
       if (leftDistance <= currentMinimumDistance) {
-        index = i;
+        index = isRTL ? i-1 : i;
         currentMinimumDistance = leftDistance;
       }
 
       if (rightDistance <= currentMinimumDistance) {
-        index = i + 1;
+        index = isRTL ? i : i+1;
         currentMinimumDistance = rightDistance;
       }
     }
