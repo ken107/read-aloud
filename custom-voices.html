@@ -13,6 +13,15 @@
   .card-body {
     padding-bottom: .25rem;
   }
+  .container {
+    min-width: 500px;
+  }
+  .dark-mode .card {
+    background-color: #363636;
+  }
+  .dark-mode .card-header {
+    background-color: #444;
+  }
   </style>
 
   <script src="js/jquery-3.1.1.min.js"></script>
@@ -31,13 +40,13 @@
       <div class="card-body">
         <form>
           <div class="form-group">
-            <input type="text" class="form-control" id="aws-access-key-id" placeholder="Access key ID" />
-          </div>
-          <div class="form-group">
-            <input type="text" class="form-control" id="aws-secret-access-key" placeholder="Secret access key" />
-          </div>
-          <div class="form-group">
-            <button type="button" class="btn btn-primary" id="aws-save-button">Save</button>
+            <div class="input-group">
+              <input type="text" class="form-control" id="aws-access-key-id" placeholder="Access key ID" />
+              <input type="text" class="form-control" id="aws-secret-access-key" placeholder="Secret access key" />
+              <div class="input-group-append">
+                <button type="button" class="btn btn-primary" id="aws-save-button">Save</button>
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <img id="aws-progress" class="status progress" src="img/loading.gif" />
@@ -55,10 +64,12 @@
       <div class="card-body">
         <form>
           <div class="form-group">
-            <input type="text" class="form-control" id="gcp-api-key" placeholder="API key" />
-          </div>
-          <div class="form-group">
-            <button type="button" class="btn btn-primary" id="gcp-save-button">Save</button>
+            <div class="input-group">
+              <input type="text" class="form-control" id="gcp-api-key" placeholder="API key" />
+              <div class="input-group-append">
+                <button type="button" class="btn btn-primary" id="gcp-save-button">Save</button>
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <img id="gcp-progress" class="status progress" src="img/loading.gif" />
@@ -76,13 +87,13 @@
       <div class="card-body">
         <form>
           <div class="form-group">
-            <input type="text" class="form-control" id="ibm-api-key" placeholder="API key" />
-          </div>
-          <div class="form-group">
-            <input type="text" class="form-control" id="ibm-url" placeholder="URL" />
-          </div>
-          <div class="form-group">
-            <button type="button" class="btn btn-primary" id="ibm-save-button">Save</button>
+            <div class="input-group">
+              <input type="text" class="form-control" id="ibm-api-key" placeholder="API key" />
+              <input type="text" class="form-control" id="ibm-url" placeholder="URL" />
+              <div class="input-group-append">
+                <button type="button" class="btn btn-primary" id="ibm-save-button">Save</button>
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <img id="ibm-progress" class="status progress" src="img/loading.gif" />
