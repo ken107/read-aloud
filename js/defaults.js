@@ -37,6 +37,12 @@ var defaults = {
   highlightWindowSize: 2,
 };
 
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  document.addEventListener("DOMContentLoaded", function() {
+    document.body.classList.add("dark-mode")
+  })
+}
+
 
 /**
  * HELPERS

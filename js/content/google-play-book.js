@@ -1,7 +1,8 @@
 
 var readAloudDoc = new function() {
-  var btnNext = $(".gb-pagination-controls-right").get(0);
-  var btnPrev = $(".gb-pagination-controls-left").get(0);
+  var context = $(".gb-pagination-controls-right").get(0) ? undefined : parent.document.body;
+  var btnNext = $(".gb-pagination-controls-right", context).get(0);
+  var btnPrev = $(".gb-pagination-controls-left", context).get(0);
   var currentIndex = 0;
 
   this.getCurrentIndex = function() {
@@ -16,9 +17,9 @@ var readAloudDoc = new function() {
   }
 
   function getTexts() {
-    var dontRead = $("sup").hide();
+    var dontRead = $("sup", context).hide();
     var texts = [];
-    $(".gb-segment").children(":visible").get()
+    $(".gb-segment", context).children(":visible").get()
       .forEach(function(elem) {
         if ($(elem).is(".liste")) handleList(elem, texts);
         else handleOther(elem, texts);
