@@ -29,8 +29,8 @@ var readAloudDoc = new function() {
   function getTexts() {
     return $(".kix-paragraphrenderer", this).get()
       .map(getInnerText)
-      .filter(isNotEmpty)
       .map(removeDumbChars)
+      .filter(isNotEmpty)
   }
 
   function getSelectedText() {
@@ -40,7 +40,7 @@ var readAloudDoc = new function() {
   }
 
   function removeDumbChars(text) {
-    return text && text.replace(/\u200c/g, '');
+    return text && text.replace(/[\n\u200c]+/g, '');
   }
 
   function hack() {

@@ -72,6 +72,7 @@ function Speech(texts, options) {
     return {
       index: index,
       texts: texts,
+      isRTL: /^(ar|az|dv|he|iw|ku|fa|ur)\b/.test(options.lang),
     }
   }
 

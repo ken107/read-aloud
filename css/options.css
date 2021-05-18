@@ -40,6 +40,9 @@ button.close {
   text-decoration: none;
   opacity: .75;
 }
+.dark-mode .close {
+  color: white;
+}
 
 h2 {
   margin-top: 1rem;
@@ -136,6 +139,14 @@ input[type=checkbox], input[type=radio] {
   background-color: #e2e6ea;
   border-color: #dae0e5;
 }
+.dark-mode .btn-light {
+  background-color: #3e3e3e;
+  border-color: transparent;
+  color: #ddd;
+}
+.dark-mode .btn-light.active {
+  background-color: #4e4e4e;
+}
 
 .btn-info {
   color: white;
@@ -200,6 +211,14 @@ input[type=checkbox], input[type=radio] {
   background-color: #d1ecf1;
   border-color: #bee5eb;
 }
+.dark-mode .alert-info {
+  background-color: #3e3e3e;
+  border-color: transparent;
+  color: #ccc;
+}
+.dark-mode .alert-info a {
+  color: #9b9bff;
+}
 
 .green-check {
   float: right;
@@ -232,6 +251,9 @@ input[type=checkbox], input[type=radio] {
   color: gray;
   cursor: pointer;
   text-decoration: underline;
+}
+.dark-mode #hotkeys-link {
+  color: #999;
 }
 
 .spinner {
