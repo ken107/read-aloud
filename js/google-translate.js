@@ -124,6 +124,7 @@
     window.googleTranslateSynthesizeSpeech = function(text, lang) {
         return batchExecute("jQ1olc", [text, lang, null])
             .then(function(payload) {
+                if (!payload) throw new Error("Failed to synthesize text '" + text.slice(0,25) + "…' in language " + lang)
                 return "data:audio/mpeg;base64," + payload[0];
             })
     }

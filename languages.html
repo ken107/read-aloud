@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Select Languages</title>
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/common.css">
   <style>
   h2 {
     margin-top: 15px;
@@ -15,8 +16,8 @@
   }
   .voice-list {
     display: inline-block;
-    margin: 0 0 0 2em;
-    padding: 1em;
+    margin: .2em 0 .8em 1em;
+    padding: .5em 1em;
     background-color: #f6f6f6;
     color: #454545;
     border: 1px solid #c5c5c5;
@@ -25,6 +26,12 @@
   }
   .voice-list input[type=radio] {
     margin-right: .4em;
+  }
+  .dark-mode .voice-list {
+    background-color: #333;
+    border: none;
+    box-shadow: 1px 1px black;
+    color: #ddd;
   }
   </style>
 
