@@ -22,6 +22,7 @@ $(function() {
 
   refreshSize();
   checkAnnouncements();
+  applyCustomCSS();
 });
 
 function handleError(err) {
@@ -245,5 +246,13 @@ function showAnnouncement(ann) {
     $("#footer a").click(function() {
       ann.disabled = true;
       updateSettings({announcement: ann});
+    })
+}
+
+function applyCustomCSS() {
+  getSettings(["customCss"])
+    .then(function(items) {
+      let css = items.customCss || ''
+      $("#custom-css").text(css)
     })
 }
