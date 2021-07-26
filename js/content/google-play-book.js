@@ -1,8 +1,8 @@
 
 var readAloudDoc = new function() {
-  var context = $(".gb-pagination-controls-right").get(0) ? undefined : parent.document.body;
-  var btnNext = $(".gb-pagination-controls-right", context).get(0);
-  var btnPrev = $(".gb-pagination-controls-left", context).get(0);
+  var context = undefined;
+  var btnNext = $("reader-scrubber button[aria-label^=Next]", context).get(0);
+  var btnPrev = $("reader-scrubber button[aria-label^=Prev]", context).get(0);
   var currentIndex = 0;
 
   this.getCurrentIndex = function() {
