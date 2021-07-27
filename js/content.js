@@ -47,6 +47,7 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
     }
     else if (/^read\.amazon\./.test(location.hostname)) return ["js/content/kindle-book.js"];
     else if (location.hostname.endsWith(".khanacademy.org")) return ["js/content/khan-academy.js"];
+    else if (location.hostname.endsWith("acrobatiq.com")) return ["js/content/html-doc.js", "js/content/acrobatiq.js"];
     else if (location.hostname == "www.ixl.com") return ["js/content/ixl.js"];
     else if (location.pathname.match(/pdf-upload\.html$/) || location.pathname.match(/\.pdf$/) || $("embed[type='application/pdf']").length) return ["js/content/pdf-doc.js"];
     else return ["js/content/html-doc.js"];
