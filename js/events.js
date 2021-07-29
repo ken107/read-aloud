@@ -51,33 +51,6 @@ brapi.runtime.onMessage.addListener(
 
 
 /**
- * RPC handlers
- */
-brapi.runtime.onMessageExternal.addListener(
-  function(request, sender, sendResponse) {
-    if (request.permissions) {
-      requestPermissions({
-        permissions: ['tabs'],
-        origins: ['http://*/', 'https://*/'],
-      });
-    } else {
-      execCommand(request.command);
-    }
-  }
-);
-
-brapi.runtime.onConnectExternal.addListener(
-  function(port) {
-    port.onMessage.addListener(function(msg) {
-      execCommand(msg.command, function() {
-        port.postMessage('end');
-      });
-    });
-  }
-);
-
-
-/**
  * Context menu installer & handlers
  */
 function installContextMenus() {
