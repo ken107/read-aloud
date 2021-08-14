@@ -26,6 +26,10 @@ var config = {
     permissions: ["webRequest"],
     origins: ["https://*/"]
   },
+  gtranslatePerms: {
+    permissions: ["webRequest", "webRequestBlocking"],
+    origins: ["https://translate.google.com/*"]
+  },
 }
 
 var defaults = {
