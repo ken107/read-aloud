@@ -22,6 +22,7 @@ function SimpleSource(texts) {
 
 function TabSource() {
   var handlers = [
+    // Unsupported Sites --------------------------------------------------------
     {
       match: function(url) {
         return config.unsupportedSites.some(function(site) {
@@ -32,6 +33,8 @@ function TabSource() {
         throw new Error(JSON.stringify({code: "error_page_unreadable"}));
       }
     },
+
+    // PDF file:// --------------------------------------------------------------
     {
       match: function(url) {
         return /^file:.*\.pdf$/i.test(url.split("?")[0]);
@@ -40,6 +43,8 @@ function TabSource() {
         throw new Error(JSON.stringify({code: "error_upload_pdf"}));
       }
     },
+
+    // file:// ------------------------------------------------------------------
     {
       match: function(url) {
         return /^file:/.test(url);
@@ -53,6 +58,8 @@ function TabSource() {
         })
       }
     },
+
+    // Google Play Books ---------------------------------------------------------
     {
       match: function(url) {
         return /^https:\/\/play.google.com\/books\/reader/.test(url) || /^https:\/\/books.google.com\/ebooks\/app#reader/.test(url);
@@ -75,9 +82,36 @@ function TabSource() {
       },
       extraScripts: ["js/content/google-play-book.js"]
     },
+
+    // Chegg NEW --------------------------------------------------------------
     {
       match: function(url) {
-        return /^https:\/\/\w+\.(vitalsource|chegg)\.com\/#\/books\//.test(url);
+        return /^https:\/\/www\.chegg\.com\/reader\//.test(url);
+      },
+      validate: function() {
+        var perms = {
+          permissions: ["webNavigation"],
+          origins: ["https://ereader-web-viewer.chegg.com/"]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
+          })
+      },
+      getFrameId: function(frames) {
+        var frame = frames.find(function(frame) {
+          return frame.url.startsWith("https://ereader-web-viewer.chegg.com/");
+        })
+        return frame && frame.frameId;
+      },
+      extraScripts: ["js/content/chegg-book.js"]
+    },
+
+    // VitalSource/Chegg ---------------------------------------------------------
+    {
+      match: function(url) {
+        return /^https:\/\/\w+\.vitalsource\.com\/reader\/books\//.test(url) ||
+          /^https:\/\/\w+\.chegg\.com\/#\/books\//.test(url)
       },
       validate: function() {
         var perms = {
@@ -108,6 +142,8 @@ function TabSource() {
       },
       extraScripts: ["js/content/vitalsource-book.js"]
     },
+
+    // EPUBReader ---------------------------------------------------------------
     {
       match: function(url) {
         return /^chrome-extension:\/\/jhhclmfgfllimlhabjkgkeebkbiadflb\/reader.html/.test(url);
@@ -161,6 +197,8 @@ function TabSource() {
           }))
       }
     },
+
+    // default -------------------------------------------------------------------
     {
       match: function() {
         return true;
@@ -369,7 +407,7 @@ function Doc(source, onEnd) {
   }
 
   function detectLanguage(texts) {
-    var minChars = 1000;
+    var minChars = 240;
     var maxPages = 10;
     var output = combineTexts("", texts);
     if (output.length < minChars) {
