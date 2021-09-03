@@ -13,8 +13,9 @@ else {
 
 
 function ReadAloudDoc() {
-  var $btnNext = $(".next-button");
-  var $btnPrev = $(".previous-button");
+  var isChegg = location.hostname.endsWith("chegg.com");
+  var $btnNext = isChegg ? $(".next-button") : $(".jwUdzW").eq(1);
+  var $btnPrev = isChegg ? $(".previous-button") : $(".jwUdzW").eq(0);
   var currentIndex = 0;
 
   this.getCurrentIndex = function() {

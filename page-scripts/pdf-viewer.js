@@ -119,17 +119,17 @@
     })
     console.log("Loading PDF viewer...");
 
-    return loadCss(viewerBase + "viewer.css")
+    return loadCss(viewerBase + "viewer.css?v=21.8.15.0")
       .then(loadViewerHtml)
       .then(showLoadingIcon)
       .then(appendLocaleResourceLink)
       .then(loadScript.bind(null, libraryBase + "pdf.min.js"))
-      .then(loadScript.bind(null, viewerBase + "viewer.js"))
+      .then(loadScript.bind(null, viewerBase + "viewer.js?v=21.8.15.0"))
       .then(waitUntilInitialized)
       .then(hideLoadingIcon)
 
     function loadViewerHtml() {
-      return ajaxGet(viewerBase + "viewer.html")
+      return ajaxGet(viewerBase + "viewer.html?v=21.8.15.0")
         .then(function(text) {
           var start = text.indexOf(">", text.indexOf("<body")) +1;
           var end = text.indexOf("</body>");
