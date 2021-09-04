@@ -32,6 +32,7 @@ function Speech(texts, options) {
       return googleTranslateTtsEngine.ready()
         .then(function() {return googleTranslateTtsEngine})
         .catch(function(err) {
+          if (/^{/.test(err.message)) throw err
           console.error(err);
           options.voice.autoSelect = true;
           return remoteTtsEngine;

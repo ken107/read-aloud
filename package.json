@@ -7,7 +7,7 @@
   },
   "scripts": {
     "package": "zip -u -r build/package.zip _locales css img js sound *.html manifest.json || true",
-    "sync-page-scripts": "rsync -avz js/messaging.js page-scripts/ && aws s3 sync --profile s3 --delete --metadata-directive REPLACE --cache-control max-age=86400,public page-scripts s3://lsdsoftware-assets/read-aloud/page-scripts"
+    "sync-page-scripts": "rsync -avz js/messaging.js page-scripts/ && aws s3 sync --delete --metadata-directive REPLACE --cache-control max-age=86400,public page-scripts s3://lsdsoftware-assets/read-aloud/page-scripts"
   },
   "repository": {
     "type": "git",

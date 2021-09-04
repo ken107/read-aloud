@@ -280,6 +280,14 @@ function handleError(err) {
               if (granted) bgPageInvoke("authWavenet");
             })
           break;
+        case "#auth-gtranslate":
+          if (getBrowser() == "firefox") {
+            createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.gtranslatePerms)) + "&then=auth-gtranslate")
+              .then(function() {
+                window.close()
+              })
+          }
+          break;
         case "#user-gesture":
           getBackgroundPage()
             .then(callMethod("userGestureActivate"))

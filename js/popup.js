@@ -58,14 +58,24 @@ function handleError(err) {
           break;
         case "#auth-wavenet":
           if (getBrowser() == "firefox") {
-            createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet");
-            window.close();
+            createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet")
+              .then(function() {
+                window.close()
+              })
             break;
           }
           requestPermissions(config.wavenetPerms)
             .then(function(granted) {
               if (granted) bgPageInvoke("authWavenet");
             })
+          break;
+        case "#auth-gtranslate":
+          if (getBrowser() == "firefox") {
+            createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.gtranslatePerms)) + "&then=auth-gtranslate")
+              .then(function() {
+                window.close()
+              })
+          }
           break;
         case "#user-gesture":
           getBackgroundPage()

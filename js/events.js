@@ -6,6 +6,11 @@ silenceLoop.loop = true;
 brapi.runtime.onInstalled.addListener(installContextMenus);
 if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
 
+hasPermissions(config.gtranslatePerms)
+  .then(function(granted) {
+    if (granted) authGoogleTranslate()
+  })
+
 
 /**
  * IPC handlers
@@ -46,33 +51,6 @@ brapi.runtime.onMessage.addListener(
     else {
       sendResponse({error: "BAD_METHOD"});
     }
-  }
-);
-
-
-/**
- * RPC handlers
- */
-brapi.runtime.onMessageExternal.addListener(
-  function(request, sender, sendResponse) {
-    if (request.permissions) {
-      requestPermissions({
-        permissions: ['tabs'],
-        origins: ['http://*/', 'https://*/'],
-      });
-    } else {
-      execCommand(request.command);
-    }
-  }
-);
-
-brapi.runtime.onConnectExternal.addListener(
-  function(port) {
-    port.onMessage.addListener(function(msg) {
-      execCommand(msg.command, function() {
-        port.postMessage('end');
-      });
-    });
   }
 );
 
@@ -314,6 +292,25 @@ function authWavenet() {
         })
       }
     })
+}
+
+function authGoogleTranslate() {
+  console.info("Installing GoogleTranslate XHR hook")
+  brapi.webRequest.onBeforeSendHeaders.removeListener(googleTranslateXhrHook)
+  brapi.webRequest.onBeforeSendHeaders.addListener(googleTranslateXhrHook, {
+    urls: config.gtranslatePerms.origins,
+    types: ["xmlhttprequest"]
+  }, [
+    "blocking", "requestHeaders"
+  ])
+}
+
+function googleTranslateXhrHook(details) {
+  var header = details.requestHeaders.find(function(h) {return h.name == "Sec-Fetch-Site"})
+  if (header && header.value == "cross-site") header.value = "none"
+  return {
+    requestHeaders: details.requestHeaders
+  }
 }
 
 function userGestureActivate() {

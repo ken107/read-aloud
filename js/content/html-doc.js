@@ -1,6 +1,8 @@
 
 var readAloudDoc = new function() {
-  var ignoreTags = "select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style, svg, aside, footer, #footer, .no-read-aloud";
+  var self = this;
+
+  this.ignoreTags = "select, textarea, button, label, audio, video, dialog, embed, menu, nav, noframes, noscript, object, script, style, svg, aside, footer, #footer, .no-read-aloud";
 
   this.getCurrentIndex = function() {
     return 0;
@@ -53,7 +55,7 @@ var readAloudDoc = new function() {
   }
 
   function findTextBlocks(threshold) {
-    var skipTags = "h1, h2, h3, h4, h5, h6, p, a[href], " + ignoreTags;
+    var skipTags = "h1, h2, h3, h4, h5, h6, p, a[href], " + self.ignoreTags;
     var isTextNode = function(node) {
       return node.nodeType == 3 && node.nodeValue.trim().length >= 3;
     };
@@ -137,7 +139,7 @@ var readAloudDoc = new function() {
   function dontRead() {
     var float = $(this).css("float");
     var position = $(this).css("position");
-    return $(this).is(ignoreTags) || $(this).is("sup") || float == "right" || position == "fixed";
+    return $(this).is(self.ignoreTags) || $(this).is("sup") || float == "right" || position == "fixed";
   }
 
   function getText(elem) {
@@ -154,7 +156,7 @@ var readAloudDoc = new function() {
     var currentLevel = getHeadingLevel(firstInnerElem);
     var node = previousNode(block, true);
     while (node && node != prevBlock) {
-      var ignore = $(node).is(ignoreTags);
+      var ignore = $(node).is(self.ignoreTags);
       if (!ignore && node.nodeType == 1 && $(node).is(":visible")) {
         var level = getHeadingLevel(node);
         if (level < currentLevel) {

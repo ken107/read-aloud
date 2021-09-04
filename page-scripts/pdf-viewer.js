@@ -44,7 +44,7 @@
       })
       .then(function() {
         return new Promise(function(fulfill) {
-          PDFViewerApplication.eventBus.on("documentload", fulfill);
+          PDFViewerApplication.eventBus.on("pagesloaded", fulfill);
         })
       })
   }
@@ -108,19 +108,28 @@
   function loadViewer() {
     if (window.PDFViewerApplication) return Promise.resolve();
     var viewerBase = "https://assets.lsdsoftware.com/read-aloud/pdf-viewer/web/";
+    var libraryBase = "https://cdn.jsdelivr.net/npm/pdfjs-dist@2.9.359/build/"
+    var initializedPromise = new Promise(function(fulfill) {
+      document.addEventListener("webviewerloaded", function() {
+        PDFViewerApplicationOptions.set("workerSrc", libraryBase + "pdf.worker.min.js")
+        PDFViewerApplicationOptions.set("sandboxBundleSrc", libraryBase + "pdf.sandbox.min.js")
+        PDFViewerApplicationOptions.set("defaultUrl", null)
+        PDFViewerApplication.initializedPromise.then(fulfill)
+      })
+    })
     console.log("Loading PDF viewer...");
 
-    return loadCss(viewerBase + "viewer.css")
+    return loadCss(viewerBase + "viewer.css?v=21.8.15.0")
       .then(loadViewerHtml)
       .then(showLoadingIcon)
       .then(appendLocaleResourceLink)
-      .then(loadScript.bind(null, viewerBase + "pdf.viewer.js", viewerJsPreprocessor))
-      .then(rebaseUrls)
+      .then(loadScript.bind(null, libraryBase + "pdf.min.js"))
+      .then(loadScript.bind(null, viewerBase + "viewer.js?v=21.8.15.0"))
       .then(waitUntilInitialized)
       .then(hideLoadingIcon)
 
     function loadViewerHtml() {
-      return ajaxGet(viewerBase + "viewer.html")
+      return ajaxGet(viewerBase + "viewer.html?v=21.8.15.0")
         .then(function(text) {
           var start = text.indexOf(">", text.indexOf("<body")) +1;
           var end = text.indexOf("</body>");
@@ -161,34 +170,8 @@
       link.setAttribute("href", viewerBase + "locale/locale.properties");
     }
 
-    function rebaseUrls() {
-      var wrap = function(prop) {
-        var value = PDFJS[prop];
-        Object.defineProperty(PDFJS, prop, {
-          enumerable: true,
-          configurable: true,
-          get: function() {return viewerBase + value},
-          set: function(val) {value = val}
-        })
-      };
-      wrap("imageResourcesPath");
-      PDFJS.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.108/pdf.worker.min.js"
-      wrap("cMapUrl");
-    }
-
-    function viewerJsPreprocessor(text) {
-      return text.replace("compressed.tracemonkey-pldi-09.pdf", "");
-    }
-
     function waitUntilInitialized() {
-      return new Promise(function(fulfill) {
-        var timer = setInterval(function() {
-          if (PDFViewerApplication.initialized) {
-            clearInterval(timer);
-            fulfill();
-          }
-        }, 500);
-      })
+      return initializedPromise
     }
   }
 
@@ -205,8 +188,12 @@
   function loadJQuery() {
     if (window.jQuery) return Promise.resolve();
     return loadScript("https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js")
-      .then(loadCss.bind(null, "https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"))
-      .then(loadScript.bind(null, "https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"))
+      .then(function() {
+        return Promise.all([
+          loadCss("https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"),
+          loadScript("https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"),
+        ])
+      })
   }
 
   function createUploadDialog() {
@@ -253,20 +240,24 @@
    * Helpers
    */
   function loadCss(url) {
-    var link = document.createElement("LINK");
-    document.head.appendChild(link);
-    link.setAttribute("type", "text/css");
-    link.setAttribute("rel", "stylesheet");
-    link.setAttribute("href", url);
-    return Promise.resolve();
+    return new Promise(function(fulfill) {
+      var link = document.createElement("LINK");
+      document.head.appendChild(link);
+      link.onload = fulfill;
+      link.setAttribute("type", "text/css");
+      link.setAttribute("rel", "stylesheet");
+      link.setAttribute("href", url);
+    })
   }
 
-  function loadScript(url, preprocess) {
-    return ajaxGet(url)
-      .then(function(text) {
-        if (preprocess) text = preprocess(text);
-        eval(text);
-      })
+  function loadScript(url) {
+    return new Promise(function(fulfill) {
+      var script = document.createElement('script');
+      document.head.appendChild(script);
+      script.onload = fulfill;
+      script.type = 'text/javascript';
+      script.src = url;
+    })
   }
 
   function ajaxGet(url) {
