@@ -235,7 +235,7 @@ function RemoteTtsEngine(serviceUrl) {
   }
   function getAudioUrl(utterance, lang, voice, prefetch) {
     assert(utterance && lang && voice);
-    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&v=" + manifest.version + "&pf=" + (prefetch ? 1 : 0) + "&q=" + encodeURIComponent(utterance);
+    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&f=opus&v=" + manifest.version + "&pf=" + (prefetch ? 1 : 0) + "&q=" + encodeURIComponent(utterance);
   }
   var voices = [
       {"voice_name": "Amazon Australian English (Nicole)", "lang": "en-AU", "gender": "female", "event_types": ["start", "end", "error"]},
@@ -372,7 +372,7 @@ function GoogleTranslateTtsEngine() {
   var isSpeaking = false;
   var speakPromise;
   this.ready = function() {
-    return googleTranslateReady();
+    return Promise.reject("Thunderbird 9 no MP3 support");
   };
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;
@@ -601,7 +601,7 @@ function AmazonPollyTtsEngine() {
     switch (style) {
       case "newscaster":
         return {
-          OutputFormat: "mp3",
+          OutputFormat: "ogg_vorbis",
           Text: '<speak><amazon:domain name="news">' + escapeXml(text) + '</amazon:domain></speak>',
           TextType: "ssml",
           VoiceId: voiceId,
@@ -609,7 +609,7 @@ function AmazonPollyTtsEngine() {
         }
       case "conversational":
         return {
-          OutputFormat: "mp3",
+          OutputFormat: "ogg_vorbis",
           Text: '<speak><amazon:domain name="conversational">' + escapeXml(text) + '</amazon:domain></speak>',
           TextType: "ssml",
           VoiceId: voiceId,
@@ -617,14 +617,14 @@ function AmazonPollyTtsEngine() {
         }
       case "neural":
         return {
-          OutputFormat: "mp3",
+          OutputFormat: "ogg_vorbis",
           Text: text,
           VoiceId: voiceId,
           Engine: "neural"
         }
       default:
         return {
-          OutputFormat: "mp3",
+          OutputFormat: "ogg_vorbis",
           Text: text,
           VoiceId: voiceId
         }
@@ -821,7 +821,7 @@ function GoogleWavenetTtsEngine() {
             name: voiceName
           },
           audioConfig: {
-            audioEncoding: "mp3",
+            audioEncoding: "OGG_OPUS",
             pitch: (pitch-1)*20
           }
         }
@@ -835,7 +835,7 @@ function GoogleWavenetTtsEngine() {
       })
       .then(function(responseText) {
         var data = JSON.parse(responseText);
-        return "data:audio/mpeg;base64," + data.audioContent;
+        return "data:audio/ogg;codecs=opus;base64," + data.audioContent;
       })
   }
   var voices = [
@@ -1114,7 +1114,7 @@ function IbmWatsonTtsEngine() {
     return getSettings(["ibmCreds"])
       .then(function(settings) {
         return ajaxGet({
-          url: settings.ibmCreds.url + "/v1/synthesize?text=" + encodeURIComponent(escapeHtml(text)) + "&voice=" + encodeURIComponent(voiceName) + "&accept=" + encodeURIComponent("audio/mpeg"),
+          url: settings.ibmCreds.url + "/v1/synthesize?text=" + encodeURIComponent(escapeHtml(text)) + "&voice=" + encodeURIComponent(voiceName) + "&accept=" + encodeURIComponent("audio/ogg;codecs=opus"),
           headers: {
             Authorization: "Basic " + btoa("apikey:" + settings.ibmCreds.apiKey)
           },

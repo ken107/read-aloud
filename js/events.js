@@ -1,6 +1,6 @@
 
 var activeDoc;
-var silenceLoop = new Audio("sound/silence.mp3");
+var silenceLoop = new Audio("sound/silence.ogg");
 silenceLoop.loop = true;
 
 brapi.runtime.onInstalled.addListener(installContextMenus);
