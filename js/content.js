@@ -14,16 +14,67 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
     else console.error("Unknown method", method);
   }
   $(function() {
-    peer.invoke("onReady", getInfo());
+    Promise.resolve(getInfo())
+      .then(function(info) {
+        peer.invoke("onReady", info)
+      })
+      .catch(console.error)
   })
 
   function getInfo() {
-    return {
-      url: location.href,
-      title: document.title,
-      lang: getLang(),
-      requireJs: getRequireJs()
+    var requireJs = getRequireJs()
+    if (requireJs) {
+      return {
+        url: location.href,
+        title: document.title,
+        lang: getLang(),
+        requireJs: requireJs,
+      }
     }
+    var targetFrame = findTargetFrame()
+    if (!targetFrame) {
+      return {
+        url: location.href,
+        title: document.title,
+        lang: getLang(),
+        requireJs: ["js/content/html-doc.js"],
+      }
+    }
+    return Promise.resolve()
+      .then(function() {
+        if (!targetFrame.src) return true
+        var url = new URL(targetFrame.src)
+        return new Promise(function(fulfill, reject) {
+          return brapi.runtime.sendMessage({
+              method: "hasOriginPermission",
+              args: [url.protocol + "//" + url.hostname + "/*"]
+            },
+            function(response) {
+              if (response && response.error) reject(new Error(response.error))
+              else fulfill(response)
+            })
+        })
+        .then(function(hasOriginPermission) {
+          if (hasOriginPermission) {
+            return {
+              url: location.href,
+              title: document.title,
+              lang: getLang(),
+              requireJs: ["js/content/html-doc.js"],
+              targetFrame: targetFrame
+            }
+          }
+          else {
+            //TODO: show overlay over iframe with button to grant origin permission
+            return {
+              url: location.href,
+              title: document.title,
+              lang: getLang(),
+              requireJs: ["js/content/html-doc.js"],
+            }
+          }
+        })
+      })
   }
 
   function getLang() {
@@ -50,7 +101,22 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
     else if (location.hostname.endsWith("acrobatiq.com")) return ["js/content/html-doc.js", "js/content/acrobatiq.js"];
     else if (location.hostname == "www.ixl.com") return ["js/content/ixl.js"];
     else if (location.pathname.match(/pdf-upload\.html$/) || location.pathname.match(/\.pdf$/) || $("embed[type='application/pdf']").length) return ["js/content/pdf-doc.js"];
-    else return ["js/content/html-doc.js"];
+    else return null
+  }
+
+  function findTargetFrame() {
+    var documentArea = $(document).width() * $(document).height()
+    return findTargetChildFrame(document, documentArea / 2)
+  }
+
+  function findTargetChildFrame(parentDocument, minArea) {
+    var targetFrame = $("frame:visible, iframe:visible", parentDocument)
+      .filter(function() {return $(this).width() * $(this).height() >= minArea})
+      .get(0)
+    if (targetFrame && targetFrame.contentDocument)
+      return findTargetChildFrame(targetFrame.contentDocument, minArea)
+    else
+      return targetFrame
   }
 
   function getCurrentIndex() {

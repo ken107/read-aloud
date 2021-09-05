@@ -30,6 +30,9 @@ var handlers = {
         return speech && speech.getPosition();
       })
   },
+  hasOriginPermission: function(origin) {
+    return hasPermissions({origins: [origin]})
+  },
 }
 
 brapi.runtime.onMessage.addListener(
