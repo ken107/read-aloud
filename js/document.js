@@ -110,7 +110,7 @@ function TabSource() {
     // VitalSource/Chegg ---------------------------------------------------------
     {
       match: function(url) {
-        return /^https:\/\/\w+\.vitalsource\.com\/reader\/books\//.test(url) ||
+        return /^https:\/\/\w+\.vitalsource\.com\/(#|reader)\/books\//.test(url) ||
           /^https:\/\/\w+\.chegg\.com\/#\/books\//.test(url)
       },
       validate: function() {
