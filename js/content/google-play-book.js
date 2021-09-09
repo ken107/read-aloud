@@ -10,16 +10,35 @@ var readAloudDoc = new function() {
   }
 
   this.getTexts = function(index) {
-    var delta = Math.abs(index-currentIndex);
-    for (; currentIndex<index; currentIndex++) simulateClick(btnNext);
-    for (; currentIndex>index; currentIndex--) simulateClick(btnPrev);
-    return waitMillis(1500+delta*500).then(getTexts);
+    var promise = Promise.resolve()
+    var rewind = function() {
+      var oldEl = $("reader-page:visible .gb-segment").get(0)
+      $(btnPrev).click()
+      return waitFrameChange(oldEl)
+    }
+    var forward = function() {
+      var oldEl = $("reader-page:visible .gb-segment").get(0)
+      $(btnNext).click()
+      return waitFrameChange(oldEl)
+    }
+    for (; currentIndex<index; currentIndex++) promise = promise.then(forward)
+    for (; currentIndex>index; currentIndex--) promise = promise.then(rewind)
+    return promise.then(getTexts)
+  }
+
+  function waitFrameChange(oldEl) {
+    return repeat({
+      action: function() {return $("reader-page:visible .gb-segment").get(0)},
+      until: function(el) {return el && el != oldEl},
+      max: 10,
+      delay: 500
+    })
   }
 
   function getTexts() {
     var dontRead = $("sup", context).hide();
     var texts = [];
-    $(".gb-segment", context).children(":visible").get()
+    $("reader-page:visible .gb-segment", context).children(":visible").get()
       .forEach(function(elem) {
         if ($(elem).is(".liste")) handleList(elem, texts);
         else handleOther(elem, texts);

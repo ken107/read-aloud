@@ -144,6 +144,29 @@ function TabSource() {
       extraScripts: ["js/content/vitalsource-book.js"]
     },
 
+    // Liberty University ---------------------------------------------------------
+    {
+      match: function(url) {
+        return url.startsWith("https://luoa.instructure.com/courses/")
+      },
+      validate: function() {
+        var perms = {
+          permissions: ["webNavigation"],
+          origins: ["https://luoa-content.s3.amazonaws.com/"]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
+          })
+      },
+      getFrameId: function(frames) {
+        var frame = frames.find(function(frame) {
+          return frame.url && frame.url.startsWith("https://luoa-content.s3.amazonaws.com/")
+        })
+        return frame && frame.frameId
+      }
+    },
+
     // EPUBReader ---------------------------------------------------------------
     {
       match: function(url) {
