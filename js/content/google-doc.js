@@ -1,5 +1,124 @@
 
-var readAloudDoc = new function() {
+var readAloudDoc = $(".kix-paragraphrenderer").length ? new ReadAloudDoc() : new DummyReadAloudDoc();
+
+
+function DummyReadAloudDoc() {
+  var $popup = createPopup();
+
+  this.getCurrentIndex = function() {
+    return 0;
+  }
+
+  this.getTexts = function(index) {
+    if (index == 0) {
+      showPopup();
+      return [$popup.data("message")];
+    }
+    else return null;
+  }
+
+  function showPopup() {
+    $popup.show();
+    $(document.body).one("click", function() {
+      $popup.hide();
+    })
+  }
+
+  function createPopup() {
+    if ($("#docs-extensions-menu").length) return createAddonInstructionPopup();
+    else return createSaveInstructionPopup();
+  }
+
+  function createAddonInstructionPopup() {
+    var $anchor = $("#docs-extensions-menu")
+    var anchorOffset = $anchor.offset()
+    var anchorDimension = {
+      width: $anchor.outerWidth(),
+      height: $anchor.outerHeight()
+    }
+    var $popup = $("<div>")
+      .appendTo(document.body)
+      .data("message", "You need to install the Read Aloud Google Workspace add-on to read aloud this document.")
+      .css({
+        position: "absolute",
+        left: anchorOffset.left + anchorDimension.width/2 - 160,
+        top: anchorOffset.top + anchorDimension.height,
+        width: 320,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        zIndex: 999000,
+        fontSize: "larger",
+      })
+    var $arrow = $("<div>")
+      .appendTo($popup)
+      .css({
+        width: 0,
+        height: 0,
+        borderLeft: ".5em solid transparent",
+        borderRight: ".5em solid transparent",
+        borderBottom: ".5em solid #333",
+      })
+    var $text = $("<div>")
+      .appendTo($popup)
+      .html("Please use this menu to find and install the Read Aloud Google Workspace add-on.  For instructions, see <a style='color:yellow' target='_blank' href='https://blog.readaloud.app/2021/09/google-docs-update.html'>this post</a>.")
+      .css({
+        backgroundColor: "#333",
+        color: "#fff",
+        padding: "1em",
+        borderRadius: ".5em",
+      })
+    return $popup;
+  }
+
+  function createSaveInstructionPopup() {
+    var $anchor = $("#docs-file-menu")
+    var anchorOffset = $anchor.offset()
+    var anchorDimension = {
+      width: $anchor.outerWidth(),
+      height: $anchor.outerHeight()
+    }
+    var $popup = $("<div>")
+      .appendTo(document.body)
+      .data("message", "You need to use the Read Aloud Google Workspace add-on to read aloud this document.")
+      .css({
+        position: "absolute",
+        left: anchorOffset.left + anchorDimension.width/2 - 300,
+        top: anchorOffset.top + anchorDimension.height,
+        width: 600,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        zIndex: 999000,
+        fontSize: "larger",
+      })
+    var $arrow = $("<div>")
+      .appendTo($popup)
+      .css({
+        width: 0,
+        height: 0,
+        borderLeft: ".5em solid transparent",
+        borderRight: ".5em solid transparent",
+        borderBottom: ".5em solid #333",
+      })
+    var $text = $("<div>")
+      .appendTo($popup)
+      .html("The Add-ons menu is available only in Edit mode, you are currently in Read-only mode.<br><br>Please click 'File' - 'Make a copy' to open a copy of this document in Edit mode.")
+      .css({
+        marginLeft: 10 - Math.min(0, anchorOffset.left + anchorDimension.width/2 - 300),
+        backgroundColor: "#333",
+        color: "#fff",
+        padding: "1em",
+        borderRadius: ".5em",
+      })
+    return $popup;
+  }
+}
+
+
+
+
+function ReadAloudDoc() {
   var viewport = $(".kix-appview-editor").get(0);
   var pages = $(".kix-page");
 
