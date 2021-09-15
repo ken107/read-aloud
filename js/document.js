@@ -221,6 +221,30 @@ function TabSource() {
       }
     },
 
+    // LibbyApp ---------------------------------------------------------------
+    {
+      match: function(url) {
+        return url.startsWith("https://libbyapp.com/open/")
+      },
+      validate: function() {
+        var perms = {
+          permissions: ["webNavigation"],
+          origins: ["https://*.read.libbyapp.com/"]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
+          })
+      },
+      getFrameId: function(frames) {
+        var frame = frames.find(function(frame) {
+          return frame.url && new URL(frame.url).hostname.endsWith(".read.libbyapp.com")
+        })
+        return frame && frame.frameId
+      },
+      extraScripts: ["js/content/libbyapp.js"]
+    },
+
     // default -------------------------------------------------------------------
     {
       match: function() {
