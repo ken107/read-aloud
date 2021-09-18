@@ -6,12 +6,21 @@ var readAloudDoc = new function() {
     : Promise.resolve()
         .then(function() {
           var url = location.href
+          console.info("Trying location.href", url)
           return tryLoadPdf(url)
             .then(loadPdfViewer.bind(null, url))
         })
         .catch(function(err) {
           var url = $("embed[type='application/pdf']").attr("src")
           if (!url || url == "about:blank") throw err
+          console.info("Trying embed", url)
+          return tryLoadPdf(url)
+            .then(loadPdfViewer.bind(null, url))
+        })
+        .catch(function(err) {
+          var url = $("iframe[src*='.pdf']").attr("src")
+          if (!url) throw err
+          console.info("Trying iframe", url)
           return tryLoadPdf(url)
             .then(loadPdfViewer.bind(null, url))
         })
