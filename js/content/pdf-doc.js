@@ -3,14 +3,49 @@ var readAloudDoc = new function() {
   var queue = new EventQueue("PdfDoc");
   var ready = location.pathname.match(/pdf-upload\.html$/)
     ? Promise.resolve()
-    : new Promise(function(fulfill) {
-        var url = getPdfUrl();    //must call before loading the page script
+    : Promise.resolve()
+        .then(function() {
+          var url = location.href
+          return tryLoadPdf(url)
+            .then(loadPdfViewer.bind(null, url))
+        })
+        .catch(function(err) {
+          var url = $("embed[type='application/pdf']").attr("src")
+          if (!url || url == "about:blank") throw err
+          return tryLoadPdf(url)
+            .then(loadPdfViewer.bind(null, url))
+        })
+        .catch(function() {
+          throw new Error(JSON.stringify({code: "error_ajax_pdf"}))
+        })
+
+  function tryLoadPdf(url) {
+    return new Promise(function(fulfill, reject) {
+        var xhr = new XMLHttpRequest()
+        xhr.open("GET", url, true)
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState == XMLHttpRequest.HEADERS_RECEIVED) {
+            if (xhr.status == 200 && /application\/pdf/.test(xhr.getResponseHeader("Content-Type"))) {
+              xhr.abort()
+              fulfill()
+            }
+            else reject("Non-OK status")
+          }
+        }
+        xhr.onerror = reject
+        xhr.send()
+      })
+  }
+
+  function loadPdfViewer(url) {
+    return new Promise(function(fulfill) {
         queue.once("pageScriptLoaded", function() {
           queue.trigger("loadDocument", url);
         })
         queue.once("documentLoaded", fulfill);
         loadPageScript("https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-viewer.js");
       })
+  }
 
   this.getCurrentIndex = function() {
     return ready.then(function() {
@@ -24,12 +59,6 @@ var readAloudDoc = new function() {
     return new Promise(function(fulfill) {
       queue.once("textsGot", fulfill).trigger("getTexts", index, quietly);
     })
-  }
-
-  function getPdfUrl() {
-    if (location.pathname.match(/\.pdf$/)) return location.href;
-    else if ($("embed[type='application/pdf']").length) return $("embed[type='application/pdf']").attr("src");
-    else return "file:///";
   }
 
   function EventQueue(prefix) {

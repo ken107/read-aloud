@@ -5,6 +5,7 @@ polyfills();
 var config = {
   serviceUrl: "https://support.readaloud.app",
   webAppUrl: "https://readaloud.app",
+  pdfViewerUrl: "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html",
   entityMap: {
     '&': '&amp;',
     '<': '&lt;',

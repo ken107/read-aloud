@@ -2,6 +2,9 @@
 body {
   margin: 20px 15px 10px 15px;
 }
+.dark-mode a {
+  color: yellowgreen;
+}
 
 #speech-info {
   text-align: center;
