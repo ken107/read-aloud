@@ -83,6 +83,9 @@
   "error_upload_pdf": {
     "message": "Please use the form to upload your PDF file to read aloud"
   },
+  "error_ajax_pdf": {
+    "message": "Please save this PDF file to your computer and open it inside this [PDF viewer](open-pdf-viewer) to read aloud"
+  },
   "error_page_unreadable": {
     "message": "Cannot read aloud this website"
   },

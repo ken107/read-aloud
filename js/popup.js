@@ -84,11 +84,14 @@ function handleError(err) {
               $("#btnPlay").click();
             })
           break;
+        case "#open-pdf-viewer":
+          brapi.tabs.create({url: config.pdfViewerUrl})
+          break
       }
     })
 
     if (errInfo.code == "error_upload_pdf") {
-      setTabUrl(undefined, "https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-upload.html");
+      setTabUrl(undefined, config.pdfViewerUrl)
     }
   }
   else {

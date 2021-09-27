@@ -38,7 +38,7 @@ var brapi = browser;
     if (typeof readAloudDoc != "undefined") return null;
     if (location.hostname == "docs.google.com") {
       if (/^\/presentation\/d\//.test(location.pathname)) return ["js/content/google-slides.js"];
-      else if ($(".kix-appview-editor").length) return ["js/content/googleDocsUtil.js", "js/content/google-doc.js"];
+      else if (/\/document\/d\//.test(location.pathname)) return ["js/content/googleDocsUtil.js", "js/content/google-doc.js"];
       else if ($(".drive-viewer-paginated-scrollable").length) return ["js/content/google-drive-doc.js"];
       else return ["js/content/html-doc.js"];
     }
@@ -52,7 +52,10 @@ var brapi = browser;
     else if (location.hostname == "digital.wwnorton.com") return ["js/content/html-doc.js", "js/content/wwnorton.js"];
     else if (location.hostname == "plus.pearson.com") return ["js/content/html-doc.js", "js/content/pearson.js"];
     else if (location.hostname == "www.ixl.com") return ["js/content/ixl.js"];
-    else if (location.pathname.match(/pdf-upload\.html$/) || location.pathname.match(/\.pdf$/) || $("embed[type='application/pdf']").length) return ["js/content/pdf-doc.js"];
+    else if (location.pathname.match(/pdf-upload\.html$/)
+      || location.pathname.match(/\.pdf$/)
+      || $("embed[type='application/pdf']").length
+      || $("iframe[src*='.pdf']").length) return ["js/content/pdf-doc.js"];
     else return ["js/content/html-doc.js"];
   }
 
