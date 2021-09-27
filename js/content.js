@@ -37,7 +37,7 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
     if (typeof readAloudDoc != "undefined") return null;
     if (location.hostname == "docs.google.com") {
       if (/^\/presentation\/d\//.test(location.pathname)) return ["js/content/google-slides.js"];
-      else if ($(".kix-appview-editor").length) return ["js/content/googleDocsUtil.js", "js/content/google-doc.js"];
+      else if (/\/document\/d\//.test(location.pathname)) return ["js/content/googleDocsUtil.js", "js/content/google-doc.js"];
       else if ($(".drive-viewer-paginated-scrollable").length) return ["js/content/google-drive-doc.js"];
       else return ["js/content/html-doc.js"];
     }
@@ -48,8 +48,13 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
     else if (/^read\.amazon\./.test(location.hostname)) return ["js/content/kindle-book.js"];
     else if (location.hostname.endsWith(".khanacademy.org")) return ["js/content/khan-academy.js"];
     else if (location.hostname.endsWith("acrobatiq.com")) return ["js/content/html-doc.js", "js/content/acrobatiq.js"];
+    else if (location.hostname == "digital.wwnorton.com") return ["js/content/html-doc.js", "js/content/wwnorton.js"];
+    else if (location.hostname == "plus.pearson.com") return ["js/content/html-doc.js", "js/content/pearson.js"];
     else if (location.hostname == "www.ixl.com") return ["js/content/ixl.js"];
-    else if (location.pathname.match(/pdf-upload\.html$/) || location.pathname.match(/\.pdf$/) || $("embed[type='application/pdf']").length) return ["js/content/pdf-doc.js"];
+    else if (location.pathname.match(/pdf-upload\.html$/)
+      || location.pathname.match(/\.pdf$/)
+      || $("embed[type='application/pdf']").length
+      || $("iframe[src*='.pdf']").length) return ["js/content/pdf-doc.js"];
     else return ["js/content/html-doc.js"];
   }
 
@@ -177,4 +182,28 @@ function updateSettings(items) {
   return new Promise(function(fulfill) {
     brapi.storage.local.set(items, fulfill);
   });
+}
+
+/**
+ * Repeat an action
+ * @param {Object} opt - options
+ * @param {Function} opt.action - action to repeat
+ * @param {Function} opt.until - termination condition
+ * @param {Number} opt.delay - delay between actions
+ * @param {Number} opt.max - maximum number of repetitions
+ * @returns {Promise}
+ */
+function repeat(opt) {
+  if (!opt || !opt.action) throw new Error("Missing action")
+  return iter(1)
+  function iter(n) {
+    return Promise.resolve()
+      .then(opt.action)
+      .then(function(result) {
+        if (opt.until && opt.until(result)) return result
+        if (opt.max && n >= opt.max) return result
+        if (!opt.delay) return iter(n+1)
+        return new Promise(function(f) {setTimeout(f, opt.delay)}).then(iter.bind(null, n+1))
+      })
+  }
 }

@@ -3,7 +3,6 @@ function Speech(texts, options) {
   options.rate = (options.rate || 1) * (isGoogleNative(options.voice) ? 0.9 : 1);
 
   for (var i=0; i<texts.length; i++) if (/[\w)]$/.test(texts[i])) texts[i] += '.';
-  if (texts.length) texts = getChunks(texts.join("\n\n"));
 
   var self = this;
   var engine;
@@ -14,6 +13,7 @@ function Speech(texts, options) {
   var ready = Promise.resolve(pickEngine())
     .then(function(x) {
       engine = x;
+      if (texts.length) texts = getChunks(texts.join("\n\n"));
     })
 
   this.options = options;
@@ -32,8 +32,9 @@ function Speech(texts, options) {
       return googleTranslateTtsEngine.ready()
         .then(function() {return googleTranslateTtsEngine})
         .catch(function(err) {
-          console.error(err);
+          console.warn("GoogleTranslate unavailable,", err);
           options.voice.autoSelect = true;
+          options.voice.voiceName = "Microsoft US English (Zira)";
           return remoteTtsEngine;
         })
     }
