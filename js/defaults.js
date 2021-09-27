@@ -297,7 +297,7 @@ function getVoices() {
         googleTranslateTtsEngine.getVoices(),
         remoteTtsEngine.getVoices(),
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
-        settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
+        settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : [],
         ibmWatsonTtsEngine.getVoices(),
       ])
     })
