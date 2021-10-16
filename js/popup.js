@@ -1,7 +1,10 @@
 
-var showGotoPage;
+var queryString = getQueryString()
 
 $(function() {
+  if (queryString.isPopup) $("body").addClass("is-popup")
+  else getCurrentTab().then(function(currentTab) {return updateSettings({readAloudTab: currentTab.id})})
+
   $("#btnPlay").click(onPlay);
   $("#btnPause").click(onPause);
   $("#btnStop").click(onStop);
@@ -14,10 +17,28 @@ $(function() {
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
 
   updateButtons()
-    .then(bgPageInvoke.bind(null, "getPlaybackState"))
-    .then(function(state) {
-      if (state != "PLAYING") $("#btnPlay").click();
-    });
+    .then(getSettings.bind(null, ["showHighlighting", "readAloudTab"]))
+    .then(function(settings) {
+      if (settings.showHighlighting == 2 && queryString.isPopup) {
+        return getActiveTab()
+          .then(function(activeTab) {
+            var url = brapi.runtime.getURL("popup.html?tab=" + activeTab.id)
+            return (settings.readAloudTab ? Promise.resolve() : Promise.reject("No readAloudTab"))
+              .then(function() {return updateTab(settings.readAloudTab, {url: url, active: true})})
+              .then(function(tab) {return updateWindow(tab.windowId, {focused: true})})
+              .catch(function() {return createWindow({url: url, focused: true, type: "popup"})})
+          })
+          .then(window.close)
+      }
+      else if (queryString.tab) {
+        return bgPageInvoke("stop")
+          .then(function() {$("#btnPlay").click()})
+      }
+      else {
+        return bgPageInvoke("getPlaybackState")
+          .then(function(state) {if (state != "PLAYING") $("#btnPlay").click()})
+      }
+    })
   setInterval(updateButtons, 500);
 
   refreshSize();
@@ -122,7 +143,7 @@ function updateButtons() {
 
 function onPlay() {
   $("#status").hide();
-  bgPageInvoke("play")
+  (queryString.tab ? bgPageInvoke("playTab", [Number(queryString.tab)]) : bgPageInvoke("play"))
     .then(updateButtons)
     .catch(handleError)
 }
@@ -140,7 +161,7 @@ function onStop() {
 }
 
 function onSettings() {
-  location.href = "options.html?referer=popup.html";
+  location.href = "options.html?referer=" + encodeURIComponent(location.pathname + location.search);
 }
 
 function onForward() {
@@ -185,6 +206,8 @@ function refreshSize() {
       var windowSize = getWindowSize(settings);
       $("#highlight").css({
         "font-size": fontSize,
+      })
+      if (queryString.isPopup) $("#highlight").css({
         width: isMobileOS() ? "100%" : windowSize[0],
         height: windowSize[1]
       })
