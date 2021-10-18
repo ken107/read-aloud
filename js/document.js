@@ -34,6 +34,16 @@ function TabSource() {
       }
     },
 
+    // Reader mode --------------------------------------------------------------
+    {
+      match: function(url) {
+        return url.startsWith("about:reader?url=");
+      },
+      validate: function() {
+        throw new Error(JSON.stringify({code: "error_reader_mode"}));
+      }
+    },
+
     // PDF file:// --------------------------------------------------------------
     {
       match: function(url) {
