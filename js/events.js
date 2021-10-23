@@ -17,6 +17,7 @@ hasPermissions(config.gtranslatePerms)
  */
 var handlers = {
   playText: playText,
+  playTab: playTab,
   play: play,
   stop: stop,
   pause: pause,
@@ -134,14 +135,18 @@ function playText(text, onEnd) {
     })
 }
 
-function play(onEnd) {
-  if (!activeDoc) openDoc(new TabSource(), onEnd);
+function playTab(tabId, onEnd) {
+  if (!activeDoc) openDoc(new TabSource(tabId), onEnd);
   return activeDoc.play()
     .catch(function(err) {
       handleError(err);
       closeDoc();
       throw err;
     })
+}
+
+function play(onEnd) {
+  return playTab(null, onEnd)
 }
 
 function stop() {

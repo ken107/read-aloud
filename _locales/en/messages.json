@@ -47,6 +47,15 @@
   "options_show_highlighting": {
     "message": "Text Highlighting"
   },
+  "options_highlighting_off": {
+    "message": "Turn off"
+  },
+  "options_highlighting_popup": {
+    "message": "Show in popup"
+  },
+  "options_highlighting_window": {
+    "message": "Show in a separate window"
+  },
   "options_hotkeys_link": {
     "message": "Edit shortcut keys"
   },

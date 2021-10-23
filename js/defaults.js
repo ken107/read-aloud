@@ -442,6 +442,21 @@ function getActiveTab() {
   })
 }
 
+function getCurrentTab() {
+  return new Promise(function(fulfill, reject) {
+    brapi.tabs.getCurrent(function(tab) {
+      if (tab) fulfill(tab)
+      else reject(brapi.runtime.lastError || new Error("Could not get current tab"))
+    })
+  })
+}
+
+function getTab(tabId) {
+  return new Promise(function(fulfill) {
+    brapi.tabs.get(tabId, fulfill)
+  })
+}
+
 function setTabUrl(tabId, url) {
   return new Promise(function(fulfill) {
     brapi.tabs.update(tabId, {url: url}, fulfill);
@@ -460,6 +475,33 @@ function createTab(url, waitForLoad) {
           fulfill(tab);
         }
       }
+    })
+  })
+}
+
+function updateTab(tabId, details) {
+  return new Promise(function(fulfill, reject) {
+    brapi.tabs.update(tabId, details, function(tab) {
+      if (tab) fulfill(tab)
+      else reject(brapi.runtime.lastError || new Error("Could not update tab " + tabId))
+    })
+  })
+}
+
+function createWindow(details) {
+  return new Promise(function(fulfill, reject) {
+    brapi.windows.create(details, function(window) {
+      if (window) fulfill(window)
+      else reject(brapi.runtime.lastError || new Error("Could not create window"))
+    })
+  })
+}
+
+function updateWindow(windowId, details) {
+  return new Promise(function(fulfill, reject) {
+    brapi.windows.update(windowId, details, function(window) {
+      if (window) fulfill(window)
+      else reject(brapi.runtime.lastError || new Error("Could not update window " + windowId))
     })
   })
 }
