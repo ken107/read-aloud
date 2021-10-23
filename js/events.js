@@ -65,6 +65,11 @@ function installContextMenus() {
     title: brapi.i18n.getMessage("context_read_selection"),
     contexts: ["selection"]
   });
+  brapi.menus.create({
+    id: "options",
+    title: brapi.i18n.getMessage("options_heading"),
+    contexts: ["browser_action"]
+  })
 }
 
 brapi.menus.onClicked.addListener(function(info, tab) {
@@ -76,6 +81,8 @@ brapi.menus.onClicked.addListener(function(info, tab) {
         })
       })
       .catch(console.error)
+  else if (info.menuItemId == "options")
+    brapi.runtime.openOptionsPage()
 })
 
 
