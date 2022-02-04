@@ -214,10 +214,10 @@ function Speech(texts, options) {
 function WordBreaker(wordLimit, punctuator) {
   this.breakText = breakText;
   function breakText(text) {
-    return merge(punctuator.getParagraphs(text), breakParagraph);
+    return punctuator.getParagraphs(text).flatMap(breakParagraph)
   }
   function breakParagraph(text) {
-    return merge(punctuator.getSentences(text), breakSentence);
+    return punctuator.getSentences(text).flatMap(breakSentence)
   }
   function breakSentence(sentence) {
     return merge(punctuator.getPhrases(sentence), breakPhrase);
