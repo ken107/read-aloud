@@ -5,7 +5,7 @@ var readAloudDoc = new function() {
   this.getCurrentIndex = function() {
     var doc = $("[role=document]:visible").eq(0);
     viewport = doc.parent().get(0);
-    pages = doc.children().slice(doc.children().first().is("[role=button]") ? 2 : 1);
+    pages = doc.children();
     for (var i=0; i<pages.length; i++) if (pages.eq(i).position().top > viewport.scrollTop+$(viewport).height()/2) break;
     return i-1;
   }

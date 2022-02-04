@@ -20,7 +20,7 @@ function SimpleSource(texts) {
 }
 
 
-function TabSource() {
+function TabSource(tabId) {
   var handlers = [
     // Unsupported Sites --------------------------------------------------------
     {
@@ -256,7 +256,7 @@ function TabSource() {
   ]
 
 
-  var tabPromise = getActiveTab();
+  var tabPromise = tabId ? getTab(tabId) : getActiveTab();
   var tab, handler, frameId, peer;
   var waiting = true;
 
