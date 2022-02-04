@@ -6,15 +6,72 @@ function DummyReadAloudDoc() {
   var $popup = createPopup();
 
   this.getCurrentIndex = function() {
-    return 0;
+    return invoke({method: "ra-getCurrentIndex"})
   }
 
   this.getTexts = function(index) {
-    if (index == 0) {
-      showPopup();
-      return [$popup.data("message")];
-    }
-    else return null;
+    return invoke({method: "ra-getTexts", index: index})
+  }
+
+  function invoke(args) {
+    return waitAndInvoke(1200, args)
+    .catch(function(err) {
+      if (!/^Timeout/.test(err.message)) throw err
+      return new Promise(function(fulfill, reject) {
+        var menu = $(".goog-menuitem-content").filter(function() {
+          return $(this).text().startsWith("Read Aloud TTS")
+        })
+        if (!menu.length) reject(new Error("'Read Aloud TTS' addon not found"))
+        simulateClick(menu.get(0))
+        setTimeout(fulfill, 250)
+      })
+      .then(function() {
+        var menu = $(".goog-menuitem-content").filter(function() {
+          return $(this).text().startsWith("Open sidebar")
+        })
+        if (!menu.length) throw new Error("'Open sidebar' menu not found")
+        simulateClick(menu.get(0))
+        menu.parent().parent().hide()
+        return waitAndInvoke(7000, args)
+      })
+      .catch(function(err) {
+        showPopup()
+        throw err
+      })
+    })
+  }
+
+  function waitAndInvoke(waitDuration, args) {
+    return new Promise(function(fulfill, reject) {
+      var timeout = setTimeout(function() {
+        removeEventListener("message", onMessage)
+        reject(new Error("Timeout waiting for response from addon"))
+      }, waitDuration)
+      var onMessage = function(event) {
+        if (event.data.type == "ra-advertise") {
+          clearTimeout(timeout)
+          removeEventListener("message", onMessage)
+          fulfill(event.source)
+        }
+      }
+      addEventListener("message", onMessage)
+    })
+    .then(function(source) {
+      return new Promise(function(fulfill, reject) {
+        var req = Object.assign({}, args, {
+          id: String(Math.random())
+        })
+        source.postMessage(req, "*")
+        var onMessage = function(event) {
+          if (event.data.id == req.id) {
+            removeEventListener("message", onMessage)
+            if (event.data.error) reject(new Error(event.data.error))
+            else fulfill(event.data.value)
+          }
+        }
+        addEventListener("message", onMessage)
+      })
+    })
   }
 
   function showPopup() {
@@ -68,7 +125,7 @@ function DummyReadAloudDoc() {
         padding: "1em",
         borderRadius: ".5em",
       })
-    return $popup;
+    return $popup.hide();
   }
 
   function createSaveInstructionPopup() {
