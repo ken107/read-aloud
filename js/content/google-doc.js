@@ -4,6 +4,16 @@ var readAloudDoc = $(".kix-paragraphrenderer").length ? new ReadAloudDoc() : new
 
 function DummyReadAloudDoc() {
   var $popup = createPopup();
+  var cache = {expires: 0}
+
+  addEventListener("message", function(event) {
+    if (event.data.type == "ra-advertise") {
+      cache = {
+        source: event.source,
+        expires: Date.now() + 1250
+      }
+    }
+  })
 
   this.getCurrentIndex = function() {
     return invoke({method: "ra-getCurrentIndex"})
@@ -14,34 +24,51 @@ function DummyReadAloudDoc() {
   }
 
   function invoke(args) {
-    return waitAndInvoke(1200, args)
+    return Promise.resolve(cache.expires > Date.now() ? cache.source : getSource(7000))
+      .then(function(source) {
+        return new Promise(function(fulfill, reject) {
+          var req = Object.assign({}, args, {
+            id: String(Math.random())
+          })
+          source.postMessage(req, "*")
+          var onMessage = function(event) {
+            if (event.data.id == req.id) {
+              removeEventListener("message", onMessage)
+              if (event.data.error) reject(new Error(event.data.error))
+              else fulfill(event.data.value)
+            }
+          }
+          addEventListener("message", onMessage)
+        })
+      })
+  }
+
+  function getSource(waitDuration) {
+    console.log("Waiting for addon to advertise...")
+    return new Promise(function(fulfill, reject) {
+      var menu = $(".goog-menuitem-content").filter(function() {
+        return $(this).text().startsWith("Read Aloud TTS")
+      })
+      if (!menu.length) reject(new Error("'Read Aloud TTS' addon not found"))
+      simulateClick(menu.get(0))
+      setTimeout(fulfill, 250)
+    })
+    .then(function() {
+      var menu = $(".goog-menuitem-content").filter(function() {
+        return $(this).text().startsWith("Open sidebar")
+      })
+      if (!menu.length) throw new Error("'Open sidebar' menu not found")
+      simulateClick(menu.get(0))
+      menu.parent().parent().hide()
+      return waitForSource(waitDuration)
+    })
     .catch(function(err) {
-      if (!/^Timeout/.test(err.message)) throw err
-      return new Promise(function(fulfill, reject) {
-        var menu = $(".goog-menuitem-content").filter(function() {
-          return $(this).text().startsWith("Read Aloud TTS")
-        })
-        if (!menu.length) reject(new Error("'Read Aloud TTS' addon not found"))
-        simulateClick(menu.get(0))
-        setTimeout(fulfill, 250)
-      })
-      .then(function() {
-        var menu = $(".goog-menuitem-content").filter(function() {
-          return $(this).text().startsWith("Open sidebar")
-        })
-        if (!menu.length) throw new Error("'Open sidebar' menu not found")
-        simulateClick(menu.get(0))
-        menu.parent().parent().hide()
-        return waitAndInvoke(7000, args)
-      })
-      .catch(function(err) {
-        showPopup()
-        throw err
-      })
+      showPopup()
+      throw err
     })
   }
 
-  function waitAndInvoke(waitDuration, args) {
+  function waitForSource(waitDuration) {
     return new Promise(function(fulfill, reject) {
       var timeout = setTimeout(function() {
         removeEventListener("message", onMessage)
@@ -55,22 +82,6 @@ function DummyReadAloudDoc() {
         }
       }
       addEventListener("message", onMessage)
-    })
-    .then(function(source) {
-      return new Promise(function(fulfill, reject) {
-        var req = Object.assign({}, args, {
-          id: String(Math.random())
-        })
-        source.postMessage(req, "*")
-        var onMessage = function(event) {
-          if (event.data.id == req.id) {
-            removeEventListener("message", onMessage)
-            if (event.data.error) reject(new Error(event.data.error))
-            else fulfill(event.data.value)
-          }
-        }
-        addEventListener("message", onMessage)
-      })
     })
   }
 
