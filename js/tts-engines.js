@@ -833,7 +833,7 @@ function GoogleWavenetTtsEngine() {
             name: voiceName
           },
           audioConfig: {
-            audioEncoding: "mp3",
+            audioEncoding: "OGG_OPUS",
             pitch: (pitch-1)*20
           }
         }
@@ -847,7 +847,7 @@ function GoogleWavenetTtsEngine() {
       })
       .then(function(responseText) {
         var data = JSON.parse(responseText);
-        return "data:audio/mpeg;base64," + data.audioContent;
+        return "data:audio/ogg;codecs=opus;base64," + data.audioContent;
       })
   }
   var voices = [
@@ -1126,7 +1126,7 @@ function IbmWatsonTtsEngine() {
     return getSettings(["ibmCreds"])
       .then(function(settings) {
         return ajaxGet({
-          url: settings.ibmCreds.url + "/v1/synthesize?text=" + encodeURIComponent(escapeHtml(text)) + "&voice=" + encodeURIComponent(voiceName) + "&accept=" + encodeURIComponent("audio/mpeg"),
+          url: settings.ibmCreds.url + "/v1/synthesize?text=" + encodeURIComponent(escapeHtml(text)) + "&voice=" + encodeURIComponent(voiceName) + "&accept=" + encodeURIComponent("audio/ogg;codecs=opus"),
           headers: {
             Authorization: "Basic " + btoa("apikey:" + settings.ibmCreds.apiKey)
           },
