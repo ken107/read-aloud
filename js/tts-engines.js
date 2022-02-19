@@ -613,7 +613,7 @@ function AmazonPollyTtsEngine() {
     switch (style) {
       case "newscaster":
         return {
-          OutputFormat: "mp3",
+          OutputFormat: "ogg_vorbis",
           Text: '<speak><amazon:domain name="news">' + escapeXml(text) + '</amazon:domain></speak>',
           TextType: "ssml",
           VoiceId: voiceId,
@@ -621,7 +621,7 @@ function AmazonPollyTtsEngine() {
         }
       case "conversational":
         return {
-          OutputFormat: "mp3",
+          OutputFormat: "ogg_vorbis",
           Text: '<speak><amazon:domain name="conversational">' + escapeXml(text) + '</amazon:domain></speak>',
           TextType: "ssml",
           VoiceId: voiceId,
@@ -629,14 +629,14 @@ function AmazonPollyTtsEngine() {
         }
       case "neural":
         return {
-          OutputFormat: "mp3",
+          OutputFormat: "ogg_vorbis",
           Text: text,
           VoiceId: voiceId,
           Engine: "neural"
         }
       default:
         return {
-          OutputFormat: "mp3",
+          OutputFormat: "ogg_vorbis",
           Text: text,
           VoiceId: voiceId
         }
