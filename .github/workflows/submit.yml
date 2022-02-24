@@ -1,0 +1,19 @@
+name: Submit
+
+on:
+  workflow_dispatch:
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Sync Page
+        run: npm run sync-page-scripts
+      - name: Package the archive
+        run: npm run package
+      - name: Browser Plugin Publish
+        uses: plasmo-corp/bpp@v1
+        with:
+          artifact: build/package.zip
+          keys: ${{ secrets.SUBMIT_KEYS }}
