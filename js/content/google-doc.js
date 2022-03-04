@@ -17,7 +17,7 @@ function DummyReadAloudDoc() {
         }
       }
       window.addEventListener("message", listener)
-      loadPageScript(brapi.runtime.getURL("page-scripts/google-doc.js"))
+      loadPageScript(brapi.runtime.getURL("js/page/google-doc.js"))
     })
     .then(function(text) {
       return text.split(/\s*\r?\n\s*/)
