@@ -125,13 +125,16 @@ function DummyTtsEngine() {
 function TimeoutTtsEngine(baseEngine, timeoutMillis) {
   var timer;
   this.speak = function(text, options, onEvent) {
+    var started = false;
     clearTimeout(timer);
     timer = setTimeout(function() {
       baseEngine.stop();
-      onEvent({type: "end", charIndex: text.length});
+      if (started) onEvent({type: "end", charIndex: text.length});
+      else onEvent({type: "error", errorMessage: "Timeout, TTS never started, try picking another voice?"});
     },
     timeoutMillis);
     baseEngine.speak(text, options, function(event) {
+        if (event.type == "start") started = true;
         if (event.type == "end" || event.type == "error") clearTimeout(timer);
         onEvent(event);
     })
