@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.53.1",
+  "version": "1.54.0",
   "default_locale": "en",
 
   "browser_action": {
@@ -63,6 +63,13 @@
     "page": "options.html",
     "chrome_style": false
   },
+  "content_scripts": [
+    {
+      "matches": ["https://docs.google.com/document/d/*"],
+      "js": ["js/content/google-doc-force-html.js"],
+      "run_at": "document_start"
+    }
+  ],
   "commands": {
     "play": {
       "suggested_key": {"default": "Alt+P"},
