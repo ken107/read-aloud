@@ -83,6 +83,30 @@ function TabSource(tabId) {
       extraScripts: ["js/content/google-play-book.js"]
     },
 
+    // OneDrive Doc -----------------------------------------------------------
+    {
+      match: function(url) {
+        return url.startsWith("https://onedrive.live.com/edit.aspx") && url.includes("docx");
+      },
+      validate: function() {
+        var perms = {
+          permissions: ["webNavigation"],
+          origins: ["https://word-edit.officeapps.live.com/"]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
+          })
+      },
+      getFrameId: function(frames) {
+        var frame = frames.find(function(frame) {
+          return frame.url.startsWith("https://word-edit.officeapps.live.com/");
+        })
+        return frame && frame.frameId;
+      },
+      extraScripts: ["js/content/onedrive-doc.js"]
+    },
+
     // Chegg NEW --------------------------------------------------------------
     {
       match: function(url) {
