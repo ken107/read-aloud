@@ -94,6 +94,30 @@ function TabSource(tabId) {
       extraScripts: ["js/content/google-play-book.js"]
     },
 
+    // OneDrive Doc -----------------------------------------------------------
+    {
+      match: function(url) {
+        return url.startsWith("https://onedrive.live.com/edit.aspx") && url.includes("docx");
+      },
+      validate: function() {
+        var perms = {
+          permissions: ["webNavigation"],
+          origins: ["https://word-edit.officeapps.live.com/"]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
+          })
+      },
+      getFrameId: function(frames) {
+        var frame = frames.find(function(frame) {
+          return frame.url.startsWith("https://word-edit.officeapps.live.com/");
+        })
+        return frame && frame.frameId;
+      },
+      extraScripts: ["js/content/onedrive-doc.js"]
+    },
+
     // Chegg NEW --------------------------------------------------------------
     {
       match: function(url) {
@@ -254,32 +278,6 @@ function TabSource(tabId) {
         return frame && frame.frameId
       },
       extraScripts: ["js/content/libbyapp.js"]
-    },
-
-    // Google Docs ---------------------------------------------------------------
-    {
-      match: function(url) {
-        this.url = url
-        return url.startsWith("https://docs.google.com/document/d/") && url.indexOf("mode=html") == -1
-      },
-      validate: function() {
-        var hasQuery = this.url.indexOf("?") != -1
-        var redirectUrl = this.url.indexOf("#") != -1
-          ? this.url.replace("#", hasQuery ? "&mode=html#" : "?mode=html#")
-          : this.url + (hasQuery ? "&mode=html" : "?mode=html")
-        return updateTab(tabId, {url: redirectUrl})
-          .then(function(tab) {
-            return new Promise(function(fulfill) {
-              var listener = function(tabId, info) {
-                if (tabId == tab.id && info.status === 'complete') {
-                  brapi.tabs.onUpdated.removeListener(listener)
-                  fulfill()
-                }
-              }
-              brapi.tabs.onUpdated.addListener(listener)
-            })
-          })
-      }
     },
 
     // default -------------------------------------------------------------------

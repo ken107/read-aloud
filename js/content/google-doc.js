@@ -3,6 +3,29 @@ var readAloudDoc = $(".kix-paragraphrenderer").length ? new ReadAloudDoc() : new
 
 
 function DummyReadAloudDoc() {
+  var addonFailed = false
+  var altTextsPromise
+
+  function altGetTexts() {
+    if (altTextsPromise) return altTextsPromise
+    return altTextsPromise = new Promise(function(fulfill, reject) {
+      var listener = function(event) {
+        if (event.data.type == "ReadAloudText") {
+          window.removeEventListener("message", listener)
+          if (event.data.error) reject(new Error(event.data.error))
+          else fulfill(event.data.text)
+        }
+      }
+      window.addEventListener("message", listener)
+      loadPageScript(brapi.runtime.getURL("js/page/google-doc.js"))
+    })
+    .then(function(text) {
+      return text.split(/\s*\r?\n\s*/)
+    })
+  }
+
+
+
   var $popup = createPopup();
   var cache = {expires: 0}
 
@@ -17,9 +40,30 @@ function DummyReadAloudDoc() {
 
   this.getCurrentIndex = function() {
     return invoke({method: "ra-getCurrentIndex"})
+      .then(function(result) {
+        addonFailed = false
+        return result
+      })
+      .catch(function(err) {
+        addonFailed = true
+        return altGetTexts()
+          .then(function(texts) {
+            $popup.hide()
+            return 0
+          })
+          .catch(function() {
+            throw err
+          })
+      })
   }
 
   this.getTexts = function(index) {
+    if (addonFailed) {
+      return altGetTexts()
+        .then(function(texts) {
+          return index == 0 ? texts : null
+        })
+    }
     return invoke({method: "ra-getTexts", index: index})
   }
 
