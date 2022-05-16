@@ -20,6 +20,7 @@ function DummyReadAloudDoc() {
       loadPageScript(brapi.runtime.getURL("js/page/google-doc.js"))
     })
     .then(function(text) {
+      altTextsPromise = null
       return text.split(/\s*\r?\n\s*/)
     })
   }
