@@ -80,6 +80,14 @@
         return trimHeaderFooter(texts, index)
       })
       .then(fixParagraphs)
+      .then(removeAnnotations)
+  }
+
+  function removeAnnotations(texts) {
+    return texts.map(function(text) {
+      return text
+        .replace(/\s*\[[\d,\u2013-]+\]/g, "")
+    })
   }
 
   function fixParagraphs(texts) {
@@ -94,10 +102,10 @@
         continue;
       }
       if (para) {
-        if (/-$/.test(para)) para = para.substr(0, para.length-1);
+        if (/[-\u2013\u2014]$/.test(para)) para = para.substr(0, para.length-1);
         else para += " ";
       }
-      para += texts[i].replace(/-\r?\n/g, "");
+      para += texts[i].replace(/[-\u2013\u2014]\r?\n/g, "");
       if (texts[i].match(/[.!?:)"'\u2019\u201d]$/)) {
         out.push(para);
         para = "";
