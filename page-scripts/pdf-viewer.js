@@ -58,12 +58,15 @@
     var pdf = PDFViewerApplication.pdfDocument;
     if (index < pdf.numPages) {
       if (!quietly) PDFViewerApplication.pdfViewer.currentPageNumber = index+1;
-      return pdf.getPage(index+1).then(getPageTexts)
+      return pdf.getPage(index+1)
+        .then(function(page) {
+          return getPageTexts(page, index)
+        })
     }
     else return Promise.resolve(null);
   }
 
-  function getPageTexts(page) {
+  function getPageTexts(page, index) {
     return page.getTextContent()
       .then(function(content) {
         var lines = [];
@@ -72,6 +75,9 @@
           lines[lines.length-1] += content.items[i].str;
         }
         return lines.map(function(line) {return line.trim()});
+      })
+      .then(function(texts) {
+        return trimHeaderFooter(texts, index)
       })
       .then(fixParagraphs)
   }
@@ -100,6 +106,34 @@
     if (para) out.push(para);
     return out;
   }
+
+  var trimHeaderFooter = (function() {
+    var prevs = []
+    return function(texts, ref) {
+      var trim = prevs
+        .filter(function(prev) {
+          return prev.ref != ref
+        })
+        .map(function(prev) {
+          var head = 0, tail = 0
+          while (head < Math.min(prev.texts.length, texts.length) && leven(prev.texts[head], texts[head]) <= 3) head++
+          while (tail < Math.min(prev.texts.length, texts.length) && leven(prev.texts[prev.texts.length-1-tail], texts[texts.length-1-tail]) <= 3) tail++
+          return {head: head, tail: tail}
+        })
+        .filter(function(trim) {
+          return trim.head || trim.tail
+        })
+        .reduce(function(biggest, trim) {
+          return biggest && (biggest.head + biggest.tail >= trim.head + trim.tail) ? biggest : trim
+        }, null)
+
+      if (prevs.every(function(x) {return x.ref != ref})) {
+        prevs.push({texts: texts, ref: ref})
+        if (prevs.length > 3) prevs.shift()
+      }
+      return trim ? texts.slice(trim.head, trim.tail ? -trim.tail : undefined) : texts
+    }
+  })();
 
 
   /**
@@ -297,4 +331,109 @@
       return this;
     }
   }
+
+  //https://github.com/gustf/js-levenshtein
+  var leven = (function()
+  {
+    function _min(d0, d1, d2, bx, ay)
+    {
+      return d0 < d1 || d2 < d1
+          ? d0 > d2
+              ? d2 + 1
+              : d0 + 1
+          : bx === ay
+              ? d1
+              : d1 + 1;
+    }
+
+    return function(a, b)
+    {
+      if (a === b) {
+        return 0;
+      }
+
+      if (a.length > b.length) {
+        var tmp = a;
+        a = b;
+        b = tmp;
+      }
+
+      var la = a.length;
+      var lb = b.length;
+
+      while (la > 0 && (a.charCodeAt(la - 1) === b.charCodeAt(lb - 1))) {
+        la--;
+        lb--;
+      }
+
+      var offset = 0;
+
+      while (offset < la && (a.charCodeAt(offset) === b.charCodeAt(offset))) {
+        offset++;
+      }
+
+      la -= offset;
+      lb -= offset;
+
+      if (la === 0 || lb < 3) {
+        return lb;
+      }
+
+      var x = 0;
+      var y;
+      var d0;
+      var d1;
+      var d2;
+      var d3;
+      var dd;
+      var dy;
+      var ay;
+      var bx0;
+      var bx1;
+      var bx2;
+      var bx3;
+
+      var vector = [];
+
+      for (y = 0; y < la; y++) {
+        vector.push(y + 1);
+        vector.push(a.charCodeAt(offset + y));
+      }
+
+      var len = vector.length - 1;
+
+      for (; x < lb - 3;) {
+        bx0 = b.charCodeAt(offset + (d0 = x));
+        bx1 = b.charCodeAt(offset + (d1 = x + 1));
+        bx2 = b.charCodeAt(offset + (d2 = x + 2));
+        bx3 = b.charCodeAt(offset + (d3 = x + 3));
+        dd = (x += 4);
+        for (y = 0; y < len; y += 2) {
+          dy = vector[y];
+          ay = vector[y + 1];
+          d0 = _min(dy, d0, d1, bx0, ay);
+          d1 = _min(d0, d1, d2, bx1, ay);
+          d2 = _min(d1, d2, d3, bx2, ay);
+          dd = _min(d2, d3, dd, bx3, ay);
+          vector[y] = dd;
+          d3 = d2;
+          d2 = d1;
+          d1 = d0;
+          d0 = dy;
+        }
+      }
+
+      for (; x < lb;) {
+        bx0 = b.charCodeAt(offset + (d0 = x));
+        dd = ++x;
+        for (y = 0; y < len; y += 2) {
+          dy = vector[y];
+          vector[y] = dd = _min(dy, d0, dd, bx0, vector[y + 1]);
+          d0 = dy;
+        }
+      }
+
+      return dd;
+    };
+  })();
 })()
