@@ -79,10 +79,10 @@ Read Aloud allows you to select from a variety of text-to-speech voices, includi
 ### Shortcuts
 
 ```yaml
-ALT-P           : Play/Pause
-ALT-O           : Stop
-ALT-Comma       : Rewind
-ALT-Period      : Forward
+ALT/Option + P           : Play/Pause
+ALT/Option + O           : Stop
+ALT/Option + Comma       : Rewind
+ALT/Option + Period      : Forward
 ```
 
 ### Customization
