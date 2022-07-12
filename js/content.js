@@ -51,6 +51,7 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
     else if (location.hostname == "digital.wwnorton.com") return ["js/content/html-doc.js", "js/content/wwnorton.js"];
     else if (location.hostname == "plus.pearson.com") return ["js/content/html-doc.js", "js/content/pearson.js"];
     else if (location.hostname == "www.ixl.com") return ["js/content/ixl.js"];
+    else if (location.hostname == "www.webnovel.com" && location.pathname.startsWith("/book/")) return ["js/content/webnovel.js"];
     else if (location.pathname.match(/pdf-upload\.html$/)
       || location.pathname.match(/\.pdf$/)
       || $("embed[type='application/pdf']").length
