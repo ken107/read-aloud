@@ -138,7 +138,7 @@ function TabSource(tabId) {
     {
       match: function(url) {
         return /^https:\/\/\w+\.vitalsource\.com\/(#|reader)\/books\//.test(url) ||
-          /^https:\/\/\w+\.chegg\.com\/#\/books\//.test(url)
+          /^https:\/\/\w+\.chegg\.com\/(#|reader)\/books\//.test(url)
       },
       validate: function() {
         var perms = {
