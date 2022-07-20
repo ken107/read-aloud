@@ -8,7 +8,17 @@ function initialize(voices, settings) {
 
   //create checkboxes
   var langs = voices.groupBy(function(voice) {
-    return voice.lang ? voice.lang.split('-',1)[0] : "<any>";
+    if (voice.lang) {
+      var code = voice.lang.split('-',1)[0]
+      var alias = {
+        yue: "zh",
+        cmn: "zh",
+      }
+      return alias[code] || code
+    }
+    else {
+      return "<any>"
+    }
   })
   createCheckboxes(langs);
 

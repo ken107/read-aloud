@@ -30,7 +30,6 @@ var brapi = browser;
   function getLang() {
     var lang = document.documentElement.lang || $("html").attr("xml:lang");
     if (lang) lang = lang.split(",",1)[0].replace(/_/g, '-');
-    if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return lang;
   }
 
@@ -52,6 +51,7 @@ var brapi = browser;
     else if (location.hostname == "digital.wwnorton.com") return ["js/content/html-doc.js", "js/content/wwnorton.js"];
     else if (location.hostname == "plus.pearson.com") return ["js/content/html-doc.js", "js/content/pearson.js"];
     else if (location.hostname == "www.ixl.com") return ["js/content/ixl.js"];
+    else if (location.hostname == "www.webnovel.com" && location.pathname.startsWith("/book/")) return ["js/content/webnovel.js"];
     else if (location.pathname.match(/pdf-upload\.html$/)
       || location.pathname.match(/\.pdf$/)
       || $("embed[type='application/pdf']").length
@@ -116,10 +116,10 @@ function fixParagraphs(texts) {
       continue;
     }
     if (para) {
-      if (/-$/.test(para)) para = para.substr(0, para.length-1);
+      if (/[-\u2013\u2014]$/.test(para)) para = para.substr(0, para.length-1);
       else para += " ";
     }
-    para += texts[i].replace(/-\r?\n/g, "");
+    para += texts[i].replace(/[-\u2013\u2014]\r?\n/g, "");
     if (texts[i].match(/[.!?:)"'\u2019\u201d]$/)) {
       out.push(para);
       para = "";
