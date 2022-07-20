@@ -1,6 +1,9 @@
 
-function SimpleSource(texts) {
-  this.ready = Promise.resolve({});
+function SimpleSource(texts, opts) {
+  opts = opts || {}
+  this.ready = Promise.resolve({
+    detectedLang: opts.lang,
+  })
   this.isWaiting = function() {
     return false;
   }
@@ -83,6 +86,30 @@ function TabSource(tabId) {
       extraScripts: ["js/content/google-play-book.js"]
     },
 
+    // OneDrive Doc -----------------------------------------------------------
+    {
+      match: function(url) {
+        return url.startsWith("https://onedrive.live.com/edit.aspx") && url.includes("docx");
+      },
+      validate: function() {
+        var perms = {
+          permissions: ["webNavigation"],
+          origins: ["https://word-edit.officeapps.live.com/"]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
+          })
+      },
+      getFrameId: function(frames) {
+        var frame = frames.find(function(frame) {
+          return frame.url.startsWith("https://word-edit.officeapps.live.com/");
+        })
+        return frame && frame.frameId;
+      },
+      extraScripts: ["js/content/onedrive-doc.js"]
+    },
+
     // Chegg NEW --------------------------------------------------------------
     {
       match: function(url) {
@@ -111,7 +138,7 @@ function TabSource(tabId) {
     {
       match: function(url) {
         return /^https:\/\/\w+\.vitalsource\.com\/(#|reader)\/books\//.test(url) ||
-          /^https:\/\/\w+\.chegg\.com\/#\/books\//.test(url)
+          /^https:\/\/\w+\.chegg\.com\/(#|reader)\/books\//.test(url)
       },
       validate: function() {
         var perms = {
@@ -245,32 +272,6 @@ function TabSource(tabId) {
       extraScripts: ["js/content/libbyapp.js"]
     },
 
-    // Google Docs ---------------------------------------------------------------
-    {
-      match: function(url) {
-        this.url = url
-        return url.startsWith("https://docs.google.com/document/d/") && url.indexOf("mode=html") == -1
-      },
-      validate: function() {
-        var hasQuery = this.url.indexOf("?") != -1
-        var redirectUrl = this.url.indexOf("#") != -1
-          ? this.url.replace("#", hasQuery ? "&mode=html#" : "?mode=html#")
-          : this.url + (hasQuery ? "&mode=html" : "?mode=html")
-        return updateTab(tabId, {url: redirectUrl})
-          .then(function(tab) {
-            return new Promise(function(fulfill) {
-              var listener = function(tabId, info) {
-                if (tabId == tab.id && info.status === 'complete') {
-                  brapi.tabs.onUpdated.removeListener(listener)
-                  fulfill()
-                }
-              }
-              brapi.tabs.onUpdated.addListener(listener)
-            })
-          })
-      }
-    },
-
     // default -------------------------------------------------------------------
     {
       match: function() {
@@ -318,6 +319,16 @@ function TabSource(tabId) {
         var tasks = info.requireJs.map(function(file) {return inject.bind(null, file)});
         return inSequence(tasks);
       }
+    }))
+    .then(extraAction(function(info) {
+      console.log("Declared", info.lang)
+      return detectTabLanguage(tab.id)
+        .then(function(lang) {
+          if (lang) {
+            console.log("Detected", lang, "(tab)")
+            info.detectedLang = lang
+          }
+        })
     }))
     .finally(function() {
       waiting = false;
@@ -455,7 +466,7 @@ function Doc(source, onEnd) {
           if (info.detectedLang == null)
             return detectLanguage(texts)
               .then(function(lang) {
-                console.log("Detected", lang);
+                console.log("Detected", lang, "(text)");
                 info.detectedLang = lang || "";
               })
         })
@@ -510,9 +521,12 @@ function Doc(source, onEnd) {
   }
 
   function detectLanguageOf(text) {
-    if (text.length < 50) {
-      //don't detect language if too little text
-      return Promise.resolve(null);
+    if (text.length < 100) {
+      //too little text, use cloud detection for improved accuracy
+      return serverDetectLanguage(text)
+        .then(function(result) {
+          return result || browserDetectLanguage(text)
+        })
     }
     return browserDetectLanguage(text)
       .then(function(result) {
@@ -535,18 +549,27 @@ function Doc(source, onEnd) {
         return null;
       }
     })
+    .catch(function(err) {
+      console.error(err)
+      return null
+    })
   }
 
   function serverDetectLanguage(text) {
       return ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
         .then(JSON.parse)
         .then(function(list) {return list[0] && list[0].language})
+        .catch(function(err) {
+          console.error(err)
+          return null
+        })
   }
 
   function getSpeech(texts) {
     return getSettings()
       .then(function(settings) {
         var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
+        console.log("Chosen", lang)
         var options = {
           rate: settings.rate || defaults.rate,
           pitch: settings.pitch || defaults.pitch,

@@ -13,8 +13,8 @@ else {
 
 
 function ReadAloudDoc() {
-  var btnNext = $(".next-button").get(0) || $(".jwUdzW").get(1);
-  var btnPrev = $(".previous-button").get(0) || $(".jwUdzW").get(0);
+  var btnNext = $(".next-button").get(0) || $("[aria-label=Next]").get(0) || $("[role=slider]").parent().find("button").get(1);
+  var btnPrev = $(".previous-button").get(0) || $("[aria-label=Previous]").get(0) || $("[role=slider]").parent().find("button").get(0);
   var currentIndex = 0;
 
   this.getCurrentIndex = function() {
