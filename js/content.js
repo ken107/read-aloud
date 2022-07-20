@@ -29,7 +29,6 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
   function getLang() {
     var lang = document.documentElement.lang || $("html").attr("xml:lang");
     if (lang) lang = lang.split(",",1)[0].replace(/_/g, '-');
-    if (lang == "en" || lang == "en-US") lang = null;    //foreign language pages often erronenously declare lang="en"
     return lang;
   }
 

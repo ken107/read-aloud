@@ -1,6 +1,9 @@
 
-function SimpleSource(texts) {
-  this.ready = Promise.resolve({});
+function SimpleSource(texts, opts) {
+  opts = opts || {}
+  this.ready = Promise.resolve({
+    detectedLang: opts.lang,
+  })
   this.isWaiting = function() {
     return false;
   }
@@ -317,6 +320,16 @@ function TabSource(tabId) {
         return inSequence(tasks);
       }
     }))
+    .then(extraAction(function(info) {
+      console.log("Declared", info.lang)
+      return detectTabLanguage(tab.id)
+        .then(function(lang) {
+          if (lang) {
+            console.log("Detected", lang, "(tab)")
+            info.detectedLang = lang
+          }
+        })
+    }))
     .finally(function() {
       waiting = false;
     })
@@ -453,7 +466,7 @@ function Doc(source, onEnd) {
           if (info.detectedLang == null)
             return detectLanguage(texts)
               .then(function(lang) {
-                console.log("Detected", lang);
+                console.log("Detected", lang, "(text)");
                 info.detectedLang = lang || "";
               })
         })
@@ -508,9 +521,12 @@ function Doc(source, onEnd) {
   }
 
   function detectLanguageOf(text) {
-    if (text.length < 50) {
-      //don't detect language if too little text
-      return Promise.resolve(null);
+    if (text.length < 100) {
+      //too little text, use cloud detection for improved accuracy
+      return serverDetectLanguage(text)
+        .then(function(result) {
+          return result || browserDetectLanguage(text)
+        })
     }
     return browserDetectLanguage(text)
       .then(function(result) {
@@ -533,18 +549,27 @@ function Doc(source, onEnd) {
         return null;
       }
     })
+    .catch(function(err) {
+      console.error(err)
+      return null
+    })
   }
 
   function serverDetectLanguage(text) {
       return ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
         .then(JSON.parse)
         .then(function(list) {return list[0] && list[0].language})
+        .catch(function(err) {
+          console.error(err)
+          return null
+        })
   }
 
   function getSpeech(texts) {
     return getSettings()
       .then(function(settings) {
         var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
+        console.log("Chosen", lang)
         var options = {
           rate: settings.rate || defaults.rate,
           pitch: settings.pitch || defaults.pitch,
