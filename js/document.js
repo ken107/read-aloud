@@ -1,9 +1,6 @@
 
-function SimpleSource(texts, opts) {
-  opts = opts || {}
-  this.ready = Promise.resolve({
-    detectedLang: opts.lang,
-  })
+function SimpleSource(texts) {
+  this.ready = Promise.resolve({});
   this.isWaiting = function() {
     return false;
   }
@@ -315,20 +312,11 @@ function TabSource(tabId) {
         })
     })
     .then(extraAction(function(info) {
+      console.log("Declared", info.lang)
       if (info.requireJs) {
         var tasks = info.requireJs.map(function(file) {return inject.bind(null, file)});
         return inSequence(tasks);
       }
-    }))
-    .then(extraAction(function(info) {
-      console.log("Declared", info.lang)
-      return detectTabLanguage(tab.id)
-        .then(function(lang) {
-          if (lang) {
-            console.log("Detected", lang, "(tab)")
-            info.detectedLang = lang
-          }
-        })
     }))
     .finally(function() {
       waiting = false;
@@ -466,7 +454,7 @@ function Doc(source, onEnd) {
           if (info.detectedLang == null)
             return detectLanguage(texts)
               .then(function(lang) {
-                console.log("Detected", lang, "(text)");
+                console.log("Detected", lang);
                 info.detectedLang = lang || "";
               })
         })
@@ -548,10 +536,6 @@ function Doc(source, onEnd) {
       else {
         return null;
       }
-    })
-    .catch(function(err) {
-      console.error(err)
-      return null
     })
   }
 
