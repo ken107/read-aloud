@@ -542,7 +542,11 @@ function Doc(source, onEnd) {
   function serverDetectLanguage(text) {
       return ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
         .then(JSON.parse)
-        .then(function(list) {return list[0] && list[0].language})
+        .then(function(res) {
+          var result = Array.isArray(res) ? res[0] : res
+          if (result && result.language && result.language != "und") return result.language
+          else return null
+        })
         .catch(function(err) {
           console.error(err)
           return null
