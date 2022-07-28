@@ -1030,3 +1030,17 @@ function bgPageInvoke(method, args) {
     })
   })
 }
+
+function detectTabLanguage(tabId) {
+  return new Promise(function(fulfill) {
+    brapi.tabs.detectLanguage(tabId, fulfill)
+  })
+  .then(function(lang) {
+    if (lang == "und") return undefined
+    return lang
+  })
+  .catch(function(err) {
+    console.error(err)
+    return undefined
+  })
+}

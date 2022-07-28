@@ -1,6 +1,9 @@
 
-function SimpleSource(texts) {
-  this.ready = Promise.resolve({});
+function SimpleSource(texts, opts) {
+  opts = opts || {}
+  this.ready = Promise.resolve({
+    lang: opts.lang,
+  })
   this.isWaiting = function() {
     return false;
   }
@@ -312,7 +315,6 @@ function TabSource(tabId) {
         })
     })
     .then(extraAction(function(info) {
-      console.log("Declared", info.lang)
       if (info.requireJs) {
         var tasks = info.requireJs.map(function(file) {return inject.bind(null, file)});
         return inSequence(tasks);
@@ -454,7 +456,6 @@ function Doc(source, onEnd) {
           if (info.detectedLang == null)
             return detectLanguage(texts)
               .then(function(lang) {
-                console.log("Detected", lang);
                 info.detectedLang = lang || "";
               })
         })
@@ -515,6 +516,10 @@ function Doc(source, onEnd) {
         .then(function(result) {
           return result || browserDetectLanguage(text)
         })
+        .then(function(lang) {
+          //exclude commonly misdetected languages
+          return ["cy", "eo"].includes(lang) ? null : lang
+        })
     }
     return browserDetectLanguage(text)
       .then(function(result) {
@@ -556,6 +561,8 @@ function Doc(source, onEnd) {
   function getSpeech(texts) {
     return getSettings()
       .then(function(settings) {
+        console.log("Declared", info.lang)
+        console.log("Detected", info.detectedLang)
         var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
         console.log("Chosen", lang)
         var options = {

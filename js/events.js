@@ -68,8 +68,15 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection")
     stop()
       .then(function() {
-        return playText(info.selectionText, function(err) {
-          if (err) console.error(err);
+        if (tab && tab.id != -1) return detectTabLanguage(tab.id)
+        else return undefined
+      })
+      .then(function(lang) {
+        return playText(info.selectionText, {
+          lang: lang,
+          onEnd: function(err) {
+            if (err) console.error(err);
+          }
         })
       })
       .catch(console.error)
@@ -122,8 +129,9 @@ if (brapi.ttsEngine) (function() {
 /**
  * METHODS
  */
-function playText(text, onEnd) {
-  if (!activeDoc) openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), onEnd);
+function playText(text, opts) {
+  opts = opts || {}
+  if (!activeDoc) openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/), {lang: opts.lang}), opts.onEnd);
   return activeDoc.play()
     .catch(function(err) {
       handleError(err);
