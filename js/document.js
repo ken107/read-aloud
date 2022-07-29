@@ -193,6 +193,28 @@ function TabSource(tabId) {
       }
     },
 
+    // Acrobat Reader -----------------------------------------------------------
+    {
+      match: function(url) {
+        return url.startsWith(config.acrobatExtensionUrl)
+      },
+      validate: function(tab) {
+        var pdfUrl = tab.url.slice(config.acrobatExtensionUrl.length)
+        var viewerUrl = brapi.runtime.getURL("js/page/pdf-upload.html") + "?url=" + encodeURIComponent(pdfUrl)
+        var perms = {
+          origins: [pdfUrl, config.pdfViewerUrl]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
+          })
+          .then(function() {
+            return updateTab(tab.id, {url: viewerUrl, active: true})
+              .then(waitTabLoaded.bind(null, tab.id))
+          })
+      }
+    },
+
     // EPUBReader ---------------------------------------------------------------
     {
       match: function(url) {
@@ -292,7 +314,7 @@ function TabSource(tabId) {
       if (!res) throw new Error(JSON.stringify({code: "error_page_unreadable"}));
       tab = res;
       handler = handlers.find(function(h) {return h.match(tab.url || "")});
-      return handler.validate();
+      return handler.validate(tab);
     })
     .then(function() {
       if (handler.getFrameId)

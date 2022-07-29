@@ -23,6 +23,7 @@ var config = {
     'https://chrome.google.com/webstore',
     'https://addons.mozilla.org',
   ],
+  acrobatExtensionUrl: "chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/",
   wavenetPerms: {
     permissions: ["webRequest"],
     origins: ["https://*/"]
@@ -475,6 +476,17 @@ function createTab(url, waitForLoad) {
   })
 }
 
+function waitTabLoaded(tabId) {
+  return new Promise(function(fulfill) {
+    brapi.tabs.onUpdated.addListener(function listener(id, changeInfo) {
+      if (changeInfo.status == "complete" && id == tabId) {
+        brapi.tabs.onUpdated.removeListener(listener)
+        fulfill()
+      }
+    })
+  })
+}
+
 function updateTab(tabId, details) {
   return new Promise(function(fulfill, reject) {
     brapi.tabs.update(tabId, details, function(tab) {
@@ -869,8 +881,11 @@ function StateMachine(states) {
 }
 
 function requestPermissions(perms) {
-  return new Promise(function(fulfill) {
-    brapi.permissions.request(perms, fulfill);
+  return new Promise(function(fulfill, reject) {
+    brapi.permissions.request(perms, function(granted) {
+      if (brapi.runtime.lastError) reject(brapi.runtime.lastError)
+      else fulfill(granted)
+    })
   })
 }
 

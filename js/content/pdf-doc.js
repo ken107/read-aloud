@@ -2,7 +2,10 @@
 var readAloudDoc = new function() {
   var queue = new EventQueue("PdfDoc");
   var ready = location.pathname.match(/pdf-upload\.html$/)
-    ? Promise.resolve()
+    ? new Promise(function(fulfill) {
+          queue.trigger("waitDocumentReady")
+          queue.once("documentReady", fulfill)
+        })
     : Promise.resolve()
         .then(function() {
           var url = location.href

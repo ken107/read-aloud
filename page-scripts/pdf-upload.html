@@ -7,7 +7,18 @@
       var queue = new EventQueue("PdfDoc");
 
       queue.once("pageScriptLoaded", function() {
-        queue.trigger("loadDocument", "file:///");
+        var queryString = getQueryString()
+        queue.trigger("loadDocument", queryString.url || "file:///")
+      })
+
+      var documentReady = new Promise(function(fulfill) {
+        queue.once("documentLoaded", fulfill)
+      })
+
+      queue.on("waitDocumentReady", function() {
+        documentReady.then(function() {
+          queue.trigger("documentReady")
+        })
       })
 
       function EventQueue(prefix) {
@@ -30,6 +41,20 @@
           document.dispatchEvent(new CustomEvent(prefix+eventType, {detail: JSON.stringify(args)}));
           return this;
         }
+      }
+
+      function getQueryString() {
+        return location.search ? parseQueryString(location.search) : {};
+      }
+
+      function parseQueryString(search) {
+        if (search.charAt(0) != '?') throw new Error("Invalid argument");
+        var queryString = {};
+        search.substr(1).replace(/\+/g, '%20').split('&').forEach(function(tuple) {
+          var tokens = tuple.split('=');
+          queryString[decodeURIComponent(tokens[0])] = tokens[1] && decodeURIComponent(tokens[1]);
+        })
+        return queryString;
       }
     })();
   </script>
