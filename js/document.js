@@ -400,7 +400,7 @@ function Doc(source, onEnd) {
     .then(function(uri) {return setState("lastUrl", uri)})
     .then(function() {return source.ready})
     .then(function(result) {info = result})
-  var hasText;
+  var foundText;
 
   this.close = close;
   this.play = play;
@@ -442,12 +442,18 @@ function Doc(source, onEnd) {
       })
       .then(function(texts) {
         if (texts) {
-          if (texts.length) hasText = true;
-          return read(texts);
+          if (texts.length) {
+            foundText = true;
+            return read(texts);
+          }
+          else {
+            currentIndex++;
+            return readCurrent();
+          }
         }
-        else if (onEnd) {
-          if (hasText) onEnd();
-          else onEnd(new Error(JSON.stringify({code: "error_no_text"})));
+        else {
+          if (!foundText) throw new Error(JSON.stringify({code: "error_no_text"}))
+          if (onEnd) onEnd()
         }
       })
     function read(texts) {
@@ -470,7 +476,10 @@ function Doc(source, onEnd) {
             else {
               activeSpeech = null;
               currentIndex++;
-              readCurrent();
+              readCurrent()
+                .catch(function(err) {
+                  if (onEnd) onEnd(err)
+                })
             }
           };
           if (rewinded) activeSpeech.gotoEnd();
