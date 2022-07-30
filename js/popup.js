@@ -1,6 +1,16 @@
 
 var queryString = getQueryString()
 
+var playbackErrorProcessor = {
+  lastError: {},
+  next: function(err) {
+    if (err.message != this.lastError.message) {
+      this.lastError = err
+      handleError(err)
+    }
+  }
+}
+
 $(function() {
   if (queryString.isPopup) $("body").addClass("is-popup")
   else getCurrentTab().then(function(currentTab) {return updateSettings({readAloudTab: currentTab.id})})
@@ -104,9 +114,12 @@ function updateButtons() {
     return Promise.all([
       getSettings(),
       bgPageInvoke("getPlaybackState"),
-      bgPageInvoke("getSpeechPosition")
+      bgPageInvoke("getSpeechPosition"),
+      bgPageInvoke("getPlaybackError")
     ])
-  .then(spread(function(settings, state, speechPos) {
+  .then(spread(function(settings, state, speechPos, playbackErr) {
+    if (playbackErr) playbackErrorProcessor.next(playbackErr)
+
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
     $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
@@ -143,7 +156,7 @@ function updateButtons() {
 
 function onPlay() {
   $("#status").hide();
-  (queryString.tab ? bgPageInvoke("playTab", [Number(queryString.tab)]) : bgPageInvoke("play"))
+  (queryString.tab ? bgPageInvoke("playTab", [Number(queryString.tab)]) : bgPageInvoke("playTab"))
     .then(updateButtons)
     .catch(handleError)
 }

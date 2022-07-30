@@ -1,5 +1,6 @@
 
 var activeDoc;
+var playbackError = null;
 var silenceLoop = new Audio("sound/silence.mp3");
 silenceLoop.loop = true;
 
@@ -13,7 +14,6 @@ if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContex
 var handlers = {
   playText: playText,
   playTab: playTab,
-  play: play,
   stop: stop,
   pause: pause,
   getPlaybackState: getPlaybackState,
@@ -30,6 +30,9 @@ var handlers = {
       .then(function(speech) {
         return speech && speech.getPosition();
       })
+  },
+  getPlaybackError: function() {
+    if (playbackError) return {message: playbackError.message}
   },
 }
 
@@ -72,13 +75,7 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
         else return undefined
       })
       .then(function(lang) {
-        if (lang) console.log("Detected", lang, "(tab)")
-        return playText(info.selectionText, {
-          lang: lang,
-          onEnd: function(err) {
-            if (err) console.error(err);
-          }
-        })
+        return playText(info.selectionText, {lang: lang})
       })
       .catch(console.error)
 })
@@ -87,17 +84,12 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
 /**
  * Shortcut keys handlers
  */
-function execCommand(command, onEnd) {
+function execCommand(command) {
   if (command == "play") {
     getPlaybackState()
       .then(function(state) {
         if (state == "PLAYING") return pause();
-        else if (state == "STOPPED" || state == "PAUSED") {
-          return play(function(err) {
-            if (err) console.error(err);
-            if (onEnd) onEnd()
-          })
-        }
+        else if (state == "STOPPED" || state == "PAUSED") return playTab()
       })
       .catch(console.error)
   }
@@ -132,7 +124,12 @@ if (brapi.ttsEngine) (function() {
  */
 function playText(text, opts) {
   opts = opts || {}
-  if (!activeDoc) openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/), {lang: opts.lang}), opts.onEnd);
+  playbackError = null
+  if (!activeDoc) {
+    openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/), {lang: opts.lang}), function(err) {
+      if (err) playbackError = err
+    })
+  }
   return activeDoc.play()
     .catch(function(err) {
       handleError(err);
@@ -141,18 +138,19 @@ function playText(text, opts) {
     })
 }
 
-function playTab(tabId, onEnd) {
-  if (!activeDoc) openDoc(new TabSource(tabId), onEnd);
+function playTab(tabId) {
+  playbackError = null
+  if (!activeDoc) {
+    openDoc(new TabSource(tabId), function(err) {
+      if (err) playbackError = err
+    })
+  }
   return activeDoc.play()
     .catch(function(err) {
       handleError(err);
       closeDoc();
       throw err;
     })
-}
-
-function play(onEnd) {
-  return playTab(null, onEnd)
 }
 
 function stop() {
