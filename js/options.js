@@ -115,7 +115,7 @@ function initialize(allVoices, settings) {
       .then(function(result) {
         return bgPageInvoke("stop")
           .then(function() {
-            return bgPageInvoke("playText", [result.text]);
+            return bgPageInvoke("playText", [result.text, {lang: lang}]);
           })
       })
       .catch(function(err) {

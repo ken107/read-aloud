@@ -16,7 +16,7 @@ var readAloudDoc = new function() {
   function parse() {
     //find blocks containing text
     var start = new Date();
-    var textBlocks = findTextBlocks(100);
+    var textBlocks = findTextBlocks(50);
     var countChars = textBlocks.reduce(function(sum, elem) {return sum + getInnerText(elem).length}, 0);
     console.log("Found", textBlocks.length, "blocks", countChars, "chars in", new Date()-start, "ms");
 

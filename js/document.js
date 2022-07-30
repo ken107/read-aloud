@@ -2,7 +2,7 @@
 function SimpleSource(texts, opts) {
   opts = opts || {}
   this.ready = Promise.resolve({
-    detectedLang: opts.lang,
+    lang: opts.lang,
   })
   this.isWaiting = function() {
     return false;
@@ -331,16 +331,6 @@ function TabSource(tabId) {
         return inSequence(tasks);
       }
     }))
-    .then(extraAction(function(info) {
-      console.log("Declared", info.lang)
-      return detectTabLanguage(tab.id)
-        .then(function(lang) {
-          if (lang) {
-            console.log("Detected", lang, "(tab)")
-            info.detectedLang = lang
-          }
-        })
-    }))
     .finally(function() {
       waiting = false;
     })
@@ -421,7 +411,7 @@ function Doc(source, onEnd) {
     .then(function(uri) {return setState("lastUrl", uri)})
     .then(function() {return source.ready})
     .then(function(result) {info = result})
-  var hasText;
+  var foundText;
 
   this.close = close;
   this.play = play;
@@ -463,12 +453,18 @@ function Doc(source, onEnd) {
       })
       .then(function(texts) {
         if (texts) {
-          if (texts.length) hasText = true;
-          return read(texts);
+          if (texts.length) {
+            foundText = true;
+            return read(texts);
+          }
+          else {
+            currentIndex++;
+            return readCurrent();
+          }
         }
-        else if (onEnd) {
-          if (hasText) onEnd();
-          else onEnd(new Error(JSON.stringify({code: "error_no_text"})));
+        else {
+          if (!foundText) throw new Error(JSON.stringify({code: "error_no_text"}))
+          if (onEnd) onEnd()
         }
       })
     function read(texts) {
@@ -477,7 +473,6 @@ function Doc(source, onEnd) {
           if (info.detectedLang == null)
             return detectLanguage(texts)
               .then(function(lang) {
-                console.log("Detected", lang, "(text)");
                 info.detectedLang = lang || "";
               })
         })
@@ -492,7 +487,10 @@ function Doc(source, onEnd) {
             else {
               activeSpeech = null;
               currentIndex++;
-              readCurrent();
+              readCurrent()
+                .catch(function(err) {
+                  if (onEnd) onEnd(err)
+                })
             }
           };
           if (rewinded) activeSpeech.gotoEnd();
@@ -538,6 +536,10 @@ function Doc(source, onEnd) {
         .then(function(result) {
           return result || browserDetectLanguage(text)
         })
+        .then(function(lang) {
+          //exclude commonly misdetected languages
+          return ["cy", "eo"].includes(lang) ? null : lang
+        })
     }
     return browserDetectLanguage(text)
       .then(function(result) {
@@ -560,16 +562,16 @@ function Doc(source, onEnd) {
         return null;
       }
     })
-    .catch(function(err) {
-      console.error(err)
-      return null
-    })
   }
 
   function serverDetectLanguage(text) {
       return ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
         .then(JSON.parse)
-        .then(function(list) {return list[0] && list[0].language})
+        .then(function(res) {
+          var result = Array.isArray(res) ? res[0] : res
+          if (result && result.language && result.language != "und") return result.language
+          else return null
+        })
         .catch(function(err) {
           console.error(err)
           return null
@@ -579,6 +581,8 @@ function Doc(source, onEnd) {
   function getSpeech(texts) {
     return getSettings()
       .then(function(settings) {
+        console.log("Declared", info.lang)
+        console.log("Detected", info.detectedLang)
         var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
         console.log("Chosen", lang)
         var options = {

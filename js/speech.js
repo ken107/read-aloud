@@ -99,7 +99,10 @@ function Speech(texts, options) {
               state = "IDLE";
               if (engine.setNextStartTime) engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
               index++;
-              play();
+              play()
+                .catch(function(err) {
+                  if (self.onEnd) self.onEnd(err)
+                })
             },
             function(err) {
               state = "IDLE";
