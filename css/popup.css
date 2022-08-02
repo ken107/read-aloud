@@ -2,6 +2,9 @@
 body {
   margin: 20px 15px 10px 15px;
 }
+.dark-mode a {
+  color: yellowgreen;
+}
 
 #speech-info {
   text-align: center;
@@ -44,9 +47,11 @@ body {
   vertical-align: text-bottom;
 }
 
-#highlight {
+body.is-popup #highlight {
   width: 350px;
   height: 300px;
+}
+#highlight {
   border: 1px solid lightgray;
   padding: 1rem;
   background-color: #ffefd5;
@@ -67,6 +72,10 @@ body {
 .dark-mode #highlight span.active {
   background-color: #0c4e00;
 }
+body:not(.is-popup) #highlight {
+  height: calc(100vh - 150px);
+}
+
 
 #toolbar {
   margin-top: .5em;
@@ -112,6 +121,10 @@ body {
   background-color: #3e3e3e;
   color: #ddd;
 }
+body:not(.is-popup) #toolbar .btn-group.window-size {
+  display: none;
+}
+
 
 #footer {
   text-align: center;

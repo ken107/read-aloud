@@ -4,12 +4,12 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.45.1",
+  "version": "1.58.0",
   "default_locale": "en",
 
   "browser_action": {
     "default_icon": "img/icon.png",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html?isPopup=1"
   },
   "icons": {
     "16": "img/icon-16.png",
@@ -36,6 +36,9 @@
     "http://*/",
     "https://*/",
     "file://*/*"
+  ],
+  "web_accessible_resources": [
+    "js/page/*"
   ],
   "content_security_policy": "script-src 'self'; object-src 'self'",
   "background": {

@@ -9,11 +9,29 @@ var readAloudDoc = new function() {
   }
 
   this.getTexts = function(index) {
-    var tasks = [];
-    for (; currentIndex<index; currentIndex++) tasks.push(function() {$btnNext.click()}, waitMillis.bind(null, 3000));
-    for (; currentIndex>index; currentIndex--) tasks.push(function() {$btnPrev.click()}, waitMillis.bind(null, 3000));
-    return tasks.reduce(function(p, task) {return p.then(task)}, Promise.resolve())
-      .then(getTexts)
+    var promise = Promise.resolve()
+    var rewind = function() {
+      var oldEl = $(".pf").get(0)
+      $btnPrev.click()
+      return waitFrameChange(oldEl)
+    }
+    var forward = function() {
+      var oldEl = $(".pf").get(0)
+      $btnNext.click()
+      return waitFrameChange(oldEl)
+    }
+    for (; currentIndex<index; currentIndex++) promise = promise.then(forward)
+    for (; currentIndex>index; currentIndex--) promise = promise.then(rewind)
+    return promise.then(getTexts)
+  }
+
+  function waitFrameChange(oldEl) {
+    return repeat({
+      action: function() {return $(".pf").get(0)},
+      until: function(el) {return el && el != oldEl},
+      max: 20,
+      delay: 500
+    })
   }
 
   function getTexts() {

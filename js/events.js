@@ -1,6 +1,7 @@
 
 var activeDoc;
 var silenceLoop = new Audio("sound/silence.ogg");
+var playbackError = null;
 silenceLoop.loop = true;
 
 brapi.runtime.onInstalled.addListener(installContextMenus);
@@ -17,7 +18,7 @@ hasPermissions(config.gtranslatePerms)
  */
 var handlers = {
   playText: playText,
-  play: play,
+  playTab: playTab,
   stop: stop,
   pause: pause,
   getPlaybackState: getPlaybackState,
@@ -34,6 +35,9 @@ var handlers = {
       .then(function(speech) {
         return speech && speech.getPosition();
       })
+  },
+  getPlaybackError: function() {
+    if (playbackError) return {message: playbackError.message}
   },
 }
 
@@ -64,34 +68,38 @@ function installContextMenus() {
     title: brapi.i18n.getMessage("context_read_selection"),
     contexts: ["selection"]
   });
+  brapi.menus.create({
+    id: "options",
+    title: brapi.i18n.getMessage("options_heading"),
+    contexts: ["browser_action"]
+  })
 }
 
 brapi.menus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection")
     stop()
       .then(function() {
-        return playText(info.selectionText, function(err) {
-          if (err) console.error(err);
-        })
+        if (tab && tab.id != -1) return detectTabLanguage(tab.id)
+        else return undefined
+      })
+      .then(function(lang) {
+        return playText(info.selectionText, {lang: lang})
       })
       .catch(console.error)
+  else if (info.menuItemId == "options")
+    brapi.runtime.openOptionsPage()
 })
 
 
 /**
  * Shortcut keys handlers
  */
-function execCommand(command, onEnd) {
+function execCommand(command) {
   if (command == "play") {
     getPlaybackState()
       .then(function(state) {
         if (state == "PLAYING") return pause();
-        else if (state == "STOPPED" || state == "PAUSED") {
-          return play(function(err) {
-            if (err) console.error(err);
-            if (onEnd) onEnd()
-          })
-        }
+        else if (state == "STOPPED" || state == "PAUSED") return playTab()
       })
       .catch(console.error)
   }
@@ -124,8 +132,14 @@ if (brapi.ttsEngine) (function() {
 /**
  * METHODS
  */
-function playText(text, onEnd) {
-  if (!activeDoc) openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/)), onEnd);
+function playText(text, opts) {
+  opts = opts || {}
+  playbackError = null
+  if (!activeDoc) {
+    openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/), {lang: opts.lang}), function(err) {
+      if (err) playbackError = err
+    })
+  }
   return activeDoc.play()
     .catch(function(err) {
       handleError(err);
@@ -134,8 +148,13 @@ function playText(text, onEnd) {
     })
 }
 
-function play(onEnd) {
-  if (!activeDoc) openDoc(new TabSource(), onEnd);
+function playTab(tabId) {
+  playbackError = null
+  if (!activeDoc) {
+    openDoc(new TabSource(tabId), function(err) {
+      if (err) playbackError = err
+    })
+  }
   return activeDoc.play()
     .catch(function(err) {
       handleError(err);

@@ -13,9 +13,8 @@ else {
 
 
 function ReadAloudDoc() {
-  var isChegg = location.hostname.endsWith("chegg.com");
-  var $btnNext = isChegg ? $(".next-button") : $(".jwUdzW").eq(1);
-  var $btnPrev = isChegg ? $(".previous-button") : $(".jwUdzW").eq(0);
+  var btnNext = $(".next-button").get(0) || $("[aria-label=Next]").get(0) || $("[role=slider]").parent().find("button").get(1);
+  var btnPrev = $(".previous-button").get(0) || $("[aria-label=Previous]").get(0) || $("[role=slider]").parent().find("button").get(0);
   var currentIndex = 0;
 
   this.getCurrentIndex = function() {
@@ -24,8 +23,8 @@ function ReadAloudDoc() {
 
   this.getTexts = function(index) {
     var tasks = [];
-    for (; currentIndex<index; currentIndex++) tasks.push(function() {$btnNext.click()}, waitMillis.bind(null, 2500));
-    for (; currentIndex>index; currentIndex--) tasks.push(function() {$btnPrev.click()}, waitMillis.bind(null, 2500));
+    for (; currentIndex<index; currentIndex++) tasks.push(function() {$(btnNext).click()}, waitMillis.bind(null, 2500));
+    for (; currentIndex>index; currentIndex--) tasks.push(function() {$(btnPrev).click()}, waitMillis.bind(null, 2500));
     return tasks.reduce(function(p, task) {return p.then(task)}, Promise.resolve())
       .then(function() {
         return ["The text to read is in another frame."];

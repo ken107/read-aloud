@@ -88,16 +88,10 @@ function initialize(allVoices, settings) {
 
 
   //showHighlighting
-  $("[name=highlighting]")
-    .prop("checked", function() {
-      var active = $(this).val() == (settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting);
-      if (active) $(this).parent(".btn").addClass("active");
-      return active;
-    })
+  $("#show-highlighting")
+    .val(settings.showHighlighting || defaults.showHighlighting)
     .change(function() {
-      $("[name=highlighting]").parent(".btn").removeClass("active");
-      $(this).parent(".btn").addClass("active");
-      saveSettings({showHighlighting: Number($(this).val())});
+      saveSettings({showHighlighting: $(this).val()})
     })
 
 
@@ -121,7 +115,7 @@ function initialize(allVoices, settings) {
       .then(function(result) {
         return bgPageInvoke("stop")
           .then(function() {
-            return bgPageInvoke("playText", [result.text]);
+            return bgPageInvoke("playText", [result.text, {lang: lang}]);
           })
       })
       .catch(function(err) {
