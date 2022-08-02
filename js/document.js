@@ -31,8 +31,11 @@ var messageParser = {
     }
   },
   parseTextBody: function(body) {
-    return body
+    return this.addMissingPunctuation(body)
       .split(/(?:\s*\r?\n\s*){2,}/)
+  },
+  addMissingPunctuation: function(text) {
+    return text.replace(/(\w)(\s*?\r?\n)/g, "$1.$2");
   },
   domParser: new DOMParser()
 }
