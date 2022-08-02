@@ -69,14 +69,24 @@ function installContextMenus() {
     contexts: ["selection"]
   });
   brapi.menus.create({
+    id: "read-page",
+    title: brapi.i18n.getMessage("context_read_item"),
+    contexts: ["page", "frame"]
+  })
+  brapi.menus.create({
+    id: "read-message",
+    title: brapi.i18n.getMessage("context_read_item"),
+    contexts: ["message_list"]
+  })
+  brapi.menus.create({
     id: "options",
     title: brapi.i18n.getMessage("options_heading"),
-    contexts: ["browser_action"]
+    contexts: ["browser_action", "message_display_action"]
   })
 }
 
 brapi.menus.onClicked.addListener(function(info, tab) {
-  if (info.menuItemId == "read-selection")
+  if (info.menuItemId == "read-selection") {
     stop()
       .then(function() {
         if (tab && tab.id != -1) return detectTabLanguage(tab.id)
@@ -86,6 +96,17 @@ brapi.menus.onClicked.addListener(function(info, tab) {
         return playText(info.selectionText, {lang: lang})
       })
       .catch(console.error)
+  }
+  else if (info.menuItemId == "read-page") {
+    stop()
+      .then(playTab)
+      .catch(console.error)
+  }
+  else if (info.menuItemId == "read-message") {
+    stop()
+      .then(playMessages.bind(null, info.selectedMessages))
+      .catch(console.error)
+  }
   else if (info.menuItemId == "options")
     brapi.runtime.openOptionsPage()
 })
@@ -152,6 +173,21 @@ function playTab(tabId) {
   playbackError = null
   if (!activeDoc) {
     openDoc(new TabSource(tabId), function(err) {
+      if (err) playbackError = err
+    })
+  }
+  return activeDoc.play()
+    .catch(function(err) {
+      handleError(err);
+      closeDoc();
+      throw err;
+    })
+}
+
+function playMessages(messageList) {
+  playbackError = null
+  if (!activeDoc) {
+    openDoc(new MessageListSource(messageList), function(err) {
       if (err) playbackError = err
     })
   }

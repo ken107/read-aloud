@@ -1,4 +1,43 @@
 
+var messageParser = {
+  getPartTexts: function(messagePart) {
+    switch (messagePart.contentType) {
+      case "message/rfc822":
+      case "multipart/mixed":
+      case "multipart/digest":
+      case "multipart/parallel": {
+        return Promise.all(messagePart.parts.map(x => this.getPartTexts(x)))
+      }
+      case "multipart/alternative": {
+        var part = messagePart.parts.find(x => x.contentType.startsWith("text/plain"))
+        if (part) return this.parseTextBody(part.body)
+        part = messagePart.parts.find(x => x.contentType.startsWith("text/html"))
+        if (part) return this.parseHtmlBody(part.body)
+        return []
+      }
+      case "text/plain": {
+        return this.parseTextBody(messagePart.body)
+      }
+      case "text/html":
+      case "text/xml":
+      case "application/xml":
+      case "application/xhtml+xml": {
+        const doc = this.domParser.parseFromString(messagePart.body, messagePart.contentType)
+        return this.parseTextBody(doc.body.innerText)
+      }
+      default: {
+        console.warn("Ignoring part with contentType", messagePart.contentType)
+      }
+    }
+  },
+  parseTextBody: function(body) {
+    return body
+      .split(/(?:\s*\r?\n\s*){2,}/)
+  },
+  domParser: new DOMParser()
+}
+
+
 function SimpleSource(texts, opts) {
   opts = opts || {}
   this.ready = Promise.resolve({
@@ -19,6 +58,37 @@ function SimpleSource(texts, opts) {
   this.getUri = function() {
     var textLen = texts.reduce(function(sum, text) {return sum+text.length}, 0);
     return "text-selection:(" + textLen + ")" + encodeURIComponent((texts[0] || "").substr(0, 100));
+  }
+}
+
+
+function MessageListSource(messageList) {
+  var currentIndex = 0
+  this.ready = Promise.resolve({})
+  this.isWaiting = function() {
+    return false;
+  }
+  this.getCurrentIndex = function() {
+    if (messageList.messages.length == 0) return Promise.reject(new Error("No message selected"))
+    return Promise.resolve(currentIndex)
+  }
+  this.getTexts = function(index, quietly) {
+    if (!quietly) currentIndex = index
+    return Promise.resolve(messageList.messages[index])
+      .then(message => {
+        if (!message) return null
+        const intro = [(index +1) + ". From " + message.author + ". " + message.subject + "."]
+        return brapi.messages.getFull(message.id)
+          .then(part => messageParser.getPartTexts(part))
+          .then(texts => texts.flat(10))
+          .then(texts => intro.concat(texts))
+      })
+  }
+  this.close = function() {
+    return Promise.resolve();
+  }
+  this.getUri = function() {
+    return "message-list:" + messageList.id;
   }
 }
 
@@ -311,7 +381,7 @@ function TabSource(tabId) {
                   if (!message) return null
                   const intro = [(index +1) + ". From " + message.author + ". " + message.subject + "."]
                   return brapi.messages.getFull(message.id)
-                    .then(part => this.getPartTexts(part))
+                    .then(part => messageParser.getPartTexts(part))
                     .then(texts => texts.flat(10))
                     .then(texts => intro.concat(texts))
                 })
@@ -323,41 +393,6 @@ function TabSource(tabId) {
           lang: null
         })
       },
-      getPartTexts: function(messagePart) {
-        switch (messagePart.contentType) {
-          case "message/rfc822":
-          case "multipart/mixed":
-          case "multipart/digest":
-          case "multipart/parallel": {
-            return Promise.all(messagePart.parts.map(x => this.getPartTexts(x)))
-          }
-          case "multipart/alternative": {
-            var part = messagePart.parts.find(x => x.contentType.startsWith("text/plain"))
-            if (part) return this.parseTextBody(part.body)
-            part = messagePart.parts.find(x => x.contentType.startsWith("text/html"))
-            if (part) return this.parseHtmlBody(part.body)
-            return []
-          }
-          case "text/plain": {
-            return this.parseTextBody(messagePart.body)
-          }
-          case "text/html":
-          case "text/xml":
-          case "application/xml":
-          case "application/xhtml+xml": {
-            const doc = this.domParser.parseFromString(messagePart.body, messagePart.contentType)
-            return this.parseTextBody(doc.body.innerText)
-          }
-          default: {
-            console.warn("Ignoring part with contentType", messagePart.contentType)
-          }
-        }
-      },
-      parseTextBody: function(body) {
-        return body
-          .split(/(?:\s*\r?\n\s*){2,}/)
-      },
-      domParser: new DOMParser()
     },
     {
       match: function() {

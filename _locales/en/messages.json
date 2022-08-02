@@ -83,6 +83,9 @@
   "context_read_selection": {
     "message": "Read aloud selected text"
   },
+  "context_read_item": {
+    "message": "Read aloud this message"
+  },
   "error_no_text": {
     "message": "Didn't find any text to read"
   },
