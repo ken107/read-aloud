@@ -254,7 +254,10 @@ function parseUrl(url) {
 function getSettings(names) {
   return new Promise(function(fulfill) {
     brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices"], fulfill);
-  });
+  })
+  .then(function(settings) {
+    return settings || {}
+  })
 }
 
 function updateSettings(items) {
@@ -827,6 +830,7 @@ function getUniqueClientId() {
 function getBrowser() {
   if (/Opera|OPR\//.test(navigator.userAgent)) return 'opera';
   if (/firefox/i.test(navigator.userAgent)) return 'firefox';
+  if (/Thunderbird/.test(navigator.userAgent)) return 'thunderbird';
   return 'chrome';
 }
 
@@ -1036,6 +1040,7 @@ function bgPageInvoke(method, args) {
 }
 
 function detectTabLanguage(tabId) {
+  if (!brapi.tabs.detectLanguage) return Promise.resolve(undefined)
   return new Promise(function(fulfill) {
     brapi.tabs.detectLanguage(tabId, fulfill)
   })

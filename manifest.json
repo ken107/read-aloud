@@ -69,7 +69,7 @@
       "description": "play/pause"
     },
     "stop": {
-      "suggested_key": {"default": "Alt+O"},
+      "suggested_key": {"default": "Alt+Shift+P"},
       "description": "stop"
     },
     "forward": {
