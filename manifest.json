@@ -32,7 +32,7 @@
     "identity",
     "messagesRead",
     "storage",
-    "https://translate.google.com/"
+    "https://translate.google.com/*"
   ],
   "optional_permissions": [
     "webRequest",
