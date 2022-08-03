@@ -331,7 +331,7 @@ function isAmazonPolly(voice) {
 }
 
 function isGoogleWavenet(voice) {
-  return /^Google(Standard|Wavenet) /.test(voice.voiceName);
+  return /^Google(Standard|Wavenet|Neural2) /.test(voice.voiceName);
 }
 
 function isIbmWatson(voice) {
