@@ -36,7 +36,15 @@ $(function() {
             return (settings.readAloudTab ? Promise.resolve() : Promise.reject("No readAloudTab"))
               .then(function() {return updateTab(settings.readAloudTab, {url: url, active: true})})
               .then(function(tab) {return updateWindow(tab.windowId, {focused: true})})
-              .catch(function() {return createWindow({url: url, focused: true, type: "popup"})})
+              .catch(function() {
+                return createWindow({
+                  url: url,
+                  focused: true,
+                  type: "popup",
+                  width: 500,
+                  height: 600,
+                })
+              })
           })
           .then(window.close)
       }
@@ -102,7 +110,7 @@ function handleError(err) {
     })
 
     if (errInfo.code == "error_upload_pdf") {
-      setTabUrl(undefined, config.pdfViewerUrl)
+      setTabUrl(errInfo.tabId, config.pdfViewerUrl)
     }
   }
   else {

@@ -43,7 +43,7 @@ function TabSource(tabId) {
         return /^file:.*\.pdf$/i.test(url.split("?")[0]);
       },
       validate: function() {
-        throw new Error(JSON.stringify({code: "error_upload_pdf"}));
+        throw new Error(JSON.stringify({code: "error_upload_pdf", tabId: tab.id}));
       }
     },
 
