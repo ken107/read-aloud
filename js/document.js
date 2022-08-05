@@ -196,14 +196,14 @@ function TabSource(tabId) {
     // EPUBReader ---------------------------------------------------------------
     {
       match: function(url) {
-        return /^chrome-extension:\/\/jhhclmfgfllimlhabjkgkeebkbiadflb\/reader.html/.test(url);
+        return /^(chrome-|edge-)?extension:\/\/gbfdomjljjkagpgdlidoicebkgpienmf\/reader.html/.test(url);
       },
       validate: function() {
       },
       connect: function() {
         function call(method) {
           return new Promise(function(fulfill) {
-            brapi.runtime.sendMessage("jhhclmfgfllimlhabjkgkeebkbiadflb", {name: method}, fulfill);
+            brapi.runtime.sendMessage("gbfdomjljjkagpgdlidoicebkgpienmf", {name: method}, fulfill);
           })
         }
         function parseXhtml(xml) {
