@@ -1044,3 +1044,21 @@ function detectTabLanguage(tabId) {
     return undefined
   })
 }
+
+function truncateRepeatedChars(text, max) {
+  var result = ""
+  var startIndex = 0
+  var count = 1
+  for (var i=1; i<text.length; i++) {
+    if (text.charCodeAt(i) == text.charCodeAt(i-1)) {
+      count++
+      if (count == max) result += text.slice(startIndex, i+1)
+    }
+    else {
+      if (count >= max) startIndex = i
+      count = 1
+    }
+  }
+  if (count < max) result += text.slice(startIndex)
+  return result
+}

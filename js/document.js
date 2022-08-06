@@ -488,6 +488,7 @@ function Doc(source, onEnd) {
         })
     }
     function preprocess(text) {
+      text = truncateRepeatedChars(text, 3)
       return text.replace(/https?:\/\/\S+/g, "HTTP URL.")
     }
   }
