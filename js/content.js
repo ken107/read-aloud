@@ -73,7 +73,6 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
       return Promise.resolve(readAloudDoc.getTexts(index, quietly))
         .then(function(texts) {
           if (texts && Array.isArray(texts)) {
-            texts = texts.map(removeLinks);
             if (!quietly) console.log(texts.join("\n\n"));
           }
           return texts;
@@ -83,10 +82,6 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
 
   function getSelectedText() {
     return window.getSelection().toString().trim();
-  }
-
-  function removeLinks(text) {
-    return text.replace(/https?:\/\/\S+/g, "this URL.");
   }
 })()
 

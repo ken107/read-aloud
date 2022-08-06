@@ -457,6 +457,7 @@ function Doc(source, onEnd) {
         }
       })
     function read(texts) {
+      texts = texts.map(preprocess)
       return Promise.resolve()
         .then(function() {
           if (info.detectedLang == null)
@@ -485,6 +486,9 @@ function Doc(source, onEnd) {
           if (rewinded) activeSpeech.gotoEnd();
           return activeSpeech.play();
         })
+    }
+    function preprocess(text) {
+      return text.replace(/https?:\/\/\S+/g, "HTTP URL.")
     }
   }
 
