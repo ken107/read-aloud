@@ -43,7 +43,7 @@ function TabSource(tabId) {
         return /^file:.*\.pdf$/i.test(url.split("?")[0]);
       },
       validate: function() {
-        throw new Error(JSON.stringify({code: "error_upload_pdf"}));
+        throw new Error(JSON.stringify({code: "error_upload_pdf", tabId: tab.id}));
       }
     },
 
@@ -457,6 +457,7 @@ function Doc(source, onEnd) {
         }
       })
     function read(texts) {
+      texts = texts.map(preprocess)
       return Promise.resolve()
         .then(function() {
           if (info.detectedLang == null)
@@ -485,6 +486,10 @@ function Doc(source, onEnd) {
           if (rewinded) activeSpeech.gotoEnd();
           return activeSpeech.play();
         })
+    }
+    function preprocess(text) {
+      text = truncateRepeatedChars(text, 3)
+      return text.replace(/https?:\/\/\S+/g, "HTTP URL.")
     }
   }
 
@@ -542,7 +547,7 @@ function Doc(source, onEnd) {
       brapi.i18n.detectLanguage(text, fulfill);
     })
     .then(function(result) {
-      if (result) {
+      if (result && result.isReliable != false) {
           var list = result.languages.filter(function(item) {return item.language != "und"});
           list.sort(function(a,b) {return b.percentage-a.percentage});
           return list[0] && list[0].language;

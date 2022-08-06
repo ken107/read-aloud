@@ -453,7 +453,7 @@ function GoogleTranslateTtsEngine() {
       {"voice_name": "GoogleTranslate Dutch", "lang": "nl", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate English", "lang": "en", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Esperanto", "lang": "eo", "event_types": ["start", "end", "error"]},
-      {"voice_name": "GoogleTranslate Estonia", "lang": "et", "event_types": ["start", "end", "error"]},
+      {"voice_name": "GoogleTranslate Estonian", "lang": "et", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Filipino", "lang": "fil", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Finnish", "lang": "fi", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate French", "lang": "fr", "event_types": ["start", "end", "error"]},
@@ -467,6 +467,8 @@ function GoogleTranslateTtsEngine() {
       {"voice_name": "GoogleTranslate Indonesian", "lang": "id", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Italian", "lang": "it", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Japanese", "lang": "ja", "event_types": ["start", "end", "error"]},
+      {"voice_name": "GoogleTranslate Javanese", "lang": "jw", "event_types": ["start", "end", "error"]},
+      {"voice_name": "GoogleTranslate Kannada", "lang": "kn", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Khmer", "lang": "km", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Korean", "lang": "ko", "event_types": ["start", "end", "error"]},
       {"voice_name": "GoogleTranslate Latin", "lang": "la", "event_types": ["start", "end", "error"]},
@@ -844,6 +846,7 @@ function GoogleWavenetTtsEngine() {
     assert(text && voice && pitch != null);
     var matches = voice.voiceName.match(/^Google(\w+) .* \((\w+)\)$/);
     var voiceName = voice.lang + "-" + matches[1] + "-" + matches[2][0];
+    var endpoint = matches[1] == "Neural2" ? "us-central1-texttospeech.googleapis.com" : "texttospeech.googleapis.com";
     return getSettings(["gcpCreds", "gcpToken"])
       .then(function(settings) {
         var postData = {
@@ -859,7 +862,7 @@ function GoogleWavenetTtsEngine() {
             pitch: (pitch-1)*20
           }
         }
-        if (settings.gcpCreds) return ajaxPost("https://texttospeech.googleapis.com/v1beta1/text:synthesize?key=" + settings.gcpCreds.apiKey, postData, "json");
+        if (settings.gcpCreds) return ajaxPost("https://" + endpoint + "/v1/text:synthesize?key=" + settings.gcpCreds.apiKey, postData, "json");
         if (!settings.gcpToken) throw new Error(JSON.stringify({code: "error_wavenet_auth_required"}));
         return ajaxPost("https://cxl-services.appspot.com/proxy?url=https://texttospeech.googleapis.com/v1beta1/text:synthesize&token=" + settings.gcpToken, postData, "json")
           .catch(function(err) {
