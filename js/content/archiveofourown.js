@@ -10,8 +10,9 @@ var readAloudDoc = new function() {
   }
 
   function parse() {
-    var texts = $(".chapter .userstuff p").get().map(getInnerText)
-    texts.unshift(getInnerText($(".chapter .title").get(0)))
-    return texts
+    var texts = $("#chapters .userstuff p").get().map(getInnerText)
+    var titles = $("#chapters .title").get().map(getInnerText)
+    return titles.concat(texts)
+      .filter(isNotEmpty)
   }
 }
