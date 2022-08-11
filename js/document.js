@@ -547,7 +547,7 @@ function Doc(source, onEnd) {
       brapi.i18n.detectLanguage(text, fulfill);
     })
     .then(function(result) {
-      if (result && result.isReliable != false) {
+      if (result) {
           var list = result.languages.filter(function(item) {return item.language != "und"});
           list.sort(function(a,b) {return b.percentage-a.percentage});
           return list[0] && list[0].language;
