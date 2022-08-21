@@ -152,7 +152,8 @@ function Speech(texts, options) {
   function forward() {
     if (index+1 < texts.length) {
       index++;
-      return delayedPlay();
+      if (state == "PLAYING") return delayedPlay()
+      else return stop()
     }
     else return Promise.reject(new Error("Can't forward, at end"));
   }
@@ -163,7 +164,8 @@ function Speech(texts, options) {
     }
     else if (index > 0) {
       index--;
-      return stop().then(play);
+      if (state == "PLAYING") return stop().then(play)
+      else return stop()
     }
     else return Promise.reject(new Error("Can't rewind, at beginning"));
   }

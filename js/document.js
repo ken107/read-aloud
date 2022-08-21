@@ -126,7 +126,7 @@ function TabSource(tabId) {
         return /\.pdf$/i.test(url.split("?")[0]);
       },
       validate: function() {
-        throw new Error(JSON.stringify({code: "error_upload_pdf"}));
+        throw new Error(JSON.stringify({code: "error_upload_pdf", tabId: tab.id}));
       }
     },
 
@@ -581,6 +581,7 @@ function Doc(source, onEnd) {
         }
       })
     function read(texts) {
+      texts = texts.map(preprocess)
       return Promise.resolve()
         .then(function() {
           if (info.detectedLang == null)
@@ -609,6 +610,10 @@ function Doc(source, onEnd) {
           if (rewinded) activeSpeech.gotoEnd();
           return activeSpeech.play();
         })
+    }
+    function preprocess(text) {
+      text = truncateRepeatedChars(text, 3)
+      return text.replace(/https?:\/\/\S+/g, "HTTP URL.")
     }
   }
 
