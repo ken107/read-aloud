@@ -1,0 +1,78 @@
+{
+  "manifest_version": 3,
+
+  "name": "__MSG_extension_name__",
+  "short_name": "__MSG_extension_short_name__",
+  "description": "__MSG_extension_description__",
+  "version": "2.0.0",
+  "default_locale": "en",
+
+  "action": {
+    "default_icon": "img/icon.png",
+    "default_popup": "popup.html?isPopup=1"
+  },
+  "icons": {
+    "16": "img/icon-16.png",
+    "48": "img/icon-48.png",
+    "128": "img/icon.png"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnuixucDtRgOw5uj5Bj8e+mAOxk2JAe0soL61VPOJz49awD8TGg4bUedgPkwHlLFpN1YayanQPOixIa+ePnSgSaXiV0SSdKYp4f1SUDGf1Z9Q7Ya+onaLN6aAcv7HAUQ9+JQK8aPNIyMHRm/Clx8zjwbILXzILbmuMvkRva7A78k0HULb+LxNGMeV9F7Q0U8WdZrfS2VNBpDVnDqGqVL93TDz1UsTvaA+uX0S5ZeXeZIwOzUMsuyiSBMPoQC5cUxszmJVtjj92EY1/AonZr22Cp8J5KBiCYJBsJqQ+Dt15cXz3gtCkBbChdlNbG8pLDneDNmEdF8EIVrziO346+qU0QIDAQAB",
+  "oauth2": {
+    "client_id": "311515340069-gr48lfk7ufpg8ath9qkfsatq60tr6147.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/chromewebstore.readonly"
+    ]
+  },
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "identity",
+    "storage",
+    "tts"
+  ],
+  "optional_permissions": [
+    "webRequest",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "https://translate.google.com/"
+  ],
+  "optional_host_permissions": [
+    "*://*/*"
+  ],
+  "web_accessible_resources": [{
+    "resources": ["js/page/google-doc.js"],
+    "matches": ["https://docs.google.com/document/d/*"]
+  }],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": false
+  },
+  "commands": {
+    "play": {
+      "suggested_key": {"default": "Alt+P"},
+      "description": "play/pause"
+    },
+    "stop": {
+      "suggested_key": {"default": "Alt+O"},
+      "description": "stop"
+    },
+    "forward": {
+      "suggested_key": {"default": "Alt+Period"},
+      "description": "forward"
+    },
+    "rewind": {
+      "suggested_key": {"default": "Alt+Comma"},
+      "description": "rewind"
+    }
+  }
+}

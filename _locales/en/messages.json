@@ -1,0 +1,137 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: A Text to Speech Voice Reader"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Read aloud the current web-page article with one click, using text to speech (TTS). Supports 40+ languages."
+  },
+  "options_heading": {
+    "message": "Options"
+  },
+  "options_voice_label": {
+    "message": "Voice"
+  },
+  "options_voicegroup_standard": {
+    "message": "Standard Voices"
+  },
+  "options_voicegroup_premium": {
+    "message": "Premium Voices"
+  },
+  "options_voicegroup_additional": {
+    "message": "Additional Voices"
+  },
+  "options_enable_premium_voices": {
+    "message": "Enable Premium Voices"
+  },
+  "options_premium_voices_enabled": {
+    "message": "Premium voices are enabled"
+  },
+  "options_enable_custom_voices": {
+    "message": "Enable Custom Voices"
+  },
+  "options_rate_label": {
+    "message": "Speed"
+  },
+  "options_rate_warning": {
+    "message": "Note: some voices may not work at a high speed."
+  },
+  "options_pitch_label": {
+    "message": "Pitch"
+  },
+  "options_volume_label": {
+    "message": "Volume"
+  },
+  "options_show_highlighting": {
+    "message": "Text Highlighting"
+  },
+  "options_highlighting_off": {
+    "message": "Turn off"
+  },
+  "options_highlighting_popup": {
+    "message": "Show in popup"
+  },
+  "options_highlighting_window": {
+    "message": "Show in a separate window"
+  },
+  "options_hotkeys_link": {
+    "message": "Edit shortcut keys"
+  },
+  "options_save_button": {
+    "message": "Save"
+  },
+  "options_test_button": {
+    "message": "Test"
+  },
+  "options_reset_button": {
+    "message": "Reset"
+  },
+  "options_success_status": {
+    "message": "Changes saved."
+  },
+  "options_logged_in_as": {
+    "message": "Logged in as"
+  },
+  "options_account_button": {
+    "message": "Account"
+  },
+  "options_logout_button": {
+    "message": "Logout"
+  },
+  "context_read_selection": {
+    "message": "Read aloud selected text"
+  },
+  "error_no_text": {
+    "message": "Didn't find any text to read, try selecting the text you want to read first"
+  },
+  "error_no_voice": {
+    "message": "Language not supported '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Please use the form to upload your PDF file to read aloud"
+  },
+  "error_ajax_pdf": {
+    "message": "Please save this PDF file to your computer and open it inside this [PDF viewer](open-pdf-viewer) to read aloud"
+  },
+  "error_page_unreadable": {
+    "message": "Cannot read aloud this website"
+  },
+  "error_file_access": {
+    "message": "You need to grant Read Aloud access to file URLs in extension [settings](open-extension-settings)"
+  },
+  "error_add_permissions": {
+    "message": "You need to grant Read Aloud additional [permissions](request-permissions) for this website"
+  },
+  "error_login_required": {
+    "message": "Please [sign in](sign-in) to use the Premium Voices"
+  },
+  "error_voice_unavailable": {
+    "message": "Voice unavailable, please pick another"
+  },
+  "error_payment_required": {
+    "message": "Out of credit"
+  },
+  "error_wavenet_auth_required": {
+    "message": "You need to grant additional [permissions](auth-wavenet) to enable Google Wavenet voices"
+  },
+  "error_user_gesture_required": {
+    "message": "Click [here](user-gesture) to start"
+  },
+  "languages_heading": {
+    "message": "Language Options"
+  },
+  "languages_back_button": {
+    "message": "Back to Options"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud would like to use Google Translate for text-to-speech."
+  },
+  "google_translate_allow_button": {
+    "message": "Allow"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud is using Google Translate for text-to-speech.  Please keep this tab open."
+  }
+}

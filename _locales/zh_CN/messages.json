@@ -1,0 +1,95 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: 文本语音朗读助理"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "轻轻点击，即可为您朗读页面上的文本。（现正支援超过 40 种以上语言）"
+  },
+  "options_heading": {
+    "message": "选项"
+  },
+  "options_voice_label": {
+    "message": "朗读语音"
+  },
+  "options_voicegroup_standard": {
+    "message": "标准的声音"
+  },
+  "options_voicegroup_premium": {
+    "message": "优质的声音"
+  },
+  "options_enable_premium_voices": {
+    "message": "启用高级音色"
+  },
+  "options_premium_voices_enabled": {
+    "message": "高级语音已启用"
+  },
+  "options_rate_label": {
+    "message": "朗读速度"
+  },
+  "options_rate_warning": {
+    "message": "注意：有些声音可能无法高速运行。"
+  },
+  "options_pitch_label": {
+    "message": "朗读音调"
+  },
+  "options_volume_label": {
+    "message": "朗读音量"
+  },
+  "options_show_highlighting": {
+    "message": "标示朗读文本"
+  },
+  "options_hotkeys_link": {
+    "message": "编辑快捷键"
+  },
+  "options_save_button": {
+    "message": "储存"
+  },
+  "options_test_button": {
+    "message": "去测试"
+  },
+  "options_reset_button": {
+    "message": "重设"
+  },
+  "options_success_status": {
+    "message": "已储存。"
+  },
+  "context_read_selection": {
+    "message": "朗读所选文本"
+  },
+  "error_no_text": {
+    "message": "没有找到任何文字阅读"
+  },
+  "error_no_voice": {
+    "message": "不支持语言 '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "使用表格上传您的PDF文件进行朗读"
+  },
+  "error_page_unreadable": {
+    "message": "不能大声朗读这个网站"
+  },
+  "error_login_required": {
+    "message": "请[登录](sign-in)以使用高级语音"
+  },
+  "error_voice_unavailable": {
+    "message": "语音不可用，请选择另一个"
+  },
+  "languages_heading": {
+    "message": "语言选项"
+  },
+  "languages_back_button": {
+    "message": "返回选项"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud希望使用Google Translate进行语音合成。"
+  },
+  "google_translate_allow_button": {
+    "message": "允许"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud正在使用Google Translate进行语音合成。 请保持此标签打开。"
+  }
+}

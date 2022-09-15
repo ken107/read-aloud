@@ -1,0 +1,110 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: 文字語音朗讀助理"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "輕輕點選，即可為您朗讀頁面上的文字。（目前支援超過 40 種以上的語言）"
+  },
+  "options_heading": {
+    "message": "選項"
+  },
+  "options_voice_label": {
+    "message": "朗讀語音"
+  },
+  "options_voicegroup_standard": {
+    "message": "標準的語音"
+  },
+  "options_voicegroup_premium": {
+    "message": "高級的語音"
+  },
+  "options_voicegroup_additional": {
+    "message": "額外的語音"
+  },
+  "options_enable_premium_voices": {
+    "message": "啟用高級語音"
+  },
+  "options_premium_voices_enabled": {
+    "message": "高級語音已啟用"
+  },
+  "options_enable_custom_voices": {
+    "message": "啟用客製化語音"
+  },
+  "options_rate_label": {
+    "message": "朗讀速度"
+  },
+  "options_rate_warning": {
+    "message": "注意：有些語音可能不支援快速朗讀。"
+  },
+  "options_pitch_label": {
+    "message": "朗讀聲調"
+  },
+  "options_volume_label": {
+    "message": "朗讀音量"
+  },
+  "options_show_highlighting": {
+    "message": "標示朗讀文字"
+  },
+  "options_hotkeys_link": {
+    "message": "編輯快捷鍵"
+  },
+  "options_save_button": {
+    "message": "儲存"
+  },
+  "options_test_button": {
+    "message": "測試"
+  },
+  "options_reset_button": {
+    "message": "重設"
+  },
+  "options_success_status": {
+    "message": "已儲存。"
+  },
+  "context_read_selection": {
+    "message": "朗讀所選文字"
+  },
+  "error_no_text": {
+    "message": "沒有找到任何文字閱讀"
+  },
+  "error_no_voice": {
+    "message": "不支援語言 '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "使用表格上傳您的 PDF 檔案進行朗讀"
+  },
+  "error_page_unreadable": {
+    "message": "無法朗讀這個網站"
+  },
+  "error_file_access": {
+    "message": "您需要在擴充套件設定中授權 Read Aloud 存取檔案位置"
+  },
+  "error_add_permissions": {
+    "message": "您需要授權 Read Aloud 額外的權限以存取此網站"
+  },
+  "error_login_required": {
+    "message": "請[登錄](sign-in)以使用高級語音"
+  },
+  "error_voice_unavailable": {
+    "message": "無法使用此語音，請選擇其他語音"
+  },
+  "error_payment_required": {
+    "message": "餘額不足"
+  },
+  "languages_heading": {
+    "message": "語言選項"
+  },
+  "languages_back_button": {
+    "message": "返回選項"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud 希望使用 Google Translate 進行語音合成。"
+  },
+  "google_translate_allow_button": {
+    "message": "允許"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud 正在使用 Google Translate 進行語音合成。請保持此標籤打開。"
+  }
+}

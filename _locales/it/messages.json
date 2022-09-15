@@ -1,0 +1,95 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Un Lettore Vocale da Testo a Voce"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Legge ad alta voce la pagina web con un click. Supporta 40+ lingue."
+  },
+  "options_heading": {
+    "message": "Opzioni"
+  },
+  "options_voice_label": {
+    "message": "Voce"
+  },
+  "options_voicegroup_standard": {
+    "message": "Voci Standard"
+  },
+  "options_voicegroup_premium": {
+    "message": "Voci Premium"
+  },
+  "options_enable_premium_voices": {
+    "message": "Abilita Voci Premium"
+  },
+  "options_premium_voices_enabled": {
+    "message": "Le voci premium sono abilitate"
+  },
+  "options_rate_label": {
+    "message": "Velocità"
+  },
+  "options_rate_warning": {
+    "message": "Nota: alcune voci potrebbero non funzionare ad alta velocità."
+  },
+  "options_pitch_label": {
+    "message": "Altezza"
+  },
+  "options_volume_label": {
+    "message": "Volume"
+  },
+  "options_show_highlighting": {
+    "message": "Evidenzia Testo"
+  },
+  "options_hotkeys_link": {
+    "message": "Modifica i tasti di scelta rapida"
+  },
+  "options_save_button": {
+    "message": "Salva"
+  },
+  "options_test_button": {
+    "message": "Testare"
+  },
+  "options_reset_button": {
+    "message": "Reset"
+  },
+  "options_success_status": {
+    "message": "Modifiche salvate."
+  },
+  "context_read_selection": {
+    "message": "Leggi il testo selezionato"
+  },
+  "error_no_text": {
+    "message": "Non ho trovato testo da leggere"
+  },
+  "error_no_voice": {
+    "message": "Lingua non supportata '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Usa il modulo per caricare il tuo file PDF per leggere ad alta voce"
+  },
+  "error_page_unreadable": {
+    "message": "Non posso leggere ad alta voce questo sito"
+  },
+  "error_login_required": {
+    "message": "[Accedi](sign-in) per utilizzare le voci Premium"
+  },
+  "error_voice_unavailable": {
+    "message": "Voce non disponibile, per favore sceglierne un'altra"
+  },
+  "languages_heading": {
+    "message": "Opzioni di lingua"
+  },
+  "languages_back_button": {
+    "message": "Torna alle opzioni"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud vorrebbe utilizzare Google Translate per la sintesi vocale."
+  },
+  "google_translate_allow_button": {
+    "message": "Permettere"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud sta usando Google Translate per la sintesi vocale. Si prega di tenere questa scheda aperta."
+  }
+}

@@ -1,0 +1,44 @@
+body {
+  user-select: none;
+  font-size: 20px;
+}
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(MaterialIcons-Regular.woff) format('woff');
+}
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.dark-mode {
+  background-color: #252525;
+  color: #d0d0d0;
+}
+.dark-mode .text-muted {
+  color: #999 !important;
+}
+.dark-mode .surface {
+  background-color: #323232;
+}
+.dark-mode .primary {
+  background-color: #bb86fc;
+  color: black;
+}
+.dark-mode .secondary {
+  background-color: #03dac6;
+  color: black;
+}
