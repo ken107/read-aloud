@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Premium Voices</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="css/premium-voices.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://assets.lsdsoftware.com/lib/databind.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/premium-voices.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Enable Premium Voices</h2>
+    <div class="text-secondary main-message">
+      Please <a target="_blank" href="https://blog.readaloud.app/2018/10/the-state-of-text-to-speech-technology.html">read our blog</a> to understand why we're charging money for these voices.
+    </div>
+
+    <div class="card test-voices">
+      <div class="card-header">
+        <i class="material-icons">graphic_eq</i>
+        <strong>Voices</strong>
+      </div>
+      <div class="card-body">
+        <table>
+          <tr>
+            <td>
+              <select class="form-control voices" name="voice" bind-statement-1="this.populateTestVoices(thisElem)" bind-event-change="#selectedVoice = JSON.parse(thisElem.value)"></select>
+            </td>
+            <td style="width: 1%">
+              <button type="button" class="btn btn-secondary btn-test" bind-event-click="onTestVoice(thisElem)">Test</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card subscription-status" bind-repeater-if="#account ? 1 : 0">
+      <div class="card-header">
+        <i class="material-icons">verified_user</i>
+        <strong>Balance</strong>
+      </div>
+      <div class="card-body">
+        <div class="logged-in-as-line">
+          You're logged in as <strong>{{#account.email}}</strong>
+        </div>
+        <div class="remaining-line">
+          Total Characters Remaining: <span class="remaining">{{Number(#account.balance).toLocaleString()}}</span>
+        </div>
+        <div class="free-tier-line">
+          Your account includes 100,000 free characters per month.
+        </div>
+        <div class="last-purchase-line" bind-repeater-if="!#purchasePending && #account.lastPurchaseDate ? 1 : 0">
+          Last purchase made on {{this.formatLastPurchaseDate(#account.lastPurchaseDate)}}
+        </div>
+        <div class="purchase-status-line" bind-repeater-if="#purchasePending ? 1 : 0">
+          A new purchase is PENDING <span class="spinner-border text-secondary"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card purchase-subscription">
+      <div class="card-header">
+        <i class="material-icons">shopping_cart</i>
+        <strong>Purchase</strong>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-danger" bind-statement-1="$(thisElem).toggle(!!#error)">{{#error.message}}</div>
+        <table class="table items">
+          <tbody>
+            <tr>
+              <th>Item</th>
+              <th>Description</th>
+              <th>Price</th>
+              <th></th>
+            </tr>
+            <tr>
+              <td>Read Aloud Premium Voices - 2M</td>
+              <td>2,000,000 characters</td>
+              <td>1.00 USD</td>
+              <td>
+                <form class="form-inline" bind-repeater-if="#account && !#purchasePending ? 1 : 0" bind-event-submit="this.onBuy(thisElem.qty.value); return false">
+                  <span class="input-group ml-auto">
+                    <span class="input-group-prepend">
+                      <span class="input-group-text">Qty:</span>
+                    </span>
+                    <input type="number" value="1" min="1" max="10" class="form-control" name="qty">
+                    <span class="input-group-append">
+                      <button type="submit" class="btn btn-primary">Buy</button>
+                    </span>
+                  </span>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="faq" class="card">
+      <div class="card-header">
+        <strong>FAQ</strong>
+      </div>
+      <div class="card-body">
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-1">How much is 1,000,000 characters?</a>
+          <div id="faq-1" class="collapse" data-parent="#faq">
+            <table>
+              <tr>
+                <th>Example</th>
+                <th>Text Length</th>
+                <th>Speech Duration</th>
+              </tr>
+              <tr>
+                <td>Average email message</td>
+                <td>3,100 characters</td>
+                <td>4 min</td>
+              </tr>
+              <tr>
+                <td>Typical news article</td>
+                <td>6,500 characters, three pages</td>
+                <td>9 min</td>
+              </tr>
+              <tr>
+                <td>"A Christmas Carol" by Charles Dickens</td>
+                <td>165,000 characters, 64 pages</td>
+                <td>3 hours 50 min</td>
+              </tr>
+              <tr>
+                <td>"Adventures of Huckleberry Finn" by Mark Twain</td>
+                <td>600,000 characters, 224 pages</td>
+                <td>13 hours 50 min</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-2">If I rewind or reread a document, does it count towards my balance?</a>
+          <div id="faq-2" class="collapse" data-parent="#faq">
+            Synthesized speech are cached on the server for 1 hour.
+            If you reread the document within that time, it won't be counted.
+            So feel free to forward/rewind at will.
+          </div>
+        </div>
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-3">Where do I view my order history?</a>
+          <div id="faq-3" class="collapse" data-parent="#faq">
+            You can view your past orders on <a href="https://pay.google.com/" target="_blank">pay.google.com</a>.
+          </div>
+        </div>
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-5">How do I get support?</a>
+          <div id="faq-5" class="collapse" data-parent="#faq">
+            Please email <a href="mailto:support@lsdsoftware.com">support@lsdsoftware.com</a> if you need help.
+          </div>
+        </div>
+        <div>
+          <a href data-toggle="collapse" data-target="#faq-6">How does the free tier work?</a>
+          <div id="faq-6" class="collapse" data-parent="#faq">
+            The free characters will always be used <i>before</i> the purchased characters are used.
+            So let's say you have purchased 2M characters and you have 100,000 free characters,
+            the 100,000 free characters will be used up first before the 2M is used.
+            At the start of each month, the balance of free characters will be reset back to 100,000.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-loading">
+    <div class="spinner-border text-light"></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,136 @@
+html, body {
+  margin: 0;
+  font-family: 'Quattrocento Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: url(../images/body-background.png) #eae6d1;
+}
+a {
+  text-decoration: none;
+}
+
+
+.container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-flow: column;
+}
+
+
+header {
+  padding: 25px 0 25px 0;
+  margin: 0;
+  text-align: center;
+  background: url(../images/background.png) #4276b6;
+  box-shadow: 1px 0px 2px rgba(0, 0, 0, 0.75);
+}
+header h1 {
+  font: 40px/48px 'Copse', "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #f3f3f3;
+  text-shadow: 0px 2px 0px #235796;
+  margin: 0;
+  white-space: nowrap;
+}
+header p {
+  color: #d8d8d8;
+  text-shadow: rgba(0, 0, 0, 0.2) 0 1px 0;
+  font-size: 18px;
+  margin: 0px;
+}
+
+
+.banner {
+  margin-top: -10px;
+  height: 50px;
+  background: #ffcc00;
+  border: 1px solid #f0b500;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
+  border-radius: 0px 2px 2px 0px;
+  display: flex;
+  align-items: center;
+}
+.banner .github-link {
+  margin-left: 1em;
+  display: flex;
+  fill: #666;
+}
+.banner .social-buttons {
+  margin: 0 1em 0 auto;
+}
+
+
+.button {
+  border: 1px solid #dba500;
+  background: linear_gradient(#ffe788, #ffce38);
+  border-radius: 2px;
+  box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.4), 0px 1px 1px rgba(0, 0, 0, 0.1);
+  background-color: #FFE788;
+  padding: .5em .6em;
+  color: #333;
+  display: inline-block;
+  text-align: center;
+}
+.button:hover {
+  background: linear_gradient(#ffe788, #ffe788);
+  background-color: #ffeca0;
+}
+
+
+.wrapper {
+  flex: 1;
+  display: flex;
+  flex-flow: row wrap;
+}
+
+
+nav {
+  padding-top: 1em;
+  flex: 1;
+  text-align: right;
+}
+nav .item {
+  margin: 1em 2em 0 0;
+  color: #666;
+  cursor: pointer;
+}
+nav .item.active {
+  font-weight: bold;
+  color: #333;
+}
+
+
+.sections {
+  flex: 3;
+  padding: 1em 2em 1em 2em;
+  background: #fbfbfb;
+  border-radius: 3px;
+  border: 1px solid #cbcbcb;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.09), inset 0px 0px 2px 2px rgba(255, 255, 255, 0.5), inset 0 0 5px 5px rgba(255, 255, 255, 0.4);
+  color: #666;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+}
+section:not(.active) {
+  display: none !important;
+}
+section h1 {
+  font-size: x-large;
+  color: #333;
+}
+section h2 {
+  margin-top: 50px;
+}
+
+
+footer {
+  color: #888;
+}
+footer a {
+  color: #888;
+}
+footer a:hover {
+  text-decoration: underline;
+}

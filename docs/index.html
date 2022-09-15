@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-86484590-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-86484590-2');
+  </script>
+
+  <meta property="og:url" content="https://readaloud.app/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Read Aloud: A Text-to-Speech Voice Reader" />
+  <meta property="og:description" content="A Chrome extension that reads out loud the current web-page article with one click. Supports 40+ languages." />
+  <meta property="og:image" content="https://readaloud.app/images/marquee.jpg"/>
+
+  <title>Read Aloud: A Text-to-Speech Voice Reader</title>
+  <link rel="stylesheet" type="text/css" href="css/main.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script>
+    var queryString = getQueryString();
+
+    $(function() {
+      $("nav .item").click(function(event) {
+        var target = $(event.target).data("target");
+        setActiveTab(target);
+      })
+      if (queryString.tab) {
+        var target = queryString.tab.toLowerCase();
+        setActiveTab(target);
+      }
+    })
+
+    function getQueryString() {
+      var queryString = {};
+      if (location.search) location.search.substr(1).replace(/\+/g, '%20').split('&').forEach(function(tuple) {
+        var tokens = tuple.split('=');
+        queryString[decodeURIComponent(tokens[0])] = tokens[1] && decodeURIComponent(tokens[1]);
+      })
+      return queryString;
+    }
+
+    function setActiveTab(target) {
+      $("nav .item.active, section.active").toggleClass("active", false);
+      $("nav .item[data-target=" + target + "], section#" + target).toggleClass("active", true);
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+  <header>
+    <h1>Read Aloud</h1>
+    <p>Voice enabling the web.</p>
+  </header>
+  <div class="banner">
+    <a class="github-link" href="https://github.com/ken107/read-aloud" title="View on GitHub">
+      <svg class="octicon octicon-mark-github v-align-middle" height="32" viewBox="0 0 16 16" version="1.1" width="32" aria-hidden="true">
+        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+      </svg>
+    </a>
+    <div class="social-buttons">
+      <iframe src="https://www.facebook.com/plugins/share_button.php?href=https%3A%2F%2Freadaloud.app%2F&layout=button&size=small&mobile_iframe=true&appId=577619509004708&width=59&height=20" width="65" height="20" style="border:none;overflow:hidden" scrolling="no" frameborder="0"></iframe>
+      <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    </div>
+  </div>
+  <div class="wrapper">
+    <nav>
+      <div class="item active" data-target="chrome-extension">Browser Extensions</div>
+      <div class="item" data-target="embed-website">Website Widget</div>
+      <div class="item" data-target="tts-tool">Voice Narration Tool</div>
+      <div class="item" data-target="support">Support</div>
+    </nav>
+    <div class="sections">
+    <section id="chrome-extension" class="active">
+      <h1>Read Aloud Browser Extensions</h1>
+      <p>Read aloud the content of any web page with one click.</p>
+      <a href="https://chrome.google.com/webstore/detail/hdhinadidafjejdhmfkjgnolgimiaplp" class="button">Chrome</a>
+      <a href="https://addons.mozilla.org/en-US/firefox/addon/read-aloud/" class="button">Firefox</a>
+      <a href="https://microsoftedge.microsoft.com/addons/detail/pnfonnnmfjnpfgagnklfaccicnnjcdkm" class="button">Edge</a>
+    </section>
+    <section id="embed-website">
+      <h1>Embed A TTS Widget Into Your Website</h1>
+      <a href="https://www.readaloudwidget.com/">readaloudwidget.com</a>
+    </section>
+    <section id="tts-tool">
+      <h1>Voice Narration Tool</h1>
+      <p>Convert text to speech and create voice narrations.</p>
+      <a href="https://ttstool.com/">ttstool.com</a>
+    </section>
+    <section id="support">
+      <h1>Support</h1>
+      <p>To send a support request, please use the <a href="https://www.lsdsoftware.com/contact.html?subject=Read%20Aloud">contact form</a>.</p>
+      <p>Got an idea or suggestion?  Please <a href="http://read-aloud.idea.informer.com/">share it</a>.</p>
+    </section>
+      <footer>
+        <a href="tos.html">Terms of Service</a>
+        <span style="color: gray">—</span>
+        <a href="privacy.html">Privacy Policy</a>
+        <span style="color: gray">—</span>
+        <span>&copy; <a href="https://www.lsdsoftware.com/">LSD Software</a></span>
+      </footer>
+    </div>
+  </div>
+  </div>
+</body>
+</html>

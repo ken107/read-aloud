@@ -1,0 +1,80 @@
+body {
+  font-size: 18px;
+}
+
+h2 {
+  margin-top: 10px;
+}
+
+.main-message {
+  margin-bottom: 40px;
+}
+
+.card {
+  margin-bottom: 40px;
+}
+
+.card-header {
+  text-transform: capitalize;
+  background-color: rgba(0, 0, 0, .66);
+  color: white;
+}
+
+.card-header>.material-icons {
+  vertical-align: middle;
+}
+
+.test-voices .buy-harpo {
+  font-size: smaller;
+}
+
+.subscription-status .free-tier-line {
+  font-size: smaller;
+  color: #6c757d;
+}
+
+.subscription-status .remaining {
+  color: #080;
+}
+
+.subscription-status .last-purchase-line, .subscription-status .purchase-status-line {
+  font-size: smaller;
+  color: #6c757d;
+}
+
+.subscription-status .spinner-border {
+  width: 1em;
+  height: 1em;
+  border-width: .2em;
+}
+
+.purchase-subscription table.items {
+  margin-bottom: 0;
+}
+
+#faq .card-body>div {
+  margin-bottom: 1rem;
+}
+
+#faq table {
+  width: 100%;
+}
+
+.page-loading {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: black;
+  opacity: .5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-loading .spinner-border {
+  width: 120px;
+  height: 120px;
+  border-width: .5em;
+}
