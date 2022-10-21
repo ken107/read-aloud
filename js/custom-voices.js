@@ -1,6 +1,6 @@
 
 $(function() {
-  getSettings(["awsCreds", "gcpCreds", "ibmCreds"])
+  getSettings(["awsCreds", "gcpCreds", "ibmCreds", "azureCreds"])
     .then(function(items) {
       if (items.awsCreds) {
         $("#aws-access-key-id").val(obfuscate(items.awsCreds.accessKeyId));
@@ -13,11 +13,16 @@ $(function() {
         $("#ibm-api-key").val(obfuscate(items.ibmCreds.apiKey));
         $("#ibm-url").val(obfuscate(items.ibmCreds.url));
       }
+      if (items.azureCreds) {
+        $("#azure-tts-key").val(obfuscate(items.azureCreds.subKey));
+        $("#azure-tts-region").val(obfuscate(items.azureCreds.region));
+      }
     })
   $(".status").hide();
   $("#aws-save-button").click(awsSave);
   $("#gcp-save-button").click(gcpSave);
   $("#ibm-save-button").click(ibmSave);
+  $("#azure-save-button").click(azureSave);
 })
 
 function obfuscate(key) {
@@ -66,6 +71,50 @@ function testAws(accessKeyId, secretAccessKey) {
       return polly.describeVoices().promise();
 }
 
+
+function azureSave() {
+  $(".status").hide();
+  var subKey = $("#azure-tts-key").val().trim();
+  var region = $("#azure-tts-region").val().trim();
+  if (subKey && region) {
+    $("#azure-progress").show();
+    testAzure(subKey, region);
+  }
+  else if (!subKey && !region) {
+    clearSettings(["azureCreds"])
+      .then(function() {
+        $("#azure-success").text("Azure Cognitive Services voices are disabled.").show();
+      })
+  }
+  else {
+    $("#azure-error").text("Missing required fields.").show();
+  }
+}
+
+function testAzure(subKey, region) {
+  const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subKey, region);
+  const audioConfig = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+
+  const synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+  synthesizer.speakTextAsync("Azure Congitive Services test",
+      result => {
+          if (result) {
+              console.log(JSON.stringify(result));
+          }
+          synthesizer.close();
+          $("#azure-progress").hide();
+          updateSettings({azureCreds: {subscriptionKey: subKey, region: region}});
+          $("#azure-success").text("Azure Cognitive Services voices are enabled.").show();
+          $("#azure-tts-key").val(obfuscate(subKey));
+          $("#azure-tts-region").val(obfuscate(region));
+      },
+      error => {
+          console.log(error);
+          synthesizer.close();
+          $("#azure-progress").hide();
+          $("#azure-error").text("Test failed: " + err.message).show();
+      });
+}
 
 function gcpSave() {
   $(".status").hide();

@@ -25,6 +25,7 @@
   </style>
 
   <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/custom-voices.js"></script>
 </head>
@@ -51,6 +52,30 @@
             <img id="aws-progress" class="status progress" src="img/loading.gif" />
             <div id="aws-success" class="status alert alert-success"></div>
             <div id="aws-error" class="status alert alert-danger"></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        Enter credentials to enable Azure Cognitive Services TTS voices.
+      </div>
+      <div class="card-body">
+        <form>
+          <div class="form-group">
+            <input type="text" class="form-control" id="azure-tts-key" placeholder="Subscription key" />
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" id="azure-tts-region" placeholder="Region" />
+          </div>
+          <div class="form-group">
+            <button type="button" class="btn btn-primary" id="azure-save-button">Save</button>
+          </div>
+          <div class="form-group">
+            <img id="azure-progress" class="status progress" src="img/loading.gif" />
+            <div id="azure-success" class="status alert alert-success"></div>
+            <div id="azure-error" class="status alert alert-danger"></div>
           </div>
         </form>
       </div>

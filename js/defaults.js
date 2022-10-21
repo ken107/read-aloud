@@ -290,7 +290,7 @@ function setState(key, value) {
  * VOICES
  */
 function getVoices() {
-  return getSettings(["awsCreds", "gcpCreds"])
+  return getSettings(["awsCreds", "gcpCreds", "azureCreds"])
     .then(function(settings) {
       return Promise.all([
         browserTtsEngine.getVoices(),
@@ -299,6 +299,7 @@ function getVoices() {
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : [],
         ibmWatsonTtsEngine.getVoices(),
+        settings.azureCreds ? azureTtsEngine.getVoices() : []
       ])
     })
     .then(function(arr) {
@@ -322,6 +323,10 @@ function isAmazonCloud(voice) {
   return /^Amazon /.test(voice.voiceName);
 }
 
+function isAzure(voice) {
+  return /^Azure /.test(voice.voiceName);
+}
+
 function isMicrosoftCloud(voice) {
   return /^Microsoft /.test(voice.voiceName) && voice.voiceName.indexOf(' - ') == -1;
 }
@@ -343,7 +348,7 @@ function isIbmWatson(voice) {
 }
 
 function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isOpenFPT(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
+  return isAmazonCloud(voice) || isAzure(voice) || isMicrosoftCloud(voice) || isOpenFPT(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
 }
 
 function isPremiumVoice(voice) {

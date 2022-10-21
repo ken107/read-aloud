@@ -5,6 +5,7 @@ var googleTranslateTtsEngine = new GoogleTranslateTtsEngine();
 var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
 var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
 var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
+var azureTtsEngine = new AzureTtsEngine();
 
 
 /*
@@ -37,6 +38,162 @@ interface TtsEngine {
   getVoices: function(): Voice[]
 }
 */
+
+function AzureTtsEngine() {
+  var audio = document.createElement("AUDIO");
+  var prefetchAudio;
+  var isSpeaking = false;
+  var speakPromise;
+  var synthesizer;
+  this.speak = function(utterance, options, onEvent) {
+    if (!options.volume) options.volume = 1;
+    if (!options.rate) options.rate = 1;
+    if (!options.pitch) options.pitch = 1;
+    audio.pause();
+    audio.volume = options.volume;
+    audio.defaultPlaybackRate = options.rate;
+    audio.onplay = function() {
+      onEvent({type: 'start', charIndex: 0});
+      isSpeaking = true;
+    };
+    audio.onended = function() {
+      onEvent({type: 'end', charIndex: utterance.length});
+      isSpeaking = false;
+    };
+    audio.onerror = function() {
+      onEvent({type: "error", errorMessage: audio.error.message});
+      isSpeaking = false;
+    };
+    speakPromise = Promise.resolve()
+      .then(function() {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
+        else return getAudioUrl(utterance, options.lang, options.voice, options.pitch);
+      })
+      .then(function(url) {
+        audio.src = url;
+        return audio.play();
+      })
+      .catch(function(err) {
+        onEvent({
+          type: "error",
+          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+        })
+      })
+  };
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking);
+  };
+  this.pause =
+  this.stop = function() {
+    speakPromise.then(function() {audio.pause()});
+  };
+  this.resume = function() {
+    audio.play();
+  };
+  this.setNextStartTime = function() {
+  };
+  this.getVoices = function() {
+    return voices; 
+    /*getSettings(["pollyVoices"])
+      .then(function(items) {
+        if (!items.pollyVoices || Date.now()-items.pollyVoices[0].ts > 24*3600*1000) updateVoices();
+        return items.pollyVoices || voices;
+      })*/
+  }
+  function updateVoices() {
+    // TODO - using list API: get access token, list voices, turn result into compatible format
+    // https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/rest-text-to-speech#get-a-list-of-voices
+    /*ajaxGet(config.serviceUrl + "/read-aloud/list-voices/amazon")
+      .then(JSON.parse)
+      .then(function(list) {
+        list[0].ts = Date.now();
+        updateSettings({pollyVoices: list});
+      })*/
+  }
+  function getAudioUrl(text, lang, voice, pitch) {
+    assert(text && lang && voice && pitch != null);
+    /*var matches = voice.voiceName.match(/^Amazon .* \((\w+)\)( \+\w+)?$/);
+    var voiceId = matches[1];
+    var style = matches[2] && matches[2].substr(2);*/
+
+    return getSynthesizer()
+      .then(function(synthesizer) {
+        synthesizer.speakTextAsync(
+          text,
+          result => {
+              //const audioData = result.audioData;
+              URL.createObjectURL(result.audioData);
+              console.log(`Audio data byte size: ${audioData.byteLength}.`)
+              synthesizer.close();
+          },
+          error => {
+              console.log(error);
+              synthesizer.close();
+          });
+      });
+  }
+  function getSynthesizer() {
+    //return synthesizer || (synthesizer = createSynthesizer());
+    // TODO figure out how to reuse synthesizer object
+    return createSynthesizer();
+  }
+  function createSynthesizer() {
+    return getSettings(["azureCreds"])
+      .then(function(items) {
+        if (!items.azureCreds) throw new Error("Missing Azure credentials");
+        const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(items.azureCreds.subscriptionKey, items.azureCreds.region);
+        return new SpeechSDK.SpeechSynthesizer(speechConfig);
+      })
+  }
+  /*function getOpts(text, voiceId, style) {
+    switch (style) {
+      case "newscaster":
+        return {
+          OutputFormat: "mp3",
+          Text: '<speak><amazon:domain name="news">' + escapeXml(text) + '</amazon:domain></speak>',
+          TextType: "ssml",
+          VoiceId: voiceId,
+          Engine: "neural"
+        }
+      case "conversational":
+        return {
+          OutputFormat: "mp3",
+          Text: '<speak><amazon:domain name="conversational">' + escapeXml(text) + '</amazon:domain></speak>',
+          TextType: "ssml",
+          VoiceId: voiceId,
+          Engine: "neural"
+        }
+      case "neural":
+        return {
+          OutputFormat: "mp3",
+          Text: text,
+          VoiceId: voiceId,
+          Engine: "neural"
+        }
+      default:
+        return {
+          OutputFormat: "mp3",
+          Text: text,
+          VoiceId: voiceId
+        }
+    }
+  }
+  function escapeXml(unsafe) {
+    return unsafe.replace(/[<>&'"]/g, function (c) {
+      switch (c) {
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '&': return '&amp;';
+          case '\'': return '&apos;';
+          case '"': return '&quot;';
+      }
+    })
+  }*/
+  var voices = [
+    {"voiceName":"Azure default voice","lang":"en-US","gender":"female"}
+  ]
+}
+
 
 function BrowserTtsEngine() {
   this.speak = function(text, options, onEvent) {

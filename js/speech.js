@@ -40,6 +40,7 @@ function Speech(texts, options) {
         })
     }
     if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;
+    if (isAzure(options.voice)) return azureTtsEngine;
     if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
     if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
     if (isRemoteVoice(options.voice)) return remoteTtsEngine;

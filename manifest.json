@@ -52,7 +52,8 @@
       "js/tts-engines.js",
       "js/speech.js",
       "js/document.js",
-      "js/events.js"
+      "js/events.js",
+      "js/microsoft.cognitiveservices.speech.sdk.bundle-min.js"
     ],
     "persistent": true
   },
