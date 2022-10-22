@@ -326,8 +326,8 @@ function isMicrosoftCloud(voice) {
   return /^Microsoft /.test(voice.voiceName) && voice.voiceName.indexOf(' - ') == -1;
 }
 
-function isOpenFPT(voice) {
-  return /^OpenFPT /.test(voice.voiceName);
+function isReadAloudCloud(voice) {
+  return /^ReadAloud /.test(voice.voiceName)
 }
 
 function isAmazonPolly(voice) {
@@ -343,7 +343,7 @@ function isIbmWatson(voice) {
 }
 
 function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isOpenFPT(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
 }
 
 function isPremiumVoice(voice) {

@@ -366,6 +366,9 @@ function RemoteTtsEngine(serviceUrl) {
     .map(function(item) {
       return {voiceName: item.voice_name, lang: item.lang};
     })
+    .concat(
+      {voiceName: "ReadAloud Generic Voice", autoSelect: true},
+    )
 }
 
 
