@@ -87,7 +87,7 @@ brapi.menus.onClicked.addListener(function(info, tab) {
       })
       .catch(console.error)
   else if (info.menuItemId == "options")
-    brapi.runtime.openOptionsPage()
+    createTab(brapi.runtime.getURL("options.html"))
 })
 
 
