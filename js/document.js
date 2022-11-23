@@ -374,20 +374,20 @@ function TabSource(tabId) {
     })
   }
   function injectScripts() {
-    return inject("js/jquery-3.1.1.min.js")
-      .then(inject.bind(null, "js/messaging.js"))
-      .then(function() {
-        if (handler.extraScripts) {
-          var tasks = handler.extraScripts.map(function(file) {return inject.bind(null, file)});
-          return inSequence(tasks);
-        }
-      })
-      .then(inject.bind(null, "js/content.js"))
-  }
-  function inject(file) {
-    var details = {file: file, tabId: tab.id};
-    if (frameId) details.frameId = frameId;
-    return executeScript(details);
+    return brapi.scripting.executeScript({
+      target: {
+        tabId: tab.id,
+        frameIds: frameId ? [frameId] : undefined
+      },
+      files: [
+        "js/jquery-3.1.1.min.js",
+        "js/messaging.js",
+      ]
+      .concat(handler.extraScripts || [])
+      .concat([
+        "js/content.js",
+      ])
+    })
   }
 }
 

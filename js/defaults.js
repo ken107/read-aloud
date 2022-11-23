@@ -400,36 +400,6 @@ function findVoiceByLang(voices, lang) {
 /**
  * HELPERS
  */
-function executeFile(file) {
-  return new Promise(function(fulfill, reject) {
-    brapi.tabs.executeScript({file: file}, function(result) {
-      if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
-      else fulfill(result);
-    });
-  });
-}
-
-function executeScript(details) {
-  console.log(details);
-  var tabId = details.tabId;
-  delete details.tabId;
-  return new Promise(function(fulfill, reject) {
-    brapi.tabs.executeScript(tabId, details, function(result) {
-      if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
-      else fulfill(result);
-    });
-  });
-}
-
-function insertCSS(file) {
-  return new Promise(function(fulfill, reject) {
-    brapi.tabs.insertCSS({file: file}, function(result) {
-      if (brapi.runtime.lastError) reject(new Error(brapi.runtime.lastError.message));
-      else fulfill(result);
-    })
-  });
-}
-
 function getActiveTab() {
   return new Promise(function(fulfill) {
     brapi.tabs.query({active: true, lastFocusedWindow: true}, function(tabs) {
@@ -500,12 +470,6 @@ function updateWindow(windowId, details) {
       else reject(brapi.runtime.lastError || new Error("Could not update window " + windowId))
     })
   })
-}
-
-function getBackgroundPage() {
-  return new Promise(function(fulfill) {
-    brapi.runtime.getBackgroundPage(fulfill);
-  });
 }
 
 function negate(pred) {
@@ -991,10 +955,8 @@ function getFrameTexts(tabId, frameId, scripts) {
       reject(new Error("Timeout waiting for content script to connect"));
     }
     brapi.runtime.onConnect.addListener(onConnect);
-    var tasks = scripts.map(function(file) {
-      return executeScript.bind(null, {file: file, tabId: tabId, frameId: frameId});
-    })
-    inSequence(tasks).catch(onError);
+    brapi.scripting.executeScript({target: {tabId: tabId, frameIds: [frameId]}, files: scripts})
+      .catch(onError);
     var timer = setTimeout(onTimeout, 15000);
   })
 }

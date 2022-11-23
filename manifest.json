@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
 
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
@@ -7,8 +7,7 @@
   "version": "1.59.1",
   "default_locale": "en",
 
-  "browser_action": {
-    "default_icon": "img/icon.png",
+  "action": {
     "default_popup": "popup.html?isPopup=1"
   },
   "icons": {
@@ -31,12 +30,16 @@
     "identity",
     "storage",
     "tts",
-    "ttsEngine",
-    "https://translate.google.com/"
+    "ttsEngine"
   ],
   "optional_permissions": [
     "webRequest",
-    "webNavigation",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "https://translate.google.com/"
+  ],
+  "optional_host_permissions": [
     "http://*/",
     "https://*/",
     "file://*/*"
@@ -44,19 +47,8 @@
   "web_accessible_resources": [
     "js/page/*"
   ],
-  "content_security_policy": "script-src 'self'; object-src 'self'",
   "background": {
-    "scripts": [
-      "js/defaults.js",
-      "js/messaging.js",
-      "js/google-translate.js",
-      "js/aws-sdk.js",
-      "js/tts-engines.js",
-      "js/speech.js",
-      "js/document.js",
-      "js/events.js"
-    ],
-    "persistent": false
+    "service_worker": "background.js"
   },
   "options_page": "options.html",
   "options_ui": {

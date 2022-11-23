@@ -81,8 +81,7 @@ function handleError(err) {
             })
           break;
         case "#sign-in":
-          getBackgroundPage()
-            .then(callMethod("getAuthToken", {interactive: true}))
+          getAuthToken({interactive: true})
             .then(function(token) {
               if (token) $("#btnPlay").click();
             })
@@ -94,13 +93,6 @@ function handleError(err) {
           requestPermissions(config.wavenetPerms)
             .then(function(granted) {
               if (granted) bgPageInvoke("authWavenet");
-            })
-          break;
-        case "#user-gesture":
-          getBackgroundPage()
-            .then(callMethod("userGestureActivate"))
-            .then(function() {
-              $("#btnPlay").click();
             })
           break;
         case "#open-pdf-viewer":

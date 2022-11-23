@@ -265,13 +265,6 @@ function handleError(err) {
               if (granted) bgPageInvoke("authWavenet");
             })
           break;
-        case "#user-gesture":
-          getBackgroundPage()
-            .then(callMethod("userGestureActivate"))
-            .then(function() {
-              $("#test-voice").click();
-            })
-          break;
       }
     })
   }
