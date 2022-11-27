@@ -734,6 +734,7 @@ function AmazonPollyTtsEngine() {
     {"voiceName":"AmazonPolly New Zealand English (Aria)","lang":"en-NZ","gender":"female"},
     {"voiceName":"AmazonPolly Indian English (Raveena)","lang":"en-IN","gender":"female"},
     {"voiceName":"AmazonPolly Indian English (Aditi)","lang":"en-IN","gender":"female"},
+    {"voiceName":"AmazonPolly Indian English (Kajal)","+neural":"en-IN","gender":"female"},
     {"voiceName":"AmazonPolly Welsh English (Geraint)","lang":"en-GB-WLS","gender":"male"},
     {"voiceName":"AmazonPolly British English (Emma) +neural","lang":"en-GB","gender":"female"},
     {"voiceName":"AmazonPolly British English (Emma)","lang":"en-GB","gender":"female"},
