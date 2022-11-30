@@ -44,16 +44,16 @@
     "https://*/",
     "file://*/*"
   ],
-  "web_accessible_resources": [
-    "js/page/*"
-  ],
+  "web_accessible_resources": [{
+    "resources": [ "js/page/google-doc.js" ],
+    "matches": [ "https://docs.google.com/*" ]
+  }],
   "background": {
     "service_worker": "background.js"
   },
   "options_page": "options.html",
   "options_ui": {
-    "page": "options.html",
-    "chrome_style": false
+    "page": "options.html"
   },
   "commands": {
     "play": {

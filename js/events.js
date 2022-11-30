@@ -1,9 +1,4 @@
 
-var activeDoc;
-var playbackError = null;
-var silenceLoop = new Audio("sound/silence.mp3");
-silenceLoop.loop = true;
-
 brapi.runtime.onInstalled.addListener(installContextMenus);
 if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
 
@@ -22,18 +17,9 @@ var handlers = {
   seek: seek,
   reportIssue: reportIssue,
   authWavenet: authWavenet,
-  ibmFetchVoices: function(apiKey, url) {
-    return ibmWatsonTtsEngine.fetchVoices(apiKey, url);
-  },
-  getSpeechPosition: function() {
-    return getActiveSpeech()
-      .then(function(speech) {
-        return speech && speech.getPosition();
-      })
-  },
-  getPlaybackError: function() {
-    if (playbackError) return {message: playbackError.message}
-  },
+  ibmFetchVoices: sendToPlayer.bind(null, {method: "ibmFetchVoices"}),
+  getSpeechPosition: sendToPlayer.bind(null, {method: "getSpeechPosition"}),
+  getPlaybackError: sendToPlayer.bind(null, {method: "getPlaybackError"}),
 }
 
 brapi.runtime.onMessage.addListener(
@@ -122,110 +108,52 @@ if (brapi.ttsEngine) (function() {
 /**
  * METHODS
  */
+function sendToPlayer(message) {
+  return messagingClient.sendTo("player", message)
+}
+
 function playText(text, opts) {
-  opts = opts || {}
-  playbackError = null
-  if (!activeDoc) {
-    openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/), {lang: opts.lang}), function(err) {
-      if (err) playbackError = err
-    })
-  }
-  return activeDoc.play()
-    .catch(function(err) {
-      handleError(err);
-      closeDoc();
-      throw err;
-    })
+  //TODO:
+  //0. stop current player if any
+  //1. inject player
+  return sendToPlayer({method: "playText", args: [text, opts]})
 }
 
 function playTab(tabId) {
-  playbackError = null
-  if (!activeDoc) {
-    openDoc(new TabSource(tabId), function(err) {
-      if (err) playbackError = err
-    })
-  }
-  return activeDoc.play()
-    .catch(function(err) {
-      handleError(err);
-      closeDoc();
-      throw err;
-    })
+  //TODO:
+  //0. stop current player if any
+  //1. decide based on URL where to inject content-script and player
+  //2. inject content-script, load any dependencies
+  //3. inject player with content-script's destId
+  var destId
+  return sendToPlayer({method: "playTab", args: [destId]})
 }
 
 function stop() {
-  if (activeDoc) {
-    activeDoc.stop();
-    closeDoc();
-    return Promise.resolve();
-  }
-  else return Promise.resolve();
+  return sendToPlayer({method: "stop"})
 }
 
 function pause() {
-  if (activeDoc) return activeDoc.pause();
-  else return Promise.resolve();
+  return sendToPlayer({method: "pause"})
 }
 
 function getPlaybackState() {
-  if (activeDoc) return activeDoc.getState();
-  else return Promise.resolve("STOPPED");
-}
-
-function getActiveSpeech() {
-  if (activeDoc) return activeDoc.getActiveSpeech();
-  else return Promise.resolve(null);
-}
-
-function openDoc(source, onEnd) {
-  activeDoc = new Doc(source, function(err) {
-    handleError(err);
-    closeDoc();
-    if (typeof onEnd == "function") onEnd(err);
-  })
-  silenceLoop.play();
-}
-
-function closeDoc() {
-  if (activeDoc) {
-    activeDoc.close();
-    activeDoc = null;
-    silenceLoop.pause();
-  }
+  return sendToPlayer({method: "getPlaybackState"})
 }
 
 function forward() {
-  if (activeDoc) return activeDoc.forward();
-  else return Promise.reject(new Error("Can't forward, not active"));
+  return sendToPlayer({method: "forward"})
 }
 
 function rewind() {
-  if (activeDoc) return activeDoc.rewind();
-  else return Promise.reject(new Error("Can't rewind, not active"));
+  return sendToPlayer({method: "rewind"})
 }
 
 function seek(n) {
-  if (activeDoc) return activeDoc.seek(n);
-  else return Promise.reject(new Error("Can't seek, not active"));
+  return sendToPlayer({method: "seek", args: [n]})
 }
 
-function handleError(err) {
-  if (err) {
-    var code = /^{/.test(err.message) ? JSON.parse(err.message).code : err.message;
-    if (code == "error_payment_required") clearSettings(["voiceName"]);
-    reportError(err);
-  }
-}
 
-function reportError(err) {
-  if (err && err.stack) {
-    var details = err.stack;
-    if (!details.startsWith(err.name)) details = err.name + ": " + err.message + "\n" + details;
-    getState("lastUrl")
-      .then(function(url) {return reportIssue(url, details)})
-      .catch(console.error)
-  }
-}
 
 function reportIssue(url, comment) {
   var manifest = brapi.runtime.getManifest();

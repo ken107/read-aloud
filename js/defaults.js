@@ -213,6 +213,7 @@ var defaults = {
   highlightWindowSize: 2,
 };
 
+if (typeof window != "undefined")
 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
   document.addEventListener("DOMContentLoaded", function() {
     document.body.classList.add("dark-mode")
@@ -538,41 +539,26 @@ function urlEncode(oData) {
 }
 
 function ajaxGet(sUrl) {
-  return new Promise(ajaxGetCb.bind(null, sUrl));
-}
-
-function ajaxGetCb(sUrl, fulfill, reject) {
   var opts = typeof sUrl == "string" ? {url: sUrl} : sUrl;
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", opts.url, true);
-    if (opts.headers) for (var name in opts.headers) xhr.setRequestHeader(name, opts.headers[name]);
-    if (opts.responseType) xhr.responseType = opts.responseType;
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState == XMLHttpRequest.DONE) {
-        if (xhr.status == 200) fulfill(xhr.response);
-        else if (reject) {
-          var err = new Error("Failed to fetch " + opts.url.substr(0, 100));
-          err.xhr = xhr;
-          reject(err);
-        }
+  return fetch(opts.url, {headers: opts.headers})
+    .then(res => {
+      switch (opts.responseType) {
+        case "json": return res.json()
+        case "blob": return res.blob()
+        default: return res.text()
       }
-    };
-    xhr.send(null);
+    })
 }
 
 function ajaxPost(sUrl, oData, sType) {
-  return new Promise(function(fulfill, reject) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", sUrl, true);
-    xhr.setRequestHeader("Content-type", sType == "json" ? "application/json" : "application/x-www-form-urlencoded");
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState == XMLHttpRequest.DONE) {
-        if (xhr.status == 200) fulfill(xhr.responseText);
-        else reject(new Error("Failed to fetch " + sUrl.substr(0, 100)));
-      }
-    };
-    xhr.send(sType == "json" ? JSON.stringify(oData) : urlEncode(oData));
-  })
+  return fetch(sUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": sType == "json" ? "application/json" : "application/x-www-form-urlencoded"
+      },
+      body: sType == "json" ? JSON.stringify(oData) : urlEncode(oData)
+    })
+    .then(res => res.text())
 }
 
 function objectAssign(target, varArgs) { // .length of function is 2
