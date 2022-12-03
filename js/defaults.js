@@ -213,11 +213,14 @@ var defaults = {
   highlightWindowSize: 2,
 };
 
-if (typeof window != "undefined")
-if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-  document.addEventListener("DOMContentLoaded", function() {
-    document.body.classList.add("dark-mode")
-  })
+//if extension page but not service worker
+if (typeof brapi.commands != "undefined" && typeof window != "undefined") {
+  //setup dark mode
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.addEventListener("DOMContentLoaded", function() {
+      document.body.classList.add("dark-mode")
+    })
+  }
 }
 
 

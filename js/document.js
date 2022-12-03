@@ -23,10 +23,10 @@ function SimpleSource(texts, opts) {
 }
 
 
-function TabSource(destId) {
+function TabSource(destUri) {
   var waiting = true;
 
-  this.ready = messagingClient.sendTo(destId, {method: "getInfo"})
+  this.ready = sendToContentScript({method: "getInfo"})
     .finally(function() {
       waiting = false;
     })
@@ -36,12 +36,12 @@ function TabSource(destId) {
   }
   this.getCurrentIndex = function() {
     waiting = true;
-    return messagingClient.sendTo(destId, {method: "getCurrentIndex"})
+    return sendToContentScript({method: "getCurrentIndex"})
       .finally(function() {waiting = false})
   }
   this.getTexts = function(index, quietly) {
     waiting = true;
-    return messagingClient.sendTo(destId, {method: "getTexts", args: [index, quietly]})
+    return sendToContentScript({method: "getTexts", args: [index, quietly]})
       .finally(function() {waiting = false})
   }
   this.close = function() {
@@ -50,6 +50,22 @@ function TabSource(destId) {
   this.getUri = function() {
     return this.ready
       .then(function(info) {return info.url})
+  }
+
+  function sendToContentScript(message) {
+    if (/^extension:/.test(destUri)) {
+      //TODO
+      console.error("Not implemented")
+    }
+    else if (/^local:/.test(destUri)) {
+      return contentScriptMessageHandler(message)
+    }
+    else if (/^forward:/.test(destUri)) {
+      return bgPageInvoke("forwardToContentScript", [message])
+    }
+    else {
+      console.error("FATAL: unhandled destUri " + destUri)
+    }
   }
 }
 

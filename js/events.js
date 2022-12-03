@@ -17,9 +17,16 @@ var handlers = {
   seek: seek,
   reportIssue: reportIssue,
   authWavenet: authWavenet,
-  ibmFetchVoices: sendToPlayer.bind(null, {method: "ibmFetchVoices"}),
-  getSpeechPosition: sendToPlayer.bind(null, {method: "getSpeechPosition"}),
-  getPlaybackError: sendToPlayer.bind(null, {method: "getPlaybackError"}),
+  forwardToContentScript: sendToContentScript,
+  ibmFetchVoices: function() {
+    return sendToPlayer({method: "ibmFetchVoices"})
+  },
+  getSpeechPosition: function() {
+    return sendToPlayer({method: "getSpeechPosition"})
+  },
+  getPlaybackError: function() {
+    return sendToPlayer({method: "getPlaybackError"})
+  },
 }
 
 brapi.runtime.onMessage.addListener(
@@ -108,25 +115,28 @@ if (brapi.ttsEngine) (function() {
 /**
  * METHODS
  */
-function sendToPlayer(message) {
-  return messagingClient.sendTo("player", message)
-}
-
 function playText(text, opts) {
-  //TODO:
-  //0. stop current player if any
-  //1. inject player
-  return sendToPlayer({method: "playText", args: [text, opts]})
+  stopCurrentPlayback()
+  return injectPlayer()
+    .then(function() {
+      return sendToPlayer({method: "playText", args: [text, opts]})
+    })
 }
 
 function playTab(tabId) {
-  //TODO:
-  //0. stop current player if any
-  //1. decide based on URL where to inject content-script and player
-  //2. inject content-script, load any dependencies
-  //3. inject player with content-script's destId
-  var destId
-  return sendToPlayer({method: "playTab", args: [destId]})
+  stopCurrentPlayback()
+  return injectContentScript(tabId)
+    .then(function(contentScriptTabId) {
+      return injectPlayer()
+        .then(function(playerTabId) {
+          if (/^extension:/.test(contentScriptTabId)) return contentScriptTabId
+          else if (contentScriptTabId == playerTabId) return "local:"
+          else return "forward:"
+        })
+    })
+    .then(function(destUri) {
+      return sendToPlayer({method: "playTab", args: [destUri]})
+    })
 }
 
 function stop() {
@@ -154,6 +164,118 @@ function seek(n) {
 }
 
 
+
+function stopCurrentPlayback() {
+  sendToPlayer({method: "stop"})
+    .catch(function(err) {
+      //ignore
+    })
+}
+
+function injectContentScript(tabId) {
+  var tab
+  return (tabId ? getTab(tabId) : getActiveTab())
+    .then(function(result) {
+      tab = result
+      if (!tab) throw new Error({code: "error_page_unreadable"})
+      return setState("contentScriptTabId", tab.id)
+    })
+    .then(function() {
+      //check if already injected
+      return brapi.scripting.executeScript({
+        target: {tabId: tab.id},
+        func: function() {
+          return typeof contentScriptMessageHandler != "undefined"
+        }
+      })
+        .then(function(items) {
+          return items[0].result == true
+        })
+    })
+    .then(function(alreadyInjected) {
+      if (alreadyInjected) return
+      return brapi.scripting.executeScript({
+        target: {tabId: tab.id},
+        files: [
+          "js/jquery-3.1.1.min.js",
+          "js/messaging.js",
+          getPageSpecificScript(tab.url),
+          "js/content.js",
+        ]
+      })
+    })
+    .then(function() {
+      return tab.id
+    })
+
+  function getPageSpecificScript(url) {
+    //TODO
+    return "js/content/html-doc.js"
+  }
+}
+
+function injectPlayer() {
+  var tab
+  return getActiveTab()       //TODO: inject player in offscreen document or popup window instead?
+    .then(function(result) {
+      tab = result
+      if (!tab) throw new Error("Can't inject TTS player, no active tab")
+      if (!/^(http|https|file):/.test(tab.url)) throw new Error("Can't inject TTS player, non-http tab")
+      return setState("playerTabId", tab.id)
+    })
+    .then(function() {
+      //check if already injected in this tab
+      return brapi.scripting.executeScript({
+        target: {tabId: tab.id},
+        func: function() {
+          return typeof playerMessageHandler != "undefined"
+        }
+      })
+        .then(function(items) {
+          return items[0].result == true
+        })
+    })
+    .then(function(alreadyInjected) {
+      if (alreadyInjected) return
+      return brapi.scripting.executeScript({
+        target: {tabId: tab.id},
+        files: [
+          "js/defaults.js",
+          "js/google-translate.js",
+          "js/aws-sdk.js",
+          "js/tts-engines.js",
+          "js/speech.js",
+          "js/document.js",
+          "js/player.js",
+        ]
+      })
+    })
+    .then(function() {
+      return tab.id
+    })
+}
+
+function sendToContentScript(message) {
+  return getState("contentScriptTabId")
+    .then(function(tabId) {
+      return brapi.tabs.sendMessage(tabId, message)
+    })
+    .then(function(result) {
+      if (result && result.error) throw new Error(result.error)
+      else return result
+    })
+}
+
+function sendToPlayer(message) {
+  return getState("playerTabId")
+    .then(function(tabId) {
+      return brapi.tabs.sendMessage(tabId, message)
+    })
+    .then(function(result) {
+      if (result && result.error) throw new Error(result.error)
+      else return result
+    })
+}
 
 function reportIssue(url, comment) {
   var manifest = brapi.runtime.getManifest();

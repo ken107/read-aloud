@@ -5,6 +5,42 @@ var silenceLoop = new Audio("sound/silence.mp3");
 silenceLoop.loop = true;
 
 
+var handlers = {
+  playText: playText,
+  playTab: playTab,
+  stop: stop,
+  pause: pause,
+  getPlaybackState: getPlaybackState,
+  forward: forward,
+  rewind: rewind,
+  seek: seek,
+  ibmFetchVoices: ibmFetchVoices,
+  getSpeechPosition: getSpeechPosition,
+  getPlaybackError: getPlaybackError,
+}
+
+function playerMessageHandler(request) {
+  var handler = handlers[request.method]
+  if (!handler) return Promise.reject(new Error("Bad method " + request.method))
+  return Promise.resolve()
+    .then(function() {
+      return handler.apply(null, request.args)
+    })
+}
+
+brapi.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    playerMessageHandler(request)
+      .then(sendResponse)
+      .catch(function(err) {
+        sendResponse({error: err.message})
+      })
+    return true
+  }
+)
+
+
+
 function playText(text, opts) {
   opts = opts || {}
   playbackError = null
@@ -21,10 +57,10 @@ function playText(text, opts) {
     })
 }
 
-function playTab(destId) {
+function playTab(destUri) {
   playbackError = null
   if (!activeDoc) {
-    openDoc(new TabSource(destId), function(err) {
+    openDoc(new TabSource(destUri), function(err) {
       if (err) playbackError = err
     })
   }

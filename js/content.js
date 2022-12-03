@@ -1,21 +1,34 @@
+var csbrapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
 
-var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
+function contentScriptMessageHandler(request) {
+  var handler = handlers[request.method]
+  if (!handler) return Promise.reject(new Error("Bad method " + request.method))
+  return Promise.resolve()
+    .then(function() {
+      return handler.apply(null, request.args)
+    })
+}
 
-(function() {
-  var port = brapi.runtime.connect({name: "ReadAloudContentScript"});
-  var peer = new RpcPeer(new ExtensionMessagingPeer(port));
-  peer.onInvoke = function(method) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    var handlers = {
-      getCurrentIndex: getCurrentIndex,
-      getTexts: getTexts
-    }
-    if (handlers[method]) return handlers[method].apply(handlers, args);
-    else console.error("Unknown method", method);
+csbrapi.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    contentScriptMessageHandler(request)
+      .then(sendResponse)
+      .catch(function(err) {
+        sendResponse({error: err.message});
+      })
+    return true;
   }
-  $(function() {
-    peer.invoke("onReady", getInfo());
-  })
+);
+
+
+
+var handlers = (function() {
+  return {
+    getRequireJs: getRequireJs,
+    getInfo: getInfo,
+    getCurrentIndex: getCurrentIndex,
+    getTexts: getTexts
+  }
 
   function getInfo() {
     return {
@@ -170,13 +183,13 @@ function simulateClick(elementToClick) {
 
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.get(names, fulfill);
+    csbrapi.storage.local.get(names, fulfill);
   });
 }
 
 function updateSettings(items) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.set(items, fulfill);
+    csbrapi.storage.local.set(items, fulfill);
   });
 }
 
