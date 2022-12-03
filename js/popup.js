@@ -114,10 +114,12 @@ function updateButtons() {
     return Promise.all([
       getSettings(),
       bgPageInvoke("getPlaybackState"),
-      bgPageInvoke("getSpeechPosition"),
-      bgPageInvoke("getPlaybackError")
     ])
-  .then(spread(function(settings, state, speechPos, playbackErr) {
+  .then(spread(function(settings, stateInfo) {
+    var state = stateInfo.status
+    var speechPos = stateInfo.speechPosition
+    var playbackErr = stateInfo.playbackError
+
     if (playbackErr) playbackErrorProcessor.next(playbackErr)
 
     $("#imgLoading").toggle(state == "LOADING");

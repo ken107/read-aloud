@@ -28,6 +28,7 @@
     "activeTab",
     "contextMenus",
     "identity",
+    "scripting",
     "storage",
     "tts",
     "ttsEngine"

@@ -1,34 +1,37 @@
 var csbrapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
+var contentScriptMessageHandler
 
-function contentScriptMessageHandler(request) {
-  var handler = handlers[request.method]
-  if (!handler) return Promise.reject(new Error("Bad method " + request.method))
-  return Promise.resolve()
-    .then(function() {
-      return handler.apply(null, request.args)
-    })
-}
-
-csbrapi.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    contentScriptMessageHandler(request)
-      .then(sendResponse)
-      .catch(function(err) {
-        sendResponse({error: err.message});
-      })
-    return true;
-  }
-);
-
-
-
-var handlers = (function() {
-  return {
+(function() {
+  var handlers = {
     getRequireJs: getRequireJs,
     getInfo: getInfo,
     getCurrentIndex: getCurrentIndex,
     getTexts: getTexts
   }
+
+  contentScriptMessageHandler = function(request) {
+    var handler = handlers[request.method]
+    if (!handler) return Promise.reject(new Error("Bad method " + request.method))
+    return Promise.resolve()
+      .then(function() {
+        return handler.apply(null, request.args)
+      })
+  }
+
+  csbrapi.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      if (request.dest != "contentScript") return;
+      contentScriptMessageHandler(request)
+        .then(sendResponse)
+        .catch(function(err) {
+          console.error(err)
+          sendResponse({error: err.message});
+        })
+      return true;
+    }
+  );
+
+
 
   function getInfo() {
     return {

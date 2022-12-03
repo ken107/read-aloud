@@ -21,30 +21,29 @@ var handlers = {
   ibmFetchVoices: function() {
     return sendToPlayer({method: "ibmFetchVoices"})
   },
-  getSpeechPosition: function() {
-    return sendToPlayer({method: "getSpeechPosition"})
-  },
-  getPlaybackError: function() {
-    return sendToPlayer({method: "getPlaybackError"})
-  },
+}
+
+function serviceWorkerMessageHandler(request) {
+  var handler = handlers[request.method]
+  if (!handler) return Promise.reject(new Error("Bad method " + request.method))
+  return Promise.resolve()
+    .then(function() {
+      return handler.apply(null, request.args)
+    })
 }
 
 brapi.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    var handler = handlers[request.method];
-    if (handler) {
-      Promise.resolve(handler.apply(null, request.args))
-        .then(sendResponse)
-        .catch(function(err) {
-          sendResponse({error: err.message});
-        })
-      return true;
-    }
-    else {
-      sendResponse({error: "BAD_METHOD"});
-    }
+    if (request.dest != "serviceWorker") return;
+    serviceWorkerMessageHandler(request)
+      .then(sendResponse)
+      .catch(function(err) {
+        console.error(err)
+        sendResponse({error: err.message});
+      })
+    return true
   }
-);
+)
 
 
 /**
@@ -97,20 +96,6 @@ brapi.commands.onCommand.addListener(function(command) {
 })
 
 
-/**
- * chrome.ttsEngine handlers
- */
-if (brapi.ttsEngine) (function() {
-  brapi.ttsEngine.onSpeak.addListener(function(utterance, options, onEvent) {
-    options = Object.assign({}, options, {voice: {voiceName: options.voiceName}});
-    remoteTtsEngine.speak(utterance, options, onEvent);
-  });
-  brapi.ttsEngine.onStop.addListener(remoteTtsEngine.stop);
-  brapi.ttsEngine.onPause.addListener(remoteTtsEngine.pause);
-  brapi.ttsEngine.onResume.addListener(remoteTtsEngine.resume);
-})()
-
-
 
 /**
  * METHODS
@@ -148,7 +133,11 @@ function pause() {
 }
 
 function getPlaybackState() {
-  return sendToPlayer({method: "getPlaybackState"})
+  return getState("playerTabId")
+    .then(function(tabId) {
+      if (tabId) return sendToPlayer({method: "getPlaybackState"})
+      return {status: "STOPPED"}
+    })
 }
 
 function forward() {
@@ -178,9 +167,7 @@ function injectContentScript(tabId) {
     .then(function(result) {
       tab = result
       if (!tab) throw new Error({code: "error_page_unreadable"})
-      return setState("contentScriptTabId", tab.id)
-    })
-    .then(function() {
+
       //check if already injected
       return brapi.scripting.executeScript({
         target: {tabId: tab.id},
@@ -205,6 +192,9 @@ function injectContentScript(tabId) {
       })
     })
     .then(function() {
+      return setState("contentScriptTabId", tab.id)
+    })
+    .then(function() {
       return tab.id
     })
 
@@ -221,9 +211,7 @@ function injectPlayer() {
       tab = result
       if (!tab) throw new Error("Can't inject TTS player, no active tab")
       if (!/^(http|https|file):/.test(tab.url)) throw new Error("Can't inject TTS player, non-http tab")
-      return setState("playerTabId", tab.id)
-    })
-    .then(function() {
+
       //check if already injected in this tab
       return brapi.scripting.executeScript({
         target: {tabId: tab.id},
@@ -251,6 +239,9 @@ function injectPlayer() {
       })
     })
     .then(function() {
+      return setState("playerTabId", tab.id)
+    })
+    .then(function() {
       return tab.id
     })
 }
@@ -258,22 +249,32 @@ function injectPlayer() {
 function sendToContentScript(message) {
   return getState("contentScriptTabId")
     .then(function(tabId) {
+      message.dest = "contentScript"
       return brapi.tabs.sendMessage(tabId, message)
     })
     .then(function(result) {
       if (result && result.error) throw new Error(result.error)
       else return result
+    })
+    .catch(function(err) {
+      clearState("contentScriptTabId")
+      throw err
     })
 }
 
 function sendToPlayer(message) {
   return getState("playerTabId")
     .then(function(tabId) {
+      message.dest = "player"
       return brapi.tabs.sendMessage(tabId, message)
     })
     .then(function(result) {
       if (result && result.error) throw new Error(result.error)
       else return result
+    })
+    .catch(function(err) {
+      clearState("playerTabId")
+      throw err
     })
 }
 

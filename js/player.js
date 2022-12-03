@@ -15,8 +15,6 @@ var handlers = {
   rewind: rewind,
   seek: seek,
   ibmFetchVoices: ibmFetchVoices,
-  getSpeechPosition: getSpeechPosition,
-  getPlaybackError: getPlaybackError,
 }
 
 function playerMessageHandler(request) {
@@ -30,9 +28,11 @@ function playerMessageHandler(request) {
 
 brapi.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
+    if (request.dest != "player") return;
     playerMessageHandler(request)
       .then(sendResponse)
       .catch(function(err) {
+        console.error(err)
         sendResponse({error: err.message})
       })
     return true
@@ -87,23 +87,23 @@ function pause() {
 }
 
 function getPlaybackState() {
-  if (activeDoc) return activeDoc.getState();
-  else return Promise.resolve("STOPPED");
+  if (activeDoc) {
+    return Promise.all([activeDoc.getState(), activeDoc.getActiveSpeech()])
+      .then(function(results) {
+        return {
+          status: results[0],
+          speechPosition: results[1] && results[1].getPosition(),
+          playbackError: playbackError && {message: playbackError.message, stack: playbackError.stack},
+        }
+      })
+  }
+  else {
+    return {status: "STOPPED"}
+  }
 }
 
 function ibmFetchVoices(apiKey, url) {
   return ibmWatsonTtsEngine.fetchVoices(apiKey, url);
-}
-
-function getSpeechPosition() {
-  return Promise.resolve(activeDoc && activeDoc.getActiveSpeech())
-    .then(function(speech) {
-      return speech && speech.getPosition();
-    })
-}
-
-function getPlaybackError() {
-  if (playbackError) return {message: playbackError.message}
 }
 
 function openDoc(source, onEnd) {

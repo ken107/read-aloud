@@ -285,6 +285,10 @@ function setState(key, value) {
   });
 }
 
+function clearState(key) {
+  return brapi.storage.local.remove(key)
+}
+
 
 /**
  * VOICES
@@ -975,7 +979,7 @@ function promiseTimeout(millis, errorMsg, promise) {
 
 function bgPageInvoke(method, args) {
   return new Promise(function(fulfill, reject) {
-    brapi.runtime.sendMessage({method: method, args: args}, function(res) {
+    brapi.runtime.sendMessage({dest: "serviceWorker", method: method, args: args}, function(res) {
       if (res && res.error) reject(new Error(res.error));
       else fulfill(res);
     })
