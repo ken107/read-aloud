@@ -23,7 +23,7 @@ function SimpleSource(texts, opts) {
 }
 
 
-function TabSource(destUri) {
+function TabSource() {
   var waiting = true;
 
   this.ready = sendToContentScript({method: "getInfo"})
@@ -52,20 +52,16 @@ function TabSource(destUri) {
       .then(function(info) {return info.url})
   }
 
-  function sendToContentScript(message) {
-    if (/^extension:/.test(destUri)) {
-      //TODO
-      console.error("Not implemented")
-    }
-    else if (/^local:/.test(destUri)) {
-      return contentScriptMessageHandler(message)
-    }
-    else if (/^forward:/.test(destUri)) {
-      return bgPageInvoke("forwardToContentScript", [message])
-    }
-    else {
-      console.error("FATAL: unhandled destUri " + destUri)
-    }
+  async function sendToContentScript(message) {
+    message.dest = "contentScript"
+    const tabId = await getState("contentScriptTabId")
+    const result = await brapi.tabs.sendMessage(tabId, message)
+      .catch(err => {
+        clearState("contentScriptTabId")
+        throw err
+      })
+    if (result && result.error) throw new Error(result.error)
+    else return result
   }
 }
 

@@ -1,7 +1,7 @@
 
 var activeDoc;
 var playbackError = null;
-var silenceLoop = new Audio("sound/silence.mp3");
+var silenceLoop = new Audio("https://assets.lsdsoftware.com/snd/silence-3s.mp3");
 silenceLoop.loop = true;
 
 
@@ -39,6 +39,9 @@ brapi.runtime.onMessage.addListener(
   }
 )
 
+bgPageInvoke("playerCheckIn")
+  .catch(console.error)
+
 
 
 function playText(text, opts) {
@@ -57,10 +60,10 @@ function playText(text, opts) {
     })
 }
 
-function playTab(destUri) {
+function playTab() {
   playbackError = null
   if (!activeDoc) {
-    openDoc(new TabSource(destUri), function(err) {
+    openDoc(new TabSource(), function(err) {
       if (err) playbackError = err
     })
   }

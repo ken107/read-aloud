@@ -100,28 +100,17 @@ brapi.commands.onCommand.addListener(function(command) {
 /**
  * METHODS
  */
-function playText(text, opts) {
-  stopCurrentPlayback()
-  return injectPlayer()
-    .then(function() {
-      return sendToPlayer({method: "playText", args: [text, opts]})
-    })
+async function playText(text, opts) {
+  const hasPlayer = await stopCurrentPlayback().then(() => true).catch(err => false)
+  if (!hasPlayer) await injectPlayer()
+  await sendToPlayer({method: "playText", args: [text, opts]})
 }
 
-function playTab(tabId) {
-  stopCurrentPlayback()
-  return injectContentScript(tabId)
-    .then(function(contentScriptTabId) {
-      return injectPlayer()
-        .then(function(playerTabId) {
-          if (/^extension:/.test(contentScriptTabId)) return contentScriptTabId
-          else if (contentScriptTabId == playerTabId) return "local:"
-          else return "forward:"
-        })
-    })
-    .then(function(destUri) {
-      return sendToPlayer({method: "playTab", args: [destUri]})
-    })
+async function playTab(tabId) {
+  const hasPlayer = await stopCurrentPlayback().then(() => true).catch(err => false)
+  if (!hasPlayer) await injectPlayer()
+  await injectContentScript(tabId)
+  await sendToPlayer({method: "playTab"})
 }
 
 function stop() {
@@ -132,12 +121,13 @@ function pause() {
   return sendToPlayer({method: "pause"})
 }
 
-function getPlaybackState() {
-  return getState("playerTabId")
-    .then(function(tabId) {
-      if (tabId) return sendToPlayer({method: "getPlaybackState"})
-      return {status: "STOPPED"}
-    })
+async function getPlaybackState() {
+  try {
+    return await sendToPlayer({method: "getPlaybackState"})
+  }
+  catch (err) {
+    return {status: "STOPPED"}
+  }
 }
 
 function forward() {
@@ -155,48 +145,33 @@ function seek(n) {
 
 
 function stopCurrentPlayback() {
-  sendToPlayer({method: "stop"})
-    .catch(function(err) {
-      //ignore
-    })
+  return sendToPlayer({method: "stop"})
 }
 
-function injectContentScript(tabId) {
-  var tab
-  return (tabId ? getTab(tabId) : getActiveTab())
-    .then(function(result) {
-      tab = result
-      if (!tab) throw new Error({code: "error_page_unreadable"})
+async function injectContentScript(tabId) {
+  const tab = tabId ? await getTab(tabId) : await getActiveTab()
+  if (!tab) throw new Error({code: "error_page_unreadable"})
 
-      //check if already injected
-      return brapi.scripting.executeScript({
-        target: {tabId: tab.id},
-        func: function() {
-          return typeof contentScriptMessageHandler != "undefined"
-        }
-      })
-        .then(function(items) {
-          return items[0].result == true
-        })
-    })
-    .then(function(alreadyInjected) {
-      if (alreadyInjected) return
-      return brapi.scripting.executeScript({
-        target: {tabId: tab.id},
-        files: [
-          "js/jquery-3.1.1.min.js",
-          "js/messaging.js",
-          getPageSpecificScript(tab.url),
-          "js/content.js",
-        ]
-      })
-    })
-    .then(function() {
-      return setState("contentScriptTabId", tab.id)
-    })
-    .then(function() {
-      return tab.id
-    })
+  //check if already injected
+  const items = await brapi.scripting.executeScript({
+    target: {tabId: tab.id},
+    func: function() {
+      return typeof contentScriptMessageHandler != "undefined"
+    }
+  })
+  if (items[0].result == true) return
+
+  //inject content cript
+  await brapi.scripting.executeScript({
+    target: {tabId: tab.id},
+    files: [
+      "js/jquery-3.1.1.min.js",
+      "js/messaging.js",
+      getPageSpecificScript(tab.url),
+      "js/content.js",
+    ]
+  })
+  await setState("contentScriptTabId", tab.id)
 
   function getPageSpecificScript(url) {
     //TODO
@@ -204,78 +179,34 @@ function injectContentScript(tabId) {
   }
 }
 
-function injectPlayer() {
-  var tab
-  return getActiveTab()       //TODO: inject player in offscreen document or popup window instead?
-    .then(function(result) {
-      tab = result
-      if (!tab) throw new Error("Can't inject TTS player, no active tab")
-      if (!/^(http|https|file):/.test(tab.url)) throw new Error("Can't inject TTS player, non-http tab")
-
-      //check if already injected in this tab
-      return brapi.scripting.executeScript({
-        target: {tabId: tab.id},
-        func: function() {
-          return typeof playerMessageHandler != "undefined"
-        }
-      })
-        .then(function(items) {
-          return items[0].result == true
-        })
-    })
-    .then(function(alreadyInjected) {
-      if (alreadyInjected) return
-      return brapi.scripting.executeScript({
-        target: {tabId: tab.id},
-        files: [
-          "js/defaults.js",
-          "js/google-translate.js",
-          "js/aws-sdk.js",
-          "js/tts-engines.js",
-          "js/speech.js",
-          "js/document.js",
-          "js/player.js",
-        ]
-      })
-    })
-    .then(function() {
-      return setState("playerTabId", tab.id)
-    })
-    .then(function() {
-      return tab.id
-    })
+async function injectPlayer() {
+  const promise = new Promise(f => handlers.playerCheckIn = f)
+  const tab = await brapi.tabs.create({
+    url: brapi.runtime.getURL("player.html"),
+    index: 0,
+    active: false,
+  })
+  await brapi.tabs.update(tab.id, {pinned: true})
+  await promise
 }
 
-function sendToContentScript(message) {
-  return getState("contentScriptTabId")
-    .then(function(tabId) {
-      message.dest = "contentScript"
-      return brapi.tabs.sendMessage(tabId, message)
-    })
-    .then(function(result) {
-      if (result && result.error) throw new Error(result.error)
-      else return result
-    })
-    .catch(function(err) {
+async function sendToContentScript(message) {
+  message.dest = "contentScript"
+  const tabId = await getState("contentScriptTabId")
+  const result = await brapi.tabs.sendMessage(tabId, message)
+    .catch(err => {
       clearState("contentScriptTabId")
       throw err
     })
+  if (result && result.error) throw new Error(result.error)
+  else return result
 }
 
-function sendToPlayer(message) {
-  return getState("playerTabId")
-    .then(function(tabId) {
-      message.dest = "player"
-      return brapi.tabs.sendMessage(tabId, message)
-    })
-    .then(function(result) {
-      if (result && result.error) throw new Error(result.error)
-      else return result
-    })
-    .catch(function(err) {
-      clearState("playerTabId")
-      throw err
-    })
+async function sendToPlayer(message) {
+  message.dest = "player"
+  const result = await brapi.runtime.sendMessage(message)
+  if (result && result.error) throw new Error(result.error)
+  else return result
 }
 
 function reportIssue(url, comment) {
