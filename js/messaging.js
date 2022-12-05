@@ -91,3 +91,24 @@ function RpcPeer(messagingPeer) {
     if (self.onDisconnect) self.onDisconnect();
   }
 }
+
+function registerMessageListener(name, handlers) {
+  brapi.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      if (request.dest == name) {
+        handle(request)
+          .then(sendResponse)
+          .catch(function(err) {
+            console.error(request, err)
+            sendResponse({error: err.message})
+          })
+        return true
+      }
+    }
+  )
+  async function handle(request) {
+    const handler = handlers[request.method]
+    if (!handler) throw new Error("Bad method " + request.method)
+    return handler.apply(null, request.args)
+  }
+}

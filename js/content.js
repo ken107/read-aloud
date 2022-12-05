@@ -1,37 +1,13 @@
-var csbrapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
-var contentScriptMessageHandler
+
+var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
 
 (function() {
-  var handlers = {
+  registerMessageListener("contentScript", {
     getRequireJs: getRequireJs,
     getInfo: getInfo,
     getCurrentIndex: getCurrentIndex,
     getTexts: getTexts
-  }
-
-  contentScriptMessageHandler = function(request) {
-    var handler = handlers[request.method]
-    if (!handler) return Promise.reject(new Error("Bad method " + request.method))
-    return Promise.resolve()
-      .then(function() {
-        return handler.apply(null, request.args)
-      })
-  }
-
-  csbrapi.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
-      if (request.dest != "contentScript") return;
-      contentScriptMessageHandler(request)
-        .then(sendResponse)
-        .catch(function(err) {
-          console.error(err)
-          sendResponse({error: err.message});
-        })
-      return true;
-    }
-  );
-
-
+  })
 
   function getInfo() {
     return {
@@ -186,13 +162,13 @@ function simulateClick(elementToClick) {
 
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    csbrapi.storage.local.get(names, fulfill);
+    brapi.storage.local.get(names, fulfill);
   });
 }
 
 function updateSettings(items) {
   return new Promise(function(fulfill) {
-    csbrapi.storage.local.set(items, fulfill);
+    brapi.storage.local.set(items, fulfill);
   });
 }
 

@@ -5,7 +5,7 @@ var silenceLoop = new Audio("https://assets.lsdsoftware.com/snd/silence-3s.mp3")
 silenceLoop.loop = true;
 
 
-var handlers = {
+registerMessageListener("player", {
   playText: playText,
   playTab: playTab,
   stop: stop,
@@ -15,29 +15,7 @@ var handlers = {
   rewind: rewind,
   seek: seek,
   ibmFetchVoices: ibmFetchVoices,
-}
-
-function playerMessageHandler(request) {
-  var handler = handlers[request.method]
-  if (!handler) return Promise.reject(new Error("Bad method " + request.method))
-  return Promise.resolve()
-    .then(function() {
-      return handler.apply(null, request.args)
-    })
-}
-
-brapi.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    if (request.dest != "player") return;
-    playerMessageHandler(request)
-      .then(sendResponse)
-      .catch(function(err) {
-        console.error(err)
-        sendResponse({error: err.message})
-      })
-    return true
-  }
-)
+})
 
 bgPageInvoke("playerCheckIn")
   .catch(console.error)
