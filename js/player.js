@@ -10,6 +10,7 @@ registerMessageListener("player", {
   playTab: playTab,
   stop: stop,
   pause: pause,
+  resume: resume,
   getPlaybackState: getPlaybackState,
   forward: forward,
   rewind: rewind,
@@ -67,19 +68,24 @@ function pause() {
   else return Promise.resolve();
 }
 
+function resume() {
+  if (activeDoc) return activeDoc.play()
+  else return Promise.resolve()
+}
+
 function getPlaybackState() {
   if (activeDoc) {
     return Promise.all([activeDoc.getState(), activeDoc.getActiveSpeech()])
       .then(function(results) {
         return {
-          status: results[0],
+          state: results[0],
           speechPosition: results[1] && results[1].getPosition(),
           playbackError: playbackError && {message: playbackError.message, stack: playbackError.stack},
         }
       })
   }
   else {
-    return {status: "STOPPED"}
+    return {state: "STOPPED"}
   }
 }
 

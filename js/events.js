@@ -11,6 +11,7 @@ var handlers = {
   playTab: playTab,
   stop: stop,
   pause: pause,
+  resume: resume,
   getPlaybackState: getPlaybackState,
   forward: forward,
   rewind: rewind,
@@ -105,12 +106,16 @@ function pause() {
   return sendToPlayer({method: "pause"})
 }
 
+function resume() {
+  return sendToPlayer({method: "resume"})
+}
+
 async function getPlaybackState() {
   try {
     return await sendToPlayer({method: "getPlaybackState"})
   }
   catch (err) {
-    return {status: "STOPPED"}
+    return {state: "STOPPED"}
   }
 }
 

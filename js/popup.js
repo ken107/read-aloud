@@ -54,7 +54,9 @@ $(function() {
       }
       else {
         return bgPageInvoke("getPlaybackState")
-          .then(function(state) {if (state != "PLAYING") $("#btnPlay").click()})
+          .then(function(stateInfo) {
+            if (stateInfo.state != "PLAYING") $("#btnPlay").click()
+          })
       }
     })
   setInterval(updateButtons, 500);
@@ -116,7 +118,7 @@ function updateButtons() {
       bgPageInvoke("getPlaybackState"),
     ])
   .then(spread(function(settings, stateInfo) {
-    var state = stateInfo.status
+    var state = stateInfo.state
     var speechPos = stateInfo.speechPosition
     var playbackErr = stateInfo.playbackError
 
@@ -158,7 +160,11 @@ function updateButtons() {
 
 function onPlay() {
   $("#status").hide();
-  (queryString.tab ? bgPageInvoke("playTab", [Number(queryString.tab)]) : bgPageInvoke("playTab"))
+  bgPageInvoke("getPlaybackState")
+    .then(function(stateInfo) {
+      if (stateInfo.state == "PAUSED") return bgPageInvoke("resume")
+      else return bgPageInvoke("playTab", queryString.tab ? [Number(queryString.tab)] : [])
+    })
     .then(updateButtons)
     .catch(handleError)
 }
