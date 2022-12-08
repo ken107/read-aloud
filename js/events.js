@@ -235,14 +235,15 @@ async function injectContentScript(tab) {
     files: [
       "js/jquery-3.1.1.min.js",
       "js/messaging.js",
-      getPageSpecificScript(tab.url),
       "js/content.js",
     ]
   })
-  function getPageSpecificScript(url) {
-    //TODO
-    return "js/content/html-doc.js"
-  }
+  const files = await brapi.tabs.sendMessage(tab.id, {dest: "contentScript", method: "getRequireJs"})
+  await brapi.scripting.executeScript({
+    target: {tabId: tab.id},
+    files: files
+  })
+  console.info("Content scripts", files)
 }
 
 async function injectPlayer() {
