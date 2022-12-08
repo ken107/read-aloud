@@ -13,6 +13,9 @@ function Speech(texts, options) {
   var ready = Promise.resolve(pickEngine())
     .then(function(x) {
       engine = x;
+      if (engine.usesAudioElement) return requestAudioPlaybackPermission()
+    })
+    .then(function() {
       if (texts.length) texts = getChunks(texts.join("\n\n"));
     })
 

@@ -4,7 +4,10 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Read Aloud</title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/common.css">
 
+  <script src="js/jquery-3.1.1.min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/messaging.js"></script>
   <script src="js/google-translate.js"></script>
@@ -15,8 +18,32 @@
   <script src="js/player.js"></script>
 </head>
 <body>
-  <p>Please keep this window open for Read Aloud to work.</p>
-  <p>This window will automatically close after 1 minute of no activity.</p>
-  <p>This is an inconvenience that we'll remove once Chrome's offscreen document feature becomes available (soon).</p>
+  <div class="container">
+    <p>Please keep this tab open for Read Aloud to work.</p>
+    <p>This tab will automatically close after 5 minutes of no activity.</p>
+    <p>This is an inconvenience that we'll remove once Chrome's offscreen document feature becomes available (soon).</p>
+  </div>
+
+
+  <!-- Dialogs -->
+  <div class="modal-backdrop show" id="dialog-backdrop"></div>
+  <div class="modal" tabindex="-1" role="dialog" id="audio-playback-permission-dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Permission Requested</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Allow Read Aloud to play audio?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary">Allow</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

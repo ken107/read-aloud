@@ -42,3 +42,7 @@ body {
   background-color: #03dac6;
   color: black;
 }
+
+.modal-backdrop {
+  display: none;
+}

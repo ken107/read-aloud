@@ -233,6 +233,7 @@ function RemoteTtsEngine(serviceUrl) {
     if (!iOS)
       nextStartTime = time || 0;
   }
+  this.usesAudioElement = true;
   this.getVoices = function() {
     return voices;
   }
@@ -433,6 +434,7 @@ function GoogleTranslateTtsEngine() {
   };
   this.setNextStartTime = function() {
   };
+  this.usesAudioElement = true;
   this.getVoices = function() {
     return voices;
   }
@@ -570,6 +572,7 @@ function AmazonPollyTtsEngine() {
   };
   this.setNextStartTime = function() {
   };
+  this.usesAudioElement = true;
   this.getVoices = function() {
     return getSettings(["pollyVoices"])
       .then(function(items) {
@@ -822,6 +825,7 @@ function GoogleWavenetTtsEngine() {
   };
   this.setNextStartTime = function() {
   };
+  this.usesAudioElement = true;
   this.getVoices = function() {
     return getSettings(["wavenetVoices"])
       .then(function(items) {
@@ -1128,6 +1132,7 @@ function IbmWatsonTtsEngine() {
   };
   this.setNextStartTime = function() {
   };
+  this.usesAudioElement = true;
   this.getVoices = function() {
     return getSettings(["watsonVoices", "ibmCreds"])
       .then(function(items) {

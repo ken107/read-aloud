@@ -1,8 +1,12 @@
 
 var activeDoc;
 var playbackError = null;
-var silenceLoop = new Audio("https://assets.lsdsoftware.com/snd/silence-3s.mp3");
+var silenceLoop = new Audio("sound/silence.mp3");
 silenceLoop.loop = true;
+
+var audioCanPlay = false;
+var audioCanPlayPromise = new Promise(f => silenceLoop.oncanplay = f)
+  .then(() => audioCanPlay = true)
 
 
 registerMessageListener("player", {
@@ -141,4 +145,15 @@ function reportError(err) {
       .then(function(url) {return bgPageInvoke("reportIssue", [url, details])})
       .catch(console.error)
   }
+}
+
+async function requestAudioPlaybackPermission() {
+  if (audioCanPlay) return
+  const prevTab = await getActiveTab()
+  const thisTab = await brapi.tabs.getCurrent()
+  await brapi.tabs.update(thisTab.id, {active: true})
+  $("#dialog-backdrop, #audio-playback-permission-dialog").show()
+  await audioCanPlayPromise
+  $("#dialog-backdrop, #audio-playback-permission-dialog").hide()
+  await brapi.tabs.update(prevTab.id, {active: true})
 }
