@@ -8,6 +8,8 @@ var audioCanPlay = false;
 var audioCanPlayPromise = new Promise(f => silenceLoop.oncanplay = f)
   .then(() => audioCanPlay = true)
 
+var closeTabTimer = startTimer(5*60*1000, () => window.close())
+
 
 registerMessageListener("player", {
   playText: playText,
@@ -104,6 +106,7 @@ function openDoc(source, onEnd) {
     if (typeof onEnd == "function") onEnd(err);
   })
   silenceLoop.play();
+  closeTabTimer.stop();
 }
 
 function closeDoc() {
@@ -111,6 +114,7 @@ function closeDoc() {
     activeDoc.close();
     activeDoc = null;
     silenceLoop.pause();
+    closeTabTimer.restart();
   }
 }
 
@@ -156,4 +160,18 @@ async function requestAudioPlaybackPermission() {
   await audioCanPlayPromise
   $("#dialog-backdrop, #audio-playback-permission-dialog").hide()
   await brapi.tabs.update(prevTab.id, {active: true})
+}
+
+function startTimer(timeout, callback) {
+  var timer = setTimeout(callback, timeout)
+  return {
+    stop: function() {
+      clearTimeout(timer)
+      timer = null
+    },
+    restart: function() {
+      clearTimeout(timer)
+      timer = setTimeout(callback, timeout)
+    }
+  }
 }
