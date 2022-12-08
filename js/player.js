@@ -143,8 +143,9 @@ function reportError(err) {
   if (err && err.stack) {
     var details = err.stack;
     if (!details.startsWith(err.name)) details = err.name + ": " + err.message + "\n" + details;
+    console.error(details)
     getState("lastUrl")
-      .then(function(url) {return bgPageInvoke("reportIssue", [url, details])})
+      .then(url => bgPageInvoke("reportIssue", [url, details]))
       .catch(console.error)
   }
 }

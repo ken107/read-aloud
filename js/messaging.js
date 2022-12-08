@@ -99,8 +99,7 @@ function registerMessageListener(name, handlers) {
         handle(request)
           .then(sendResponse)
           .catch(function(err) {
-            console.error(request, err)
-            sendResponse({error: err.message})
+            sendResponse({error: errorToJson(err)})
           })
         return true
       }
@@ -110,5 +109,16 @@ function registerMessageListener(name, handlers) {
     const handler = handlers[request.method]
     if (!handler) throw new Error("Bad method " + request.method)
     return handler.apply(null, request.args)
+  }
+}
+
+function errorToJson(err) {
+  return err && {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+    toString: function() {
+      return (this.name || "Error") + ": " + this.message
+    }
   }
 }

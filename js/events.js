@@ -38,7 +38,7 @@ function installContextMenus() {
 if (brapi.contextMenus)
 brapi.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection")
-    stop()
+    Promise.resolve()
       .then(function() {
         if (tab && tab.id != -1) return detectTabLanguage(tab.id)
         else return undefined
@@ -46,7 +46,7 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
       .then(function(lang) {
         return playText(info.selectionText, {lang: lang})
       })
-      .catch(console.error)
+      .catch(handleHeadlessError)
 })
 
 
@@ -58,13 +58,23 @@ function execCommand(command) {
     getPlaybackState()
       .then(function(state) {
         if (state == "PLAYING") return pause();
-        else if (state == "STOPPED" || state == "PAUSED") return playTab()
+        else if (state == "PAUSED") return resume();
+        else if (state == "STOPPED") return playTab();
       })
-      .catch(console.error)
+      .catch(handleHeadlessError)
   }
-  else if (command == "stop") stop();
-  else if (command == "forward") forward();
-  else if (command == "rewind") rewind();
+  else if (command == "stop") {
+    stop()
+      .catch(handleHeadlessError)
+  }
+  else if (command == "forward") {
+    forward()
+      .catch(handleHeadlessError)
+  }
+  else if (command == "rewind") {
+    rewind()
+      .catch(handleHeadlessError)
+  }
 }
 
 if (brapi.commands)
@@ -128,6 +138,10 @@ function seek(n) {
 }
 
 
+
+function handleHeadlessError(err) {
+  //TODO: let user knows somehow
+}
 
 function reportIssue(url, comment) {
   var manifest = brapi.runtime.getManifest();
@@ -252,13 +266,13 @@ async function sendToContentScript(message) {
       clearState("contentScriptTabId")
       throw err
     })
-  if (result && result.error) throw new Error(result.error)
+  if (result && result.error) throw result.error
   else return result
 }
 
 async function sendToPlayer(message) {
   message.dest = "player"
   const result = await brapi.runtime.sendMessage(message)
-  if (result && result.error) throw new Error(result.error)
+  if (result && result.error) throw result.error
   else return result
 }

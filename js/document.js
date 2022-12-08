@@ -60,7 +60,7 @@ function TabSource() {
         clearState("contentScriptTabId")
         throw err
       })
-    if (result && result.error) throw new Error(result.error)
+    if (result && result.error) throw result.error
     else return result
   }
 }

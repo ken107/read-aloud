@@ -984,7 +984,7 @@ function promiseTimeout(millis, errorMsg, promise) {
 function bgPageInvoke(method, args) {
   return new Promise(function(fulfill, reject) {
     brapi.runtime.sendMessage({dest: "serviceWorker", method: method, args: args}, function(res) {
-      if (res && res.error) reject(new Error(res.error));
+      if (res && res.error) reject(res.error);
       else fulfill(res);
     })
   })

@@ -113,10 +113,7 @@ function initialize(allVoices, settings) {
           })
       })
       .then(function(result) {
-        return bgPageInvoke("stop")
-          .then(function() {
             return bgPageInvoke("playText", [result.text, {lang: lang}]);
-          })
       })
       .catch(function(err) {
         handleError(err);
@@ -219,7 +216,8 @@ function voiceSorter(a, b) {
 
 
 function saveSettings(delta) {
-  bgPageInvoke("stop");
+  bgPageInvoke("stop")
+    .catch(err => "OK")
   return updateSettings(delta)
     .then(showConfirmation)
     .then(getSettings)
