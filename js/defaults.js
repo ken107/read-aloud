@@ -549,6 +549,7 @@ function ajaxGet(sUrl) {
   var opts = typeof sUrl == "string" ? {url: sUrl} : sUrl;
   return fetch(opts.url, {headers: opts.headers})
     .then(res => {
+      if (!res.ok) throw new Error("Server returns " + res.status)
       switch (opts.responseType) {
         case "json": return res.json()
         case "blob": return res.blob()
@@ -565,7 +566,10 @@ function ajaxPost(sUrl, oData, sType) {
       },
       body: sType == "json" ? JSON.stringify(oData) : urlEncode(oData)
     })
-    .then(res => res.text())
+    .then(res => {
+      if (!res.ok) throw new Error("Server returns " + res.status)
+      return res.text()
+    })
 }
 
 function objectAssign(target, varArgs) { // .length of function is 2

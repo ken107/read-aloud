@@ -21,7 +21,6 @@ registerMessageListener("player", {
   forward: forward,
   rewind: rewind,
   seek: seek,
-  ibmFetchVoices: ibmFetchVoices,
 })
 
 bgPageInvoke("playerCheckIn")
@@ -91,12 +90,11 @@ function getPlaybackState() {
       })
   }
   else {
-    return {state: "STOPPED"}
+    return {
+      state: "STOPPED",
+      playbackError: playbackError && {message: playbackError.message, stack: playbackError.stack},
+    }
   }
-}
-
-function ibmFetchVoices(apiKey, url) {
-  return ibmWatsonTtsEngine.fetchVoices(apiKey, url);
 }
 
 function openDoc(source, onEnd) {
@@ -153,8 +151,8 @@ function reportError(err) {
 
 async function requestAudioPlaybackPermission() {
   if (audioCanPlay) return
-  const prevTab = await getActiveTab()
   const thisTab = await brapi.tabs.getCurrent()
+  const prevTab = await brapi.tabs.query({windowId: thisTab.windowId, active: true}).then(tabs => tabs[0])
   await brapi.tabs.update(thisTab.id, {active: true})
   $("#dialog-backdrop, #audio-playback-permission-dialog").show()
   await audioCanPlayPromise

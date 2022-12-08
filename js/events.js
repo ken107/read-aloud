@@ -18,10 +18,6 @@ var handlers = {
   seek: seek,
   reportIssue: reportIssue,
   authWavenet: authWavenet,
-  forwardToContentScript: sendToContentScript,
-  ibmFetchVoices: function() {
-    return sendToPlayer({method: "ibmFetchVoices"})
-  },
 }
 
 registerMessageListener("serviceWorker", handlers)
@@ -89,7 +85,7 @@ async function playText(text, opts) {
 
 async function playTab(tabId) {
   const tab = tabId ? await getTab(tabId) : await getActiveTab()
-  if (!tab) throw new Error({code: "error_page_unreadable"})
+  if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}))
   if (!await contentScriptAlreadyInjected(tab)) await injectContentScript(tab)
   await setState("contentScriptTabId", tab.id)
 

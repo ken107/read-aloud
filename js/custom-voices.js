@@ -133,6 +133,6 @@ function testIbm(apiKey, url) {
       if (!granted) throw new Error("Permission not granted");
     })
     .then(function() {
-      return bgPageInvoke("ibmFetchVoices", [apiKey, url]);
+      return ibmWatsonTtsEngine.fetchVoices(apiKey, url);
     })
 }
