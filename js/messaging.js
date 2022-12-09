@@ -117,8 +117,5 @@ function errorToJson(err) {
     name: err.name,
     message: err.message,
     stack: err.stack,
-    toString: function() {
-      return (this.name || "Error") + ": " + this.message
-    }
   }
 }

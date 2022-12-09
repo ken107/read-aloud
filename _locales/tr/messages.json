@@ -116,9 +116,6 @@
   "error_wavenet_auth_required": {
     "message": "Google Wavenet seslerini etkinleştirmek için ek [izinler](auth-wavenet) vermeniz gerekir"
   },
-  "error_user_gesture_required": {
-    "message": "Başlamak için [burayı](kullanıcı işâretini) tıklayın"
-  },
   "languages_heading": {
     "message": "Dil Seçenekleri"
   },

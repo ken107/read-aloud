@@ -85,14 +85,14 @@ function getPlaybackState() {
         return {
           state: results[0],
           speechPosition: results[1] && results[1].getPosition(),
-          playbackError: playbackError && {message: playbackError.message, stack: playbackError.stack},
+          playbackError: errorToJson(playbackError),
         }
       })
   }
   else {
     return {
       state: "STOPPED",
-      playbackError: playbackError && {message: playbackError.message, stack: playbackError.stack},
+      playbackError: errorToJson(playbackError),
     }
   }
 }

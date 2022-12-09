@@ -78,7 +78,7 @@ function WebSpeechEngine() {
     utter.onstart = onEvent.bind(null, {type: 'start', charIndex: 0});
     utter.onend = onEvent.bind(null, {type: 'end', charIndex: text.length});
     utter.onerror = function(event) {
-      onEvent({type: 'error', errorMessage: event.error});
+      onEvent({type: 'error', error: new Error(event.error)});
     };
     speechSynthesis.speak(utter);
   }
@@ -130,7 +130,7 @@ function TimeoutTtsEngine(baseEngine, timeoutMillis) {
     timer = setTimeout(function() {
       baseEngine.stop();
       if (started) onEvent({type: "end", charIndex: text.length});
-      else onEvent({type: "error", errorMessage: "Timeout, TTS never started, try picking another voice?"});
+      else onEvent({type: "error", error: new Error("Timeout, TTS never started, try picking another voice?")});
     },
     timeoutMillis);
     baseEngine.speak(text, options, function(event) {
@@ -197,7 +197,7 @@ function RemoteTtsEngine(serviceUrl) {
       .catch(function(err) {
         onEvent({
           type: "error",
-          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+          error: err instanceof DOMException ? new Error(err.name || err.message) : err
         })
       })
     audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
@@ -206,7 +206,7 @@ function RemoteTtsEngine(serviceUrl) {
       isSpeaking = false;
     };
     audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
+      onEvent({type: "error", error: new Error(audio.error.message || audio.error.code)});
       isSpeaking = false;
     };
     audio.load();
@@ -396,7 +396,7 @@ function GoogleTranslateTtsEngine() {
       isSpeaking = false;
     };
     audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
+      onEvent({type: "error", error: new Error(audio.error.message || audio.error.code)});
       isSpeaking = false;
     };
     speakPromise = Promise.resolve()
@@ -411,7 +411,7 @@ function GoogleTranslateTtsEngine() {
       .catch(function(err) {
         onEvent({
           type: "error",
-          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+          error: err instanceof DOMException ? new Error(err.name || err.message) : err
         })
       })
   };
@@ -534,7 +534,7 @@ function AmazonPollyTtsEngine() {
       isSpeaking = false;
     };
     audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
+      onEvent({type: "error", error: new Error(audio.error.message || audio.error.code)});
       isSpeaking = false;
     };
     speakPromise = Promise.resolve()
@@ -549,7 +549,7 @@ function AmazonPollyTtsEngine() {
       .catch(function(err) {
         onEvent({
           type: "error",
-          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+          error: err instanceof DOMException ? new Error(err.name || err.message) : err
         })
       })
   };
@@ -787,7 +787,7 @@ function GoogleWavenetTtsEngine() {
       isSpeaking = false;
     };
     audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
+      onEvent({type: "error", error: new Error(audio.error.message || audio.error.code)});
       isSpeaking = false;
     };
     speakPromise = Promise.resolve()
@@ -802,7 +802,7 @@ function GoogleWavenetTtsEngine() {
       .catch(function(err) {
         onEvent({
           type: "error",
-          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+          error: err instanceof DOMException ? new Error(err.name || err.message) : err
         })
       })
   };
@@ -1103,7 +1103,7 @@ function IbmWatsonTtsEngine() {
       isSpeaking = false;
     };
     audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
+      onEvent({type: "error", error: new Error(audio.error.message || audio.error.code)});
       isSpeaking = false;
     };
     speakPromise = getAudioUrl(utterance, options.voice)
@@ -1114,7 +1114,7 @@ function IbmWatsonTtsEngine() {
       .catch(function(err) {
         onEvent({
           type: "error",
-          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
+          error: err instanceof DOMException ? new Error(err.name || err.message) : err
         })
       })
   };

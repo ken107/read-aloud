@@ -95,9 +95,6 @@
   "error_wavenet_auth_required": {
     "message": "Google Wavenetの音声を有効にするには、追加の[権限](auth-wavenet)を付与する必要があります"
   },
-  "error_user_gesture_required": {
-    "message": "[こちら](user-gesture)をクリックして開始します"
-  },
   "languages_heading": {
     "message": "言語オプション"
   },

@@ -203,11 +203,11 @@ function Speech(texts, options) {
         }
         else if (event.type == "error") {
           if (state == "IDLE") {
-            reject(new Error(event.errorMessage || "Unknown TTS error"));
+            reject(event.error);
             state = "ERROR";
           }
           else if (state == "STARTED") {
-            onError(new Error(event.errorMessage || "Unknown TTS error"));
+            onError(event.error);
             state = "ERROR";
           }
         }
