@@ -56,10 +56,12 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
 function execCommand(command) {
   if (command == "play") {
     getPlaybackState()
-      .then(function(state) {
-        if (state == "PLAYING") return pause();
-        else if (state == "PAUSED") return resume();
-        else if (state == "STOPPED") return playTab();
+      .then(function(stateInfo) {
+        switch (stateInfo.state) {
+          case "PLAYING": return pause()
+          case "PAUSED": return resume()
+          case "STOPPED": return playTab()
+        }
       })
       .catch(handleHeadlessError)
   }
@@ -177,7 +179,7 @@ function authWavenet() {
         }
       }
       function onRequest(details) {
-        var parser = parseUrl(details.url);
+        var parser = new URL(details.url);
         var qs = parser.search ? parseQueryString(parser.search) : {};
         if (qs.token) {
           updateSettings({gcpToken: qs.token});

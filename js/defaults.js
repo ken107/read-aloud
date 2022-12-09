@@ -241,12 +241,6 @@ function parseQueryString(search) {
   return queryString;
 }
 
-function parseUrl(url) {
-  var parser = document.createElement("A");
-  parser.href = url;
-  return parser;
-}
-
 
 /**
  * SETTINGS
