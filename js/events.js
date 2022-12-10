@@ -98,7 +98,9 @@ async function playText(text, opts) {
 async function playTab(tabId) {
   const tab = tabId ? await getTab(tabId) : await getActiveTab()
   if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}))
-  if (!await contentScriptAlreadyInjected(tab)) await injectContentScript(tab)
+  const handler = contentHandlers.find(h => h.match(tab.url || "", tab.title))
+  await handler.validate(tab)
+  if (!await contentScriptAlreadyInjected(tab)) await injectContentScript(tab, handler)
   await setState("contentScriptTabId", tab.id)
 
   const hasPlayer = await stop().then(() => true).catch(err => false)
@@ -231,18 +233,25 @@ async function contentScriptAlreadyInjected(tab) {
   return items[0].result == true
 }
 
-async function injectContentScript(tab) {
+async function injectContentScript(tab, handler) {
+  const frameId = handler.getFrameId && await getAllFrames(tab.id).then(handler.getFrameId)
   await brapi.scripting.executeScript({
-    target: {tabId: tab.id},
+    target: {
+      tabId: tab.id,
+      frameIds: frameId ? [frameId] : undefined,
+    },
     files: [
       "js/jquery-3.1.1.min.js",
       "js/messaging.js",
       "js/content.js",
     ]
   })
-  const files = await brapi.tabs.sendMessage(tab.id, {dest: "contentScript", method: "getRequireJs"})
+  const files = handler.extraScripts || await brapi.tabs.sendMessage(tab.id, {dest: "contentScript", method: "getRequireJs"})
   await brapi.scripting.executeScript({
-    target: {tabId: tab.id},
+    target: {
+      tabId: tab.id,
+      frameIds: frameId ? [frameId] : undefined,
+    },
     files: files
   })
   console.info("Content scripts", files)
