@@ -4,7 +4,7 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
 (function() {
   registerMessageListener("contentScript", {
     getRequireJs: getRequireJs,
-    getInfo: getInfo,
+    getDocumentInfo: getInfo,
     getCurrentIndex: getCurrentIndex,
     getTexts: getTexts
   })

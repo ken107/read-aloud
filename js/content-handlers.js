@@ -175,51 +175,8 @@ var contentHandlers = [
     },
     validate: function() {
     },
-    connect: function() {
-      function call(method) {
-        return new Promise(function(fulfill) {
-          brapi.runtime.sendMessage("jhhclmfgfllimlhabjkgkeebkbiadflb", {name: method}, fulfill);
-        })
-      }
-      function parseXhtml(xml) {
-        var dom = new DOMParser().parseFromString(xml, "text/xml");
-        var nodes = dom.body.querySelectorAll("h1, h2, h3, h4, h5, h6, p");
-        return Array.prototype.slice.call(nodes)
-          .map(function(node) {
-            return node.innerText && node.innerText.trim().replace(/\r?\n/g, " ");
-          })
-          .filter(function(text) {
-            return text;
-          })
-      }
-      var currentPage = 0;
-      peer = {
-        invoke: function(method, index) {
-          if (method == "getCurrentIndex") return Promise.resolve(currentPage);
-          else if (method == "getTexts") {
-            var promise = Promise.resolve({success: true, paged: true});
-            for (; currentPage<index; currentPage++) promise = promise.then(call.bind(null, "pageForward"));
-            for (; currentPage>index; currentPage--) promise = promise.then(call.bind(null, "pageBackward"));
-            return promise
-              .then(function(res) {
-                if (!res.success) throw new Error("Failed to flip EPUB page");
-                return res.paged ? call("getPageText") : {success: true, text: null};
-              })
-              .then(function(res) {
-                if (!res.success) throw new Error("Failed to get EPUB text");
-                return res.text && parseXhtml(res.text);
-              })
-          }
-          else return Promise.reject(new Error("Bad method"));
-        },
-        disconnect: function() {}
-      }
-      return call("getDocumentInfo")
-        .then(extraAction(function(res) {
-          if (!res.success) throw new Error("Failed to get EPUB document info");
-          if (res.lang && !/^[a-z][a-z](-[A-Z][A-Z])?$/.test(res.lang)) res.lang = null;
-          if (res.lang) res.detectedLang = res.lang;   //prevent lang detection
-        }))
+    getSourceUri: function() {
+      return "epubreader:jhhclmfgfllimlhabjkgkeebkbiadflb"
     }
   },
 

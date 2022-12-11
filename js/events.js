@@ -98,10 +98,16 @@ async function playText(text, opts) {
 async function playTab(tabId) {
   const tab = tabId ? await getTab(tabId) : await getActiveTab()
   if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}))
+
   const handler = contentHandlers.find(h => h.match(tab.url || "", tab.title))
   await handler.validate(tab)
-  if (!await contentScriptAlreadyInjected(tab)) await injectContentScript(tab, handler)
-  await setState("contentScriptTabId", tab.id)
+  if (handler.getSourceUri) {
+    await setState("sourceUri", handler.getSourceUri(tab))
+  }
+  else {
+    if (!await contentScriptAlreadyInjected(tab)) await injectContentScript(tab, handler)
+    await setState("sourceUri", "contentscript:" + tab.id)
+  }
 
   const hasPlayer = await stop().then(() => true).catch(err => false)
   if (!hasPlayer) await injectPlayer()  
@@ -269,18 +275,6 @@ async function injectPlayer() {
 }
 
 
-
-async function sendToContentScript(message) {
-  message.dest = "contentScript"
-  const tabId = await getState("contentScriptTabId")
-  const result = await brapi.tabs.sendMessage(tabId, message)
-    .catch(err => {
-      clearState("contentScriptTabId")
-      throw err
-    })
-  if (result && result.error) throw result.error
-  else return result
-}
 
 async function sendToPlayer(message) {
   message.dest = "player"
