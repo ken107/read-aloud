@@ -125,22 +125,12 @@ var contentHandlers = [
           if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
         })
     },
-    getTexts: function(tab) {
-      function tryGetFrame(millis) {
-        return getAllFrames(tab.id)
-          .then(function(frames) {
-            return frames.find(function(frame) {return frame.frameId && frame.parentFrameId});
-          })
-          .then(function(frame) {
-            if (!frame && millis > 0) return waitMillis(500).then(tryGetFrame.bind(null, millis-500));
-            else return frame;
-          })
-      }
-      return tryGetFrame(5000)
-        .then(function(frame) {
-          if (frame) return getFrameTexts(tab.id, frame.frameId, ["js/jquery-3.1.1.min.js", "js/messaging.js", "js/content/vitalsource-book.js"]);
-          else return null;
-        })
+    getFrameId: function(frames) {
+      const frame = frames.find(frame => {
+        const url = new URL(frame.url)
+        return url.hostname.startsWith("jigsaw.") && url.pathname.startsWith("/books/")
+      })
+      return frame && frame.frameId
     },
     extraScripts: ["js/content/vitalsource-book.js"]
   },
