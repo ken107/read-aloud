@@ -90,8 +90,8 @@ brapi.commands.onCommand.addListener(function(command) {
  * METHODS
  */
 async function playText(text, opts) {
-  const hasPlayer = await stop().then(() => true).catch(err => false)
-  if (!hasPlayer) await injectPlayer()
+  const hasPlayer = await stop().then(res => res == true).catch(err => false)
+  if (!hasPlayer) await injectPlayer(await getActiveTab())
   await sendToPlayer({method: "playText", args: [text, opts]})
 }
 
@@ -109,8 +109,8 @@ async function playTab(tabId) {
     await setState("sourceUri", "contentscript:" + tab.id)
   }
 
-  const hasPlayer = await stop().then(() => true).catch(err => false)
-  if (!hasPlayer) await injectPlayer()  
+  const hasPlayer = await stop().then(res => res == true).catch(err => false)
+  if (!hasPlayer) await injectPlayer(tab)
   await sendToPlayer({method: "playTab"})
 }
 
@@ -128,7 +128,7 @@ function resume() {
 
 async function getPlaybackState() {
   try {
-    return await sendToPlayer({method: "getPlaybackState"})
+    return await sendToPlayer({method: "getPlaybackState"}) || {state: "STOPPED"}
   }
   catch (err) {
     return {state: "STOPPED"}
@@ -263,15 +263,35 @@ async function injectContentScript(tab, handler) {
   console.info("Content scripts", files)
 }
 
-async function injectPlayer() {
+async function injectPlayer(tab) {
   const promise = new Promise(f => handlers.playerCheckIn = f)
-  const tab = await brapi.tabs.create({
-    url: brapi.runtime.getURL("player.html"),
-    index: 0,
-    active: false,
-  })
-  await brapi.tabs.update(tab.id, {pinned: true})
+  try {
+    if (!brapi.offscreen) throw new Error("Offscreen API unavailable")
+    await brapi.scripting.executeScript({
+      target: {tabId: tab.id},
+      func: createPlayerFrame
+    })
+  }
+  catch (err) {
+    console.warn("Cannot embed player", err)
+    const tab = await brapi.tabs.create({
+      url: brapi.runtime.getURL("player.html"),
+      index: 0,
+      active: false,
+    })
+    await brapi.tabs.update(tab.id, {pinned: true})
+  }
   await promise
+}
+
+function createPlayerFrame() {
+  const brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {})
+  const frame = document.createElement("iframe")
+  frame.src = brapi.runtime.getURL("player.html")
+  frame.style.position = "absolute"
+  frame.style.height = "0"
+  frame.style.borderWidth = "0"
+  document.body.appendChild(frame)
 }
 
 

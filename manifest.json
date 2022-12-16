@@ -28,6 +28,7 @@
     "activeTab",
     "contextMenus",
     "identity",
+    "offscreen",
     "scripting",
     "storage",
     "tts",
@@ -45,10 +46,17 @@
     "https://*/",
     "file://*/*"
   ],
-  "web_accessible_resources": [{
-    "resources": [ "js/page/google-doc.js" ],
-    "matches": [ "https://docs.google.com/*" ]
-  }],
+  "web_accessible_resources": [
+    {
+      "resources": [ "js/page/google-doc.js" ],
+      "matches": [ "https://docs.google.com/*" ]
+    },
+    {
+      "resources": [ "player.html" ],
+      "matches": [ "<all_urls>" ],
+      "use_dynamic_url": true
+    }
+  ],
   "background": {
     "service_worker": "background.js"
   },

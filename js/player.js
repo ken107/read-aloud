@@ -1,17 +1,22 @@
 
+var isStandalone = top == self
+var playAudio = isStandalone ? playAudioHere : playAudioOffscreen
+
 var activeDoc;
 var playbackError = null;
-var silenceLoop = new Audio("sound/silence.mp3");
-silenceLoop.loop = true;
 
 var audioCanPlay = false;
-var audioCanPlayPromise = new Promise(f => silenceLoop.oncanplay = f)
+var audioCanPlayPromise = new Promise(fulfill => {
+    const silence = new Audio("sound/silence.mp3")
+    silence.oncanplay = fulfill
+    silence.play()
+  })
   .then(() => audioCanPlay = true)
 
-var closeTabTimer = startTimer(5*60*1000, () => window.close())
+var closeTabTimer = isStandalone && startTimer(5*60*1000, () => window.close())
 
 
-registerMessageListener("player", {
+var messageHandlers = {
   playText: playText,
   playTab: playTab,
   stop: stop,
@@ -21,7 +26,9 @@ registerMessageListener("player", {
   forward: forward,
   rewind: rewind,
   seek: seek,
-})
+}
+
+registerMessageListener("player", messageHandlers)
 
 bgPageInvoke("playerCheckIn")
   .catch(console.error)
@@ -63,9 +70,8 @@ function stop() {
   if (activeDoc) {
     activeDoc.stop();
     closeDoc();
-    return Promise.resolve();
   }
-  else return Promise.resolve();
+  return true;
 }
 
 function pause() {
@@ -103,16 +109,14 @@ function openDoc(source, onEnd) {
     closeDoc();
     if (typeof onEnd == "function") onEnd(err);
   })
-  silenceLoop.play();
-  closeTabTimer.stop();
+  if (closeTabTimer) closeTabTimer.stop();
 }
 
 function closeDoc() {
   if (activeDoc) {
     activeDoc.close();
     activeDoc = null;
-    silenceLoop.pause();
-    closeTabTimer.restart();
+    if (closeTabTimer) closeTabTimer.restart();
   }
 }
 
@@ -172,5 +176,40 @@ function startTimer(timeout, callback) {
       clearTimeout(timer)
       timer = setTimeout(callback, timeout)
     }
+  }
+}
+
+async function playAudioOffscreen(urlPromise, options, startTime) {
+  const hasOffscreen = await sendToOffscreen({method: "pause"}).then(res => res == true).catch(err => false)
+  if (!hasOffscreen) {
+    const readyPromise = new Promise(f => messageHandlers.offscreenCheckIn = f)
+    brapi.offscreen.createDocument({
+      reasons: ["AUDIO_PLAYBACK"],
+      justification: "Read Aloud would like to play audio in the background",
+      url: brapi.runtime.getURL("offscreen.html")
+    })
+    await readyPromise
+  }
+  const endPromise = new Promise((fulfill, reject) => {
+    messageHandlers.offscreenPlaybackEnded = err => err ? reject(err) : fulfill()
+  })
+  await sendToOffscreen({method: "play", args: [await urlPromise, options, startTime]})
+  return {
+    endPromise: endPromise,
+    pause: function() {
+      sendToOffscreen({method: "pause"})
+        .catch(console.error)
+    },
+    resume: function() {
+      sendToOffscreen({method: "resume"})
+        .catch(console.error)
+    },
+  }
+
+  async function sendToOffscreen(message) {
+    message.dest = "offscreen"
+    const result = await brapi.runtime.sendMessage(message)
+    if (result && result.error) throw result.error
+    else return result
   }
 }

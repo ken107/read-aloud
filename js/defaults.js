@@ -783,6 +783,10 @@ function getBrowser() {
   return 'chrome';
 }
 
+function isIOS() {
+  return !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
+}
+
 function getHotkeySettingsUrl() {
   switch (getBrowser()) {
     case 'opera': return 'opera://settings/configureCommands';
@@ -987,4 +991,48 @@ function truncateRepeatedChars(text, max) {
   }
   if (count < max) result += text.slice(startIndex)
   return result
+}
+
+async function playAudioHere(urlPromise, options, startTime) {
+  const audio = new Audio()
+  if (!isIOS()) {
+    audio.defaultPlaybackRate = (options.rate || 1) * (options.rateAdjust || 1)
+    audio.volume = options.volume || 1
+  }
+
+  const canPlayPromise = new Promise((fulfill, reject) => {
+    audio.oncanplay = fulfill
+    audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
+  })
+  audio.src = await urlPromise
+  await canPlayPromise
+
+  if (startTime) {
+    const waitTime = startTime - Date.now()
+    if (waitTime > 0) await waitMillis(waitTime)
+  }
+
+  const startPromise = new Promise((fulfill, reject) => {
+    audio.onplay = fulfill
+    audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
+  })
+  const playPromise = audio.play()
+  if (playPromise) {
+    await playPromise
+      .catch(err => {
+        if (err instanceof DOMException) throw new Error(err.name || err.message)
+        else throw err
+      })
+  }
+  await startPromise
+
+  const endPromise = new Promise((fulfill, reject) => {
+    audio.onended = fulfill
+    audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
+  })
+  return {
+    endPromise: endPromise,
+    pause: () => audio.pause(),
+    resume: () => audio.play(),
+  }
 }
