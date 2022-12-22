@@ -27,7 +27,7 @@
   }
 
   function resume() {
-    audio.resume()
+    return audio.resume()
   }
 
 

@@ -7,9 +7,14 @@ var playbackError = null;
 
 var audioCanPlay = false;
 var audioCanPlayPromise = new Promise(fulfill => {
-    const silence = new Audio("sound/silence.mp3")
-    silence.oncanplay = fulfill
-    silence.play()
+    if (isStandalone) {
+      const silence = new Audio("sound/silence.mp3")
+      silence.oncanplay = fulfill
+      silence.play()
+    }
+    else {
+      fulfill()
+    }
   })
   .then(() => audioCanPlay = true)
 
@@ -201,8 +206,10 @@ async function playAudioOffscreen(urlPromise, options, startTime) {
         .catch(console.error)
     },
     resume: function() {
-      sendToOffscreen({method: "resume"})
-        .catch(console.error)
+      return sendToOffscreen({method: "resume"})
+        .then(res => {
+          if (res != true) throw new Error("Offscreen player unreachable")
+        })
     },
   }
 

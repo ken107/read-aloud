@@ -1016,14 +1016,11 @@ async function playAudioHere(urlPromise, options, startTime) {
     audio.onplay = fulfill
     audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
   })
-  const playPromise = audio.play()
-  if (playPromise) {
-    await playPromise
-      .catch(err => {
-        if (err instanceof DOMException) throw new Error(err.name || err.message)
-        else throw err
-      })
-  }
+  await audio.play()
+    .catch(err => {
+      if (err instanceof DOMException) throw new Error(err.name || err.message)
+      else throw err
+    })
   await startPromise
 
   const endPromise = new Promise((fulfill, reject) => {
@@ -1033,6 +1030,6 @@ async function playAudioHere(urlPromise, options, startTime) {
   return {
     endPromise: endPromise,
     pause: () => audio.pause(),
-    resume: () => audio.play(),
+    resume: () => audio.play().then(() => true),
   }
 }

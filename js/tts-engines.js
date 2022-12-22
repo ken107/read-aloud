@@ -32,7 +32,7 @@ interface TtsEngine {
   speak: function(text: string, opts: Options, onEvent: (e:Event) => void): void
   stop: function(): void
   pause: function(): void
-  resume: function(): void
+  resume: function(): void|Promise<void>
   isSpeaking: function(callback): void
   getVoices: function(): Voice[]
 }
@@ -199,7 +199,7 @@ function RemoteTtsEngine(serviceUrl) {
       .then(audio => audio.pause())
   }
   this.resume = function() {
-    speakPromise
+    return speakPromise
       .then(audio => audio.resume())
   }
   this.prefetch = function(utterance, options) {
@@ -389,7 +389,7 @@ function GoogleTranslateTtsEngine() {
       .then(audio => audio.pause())
   };
   this.resume = function() {
-    speakPromise
+    return speakPromise
       .then(audio => audio.resume())
   };
   this.prefetch = function(utterance, options) {
@@ -514,7 +514,7 @@ function AmazonPollyTtsEngine() {
       .then(audio => audio.pause())
   };
   this.resume = function() {
-    speakPromise
+    return speakPromise
       .then(audio => audio.resume())
   };
   this.prefetch = function(utterance, options) {
@@ -754,7 +754,7 @@ function GoogleWavenetTtsEngine() {
       .then(audio => audio.pause())
   };
   this.resume = function() {
-    speakPromise
+    return speakPromise
       .then(audio => audio.resume())
   };
   this.prefetch = function(utterance, options) {
@@ -1053,7 +1053,7 @@ function IbmWatsonTtsEngine() {
       .then(audio => audio.pause())
   };
   this.resume = function() {
-    speakPromise
+    return speakPromise
       .then(audio => audio.resume())
   };
   this.prefetch = function(utterance, options) {

@@ -88,8 +88,13 @@ function Speech(texts, options) {
     }
     else if (state == "PAUSED") {
       state = "PLAYING";
-      engine.resume();
-      return Promise.resolve();
+      return Promise.resolve()
+        .then(() => engine.resume())
+        .catch(err => {
+          console.error("Couldn't resume", err)
+          state = "IDLE"
+          return play()
+        })
     }
     else {
       state = new String("PLAYING");
