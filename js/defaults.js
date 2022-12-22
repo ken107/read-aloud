@@ -904,17 +904,22 @@ function clearAuthToken() {
     })
 }
 
-function getAccountInfo(authToken) {
-  return ajaxGet(config.serviceUrl + "/read-aloud/get-account?t=" + authToken)
-    .then(JSON.parse)
-    .then(function(account) {
-      account.balance += account.freeBalance;
-      return account;
-    })
-    .catch(function(err) {
-      if (err.xhr && err.xhr.status == 401) return clearSettings(["authToken"]).then(function() {return null});
-      else throw err;
-    })
+async function getAccountInfo(authToken) {
+  const res = await fetch(config.serviceUrl + "/read-aloud/get-account?t=" + authToken)
+  if (res.ok) {
+    const account = await res.json()
+    account.balance += account.freeBalance;
+    return account;
+  }
+  else {
+    if (res.status == 401) {
+      await clearSettings(["authToken"])
+      return null
+    }
+    else {
+      throw new Error("Can't fetch account info, server returns " + res.status)
+    }
+  }
 }
 
 function isMobileOS() {

@@ -113,9 +113,14 @@ function registerMessageListener(name, handlers) {
 }
 
 function errorToJson(err) {
-  return err && {
-    name: err.name,
-    message: err.message,
-    stack: err.stack,
+  if (err instanceof Error) {
+    return {
+      name: err.name,
+      message: err.message,
+      stack: err.stack,
+    }
+  }
+  else {
+    return err
   }
 }

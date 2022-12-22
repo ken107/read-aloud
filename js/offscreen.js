@@ -18,7 +18,7 @@
     audio = await playAudioHere(url, options, startTime)
     audio.endPromise
       .then(() => sendToPlayer({method: "offscreenPlaybackEnded"}))
-      .catch(err => sendToPlayer({method: "offscreenPlaybackEnded", args: [err]}))
+      .catch(err => sendToPlayer({method: "offscreenPlaybackEnded", args: [errorToJson(err)]}))
   }
 
   function pause() {
