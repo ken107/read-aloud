@@ -1,5 +1,8 @@
 
-brapi.runtime.onInstalled.addListener(installContextMenus);
+brapi.runtime.onInstalled.addListener(function() {
+  installContentScripts()
+  installContextMenus()
+})
 if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
 
 
@@ -9,6 +12,7 @@ if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContex
 var handlers = {
   playText: playText,
   playTab: playTab,
+  reloadAndPlayTab: reloadAndPlayTab,
   stop: stop,
   pause: pause,
   resume: resume,
@@ -24,17 +28,37 @@ registerMessageListener("serviceWorker", handlers)
 
 
 /**
- * Context menu installer & handlers
+ * Installers
  */
+function installContentScripts() {
+  brapi.scripting.registerContentScripts([{
+    matches: ["https://docs.google.com/document/*"],
+    id: "google-docs",
+    js: ["js/page/google-doc.js"],
+    runAt: "document_start",
+    world: "MAIN"
+  }])
+  .then(() => console.info("Installed content scripts"))
+  .catch(console.error)
+}
+
 function installContextMenus() {
   if (brapi.contextMenus)
   brapi.contextMenus.create({
     id: "read-selection",
     title: brapi.i18n.getMessage("context_read_selection"),
     contexts: ["selection"]
-  });
+  },
+  function() {
+    if (brapi.runtime.lastError) console.error(brapi.runtime.lastError)
+    else console.info("Installed context menus")
+  })
 }
 
+
+/**
+ * Context menu handlers
+ */
 if (brapi.contextMenus)
 brapi.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection")
@@ -53,7 +77,8 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
 /**
  * Shortcut keys handlers
  */
-function execCommand(command) {
+if (brapi.commands)
+brapi.commands.onCommand.addListener(function(command) {
   if (command == "play") {
     getPlaybackState()
       .then(function(stateInfo) {
@@ -77,11 +102,6 @@ function execCommand(command) {
     rewind()
       .catch(handleHeadlessError)
   }
-}
-
-if (brapi.commands)
-brapi.commands.onCommand.addListener(function(command) {
-  execCommand(command)
 })
 
 
@@ -112,6 +132,22 @@ async function playTab(tabId) {
   const hasPlayer = await stop().then(res => res == true).catch(err => false)
   if (!hasPlayer) await injectPlayer(tab)
   await sendToPlayer({method: "playTab"})
+}
+
+async function reloadAndPlayTab(tabId) {
+  const tab = tabId ? await getTab(tabId) : await getActiveTab()
+  const tabLoadComplete = new Promise(fulfill => {
+    function listener(changeTabId, changeInfo) {
+      if (changeTabId == tab.id && changeInfo.status == "complete") {
+        brapi.tabs.onUpdated.removeListener(listener)
+        fulfill()
+      }
+    }
+    brapi.tabs.onUpdated.addListener(listener)
+  })
+  await brapi.tabs.reload(tab.id)
+  await tabLoadComplete
+  await playTab(tab.id)
 }
 
 function stop() {

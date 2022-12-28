@@ -75,7 +75,10 @@ function handleError(err) {
         case "#request-permissions":
           requestPermissions(errInfo.perms)
             .then(function(granted) {
-              if (granted) $("#btnPlay").click();
+              if (granted) {
+                if (errInfo.reload) return reloadAndPlay()
+                else $("#btnPlay").click()
+              }
             })
           break;
         case "#sign-in":
@@ -161,6 +164,13 @@ function onPlay() {
       if (stateInfo.state == "PAUSED") return bgPageInvoke("resume")
       else return bgPageInvoke("playTab", queryString.tab ? [Number(queryString.tab)] : [])
     })
+    .then(updateButtons)
+    .catch(handleError)
+}
+
+function reloadAndPlay() {
+  $("#status").hide();
+  bgPageInvoke("reloadAndPlayTab", queryString.tab ? [Number(queryString.tab)] : [])
     .then(updateButtons)
     .catch(handleError)
 }

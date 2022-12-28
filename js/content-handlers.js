@@ -37,6 +37,24 @@ var contentHandlers = [
     }
   },
 
+  // Google Docs ---------------------------------------------------------------
+  {
+    match: function(url) {
+      return url.startsWith("https://docs.google.com/document/d/")
+    },
+    validate: function() {
+      if (this.alreadyAsked) return
+      else this.alreadyAsked = true
+      const perms = {
+        origins: ["https://docs.google.com/document/d/"]
+      }
+      return brapi.permissions.contains(perms)
+        .then(has => {
+          if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms, reload: true}))
+        })
+    },
+  },
+
   // Google Play Books ---------------------------------------------------------
   {
     match: function(url) {

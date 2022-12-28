@@ -72,6 +72,7 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
   }
 
   function getSelectedText() {
+    if (readAloudDoc.getSelectedText) return readAloudDoc.getSelectedText()
     return window.getSelection().toString().trim();
   }
 })()
