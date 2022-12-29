@@ -89,7 +89,7 @@ function execCommand(command) {
     getPlaybackState()
       .then(function(state) {
         if (state == "PLAYING") return pause();
-        else if (state == "STOPPED" || state == "PAUSED") return playTab()
+        else if (state == "STOPPED" || state == "PAUSED") return playClipboard()
       })
       .catch(console.error)
   }
@@ -118,6 +118,23 @@ if (brapi.ttsEngine) (function() {
 })()
 
 
+function playClipboard(){
+  let t = document.createElement("input");
+  document.body.appendChild(t);
+  t.focus();
+  document.execCommand("paste");
+  let clipboardText = t.value; //this is your clipboard data
+  console.log(clipboardText)
+  document.body.removeChild(t);
+  stop()
+      .then(function() {
+        return undefined
+      })
+      .then(function(lang) {
+        return playText(clipboardText, {lang: lang})
+      })
+      .catch(console.error)
+}
 
 /**
  * METHODS
