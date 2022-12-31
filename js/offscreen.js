@@ -22,7 +22,7 @@
   }
 
   function pause() {
-    audio.pause()
+    if (audio) audio.pause()
     return true
   }
 

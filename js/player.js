@@ -185,6 +185,7 @@ function startTimer(timeout, callback) {
 }
 
 async function playAudioOffscreen(urlPromise, options, startTime) {
+  const url = await urlPromise
   const hasOffscreen = await sendToOffscreen({method: "pause"}).then(res => res == true).catch(err => false)
   if (!hasOffscreen) {
     const readyPromise = new Promise(f => messageHandlers.offscreenCheckIn = f)
@@ -198,7 +199,7 @@ async function playAudioOffscreen(urlPromise, options, startTime) {
   const endPromise = new Promise((fulfill, reject) => {
     messageHandlers.offscreenPlaybackEnded = err => err ? reject(err) : fulfill()
   })
-  await sendToOffscreen({method: "play", args: [await urlPromise, options, startTime]})
+  await sendToOffscreen({method: "play", args: [url, options, startTime]})
   return {
     endPromise: endPromise,
     pause: function() {
