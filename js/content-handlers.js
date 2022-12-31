@@ -17,8 +17,9 @@ var contentHandlers = [
     match: function(url) {
       return /^file:.*\.pdf$/i.test(url.split("?")[0]);
     },
-    validate: function(tab) {
-      throw new Error(JSON.stringify({code: "error_upload_pdf", tabId: tab.id}));
+    validate: async function(tab) {
+      await setTabUrl(tab.id, config.pdfViewerUrl)
+      throw new Error(JSON.stringify({code: "error_upload_pdf"}))
     }
   },
 
@@ -181,11 +182,29 @@ var contentHandlers = [
     match: function(url) {
       return /^chrome-extension:\/\/jhhclmfgfllimlhabjkgkeebkbiadflb\/reader.html/.test(url);
     },
-    validate: function() {
-    },
     getSourceUri: function() {
       return "epubreader:jhhclmfgfllimlhabjkgkeebkbiadflb"
     }
+  },
+
+  // Read Aloud PDF viewer ---------------------------------------------------
+  {
+    match: url => url.startsWith(brapi.runtime.getURL("pdf-viewer.html")),
+    getSourceUri: () => "pdfviewer:",
+  },
+
+  // Adobe Acrobat extension -------------------------------------------------
+  {
+    match: url => url.startsWith("chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/"),
+    validate: tab => openPdfViewer(tab.id, tab.url.substr(52)),
+    getSourceUri: () => "pdfviewer:",
+  },
+
+  // Kami extension -----------------------------------------------------------
+  {
+    match: url => url.startsWith("https://web.kamihq.com/web/viewer.html?source=extension_pdfhandler&"),
+    validate: tab => openPdfViewer(tab.id, new URL(tab.url).searchParams.get("file")),
+    getSourceUri: () => "pdfviewer:",
   },
 
   // LibbyApp ---------------------------------------------------------------
@@ -216,8 +235,6 @@ var contentHandlers = [
   {
     match: function() {
       return true;
-    },
-    validate: function() {
     }
   }
 ]

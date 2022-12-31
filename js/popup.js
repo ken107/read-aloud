@@ -101,10 +101,6 @@ function handleError(err) {
           break
       }
     })
-
-    if (errInfo.code == "error_upload_pdf") {
-      setTabUrl(errInfo.tabId, config.pdfViewerUrl)
-    }
   }
   else {
     $("#status").text(err.message).show();

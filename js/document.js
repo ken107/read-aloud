@@ -45,6 +45,10 @@ function TabSource() {
             return res
           })
       }
+      else if (uri.startsWith("pdfviewer:")) {
+        sendToSource = sendToPdfViewer
+        return sendToSource({method: "getDocumentInfo"})
+      }
       else throw new Error("Invalid source")
     })
     .finally(function() {
@@ -107,6 +111,13 @@ function TabSource() {
         .map(node => node.innerText && node.innerText.trim().replace(/\r?\n/g, " "))
         .filter(text => text)
     }
+  }
+
+  async function sendToPdfViewer(message) {
+    message.dest = "pdfViewer"
+    const result = await brapi.runtime.sendMessage(message)
+    if (result && result.error) throw result.error
+    else return result
   }
 }
 
