@@ -125,7 +125,8 @@ async function playTab(tabId) {
     await setState("sourceUri", handler.getSourceUri(tab))
   }
   else {
-    if (!await contentScriptAlreadyInjected(tab)) await injectContentScript(tab, handler)
+    const frameId = handler.getFrameId && await getAllFrames(tab.id).then(handler.getFrameId)
+    if (!await contentScriptAlreadyInjected(tab, frameId)) await injectContentScript(tab, frameId, handler.extraScripts)
     await setState("sourceUri", "contentscript:" + tab.id)
   }
 
@@ -276,9 +277,12 @@ async function openPdfViewer(tabId, pdfUrl) {
 
 
 
-async function contentScriptAlreadyInjected(tab) {
+async function contentScriptAlreadyInjected(tab, frameId) {
   const items = await brapi.scripting.executeScript({
-    target: {tabId: tab.id},
+    target: {
+      tabId: tab.id,
+      frameIds: frameId ? [frameId] : undefined,
+    },
     func: function() {
       return typeof brapi != "undefined"
     }
@@ -286,8 +290,7 @@ async function contentScriptAlreadyInjected(tab) {
   return items[0].result == true
 }
 
-async function injectContentScript(tab, handler) {
-  const frameId = handler.getFrameId && await getAllFrames(tab.id).then(handler.getFrameId)
+async function injectContentScript(tab, frameId, extraScripts) {
   await brapi.scripting.executeScript({
     target: {
       tabId: tab.id,
@@ -299,7 +302,7 @@ async function injectContentScript(tab, handler) {
       "js/content.js",
     ]
   })
-  const files = handler.extraScripts || await brapi.tabs.sendMessage(tab.id, {dest: "contentScript", method: "getRequireJs"})
+  const files = extraScripts || await brapi.tabs.sendMessage(tab.id, {dest: "contentScript", method: "getRequireJs"})
   await brapi.scripting.executeScript({
     target: {
       tabId: tab.id,
@@ -307,7 +310,7 @@ async function injectContentScript(tab, handler) {
     },
     files: files
   })
-  console.info("Content scripts", files)
+  console.info("Content handlers", files)
 }
 
 async function injectPlayer(tab) {

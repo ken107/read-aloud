@@ -290,10 +290,8 @@ function Doc(source, onEnd) {
   function getSpeech(texts) {
     return getSettings()
       .then(function(settings) {
-        console.log("Declared", info.lang)
-        console.log("Detected", info.detectedLang)
         var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
-        console.log("Chosen", lang)
+        console.log("Declared", info.lang, "- Detected", info.detectedLang, "- Chosen", lang)
         var options = {
           rate: settings.rate || defaults.rate,
           pitch: settings.pitch || defaults.pitch,
