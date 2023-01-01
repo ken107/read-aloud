@@ -179,10 +179,11 @@ function Speech(texts, options) {
 
   function seek(n) {
     index = n;
-    return play();
+    return stop().then(play)
   }
 
-  function gotoEnd() {
+  async function gotoEnd() {
+    await ready
     index = texts.length && texts.length-1;
   }
 

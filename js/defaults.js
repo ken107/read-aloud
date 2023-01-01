@@ -215,6 +215,8 @@ var defaults = {
   highlightWindowSize: 2,
 };
 
+var getSingletonAudio = lazy(() => new Audio());
+
 //if extension page but not service worker
 if (typeof brapi.commands != "undefined" && typeof window != "undefined") {
   //setup dark mode
@@ -229,6 +231,11 @@ if (typeof brapi.commands != "undefined" && typeof window != "undefined") {
 /**
  * HELPERS
  */
+function lazy(get) {
+  var value
+  return () => value || (value = get())
+}
+
 function getQueryString() {
   return location.search ? parseQueryString(location.search) : {};
 }
@@ -999,7 +1006,8 @@ function truncateRepeatedChars(text, max) {
 }
 
 async function playAudioHere(urlPromise, options, startTime) {
-  const audio = new Audio()
+  const audio = getSingletonAudio()
+  audio.pause()
   if (!isIOS()) {
     audio.defaultPlaybackRate = (options.rate || 1) * (options.rateAdjust || 1)
     audio.volume = options.volume || 1

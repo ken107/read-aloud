@@ -153,74 +153,59 @@ function Doc(source, onEnd) {
   }
 
   //method play
-  function play() {
-    return ready
-      .then(function() {
-        if (activeSpeech) return activeSpeech.play();
-        else {
-          return source.getCurrentIndex()
-            .then(function(index) {currentIndex = index})
-            .then(function() {return readCurrent()})
-        }
-      })
+  async function play() {
+    if (activeSpeech) return activeSpeech.play();
+    await ready
+    currentIndex = await source.getCurrentIndex()
+    return readCurrent()
   }
 
-  function readCurrent(rewinded) {
-    return source.getTexts(currentIndex)
-      .catch(function() {
-        return null;
-      })
-      .then(function(texts) {
-        if (texts) {
-          if (texts.length) {
-            foundText = true;
-            return read(texts);
-          }
-          else {
-            currentIndex++;
-            return readCurrent();
-          }
-        }
-        else {
-          if (!foundText) throw new Error(JSON.stringify({code: "error_no_text"}))
-          if (onEnd) onEnd()
-        }
-      })
-    function read(texts) {
-      texts = texts.map(preprocess)
-      return Promise.resolve()
-        .then(function() {
-          if (info.detectedLang == null)
-            return detectLanguage(texts)
-              .then(function(lang) {
-                info.detectedLang = lang || "";
-              })
-        })
-        .then(getSpeech.bind(null, texts))
-        .then(function(speech) {
-          if (activeSpeech) return;
-          activeSpeech = speech;
-          activeSpeech.onEnd = function(err) {
-            if (err) {
-              if (onEnd) onEnd(err);
-            }
-            else {
-              activeSpeech = null;
-              currentIndex++;
-              readCurrent()
-                .catch(function(err) {
-                  if (onEnd) onEnd(err)
-                })
-            }
-          };
-          if (rewinded) activeSpeech.gotoEnd();
-          return activeSpeech.play();
-        })
+  async function readCurrent(rewinded) {
+    const texts = await source.getTexts(currentIndex).catch(err => null)
+    if (texts) {
+      if (texts.length) {
+        foundText = true;
+        return read(texts, rewinded);
+      }
+      else {
+        currentIndex++;
+        return readCurrent();
+      }
     }
-    function preprocess(text) {
-      text = truncateRepeatedChars(text, 3)
-      return text.replace(/https?:\/\/\S+/g, "HTTP URL.")
+    else {
+      if (!foundText) throw new Error(JSON.stringify({code: "error_no_text"}))
+      if (onEnd) onEnd()
     }
+  }
+
+  async function read(texts, rewinded) {
+    texts = texts.map(preprocess)
+    if (info.detectedLang == null) {
+      const lang = await detectLanguage(texts)
+      info.detectedLang = lang || "";
+    }
+    if (activeSpeech) return;
+    activeSpeech = await getSpeech(texts);
+    activeSpeech.onEnd = function(err) {
+      if (err) {
+        if (onEnd) onEnd(err);
+      }
+      else {
+        activeSpeech = null;
+        currentIndex++;
+        readCurrent()
+          .catch(function(err) {
+            if (onEnd) onEnd(err)
+          })
+      }
+    };
+    if (rewinded) await activeSpeech.gotoEnd();
+    return activeSpeech.play();
+  }
+
+  function preprocess(text) {
+    text = truncateRepeatedChars(text, 3)
+    return text.replace(/https?:\/\/\S+/g, "HTTP URL.")
   }
 
   function detectLanguage(texts) {
