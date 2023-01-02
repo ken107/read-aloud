@@ -310,13 +310,20 @@ async function injectContentScript(tab, frameId, extraScripts) {
     },
     files: files
   })
-  console.info("Content handlers", files)
+  console.info("Content handler", files)
 }
 
 async function injectPlayer(tab) {
   const promise = new Promise(f => handlers.playerCheckIn = f)
   try {
-    if (!brapi.offscreen) throw new Error("Offscreen API unavailable")
+    if (!brapi.tts) {
+      //without chrome.tts, using WebSpeech inside tab requires initial page interaction
+      throw new Error("chrome.tts API unavailable")
+    }
+    if (!brapi.offscreen) {
+      //without offscreen, playing audio inside tab requires initial page interaction
+      throw new Error("Offscreen API unavailable")
+    }
     await brapi.scripting.executeScript({
       target: {tabId: tab.id},
       func: createPlayerFrame

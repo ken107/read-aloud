@@ -39,6 +39,7 @@ interface TtsEngine {
 */
 
 function BrowserTtsEngine() {
+  brapi.tts.stop()    //workaround: chrome.tts.speak doesn't work first time on cold start for some reason
   this.speak = function(text, options, onEvent) {
     brapi.tts.speak(text, {
       voiceName: options.voice.voiceName,
@@ -78,8 +79,10 @@ function WebSpeechEngine() {
     utter.onstart = onEvent.bind(null, {type: 'start', charIndex: 0});
     utter.onend = onEvent.bind(null, {type: 'end', charIndex: text.length});
     utter.onerror = function(event) {
+      if (event.error == "canceled" || event.error == "interrupted") return;
       onEvent({type: 'error', error: new Error(event.error)});
     };
+    speechSynthesis.cancel()
     speechSynthesis.speak(utter);
   }
   this.stop = function() {
