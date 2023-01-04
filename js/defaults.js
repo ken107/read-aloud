@@ -992,7 +992,7 @@ function truncateRepeatedChars(text, max) {
   var startIndex = 0
   var count = 1
   for (var i=1; i<text.length; i++) {
-    if (text.charCodeAt(i) == text.charCodeAt(i-1)) {
+    if (text.charCodeAt(i) == text.charCodeAt(i-1) && !/^\d$/.test(text.charAt(i))) {
       count++
       if (count == max) result += text.slice(startIndex, i+1)
     }
