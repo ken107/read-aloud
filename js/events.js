@@ -324,6 +324,10 @@ async function injectPlayer(tab) {
       //without offscreen, playing audio inside tab requires initial page interaction
       throw new Error("Offscreen API unavailable")
     }
+    if (tab.incognito) {
+      //https://developer.chrome.com/docs/extensions/mv3/manifest/incognito/
+      throw new Error("Incognito tab")
+    }
     await brapi.scripting.executeScript({
       target: {tabId: tab.id},
       func: createPlayerFrame
