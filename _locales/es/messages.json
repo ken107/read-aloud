@@ -129,16 +129,16 @@
     "message": "Use el formulario para cargar su archivo PDF y leer en voz alta"
   },
   "error_ajax_pdf": {
-    "message": "Guarde este archivo PDF en su computadora y ábralo dentro de este [visor de PDF] (open-pdf-viewer) para leer en voz alta"
+    "message": "Guarde este archivo PDF en su computadora y ábralo dentro de este [visor de PDF](open-pdf-viewer) para leer en voz alta"
   },
   "error_page_unreadable": {
     "message": "No puedo leer en voz alta este sitio web"
   },
   "error_file_access": {
-    "message": "Debe otorgar acceso de lectura en voz alta a las URL de los archivos en la extensión [configuración] (configuración de extensión abierta)"
+    "message": "Debe otorgar acceso de lectura en voz alta a las URL de los archivos en la extensión [configuración](open-extension-settings)"
   },
   "error_add_permissions": {
-    "message": "Debe otorgar [permisos] (solicitud de permisos) adicionales para leer en voz alta para este sitio web"
+    "message": "Debe conceder [permisos](request-permissions) adicionales para leer en voz alta para este sitio web"
   },
   "error_login_required": {
     "message": "Por favor [inicie sesión](sign-in) para utilizar las voces premium"
@@ -147,10 +147,10 @@
     "message": "Voz no disponible, por favor elija otro"
   },
   "error_payment_required": {
-    "message": "sin credito"
+    "message": "Sin creditos"
   },
   "error_wavenet_auth_required": {
-    "message": "Debe otorgar [permisos] adicionales (auth-wavenet) para habilitar las voces de Google Wavenet"
+    "message": "Debe conceder [permisos](auth-wavenet) adicionales para habilitar las voces de Google Wavenet"
   },
   "languages_heading": {
     "message": "Opciones de lenguaje"

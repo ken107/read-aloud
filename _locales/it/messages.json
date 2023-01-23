@@ -135,10 +135,10 @@
     "message": "Non posso leggere ad alta voce questo sito"
   },
   "error_file_access": {
-    "message": "Devi concedere l&#39;accesso in lettura ad alta voce agli URL dei file nell&#39;estensione [settings](open-extension-settings)"
+    "message": "Devi concedere l&#39;accesso Leggi ad alta voce agli URL dei file nell&#39;estensione [settings](open-extension-settings)"
   },
   "error_add_permissions": {
-    "message": "È necessario concedere Read Aloud [permessi] aggiuntivi (permessi-richiesta) per questo sito web"
+    "message": "Devi concedere Leggi ad alta voce [autorizzazioni](request-permissions) aggiuntive per questo sito web"
   },
   "error_login_required": {
     "message": "[Accedi](sign-in) per utilizzare le voci Premium"
@@ -147,10 +147,10 @@
     "message": "Voce non disponibile, per favore sceglierne un'altra"
   },
   "error_payment_required": {
-    "message": "Senza credito"
+    "message": "Senza crediti"
   },
   "error_wavenet_auth_required": {
-    "message": "Devi concedere ulteriori [autorizzazioni](auth-wavenet) per abilitare le voci di Google Wavenet"
+    "message": "Devi concedere [autorizzazioni](auth-wavenet) aggiuntive per abilitare le voci di Google Wavenet"
   },
   "languages_heading": {
     "message": "Opzioni di lingua"

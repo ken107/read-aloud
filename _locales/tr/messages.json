@@ -135,19 +135,19 @@
     "message": "Bu web sitesi sesli okunamıyor"
   },
   "error_file_access": {
-    "message": "[ayarlar](aç-eklentiler-ayarlar) uzantısındaki dosya URL'lerine Sesli Okuma erişimi vermeniz gerekir"
+    "message": "[ayarlar](open-extension-settings) uzantısındaki dosya URL'lerine Sesli Okuma erişimi vermeniz gerekir"
   },
   "error_add_permissions": {
-    "message": "Bu web sitesi için Sesli Okuma ek [izinleri](istek-izinleri) vermeniz gerekiyor"
+    "message": "Bu web sitesi için Sesli Okuma ek [izinleri](request-permissions) vermeniz gerekiyor"
   },
   "error_login_required": {
-    "message": "Premium Sesleri kullanmak için lütfen [oturum açın](oturum açın)"
+    "message": "Premium Sesleri kullanmak için lütfen [oturum açın](sign-in)"
   },
   "error_voice_unavailable": {
     "message": "Ses kullanılamıyor, lütfen başka bir tane seçin"
   },
   "error_payment_required": {
-    "message": "Kredi bitti"
+    "message": "krediler bitti"
   },
   "error_wavenet_auth_required": {
     "message": "Google Wavenet seslerini etkinleştirmek için ek [izinler](auth-wavenet) vermeniz gerekir"

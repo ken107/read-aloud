@@ -147,7 +147,7 @@
     "message": "Voice unavailable, please pick another"
   },
   "error_payment_required": {
-    "message": "Out of credit"
+    "message": "Out of credits"
   },
   "error_wavenet_auth_required": {
     "message": "You need to grant additional [permissions](auth-wavenet) to enable Google Wavenet voices"

@@ -129,16 +129,16 @@
     "message": "使用表格上传您的PDF文件进行朗读"
   },
   "error_ajax_pdf": {
-    "message": "请将此 PDF 文件保存到您的计算机，然后在此 [PDF 查看器](open-pdf-viewer) 中打开它以大声朗读"
+    "message": "请将此 PDF 文件保存到您的计算机并在此 [PDF 查看器](open-pdf-viewer) 中打开它以大声朗读"
   },
   "error_page_unreadable": {
     "message": "不能大声朗读这个网站"
   },
   "error_file_access": {
-    "message": "您需要在扩展 [settings](open-extension-settings) 中授予对文件 URL 的大声朗读访问权限"
+    "message": "您需要在扩展 [设置](open-extension-settings) 中授予对文件 URL 的大声朗读访问权限"
   },
   "error_add_permissions": {
-    "message": "您需要授予大声朗读此网站的额外[权限]（请求权限）"
+    "message": "您需要授予大声朗读此网站的额外[权限](request-permissions)"
   },
   "error_login_required": {
     "message": "请[登录](sign-in)以使用高级语音"
@@ -147,7 +147,7 @@
     "message": "语音不可用，请选择另一个"
   },
   "error_payment_required": {
-    "message": "失信"
+    "message": "学分不足"
   },
   "error_wavenet_auth_required": {
     "message": "您需要授予额外的[权限](auth-wavenet) 才能启用 Google Wavenet 语音"

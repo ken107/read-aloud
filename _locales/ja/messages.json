@@ -129,13 +129,13 @@
     "message": "読み上げるにはフォームを使用してPDFファイルをアップロードしてください"
   },
   "error_ajax_pdf": {
-    "message": "この PDF ファイルをパソコンに保存し、この [PDF ビューアー](open-pdf-viewer) で開いて読み上げてください。"
+    "message": "この PDF ファイルをコンピュータに保存し、この [PDF ビューアー](open-pdf-viewer) で開いて読み上げてください。"
   },
   "error_page_unreadable": {
     "message": "このウェブサイトを読み上げることはできません"
   },
   "error_file_access": {
-    "message": "拡張子[設定]のファイルURLへの読み上げアクセスを許可する必要があります (open-extension-settings)"
+    "message": "拡張子[設定](open-extension-settings)のファイルURLへの読み上げアクセスを許可する必要があります "
   },
   "error_add_permissions": {
     "message": "このウェブサイトにReadAloudの追加の[権限](request-permissions)を付与する必要があります"

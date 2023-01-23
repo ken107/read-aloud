@@ -57,7 +57,7 @@
     "message": "Hiển thị trong cửa sổ riêng"
   },
   "options_audio_playback": {
-    "message": "Phát lại âm thanh"
+    "message": "Phát thanh"
   },
   "options_audio_playback_standalone": {
     "message": "Sử dụng tab riêng biệt"
@@ -102,7 +102,7 @@
     "message": "Nếu bạn ẩn tab này, Đọc to sẽ phát âm thanh bên trong trang web hiện tại. Điều này có nghĩa là điều hướng khỏi trang sẽ khiến bài phát biểu dừng lại. (Cài đặt này có thể được hoàn nguyên từ trang Tùy chọn tiện ích mở rộng)"
   },
   "player_hidethistab_dialog_ok_button": {
-    "message": "Ẩn giấu"
+    "message": "Ẩn tab"
   },
   "player_hidethistab_dialog_cancel_button": {
     "message": "Hủy bỏ"
@@ -138,7 +138,7 @@
     "message": "Bạn cần cấp quyền Đọc to cho các URL của tệp trong phần mở rộng [cài đặt](open-extension-settings)"
   },
   "error_add_permissions": {
-    "message": "Bạn cần cấp thêm [quyền](yêu cầu-quyền) Đọc to cho trang web này"
+    "message": "Bạn cần cấp thêm [quyền](request-permissions) Đọc to cho trang web này"
   },
   "error_login_required": {
     "message": "Vui lòng [đăng nhập](sign-in) để sử dụng các giọng chất lượng cao"
@@ -147,7 +147,7 @@
     "message": "Giọng nói không khả dụng, vui lòng chọn một giọng nói khác"
   },
   "error_payment_required": {
-    "message": "hết tín dụng"
+    "message": "Hết tín dụng"
   },
   "error_wavenet_auth_required": {
     "message": "Bạn cần cấp thêm [quyền](auth-wavenet) để bật giọng nói của Google Wavenet"
