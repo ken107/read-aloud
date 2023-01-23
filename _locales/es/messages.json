@@ -20,11 +20,17 @@
   "options_voicegroup_premium": {
     "message": "Voces Premium"
   },
+  "options_voicegroup_additional": {
+    "message": "Voces adicionales"
+  },
   "options_enable_premium_voices": {
     "message": "Habilitar Voces Premium"
   },
   "options_premium_voices_enabled": {
     "message": "Las voces premium están habilitadas"
+  },
+  "options_enable_custom_voices": {
+    "message": "Habilitar voces personalizadas"
   },
   "options_rate_label": {
     "message": "Velocidad"
@@ -41,6 +47,24 @@
   "options_show_highlighting": {
     "message": "Resaltado De Texto"
   },
+  "options_highlighting_off": {
+    "message": "Apagar"
+  },
+  "options_highlighting_popup": {
+    "message": "Mostrar en ventana emergente"
+  },
+  "options_highlighting_window": {
+    "message": "Mostrar en una ventana separada"
+  },
+  "options_audio_playback": {
+    "message": "Reproducción de audio"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Usar pestaña separada"
+  },
+  "options_audio_playback_embedded": {
+    "message": "En pagina"
+  },
   "options_hotkeys_link": {
     "message": "Editar teclas de acceso directo"
   },
@@ -56,6 +80,42 @@
   "options_success_status": {
     "message": "Cambios guardados."
   },
+  "options_logged_in_as": {
+    "message": "Conectado como"
+  },
+  "options_account_button": {
+    "message": "Cuenta"
+  },
+  "options_logout_button": {
+    "message": "Cerrar sesión"
+  },
+  "player_tab_explanation": {
+    "message": "Leer en voz alta utiliza esta pestaña para la reproducción de audio. Esta pestaña se cerrará automáticamente después de 5 minutos sin actividad."
+  },
+  "player_hidethistab_link": {
+    "message": "Ocultar esta pestaña"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "¿Ocultar esta pestaña?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Si oculta esta pestaña, Leer en voz alta reproducirá audio dentro de la página web actual. Esto significa que navegar fuera de la página hará que el discurso se detenga. (Esta configuración se puede revertir desde la página Opciones de extensión)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Esconder"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Cancelar"
+  },
+  "player_permission_dialog_title": {
+    "message": "Permiso solicitado"
+  },
+  "player_permission_dialog_body": {
+    "message": "¿Permitir lectura en voz alta para reproducir audio?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Permitir"
+  },
   "context_read_selection": {
     "message": "Leer en voz alta el texto seleccionado"
   },
@@ -68,14 +128,29 @@
   "error_upload_pdf": {
     "message": "Use el formulario para cargar su archivo PDF y leer en voz alta"
   },
+  "error_ajax_pdf": {
+    "message": "Guarde este archivo PDF en su computadora y ábralo dentro de este [visor de PDF] (open-pdf-viewer) para leer en voz alta"
+  },
   "error_page_unreadable": {
     "message": "No puedo leer en voz alta este sitio web"
+  },
+  "error_file_access": {
+    "message": "Debe otorgar acceso de lectura en voz alta a las URL de los archivos en la extensión [configuración] (configuración de extensión abierta)"
+  },
+  "error_add_permissions": {
+    "message": "Debe otorgar [permisos] (solicitud de permisos) adicionales para leer en voz alta para este sitio web"
   },
   "error_login_required": {
     "message": "Por favor [inicie sesión](sign-in) para utilizar las voces premium"
   },
   "error_voice_unavailable": {
     "message": "Voz no disponible, por favor elija otro"
+  },
+  "error_payment_required": {
+    "message": "sin credito"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Debe otorgar [permisos] adicionales (auth-wavenet) para habilitar las voces de Google Wavenet"
   },
   "languages_heading": {
     "message": "Opciones de lenguaje"

@@ -20,11 +20,17 @@
   "options_voicegroup_premium": {
     "message": "Các giọng chất lượng cao"
   },
+  "options_voicegroup_additional": {
+    "message": "Tiếng nói bổ sung"
+  },
   "options_enable_premium_voices": {
     "message": "Bật các giọng chất lượng cao"
   },
   "options_premium_voices_enabled": {
     "message": "Các giọng chất lượng cao đã được bật"
+  },
+  "options_enable_custom_voices": {
+    "message": "Bật giọng nói tùy chỉnh"
   },
   "options_rate_label": {
     "message": "Tốc độ đọc"
@@ -41,6 +47,24 @@
   "options_show_highlighting": {
     "message": "Highlight câu đang đọc"
   },
+  "options_highlighting_off": {
+    "message": "Tắt"
+  },
+  "options_highlighting_popup": {
+    "message": "Hiển thị trong cửa sổ bật lên"
+  },
+  "options_highlighting_window": {
+    "message": "Hiển thị trong cửa sổ riêng"
+  },
+  "options_audio_playback": {
+    "message": "Phát lại âm thanh"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Sử dụng tab riêng biệt"
+  },
+  "options_audio_playback_embedded": {
+    "message": "trong trang"
+  },
   "options_hotkeys_link": {
     "message": "Chỉnh sửa phím tắt"
   },
@@ -56,6 +80,42 @@
   "options_success_status": {
     "message": "Đã lưu lại."
   },
+  "options_logged_in_as": {
+    "message": "đăng nhập như"
+  },
+  "options_account_button": {
+    "message": "Tài khoản"
+  },
+  "options_logout_button": {
+    "message": "Đăng xuất"
+  },
+  "player_tab_explanation": {
+    "message": "Đọc to sử dụng tab này để phát lại âm thanh. Tab này sẽ tự động đóng sau 5 phút không hoạt động."
+  },
+  "player_hidethistab_link": {
+    "message": "Ẩn tab này"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Ẩn tab này?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Nếu bạn ẩn tab này, Đọc to sẽ phát âm thanh bên trong trang web hiện tại. Điều này có nghĩa là điều hướng khỏi trang sẽ khiến bài phát biểu dừng lại. (Cài đặt này có thể được hoàn nguyên từ trang Tùy chọn tiện ích mở rộng)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Ẩn giấu"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Hủy bỏ"
+  },
+  "player_permission_dialog_title": {
+    "message": "Yêu cầu quyền"
+  },
+  "player_permission_dialog_body": {
+    "message": "Cho phép Đọc to để phát âm thanh?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Cho phép"
+  },
   "context_read_selection": {
     "message": "Đọc"
   },
@@ -68,14 +128,29 @@
   "error_upload_pdf": {
     "message": "Sử dụng biểu mẫu để tải lên tệp PDF của bạn để đọc to"
   },
+  "error_ajax_pdf": {
+    "message": "Vui lòng lưu tệp PDF này vào máy tính của bạn và mở nó bên trong [PDF viewer](open-pdf-viewer) này để đọc to"
+  },
   "error_page_unreadable": {
     "message": "Không thể đọc to trang web này"
+  },
+  "error_file_access": {
+    "message": "Bạn cần cấp quyền Đọc to cho các URL của tệp trong phần mở rộng [cài đặt](open-extension-settings)"
+  },
+  "error_add_permissions": {
+    "message": "Bạn cần cấp thêm [quyền](yêu cầu-quyền) Đọc to cho trang web này"
   },
   "error_login_required": {
     "message": "Vui lòng [đăng nhập](sign-in) để sử dụng các giọng chất lượng cao"
   },
   "error_voice_unavailable": {
     "message": "Giọng nói không khả dụng, vui lòng chọn một giọng nói khác"
+  },
+  "error_payment_required": {
+    "message": "hết tín dụng"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Bạn cần cấp thêm [quyền](auth-wavenet) để bật giọng nói của Google Wavenet"
   },
   "languages_heading": {
     "message": "Lựa chọn ngôn ngữ"

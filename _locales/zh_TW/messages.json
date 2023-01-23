@@ -47,6 +47,24 @@
   "options_show_highlighting": {
     "message": "標示朗讀文字"
   },
+  "options_highlighting_off": {
+    "message": "關"
+  },
+  "options_highlighting_popup": {
+    "message": "在彈出窗口中顯示"
+  },
+  "options_highlighting_window": {
+    "message": "在單獨的窗口中顯示"
+  },
+  "options_audio_playback": {
+    "message": "音頻播放"
+  },
+  "options_audio_playback_standalone": {
+    "message": "使用單獨的選項卡"
+  },
+  "options_audio_playback_embedded": {
+    "message": "在頁面中"
+  },
   "options_hotkeys_link": {
     "message": "編輯快捷鍵"
   },
@@ -62,6 +80,42 @@
   "options_success_status": {
     "message": "已儲存。"
   },
+  "options_logged_in_as": {
+    "message": "登錄為"
+  },
+  "options_account_button": {
+    "message": "帳戶"
+  },
+  "options_logout_button": {
+    "message": "登出"
+  },
+  "player_tab_explanation": {
+    "message": "大聲朗讀使用此選項卡進行音頻播放。此選項卡將在 5 分鐘無活動後自動關閉。"
+  },
+  "player_hidethistab_link": {
+    "message": "隱藏此選項卡"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "隱藏此選項卡？"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "如果隱藏此選項卡，大聲朗讀將在當前網頁內播放音頻。這意味著離開頁面將導致語音停止。 （此設置可以從擴展選項頁面恢復）"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "隱藏"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "取消"
+  },
+  "player_permission_dialog_title": {
+    "message": "請求許可"
+  },
+  "player_permission_dialog_body": {
+    "message": "允許大聲朗讀播放音頻嗎？"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "允許"
+  },
   "context_read_selection": {
     "message": "朗讀所選文字"
   },
@@ -73,6 +127,9 @@
   },
   "error_upload_pdf": {
     "message": "使用表格上傳您的 PDF 檔案進行朗讀"
+  },
+  "error_ajax_pdf": {
+    "message": "請將此 PDF 文件保存到您的計算機，然後在此 [PDF 查看器](open-pdf-viewer) 中打開它以大聲朗讀"
   },
   "error_page_unreadable": {
     "message": "無法朗讀這個網站"
@@ -91,6 +148,9 @@
   },
   "error_payment_required": {
     "message": "餘額不足"
+  },
+  "error_wavenet_auth_required": {
+    "message": "您需要授予額外的[權限](auth-wavenet) 才能啟用 Google Wavenet 語音"
   },
   "languages_heading": {
     "message": "語言選項"

@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/ken107/read-aloud/issues"
   },
-  "homepage": "https://readaloud.app"
+  "homepage": "https://readaloud.app",
+  "devDependencies": {
+    "@google-cloud/translate": "^7.0.5"
+  }
 }

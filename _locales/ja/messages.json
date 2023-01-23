@@ -47,6 +47,24 @@
   "options_show_highlighting": {
     "message": "テキストの強調表示"
   },
+  "options_highlighting_off": {
+    "message": "消す"
+  },
+  "options_highlighting_popup": {
+    "message": "ポップアップで表示"
+  },
+  "options_highlighting_window": {
+    "message": "別ウィンドウで表示"
+  },
+  "options_audio_playback": {
+    "message": "オーディオ再生"
+  },
+  "options_audio_playback_standalone": {
+    "message": "別のタブを使用する"
+  },
+  "options_audio_playback_embedded": {
+    "message": "ページ内"
+  },
   "options_hotkeys_link": {
     "message": "ショートカットキーを編集する"
   },
@@ -62,6 +80,42 @@
   "options_success_status": {
     "message": "変更が保存されました。"
   },
+  "options_logged_in_as": {
+    "message": "次のユーザーとしてログイン"
+  },
+  "options_account_button": {
+    "message": "アカウント"
+  },
+  "options_logout_button": {
+    "message": "ログアウト"
+  },
+  "player_tab_explanation": {
+    "message": "読み上げでは、このタブを使用して音声を再生します。このタブは、5 分間操作がないと自動的に閉じます。"
+  },
+  "player_hidethistab_link": {
+    "message": "このタブを非表示"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "このタブを非表示にしますか?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "このタブを非表示にすると、読み上げは現在の Web ページ内で音声を再生します。これは、ページから離れると音声が停止することを意味します。 (この設定は、拡張機能の [オプション] ページから元に戻すことができます)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "隠れる"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "キャンセル"
+  },
+  "player_permission_dialog_title": {
+    "message": "許可が必要です"
+  },
+  "player_permission_dialog_body": {
+    "message": "音声の再生を読み上げに許可しますか?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "許可する"
+  },
   "context_read_selection": {
     "message": "選択したテキストを読み上げる"
   },
@@ -73,6 +127,9 @@
   },
   "error_upload_pdf": {
     "message": "読み上げるにはフォームを使用してPDFファイルをアップロードしてください"
+  },
+  "error_ajax_pdf": {
+    "message": "この PDF ファイルをパソコンに保存し、この [PDF ビューアー](open-pdf-viewer) で開いて読み上げてください。"
   },
   "error_page_unreadable": {
     "message": "このウェブサイトを読み上げることはできません"
