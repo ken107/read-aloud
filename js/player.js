@@ -4,6 +4,7 @@ var playAudio = isStandalone ? playAudioHere : playAudioOffscreen
 
 var activeDoc;
 var playbackError = null;
+var silenceLoop;
 
 var audioCanPlay = false;
 var audioCanPlayPromise = new Promise(fulfill => {
@@ -16,7 +17,11 @@ var audioCanPlayPromise = new Promise(fulfill => {
       fulfill()
     }
   })
-  .then(() => audioCanPlay = true)
+  .then(() => {
+    audioCanPlay = true
+    silenceLoop = new Audio("sound/silence.mp3")
+    silenceLoop.loop = true
+  })
 
 var closeTabTimer = isStandalone && startTimer(5*60*1000, () => window.close())
 
@@ -137,6 +142,7 @@ function openDoc(source, onEnd) {
     closeDoc();
     if (typeof onEnd == "function") onEnd(err);
   })
+  if (silenceLoop) silenceLoop.play();
   if (closeTabTimer) closeTabTimer.stop();
 }
 
@@ -144,6 +150,7 @@ function closeDoc() {
   if (activeDoc) {
     activeDoc.close();
     activeDoc = null;
+    if (silenceLoop) silenceLoop.pause();
     if (closeTabTimer) closeTabTimer.restart();
   }
 }
