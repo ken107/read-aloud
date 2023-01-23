@@ -256,7 +256,7 @@ function parseQueryString(search) {
  */
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices"], fulfill);
+    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer"], fulfill);
   });
 }
 
@@ -268,7 +268,7 @@ function updateSettings(items) {
 
 function clearSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices"], fulfill);
+    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer"], fulfill);
   });
 }
 
@@ -1045,4 +1045,10 @@ async function playAudioHere(urlPromise, options, startTime) {
     pause: () => audio.pause(),
     resume: () => audio.play().then(() => true),
   }
+}
+
+function canUseEmbeddedPlayer() {
+  return brapi.tts && brapi.offscreen ? true : false
+  //without chrome.tts, using WebSpeech inside tab requires initial page interaction
+  //without offscreen, playing audio inside tab requires initial page interaction
 }

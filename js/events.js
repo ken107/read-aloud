@@ -315,32 +315,24 @@ async function injectContentScript(tab, frameId, extraScripts) {
 
 async function injectPlayer(tab) {
   const promise = new Promise(f => handlers.playerCheckIn = f)
-  try {
-    if (!brapi.tts) {
-      //without chrome.tts, using WebSpeech inside tab requires initial page interaction
-      throw new Error("chrome.tts API unavailable")
+  if ((await getSettings()).useEmbeddedPlayer) {
+    try {
+      if (tab.incognito) {
+        //https://developer.chrome.com/docs/extensions/mv3/manifest/incognito/
+        throw new Error("Incognito tab")
+      }
+      await brapi.scripting.executeScript({
+        target: {tabId: tab.id},
+        func: createPlayerFrame
+      })
     }
-    if (!brapi.offscreen) {
-      //without offscreen, playing audio inside tab requires initial page interaction
-      throw new Error("Offscreen API unavailable")
+    catch (err) {
+      console.warn("Cannot embed player", err)
+      await createPlayerTab()
     }
-    if (tab.incognito) {
-      //https://developer.chrome.com/docs/extensions/mv3/manifest/incognito/
-      throw new Error("Incognito tab")
-    }
-    await brapi.scripting.executeScript({
-      target: {tabId: tab.id},
-      func: createPlayerFrame
-    })
   }
-  catch (err) {
-    console.warn("Cannot embed player", err)
-    const tab = await brapi.tabs.create({
-      url: brapi.runtime.getURL("player.html"),
-      index: 0,
-      active: false,
-    })
-    await brapi.tabs.update(tab.id, {pinned: true})
+  else {
+    await createPlayerTab()
   }
   await promise
 }
@@ -353,6 +345,15 @@ function createPlayerFrame() {
   frame.style.height = "0"
   frame.style.borderWidth = "0"
   document.body.appendChild(frame)
+}
+
+async function createPlayerTab() {
+  const tab = await brapi.tabs.create({
+    url: brapi.runtime.getURL("player.html"),
+    index: 0,
+    active: false,
+  })
+  await brapi.tabs.update(tab.id, {pinned: true})
 }
 
 

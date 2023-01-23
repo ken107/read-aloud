@@ -31,6 +31,7 @@ var messageHandlers = {
   forward: forward,
   rewind: rewind,
   seek: seek,
+  close: closePlayer,
 }
 
 registerMessageListener("player", messageHandlers)
@@ -38,7 +39,29 @@ registerMessageListener("player", messageHandlers)
 bgPageInvoke("playerCheckIn")
   .catch(console.error)
 
+document.addEventListener("DOMContentLoaded", initialize)
 
+
+
+async function initialize() {
+  setI18nText()
+
+  $("#hidethistab-link")
+    .toggle(canUseEmbeddedPlayer() && !(await getSettings()).useEmbeddedPlayer)
+    .click(function() {
+      $("#dialog-backdrop, #hidethistab-dialog").show()
+    })
+
+  $("#hidethistab-dialog .btn, #hidethistab-dialog .close")
+    .click(function(event) {
+      $("#dialog-backdrop, #hidethistab-dialog").hide()
+      if ($(event.target).is(".btn-ok")) {
+        updateSettings({useEmbeddedPlayer: true})
+          .then(() => window.close())
+          .catch(console.error)
+      }
+    })
+}
 
 function playText(text, opts) {
   opts = opts || {}
@@ -138,6 +161,11 @@ function rewind() {
 function seek(n) {
   if (activeDoc) return activeDoc.seek(n);
   else return Promise.reject(new Error("Can't seek, not active"));
+}
+
+function closePlayer() {
+  if (top == self) window.close()
+  else location.href = "about:blank"
 }
 
 function handleError(err) {

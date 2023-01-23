@@ -95,6 +95,18 @@ function initialize(allVoices, settings) {
     })
 
 
+  //audioPlayback
+  $("#audio-playback")
+    .val(settings.useEmbeddedPlayer ? "true" : "false")
+    .change(function() {
+      saveSettings({useEmbeddedPlayer: JSON.parse($(this).val())})
+        .catch(console.error)
+      brapi.runtime.sendMessage({dest: "player", method: "close"})
+        .catch(err => "OK")
+    })
+  $(".audio-playback-visible").toggle(settings.useEmbeddedPlayer ? true : false)
+
+
   //buttons
   var demoSpeech = {};
   $("#test-voice").click(function() {

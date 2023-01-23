@@ -7,6 +7,12 @@
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="css/common.css">
 
+  <style>
+    body {
+      font-size: 16px;
+    }
+  </style>
+
   <script src="js/jquery-3.1.1.min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/messaging.js"></script>
@@ -19,28 +25,53 @@
 </head>
 <body>
   <div class="container">
-    <p>Please keep this tab open for Read Aloud to work.</p>
-    <p>This tab will automatically close after 5 minutes of no activity.</p>
-    <p>This is an inconvenience that we'll remove once Chrome's offscreen document feature becomes available (soon).</p>
+    <p class="mt-2">
+      <span data-i18n="player_tab_explanation"></span>
+      <span id="hidethistab-link" class="link" data-i18n="player_hidethistab_link"></span>
+    </p>
   </div>
 
 
   <!-- Dialogs -->
   <div class="modal-backdrop show" id="dialog-backdrop"></div>
-  <div class="modal" tabindex="-1" role="dialog" id="audio-playback-permission-dialog">
+
+
+  <div class="modal" tabindex="-1" role="dialog" id="hidethistab-dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Permission Requested</h5>
+          <h5 class="modal-title" data-i18n="player_hidethistab_dialog_title"></h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
-          <p>Allow Read Aloud to play audio?</p>
+          <div class="text-pre-wrap" data-i18n="player_hidethistab_dialog_body">
+          </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary">Allow</button>
+          <button type="button" class="btn btn-primary btn-ok" data-i18n="player_hidethistab_dialog_ok_button"></button>
+          <button type="button" class="btn btn-secondary btn-cancel" data-i18n="player_hidethistab_dialog_cancel_button"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal" tabindex="-1" role="dialog" id="audio-playback-permission-dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" data-i18n="player_permission_dialog_title"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p data-i18n="player_permission_dialog_body"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-i18n="player_permission_dialog_ok_button"></button>
         </div>
       </div>
     </div>

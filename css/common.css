@@ -46,3 +46,13 @@ body {
 .modal-backdrop {
   display: none;
 }
+
+.link {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.text-pre-wrap {
+  white-space: pre-wrap;
+}
