@@ -1,6 +1,6 @@
 
 var isStandalone = top == self
-var playAudio = isStandalone ? playAudioHere : playAudioOffscreen
+var playAudio = brapi.offscreen ? playAudioOffscreen : playAudioHere
 
 var activeDoc;
 var playbackError = null;
@@ -8,14 +8,9 @@ var silenceLoop;
 
 var audioCanPlay = false;
 var audioCanPlayPromise = new Promise(fulfill => {
-    if (isStandalone) {
-      const silence = new Audio("sound/silence.mp3")
-      silence.oncanplay = fulfill
-      silence.play()
-    }
-    else {
-      fulfill()
-    }
+    const silence = new Audio("sound/silence.mp3")
+    silence.oncanplay = fulfill
+    silence.play()
   })
   .then(() => {
     audioCanPlay = true
@@ -195,14 +190,15 @@ function reportError(err) {
 }
 
 async function requestAudioPlaybackPermission() {
-  if (audioCanPlay) return
-  const thisTab = await brapi.tabs.getCurrent()
-  const prevTab = await brapi.tabs.query({windowId: thisTab.windowId, active: true}).then(tabs => tabs[0])
-  await brapi.tabs.update(thisTab.id, {active: true})
-  $("#dialog-backdrop, #audio-playback-permission-dialog").show()
-  await audioCanPlayPromise
-  $("#dialog-backdrop, #audio-playback-permission-dialog").hide()
-  await brapi.tabs.update(prevTab.id, {active: true})
+  if (playAudio == playAudioHere && !audioCanPlay) {
+    const thisTab = await brapi.tabs.getCurrent()
+    const prevTab = await brapi.tabs.query({windowId: thisTab.windowId, active: true}).then(tabs => tabs[0])
+    await brapi.tabs.update(thisTab.id, {active: true})
+    $("#dialog-backdrop, #audio-playback-permission-dialog").show()
+    await audioCanPlayPromise
+    $("#dialog-backdrop, #audio-playback-permission-dialog").hide()
+    await brapi.tabs.update(prevTab.id, {active: true})
+  }
 }
 
 function startTimer(timeout, callback) {
