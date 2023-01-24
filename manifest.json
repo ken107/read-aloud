@@ -4,8 +4,9 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "default_locale": "en",
+  "minimum_chrome_version": "99",
 
   "action": {
     "default_popup": "popup.html?isPopup=1"
