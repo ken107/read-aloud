@@ -41,6 +41,7 @@ var defaults = {
 };
 
 var getSingletonAudio = lazy(() => new Audio());
+var getSilenceTrack = lazy(() => makeSilenceTrack())
 
 //if extension page but not service worker
 if (typeof brapi.commands != "undefined" && typeof window != "undefined") {
@@ -719,14 +720,26 @@ async function playAudioHere(urlPromise, options, startTime) {
     })
   await startPromise
 
+  const silenceTrack = getSilenceTrack()
+  silenceTrack.start()
+
   const endPromise = new Promise((fulfill, reject) => {
     audio.onended = fulfill
     audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
   })
+  .finally(() => silenceTrack.stop())
+
   return {
     endPromise: endPromise,
-    pause: () => audio.pause(),
-    resume: () => audio.play().then(() => true),
+    pause() {
+      audio.pause()
+      silenceTrack.stop()
+    },
+    async resume() {
+      await audio.play()
+      silenceTrack.start()
+      return true
+    }
   }
 }
 
@@ -734,4 +747,46 @@ function canUseEmbeddedPlayer() {
   return brapi.tts && brapi.offscreen ? true : false
   //without chrome.tts, using WebSpeech inside tab requires initial page interaction
   //without offscreen, playing audio inside tab requires initial page interaction
+}
+
+function makeSilenceTrack() {
+  const audio = new Audio(brapi.runtime.getURL("sound/silence.mp3"))
+  audio.loop = true
+  const stateMachine = new StateMachine({
+    IDLE: {
+      start() {
+        audio.play().catch(console.error)
+        return "PLAYING"
+      },
+      stop() {}
+    },
+    PLAYING: {
+      start() {},
+      stop() {
+        return "STOPPING"
+      }
+    },
+    STOPPING: {
+      onTransitionIn() {
+        this.timer = setTimeout(() => stateMachine.trigger("onStop"), 15*1000)
+      },
+      onStop() {
+        audio.pause()
+        return "IDLE"
+      },
+      start() {
+        clearTimeout(this.timer)
+        return "PLAYING"
+      },
+      stop() {}
+    }
+  })
+  return {
+    start() {
+      stateMachine.trigger("start")
+    },
+    stop() {
+      stateMachine.trigger("stop")
+    }
+  }
 }

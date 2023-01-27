@@ -16,6 +16,7 @@ var messageHandlers = {
   rewind: rewind,
   seek: seek,
   close: closePlayer,
+  shouldPlaySilence: shouldPlaySilence.bind({}),
 }
 
 registerMessageListener("player", messageHandlers)
@@ -240,5 +241,25 @@ async function playAudioOffscreen(urlPromise, options, startTime) {
     const result = await brapi.runtime.sendMessage(message)
     if (result && result.error) throw result.error
     else return result
+  }
+}
+
+function shouldPlaySilence(providerId) {
+  const should = activeDoc != null
+  const now = Date.now()
+  if (providerId == this.providerId) {
+    this.nextExpectedCheckIn = now + (now - this.lastCheckIn)
+    this.lastCheckIn = now
+    return should
+  }
+  else {
+    if (now < this.nextExpectedCheckIn) {
+      return false
+    }
+    else {
+      this.providerId = providerId
+      this.lastCheckIn = now
+      return should
+    }
   }
 }

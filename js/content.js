@@ -73,6 +73,33 @@
     if (readAloudDoc.getSelectedText) return readAloudDoc.getSelectedText()
     return window.getSelection().toString().trim();
   }
+
+
+  //setInterval(updateSilenceTrack.bind(null, Math.random()), 5000)
+
+  async function updateSilenceTrack(providerId) {
+    if (!audioCanPlay()) return;
+    const silenceTrack = getSilenceTrack()
+    try {
+      const should = await sendToPlayer({method: "shouldPlaySilence", args: [providerId]})
+      if (should) silenceTrack.start()
+      else silenceTrack.stop()
+    }
+    catch (err) {
+      silenceTrack.stop()
+    }
+  }
+
+  function audioCanPlay() {
+    return navigator.userActivation && navigator.userActivation.hasBeenActive
+  }
+
+  async function sendToPlayer(message) {
+    message.dest = "player"
+    const result = await brapi.runtime.sendMessage(message)
+    if (result && result.error) throw result.error
+    else return result
+  }
 })()
 
 
