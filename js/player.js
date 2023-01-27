@@ -1,24 +1,8 @@
 
-var isStandalone = top == self
-var playAudio = brapi.offscreen ? playAudioOffscreen : playAudioHere
-
+var queryString = new URLSearchParams(location.search)
 var activeDoc;
 var playbackError = null;
-var silenceLoop;
-
-var audioCanPlay = false;
-var audioCanPlayPromise = new Promise(fulfill => {
-    const silence = new Audio("sound/silence.mp3")
-    silence.oncanplay = fulfill
-    silence.play()
-  })
-  .then(() => {
-    audioCanPlay = true
-    silenceLoop = new Audio("sound/silence.mp3")
-    silenceLoop.loop = true
-  })
-
-var closeTabTimer = isStandalone && startTimer(5*60*1000, () => window.close())
+var closeTabTimer = queryString.has("autoclose") && startTimer(5*60*1000, closePlayer)
 
 
 var messageHandlers = {
@@ -137,7 +121,6 @@ function openDoc(source, onEnd) {
     closeDoc();
     if (typeof onEnd == "function") onEnd(err);
   })
-  if (silenceLoop) silenceLoop.play();
   if (closeTabTimer) closeTabTimer.stop();
 }
 
@@ -145,7 +128,6 @@ function closeDoc() {
   if (activeDoc) {
     activeDoc.close();
     activeDoc = null;
-    if (silenceLoop) silenceLoop.pause();
     if (closeTabTimer) closeTabTimer.restart();
   }
 }
@@ -189,17 +171,25 @@ function reportError(err) {
   }
 }
 
-async function requestAudioPlaybackPermission() {
-  if (playAudio == playAudioHere && !audioCanPlay) {
-    const thisTab = await brapi.tabs.getCurrent()
-    const prevTab = await brapi.tabs.query({windowId: thisTab.windowId, active: true}).then(tabs => tabs[0])
-    await brapi.tabs.update(thisTab.id, {active: true})
-    $("#dialog-backdrop, #audio-playback-permission-dialog").show()
-    await audioCanPlayPromise
-    $("#dialog-backdrop, #audio-playback-permission-dialog").hide()
-    await brapi.tabs.update(prevTab.id, {active: true})
+async function playAudio(urlPromise, options, startTime) {
+  if (brapi.offscreen) {
+    return playAudioOffscreen(urlPromise, options, startTime)
+  }
+  else {
+    await requestAudioPlaybackPermission()
+    return playAudioHere(urlPromise, options, startTime)
   }
 }
+
+var requestAudioPlaybackPermission = lazy(async function() {
+  const thisTab = await brapi.tabs.getCurrent()
+  const prevTab = await brapi.tabs.query({windowId: thisTab.windowId, active: true}).then(tabs => tabs[0])
+  await brapi.tabs.update(thisTab.id, {active: true})
+  $("#dialog-backdrop, #audio-playback-permission-dialog").show()
+  await new Audio(brapi.runtime.getURL("sound/silence.mp3")).play()
+  $("#dialog-backdrop, #audio-playback-permission-dialog").hide()
+  await brapi.tabs.update(prevTab.id, {active: true})
+})
 
 function startTimer(timeout, callback) {
   var timer = setTimeout(callback, timeout)

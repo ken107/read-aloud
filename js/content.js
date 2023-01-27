@@ -1,6 +1,4 @@
 
-var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
-
 (function() {
   registerMessageListener("contentScript", {
     getRequireJs: getRequireJs,
@@ -125,12 +123,6 @@ function tryGetTexts(getTexts, millis) {
     })
 }
 
-function waitMillis(millis) {
-  return new Promise(function(fulfill) {
-    setTimeout(fulfill, millis);
-  })
-}
-
 function loadPageScript(url) {
   if (!$("head").length) $("<head>").prependTo("html");
   $.ajax({
@@ -158,18 +150,6 @@ function simulateClick(elementToClick) {
   simulateMouseEvent (elementToClick, "mousedown", coordX, coordY);
   simulateMouseEvent (elementToClick, "mouseup", coordX, coordY);
   simulateMouseEvent (elementToClick, "click", coordX, coordY);
-}
-
-function getSettings(names) {
-  return new Promise(function(fulfill) {
-    brapi.storage.local.get(names, fulfill);
-  });
-}
-
-function updateSettings(items) {
-  return new Promise(function(fulfill) {
-    brapi.storage.local.set(items, fulfill);
-  });
 }
 
 /**

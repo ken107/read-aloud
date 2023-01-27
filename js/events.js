@@ -298,6 +298,7 @@ async function injectContentScript(tab, frameId, extraScripts) {
     },
     files: [
       "js/jquery-3.1.1.min.js",
+      "js/defaults.js",
       "js/messaging.js",
       "js/content.js",
     ]
@@ -349,7 +350,7 @@ function createPlayerFrame() {
 
 async function createPlayerTab() {
   const tab = await brapi.tabs.create({
-    url: brapi.runtime.getURL("player.html"),
+    url: brapi.runtime.getURL("player.html?autoclose"),
     index: 0,
     active: false,
   })

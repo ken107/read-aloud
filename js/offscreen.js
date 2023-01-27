@@ -8,7 +8,7 @@
     resume: resume,
   })
 
-  brapi.runtime.sendMessage({dest: "player", method: "offscreenCheckIn"})
+  sendToPlayer({method: "offscreenCheckIn"})
     .catch(console.error)
 
 
