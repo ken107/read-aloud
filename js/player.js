@@ -244,8 +244,8 @@ async function playAudioOffscreen(urlPromise, options, startTime) {
   }
 }
 
-function shouldPlaySilence(providerId) {
-  const should = activeDoc != null
+async function shouldPlaySilence(providerId) {
+  const should = await getPlaybackState().then(x => x.state == "PLAYING")
   const now = Date.now()
   if (providerId == this.providerId) {
     this.nextExpectedCheckIn = now + (now - this.lastCheckIn)
