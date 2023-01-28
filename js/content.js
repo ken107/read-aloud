@@ -75,7 +75,11 @@
   }
 
 
-  //setInterval(updateSilenceTrack.bind(null, Math.random()), 5000)
+  getSettings("remoteConfig")
+    .then(settings => {
+      if (settings.enableContentScriptSilenceTrack)
+        setInterval(updateSilenceTrack.bind(null, Math.random()), 5000)
+    })
 
   async function updateSilenceTrack(providerId) {
     if (!audioCanPlay()) return;
