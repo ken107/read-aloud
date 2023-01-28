@@ -20,7 +20,7 @@ function initialize(allVoices, settings) {
     .click(function() {
       getAuthToken({interactive: true})
         .then(function(token) {
-          brapi.tabs.create({url: config.webAppUrl + "/premium-voices.html?t=" + token});
+          return brapi.tabs.create({url: config.webAppUrl + "/premium-voices.html?t=" + token});
         })
         .catch(handleError)
       return false;
@@ -33,7 +33,7 @@ function initialize(allVoices, settings) {
         .then(function() {
           showAccountInfo(null);
         })
-        .catch(console.error)
+        .catch(handleError)
       return false;
     })
 

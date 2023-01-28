@@ -38,8 +38,7 @@ function installContentScripts() {
     runAt: "document_start",
     world: "MAIN"
   }])
-  .then(() => console.info("Installed content scripts"))
-  .catch(console.error)
+  .then(() => console.info("Installed content scripts"), console.error)
 }
 
 function installContextMenus() {
@@ -110,7 +109,7 @@ brapi.commands.onCommand.addListener(function(command) {
  * METHODS
  */
 async function playText(text, opts) {
-  const hasPlayer = await stop().then(res => res == true).catch(err => false)
+  const hasPlayer = await stop().then(res => res == true, err => false)
   if (!hasPlayer) await injectPlayer(await getActiveTab())
   await sendToPlayer({method: "playText", args: [text, opts]})
 }
@@ -130,7 +129,7 @@ async function playTab(tabId) {
     await setState("sourceUri", "contentscript:" + tab.id)
   }
 
-  const hasPlayer = await stop().then(res => res == true).catch(err => false)
+  const hasPlayer = await stop().then(res => res == true, err => false)
   if (!hasPlayer) await injectPlayer(tab)
   await sendToPlayer({method: "playTab"})
 }

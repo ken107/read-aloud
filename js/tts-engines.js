@@ -185,8 +185,8 @@ function RemoteTtsEngine(serviceUrl) {
         isSpeaking = true;
 
         audio.endPromise
-          .then(() => onEvent({type: "end", charIndex: utterance.length}))
-          .catch(err => onEvent({type: "error", error: err}))
+          .then(() => onEvent({type: "end", charIndex: utterance.length}),
+            err => onEvent({type: "error", error: err}))
           .finally(() => isSpeaking = false)
       })
       .catch(function(err) {
@@ -374,8 +374,8 @@ function GoogleTranslateTtsEngine() {
         isSpeaking = true;
 
         audio.endPromise
-          .then(() => onEvent({type: "end", charIndex: utterance.length}))
-          .catch(err => onEvent({type: "error", error: err}))
+          .then(() => onEvent({type: "end", charIndex: utterance.length}),
+            err => onEvent({type: "error", error: err}))
           .finally(() => isSpeaking = false)
       })
       .catch(function(err) {
@@ -498,8 +498,8 @@ function AmazonPollyTtsEngine() {
         isSpeaking = true;
 
         audio.endPromise
-          .then(() => onEvent({type: "end", charIndex: utterance.length}))
-          .catch(err => onEvent({type: "error", error: err}))
+          .then(() => onEvent({type: "end", charIndex: utterance.length}),
+            err => onEvent({type: "error", error: err}))
           .finally(() => isSpeaking = false)
       })
       .catch(function(err) {
@@ -737,8 +737,8 @@ function GoogleWavenetTtsEngine() {
         isSpeaking = true;
 
         audio.endPromise
-          .then(() => onEvent({type: "end", charIndex: utterance.length}))
-          .catch(err => onEvent({type: "error", error: err}))
+          .then(() => onEvent({type: "end", charIndex: utterance.length}),
+            err => onEvent({type: "error", error: err}))
           .finally(() => isSpeaking = false)
       })
       .catch(function(err) {
@@ -1035,8 +1035,8 @@ function IbmWatsonTtsEngine() {
         isSpeaking = true;
 
         audio.endPromise
-          .then(() => onEvent({type: "end", charIndex: utterance.length}))
-          .catch(err => onEvent({type: "error", error: err}))
+          .then(() => onEvent({type: "end", charIndex: utterance.length}),
+            err => onEvent({type: "error", error: err}))
           .finally(() => isSpeaking = false)
       })
       .catch(function(err) {

@@ -208,7 +208,7 @@ function startTimer(timeout, callback) {
 
 async function playAudioOffscreen(urlPromise, options, startTime) {
   const url = await urlPromise
-  const hasOffscreen = await sendToOffscreen({method: "pause"}).then(res => res == true).catch(err => false)
+  const hasOffscreen = await sendToOffscreen({method: "pause"}).then(res => res == true, err => false)
   if (!hasOffscreen) {
     const readyPromise = new Promise(f => messageHandlers.offscreenCheckIn = f)
     brapi.offscreen.createDocument({

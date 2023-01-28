@@ -42,8 +42,8 @@ function AddonReadAloudDoc() {
       .then(function(result) {
         addonFailed = false
         return result
-      })
-      .catch(function(err) {
+      },
+      function(err) {
         addonFailed = true
         return altGetTexts()
           .then(() => 0)

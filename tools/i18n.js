@@ -5,8 +5,8 @@ const projectId = "read-aloud-188001"
 const translator = new TranslationServiceClient()
 
 run()
-  .then(() => process.exit(0))
-  .catch(err => {
+  .then(() => process.exit(0),
+  err => {
     console.error(err)
     process.exit(1)
   })

@@ -72,8 +72,8 @@ function RpcPeer(messagingPeer) {
         })
         .then(function(result) {
           messagingPeer.send({type: "response", id: msg.id, result: result});
-        })
-        .catch(function(err) {
+        },
+        function(err) {
           messagingPeer.send({type: "response", id: msg.id, error: err.message});
         })
     }

@@ -72,8 +72,8 @@ function RpcPeer(messagingPeer) {
         })
         .then(function(result) {
           messagingPeer.send({type: "response", id: msg.id, result: result});
-        })
-        .catch(function(err) {
+        },
+        function(err) {
           messagingPeer.send({type: "response", id: msg.id, error: err.message});
         })
     }
@@ -97,10 +97,7 @@ function registerMessageListener(name, handlers) {
     function(request, sender, sendResponse) {
       if (request.dest == name) {
         handle(request)
-          .then(sendResponse)
-          .catch(function(err) {
-            sendResponse({error: errorToJson(err)})
-          })
+          .then(sendResponse, err => sendResponse({error: errorToJson(err)}))
         return true
       }
     }

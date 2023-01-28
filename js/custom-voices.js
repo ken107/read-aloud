@@ -40,8 +40,8 @@ function awsSave() {
         $("#aws-success").text("Amazon Polly voices are enabled.").show();
         $("#aws-access-key-id").val(obfuscate(accessKeyId));
         $("#aws-secret-access-key").val(obfuscate(secretAccessKey));
-      })
-      .catch(function(err) {
+      },
+      function(err) {
         $("#aws-progress").hide();
         $("#aws-error").text("Test failed: " + err.message).show();
       })
@@ -78,8 +78,8 @@ function gcpSave() {
         updateSettings({gcpCreds: {apiKey: apiKey}});
         $("#gcp-success").text("Google Wavenet voices are enabled.").show();
         $("#gcp-api-key").val(obfuscate(apiKey));
-      })
-      .catch(function(err) {
+      },
+      function(err) {
         $("#gcp-progress").hide();
         $("#gcp-error").text("Test failed: " + err.message).show();
       })
@@ -110,8 +110,8 @@ function ibmSave() {
         $("#ibm-success").text("IBM Watson voices are enabled.").show();
         $("#ibm-api-key").val(obfuscate(apiKey));
         $("#ibm-url").val(obfuscate(url));
-      })
-      .catch(function(err) {
+      },
+      function(err) {
         $("#ibm-progress").hide();
         $("#ibm-error").text("Test failed: " + err.message).show();
       })
