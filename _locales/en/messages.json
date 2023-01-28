@@ -68,6 +68,9 @@
   "options_hotkeys_link": {
     "message": "Edit shortcut keys"
   },
+  "options_css_link": {
+    "message": "Edit custom CSS"
+  },
   "options_save_button": {
     "message": "Save"
   },

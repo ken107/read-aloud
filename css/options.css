@@ -247,7 +247,8 @@ input[type=checkbox], input[type=radio] {
   display: none;
 }
 
-#hotkeys-link {
+#hotkeys-link,
+#css-link {
   color: gray;
   cursor: pointer;
   text-decoration: underline;
