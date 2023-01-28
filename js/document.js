@@ -81,6 +81,7 @@ function TabSource() {
     const result = await brapi.tabs.sendMessage(tabId, message)
       .catch(err => {
         clearState("contentScriptTabId")
+        if (/^A listener indicated/.test(err.message)) throw new Error(err.message + " " + message.method)
         throw err
       })
     if (result && result.error) throw result.error
@@ -116,6 +117,10 @@ function TabSource() {
   async function sendToPdfViewer(message) {
     message.dest = "pdfViewer"
     const result = await brapi.runtime.sendMessage(message)
+      .catch(err => {
+        if (/^A listener indicated/.test(err.message)) throw new Error(err.message + " " + message.method)
+        throw err
+      })
     if (result && result.error) throw result.error
     else return result
   }
