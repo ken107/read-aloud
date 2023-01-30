@@ -75,7 +75,7 @@
   }
 
 
-  getSettings("remoteConfig")
+  getRemoteConfig()
     .then(settings => {
       if (settings.enableContentScriptSilenceTrack)
         setInterval(updateSilenceTrack.bind(null, Math.random()), 5000)

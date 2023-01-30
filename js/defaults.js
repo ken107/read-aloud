@@ -792,7 +792,7 @@ function makeSilenceTrack() {
 }
 
 async function getRemoteConfig() {
-  const {remoteConfig} = await getSettings("remoteConfig")
+  let {remoteConfig} = await getSettings("remoteConfig")
   if (remoteConfig && remoteConfig.expire > Date.now()) {
     //still valid, return stored object
     return remoteConfig
