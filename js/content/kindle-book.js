@@ -1,54 +1,28 @@
 
 var readAloudDoc = new function() {
   var currentIndex = 0;
-  var lastText;
 
   this.getCurrentIndex = function() {
     return currentIndex = 0;
   }
 
   this.getTexts = function(index) {
-    var mainDoc = getMainDoc();
-    for (; currentIndex<index; currentIndex++) $("#kindleReader_pageTurnAreaRight", mainDoc).click();
-    for (; currentIndex>index; currentIndex--) $("#kindleReader_pageTurnAreaLeft", mainDoc).click();
-    return tryGetTexts(getTexts, 4000);
+    for (; currentIndex<index; currentIndex++) $("#kr-chevron-right").click();
+    for (; currentIndex>index; currentIndex--) $("#kr-chevron-left").click();
+    return waitMillis(250).then(getTexts)
   }
 
   function getTexts() {
-    var mainDoc = getMainDoc();
-    var texts = [];
-    $("#column_0_frame_0, #column_0_frame_1, #column_1_frame_0, #column_1_frame_1", mainDoc)
-    .filter(function() {
-      return this.style.visibility != "hidden";
-    })
-    .each(function() {
-      var frame = this;
-      var frameHeight = $(frame).height();
-      var dontRead = $("sup", frame.contentDocument).hide();
-      $(".k4w", frame.contentDocument).parent().addClass("read-aloud");
-      $(".read-aloud .read-aloud", frame.contentDocument).removeClass("read-aloud");
-      $(".read-aloud", frame.contentDocument).each(function() {
-        var top = $(this).offset().top;
-        var bottom = top + $(this).height();
-        if (top >= 0 && top < frameHeight) {
-          var text = this.innerText.trim();
-          if (text) {
-            if ($(this).is("li")) texts.push(($(this).index() +1) + ". " + text);
-            else texts.push(text);
-          }
-        }
-      })
-      dontRead.show();
-    })
-    var out = [];
-    for (var i=0; i<texts.length; i++) {
-      if (texts[i] != (out.length ? out[out.length-1] : lastText)) out.push(texts[i]);
-    }
-    lastText = out[out.length-1];
-    return out;
-  }
-
-  function getMainDoc() {
-    return document.getElementById("KindleReaderIFrame").contentDocument;
+    const img = $(".kg-full-page-img").get(0)
+    const canvas = document.createElement("canvas")
+    canvas.width = img.width
+    canvas.height = img.height
+    const ctx = canvas.getContext("2d")
+    ctx.imageSmoothingEnabled = false
+    ctx.drawImage(img, 0, 0)
+    return new Promise(f => canvas.toBlob(f))
+      .then(blob => fetch("https://support.readaloud.app/read-aloud/ocr", {method: "POST", body: blob}))
+      .then(res => res.json())
+      .then(result => result.texts || fixParagraphs(result.lines))
   }
 }
