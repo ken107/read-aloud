@@ -4,8 +4,13 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.60.1",
+  "version": "1.61.0",
   "default_locale": "en",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{ddc62400-f22d-4dd3-8b4a-05837de53c2e}"
+    }
+  },
 
   "browser_action": {
     "default_icon": "img/icon.png",
