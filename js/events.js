@@ -108,6 +108,32 @@ brapi.commands.onCommand.addListener(function(command) {
 /**
  * METHODS
  */
+var currentTask = {
+  task: null,
+  isActive() {
+    return this.task && this.task.isActive
+  },
+  begin() {
+    if (this.task) this.task.cancel()
+    return this.task = {
+      isActive: true,
+      cancel() {
+        this.isActive = false
+      },
+      end() {
+        if (!this.isActive) throw new Error("Canceled")
+        this.isActive = false
+      }
+    }
+  },
+  cancel() {
+    if (this.task) {
+      this.task.cancel()
+      this.task = null
+    }
+  }
+}
+
 async function playText(text, opts) {
   const hasPlayer = await stop().then(res => res == true, err => false)
   if (!hasPlayer) await injectPlayer(await getActiveTab())
@@ -118,15 +144,21 @@ async function playTab(tabId) {
   const tab = tabId ? await getTab(tabId) : await getActiveTab()
   if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}))
 
-  const handler = contentHandlers.find(h => h.match(tab.url || "", tab.title))
-  if (handler.validate) await handler.validate(tab)
-  if (handler.getSourceUri) {
-    await setState("sourceUri", handler.getSourceUri(tab))
+  const task = currentTask.begin()
+  try {
+    const handler = contentHandlers.find(h => h.match(tab.url || "", tab.title))
+    if (handler.validate) await handler.validate(tab)
+    if (handler.getSourceUri) {
+      await setState("sourceUri", handler.getSourceUri(tab))
+    }
+    else {
+      const frameId = handler.getFrameId && await getAllFrames(tab.id).then(handler.getFrameId)
+      if (!await contentScriptAlreadyInjected(tab, frameId)) await injectContentScript(tab, frameId, handler.extraScripts)
+      await setState("sourceUri", "contentscript:" + tab.id)
+    }
   }
-  else {
-    const frameId = handler.getFrameId && await getAllFrames(tab.id).then(handler.getFrameId)
-    if (!await contentScriptAlreadyInjected(tab, frameId)) await injectContentScript(tab, frameId, handler.extraScripts)
-    await setState("sourceUri", "contentscript:" + tab.id)
+  finally {
+    task.end()
   }
 
   const hasPlayer = await stop().then(res => res == true, err => false)
@@ -136,21 +168,30 @@ async function playTab(tabId) {
 
 async function reloadAndPlayTab(tabId) {
   const tab = tabId ? await getTab(tabId) : await getActiveTab()
-  const tabLoadComplete = new Promise(fulfill => {
-    function listener(changeTabId, changeInfo) {
-      if (changeTabId == tab.id && changeInfo.status == "complete") {
-        brapi.tabs.onUpdated.removeListener(listener)
-        fulfill()
+
+  const task = currentTask.begin()
+  try {
+    const tabLoadComplete = new Promise(fulfill => {
+      function listener(changeTabId, changeInfo) {
+        if (changeTabId == tab.id && changeInfo.status == "complete") {
+          brapi.tabs.onUpdated.removeListener(listener)
+          fulfill()
+        }
       }
-    }
-    brapi.tabs.onUpdated.addListener(listener)
-  })
-  await brapi.tabs.reload(tab.id)
-  await tabLoadComplete
+      brapi.tabs.onUpdated.addListener(listener)
+    })
+    await brapi.tabs.reload(tab.id)
+    await tabLoadComplete
+  }
+  finally {
+    task.end()
+  }
+
   await playTab(tab.id)
 }
 
 function stop() {
+  currentTask.cancel()
   return sendToPlayer({method: "stop"})
 }
 
@@ -163,6 +204,7 @@ function resume() {
 }
 
 async function getPlaybackState() {
+  if (currentTask.isActive()) return {state: "LOADING"}
   try {
     return await sendToPlayer({method: "getPlaybackState"}) || {state: "STOPPED"}
   }

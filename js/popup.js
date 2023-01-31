@@ -63,6 +63,8 @@ $(function() {
 
 function handleError(err) {
   if (!err) return;
+  if (err.message == "Canceled") return;
+
   if (/^{/.test(err.message)) {
     var errInfo = JSON.parse(err.message);
 
