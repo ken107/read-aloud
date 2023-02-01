@@ -56,10 +56,13 @@ function playText(text, opts) {
       if (err) playbackError = err
     })
   }
+  const doc = activeDoc
   return activeDoc.play()
     .catch(function(err) {
-      handleError(err);
-      closeDoc();
+      if (doc == activeDoc) {
+        handleError(err);
+        closeDoc();
+      }
       throw err;
     })
 }
@@ -71,10 +74,13 @@ function playTab() {
       if (err) playbackError = err
     })
   }
+  const doc = activeDoc
   return activeDoc.play()
     .catch(function(err) {
-      handleError(err);
-      closeDoc();
+      if (doc == activeDoc) {
+        handleError(err);
+        closeDoc();
+      }
       throw err;
     })
 }

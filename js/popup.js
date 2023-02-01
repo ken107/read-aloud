@@ -63,7 +63,6 @@ $(function() {
 
 function handleError(err) {
   if (!err) return;
-  if (err.message == "Canceled") return;
 
   if (/^{/.test(err.message)) {
     var errInfo = JSON.parse(err.message);
@@ -155,15 +154,21 @@ function updateButtons() {
   }));
 }
 
+var currentPlayRequestId
+
 function onPlay() {
   $("#status").hide();
+  const requestId = currentPlayRequestId = Math.random()
   bgPageInvoke("getPlaybackState")
     .then(function(stateInfo) {
       if (stateInfo.state == "PAUSED") return bgPageInvoke("resume")
       else return bgPageInvoke("playTab", queryString.tab ? [Number(queryString.tab)] : [])
     })
     .then(updateButtons)
-    .catch(handleError)
+    .catch(err => {
+      if (requestId == currentPlayRequestId) handleError(err)
+      else console.debug("Ignoring error from an earlier request", err)
+    })
 }
 
 function reloadAndPlay() {
