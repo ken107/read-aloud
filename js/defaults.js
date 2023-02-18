@@ -139,6 +139,10 @@ function getVoices() {
     })
 }
 
+function isOfflineVoice(voice) {
+  return voice.remote == false
+}
+
 function isGoogleNative(voice) {
   return /^Google\s/.test(voice.voiceName);
 }
@@ -195,7 +199,8 @@ function getSpeechVoice(voiceName, lang) {
         if (voiceName) voice = findVoiceByName(voices, voiceName);
       }
       if (!voice && lang) {
-        voice = findVoiceByLang(voices.filter(isGoogleNative), lang)
+        voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
+          || findVoiceByLang(voices.filter(isGoogleNative), lang)
           || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
           || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
           || findVoiceByLang(voices.filter(negate(isPremiumVoice)), lang)

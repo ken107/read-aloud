@@ -14,6 +14,9 @@
   "options_voice_label": {
     "message": "Voice"
   },
+  "options_voicegroup_offline": {
+    "message": "Offline Voices"
+  },
   "options_voicegroup_standard": {
     "message": "Standard Voices"
   },
@@ -22,12 +25,6 @@
   },
   "options_voicegroup_additional": {
     "message": "Additional Voices"
-  },
-  "options_enable_premium_voices": {
-    "message": "Enable Premium Voices"
-  },
-  "options_premium_voices_enabled": {
-    "message": "Premium voices are enabled"
   },
   "options_enable_custom_voices": {
     "message": "Enable Custom Voices"
@@ -68,17 +65,11 @@
   "options_hotkeys_link": {
     "message": "Edit shortcut keys"
   },
-  "options_save_button": {
-    "message": "Save"
-  },
   "options_test_button": {
     "message": "Test"
   },
   "options_reset_button": {
     "message": "Reset"
-  },
-  "options_success_status": {
-    "message": "Changes saved."
   },
   "options_logged_in_as": {
     "message": "Logged in as"

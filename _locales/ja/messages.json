@@ -14,6 +14,9 @@
   "options_voice_label": {
     "message": "音声"
   },
+  "options_voicegroup_offline": {
+    "message": "オフラインの声"
+  },
   "options_voicegroup_standard": {
     "message": "標準音声"
   },
@@ -22,12 +25,6 @@
   },
   "options_voicegroup_additional": {
     "message": "追加の音声"
-  },
-  "options_enable_premium_voices": {
-    "message": "プレミアム音声を有効にする"
-  },
-  "options_premium_voices_enabled": {
-    "message": "プレミアム音声が有効"
   },
   "options_enable_custom_voices": {
     "message": "カスタム音声を有効にする"
@@ -68,17 +65,11 @@
   "options_hotkeys_link": {
     "message": "ショートカットキーを編集する"
   },
-  "options_save_button": {
-    "message": "保存"
-  },
   "options_test_button": {
     "message": "テスト"
   },
   "options_reset_button": {
     "message": "リセット"
-  },
-  "options_success_status": {
-    "message": "変更が保存されました。"
   },
   "options_logged_in_as": {
     "message": "次のユーザーとしてログイン"

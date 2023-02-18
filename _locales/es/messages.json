@@ -14,6 +14,9 @@
   "options_voice_label": {
     "message": "Voz"
   },
+  "options_voicegroup_offline": {
+    "message": "Voces sin conexión"
+  },
   "options_voicegroup_standard": {
     "message": "Voces Estándar"
   },
@@ -22,12 +25,6 @@
   },
   "options_voicegroup_additional": {
     "message": "Voces adicionales"
-  },
-  "options_enable_premium_voices": {
-    "message": "Habilitar Voces Premium"
-  },
-  "options_premium_voices_enabled": {
-    "message": "Las voces premium están habilitadas"
   },
   "options_enable_custom_voices": {
     "message": "Habilitar voces personalizadas"
@@ -68,17 +65,11 @@
   "options_hotkeys_link": {
     "message": "Editar teclas de acceso directo"
   },
-  "options_save_button": {
-    "message": "Guardar"
-  },
   "options_test_button": {
     "message": "Probar"
   },
   "options_reset_button": {
     "message": "Reiniciar"
-  },
-  "options_success_status": {
-    "message": "Cambios guardados."
   },
   "options_logged_in_as": {
     "message": "Conectado como"
