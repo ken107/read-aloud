@@ -246,7 +246,7 @@ async function playAudioOffscreen(urlPromise, options, startTime) {
     message.dest = "offscreen"
     const result = await brapi.runtime.sendMessage(message)
       .catch(err => {
-        if (/^A listener indicated/.test(err.message)) throw new Error(err.message + " " + message.method)
+        if (/^(A listener indicated|Could not establish)/.test(err.message)) throw new Error(err.message + " " + message.method)
         throw err
       })
     if (result && result.error) throw result.error
