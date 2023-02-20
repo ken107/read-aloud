@@ -337,6 +337,7 @@ function LegacyReadAloudDoc() {
 
 function SvgReadAloudDoc() {
   var currentPageMarker, currentPageNumber
+  const $pagelessInstructionPopup = createPagelessInstructionPopup()
 
   this.getCurrentIndex = function() {
     currentPageMarker = markPage(getCurrentlyVisiblePage(getPages()))
@@ -399,6 +400,10 @@ function SvgReadAloudDoc() {
   }
 
   function getPages() {
+    if (!$(".kix-page-paginated").length) {
+      $pagelessInstructionPopup.show(); $(document.body).one("click", () => $pagelessInstructionPopup.hide())
+      throw new Error("Cannot read aloud Google Docs in 'Pageless' mode")
+    }
     return $(".kix-page-paginated").get()
       .map(page => ({page: page, top: page.getBoundingClientRect().top}))
       .sort((a,b) => a.top-b.top)
@@ -420,5 +425,47 @@ function SvgReadAloudDoc() {
 
   function outOfBounds(index, arr) {
     return index < 0 || index >= arr.length
+  }
+
+  function createPagelessInstructionPopup() {
+    const $anchor = $("#docs-file-menu")
+    const anchorOffset = $anchor.offset()
+    const anchorDimension = {
+      width: $anchor.outerWidth(),
+      height: $anchor.outerHeight()
+    }
+    const $popup = $("<div>")
+      .appendTo(document.body)
+      .css({
+        position: "absolute",
+        left: anchorOffset.left + anchorDimension.width/2 - 300,
+        top: anchorOffset.top + anchorDimension.height,
+        width: 600,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        zIndex: 999000,
+        fontSize: "larger",
+      })
+    $("<div>")
+      .appendTo($popup)
+      .css({
+        width: 0,
+        height: 0,
+        borderLeft: ".5em solid transparent",
+        borderRight: ".5em solid transparent",
+        borderBottom: ".5em solid #333",
+      })
+    $("<div>")
+      .appendTo($popup)
+      .html("Read Aloud doesn't work in 'Pageless' mode. Please go to Page Setup and change to 'Pages' mode and try again.")
+      .css({
+        marginLeft: 10 - Math.min(0, anchorOffset.left + anchorDimension.width/2 - 300),
+        backgroundColor: "#333",
+        color: "#fff",
+        padding: "1em",
+        borderRadius: ".5em",
+      })
+    return $popup.hide()
   }
 }
