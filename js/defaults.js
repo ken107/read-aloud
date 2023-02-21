@@ -364,6 +364,7 @@ function getSpeechVoice(voiceName, lang) {
       if (!voice && lang) {
         voice = findVoiceByLang(voices.filter(isGoogleNative), lang)
           || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
+          || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
           || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
           || findVoiceByLang(voices.filter(negate(isPremiumVoice)), lang)
           || findVoiceByLang(voices, lang);
