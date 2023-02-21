@@ -383,6 +383,7 @@ function SvgReadAloudDoc() {
       .map(para => {
         return $(para).children("rect").get()
           .map(el => el.getAttribute("aria-label"))
+          .filter(makeDeduper())
           .join(" ")
       })
   }
@@ -396,6 +397,7 @@ function SvgReadAloudDoc() {
       .map(el => ({el: el, rect: el.getBoundingClientRect()}))
       .filter(item => selectionRects.some(rect => overlaps(item.rect, rect)))
       .map(item => item.el.getAttribute("aria-label"))
+      .filter(makeDeduper())
       .join(" ")
   }
 
@@ -425,6 +427,15 @@ function SvgReadAloudDoc() {
 
   function outOfBounds(index, arr) {
     return index < 0 || index >= arr.length
+  }
+
+  function makeDeduper() {
+    let prev
+    return function(text) {
+      if (text == prev) return false
+      prev = text
+      return true
+    }
   }
 
   function createPagelessInstructionPopup() {
