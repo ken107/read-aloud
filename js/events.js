@@ -125,6 +125,7 @@ function playClipboard(){
   document.execCommand("paste");
   let clipboardText = t.value; //this is your clipboard data
   console.log(clipboardText)
+  clipboardText = clipboardText.replaceAll("#","")
   document.body.removeChild(t);
   stop()
       .then(function() {

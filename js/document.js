@@ -585,6 +585,10 @@ function Doc(source, onEnd) {
           volume: settings.volume || defaults.volume,
           lang: config.langMap[lang] || lang || 'en-US',
         }
+        // 根据文字动态切换英文
+        if (lang === 'en') {
+          settings.voiceName = "Microsoft Jenny Online (Natural) - English (United States) (en-US)";
+        }
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voice) {
             if (!voice) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang}));
