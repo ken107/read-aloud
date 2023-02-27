@@ -579,16 +579,19 @@ function Doc(source, onEnd) {
         console.log("Detected", info.detectedLang)
         var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
         console.log("Chosen", lang)
+        // 根据文字动态切换英文
+        if (lang === 'en') {
+          settings.voiceName = "Microsoft Jenny Online (Natural) - English (United States) (en-US)";
+          settings.rate=1;
+        }
+        console.log("声音设置: ", settings)
         var options = {
           rate: settings.rate || defaults.rate,
           pitch: settings.pitch || defaults.pitch,
           volume: settings.volume || defaults.volume,
           lang: config.langMap[lang] || lang || 'en-US',
         }
-        // 根据文字动态切换英文
-        if (lang === 'en') {
-          settings.voiceName = "Microsoft Jenny Online (Natural) - English (United States) (en-US)";
-        }
+
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voice) {
             if (!voice) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang}));
