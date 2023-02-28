@@ -694,39 +694,42 @@ function truncateRepeatedChars(text, max) {
   return result
 }
 
-async function playAudioHere(urlPromise, options, startTime) {
+function playAudioHere(urlPromise, options, startTime) {
   const audio = getSingletonAudio()
   audio.pause()
   if (!isIOS()) {
     audio.defaultPlaybackRate = (options.rate || 1) * (options.rateAdjust || 1)
     audio.volume = options.volume || 1
   }
-
-  const canPlayPromise = new Promise((fulfill, reject) => {
-    audio.oncanplay = fulfill
-    audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
-  })
-  audio.src = await urlPromise
-  await canPlayPromise
-
-  if (startTime) {
-    const waitTime = startTime - Date.now()
-    if (waitTime > 0) await waitMillis(waitTime)
-  }
-
-  const startPromise = new Promise((fulfill, reject) => {
-    audio.onplay = fulfill
-    audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
-  })
-  await audio.play()
-    .catch(err => {
-      if (err instanceof DOMException) throw new Error(err.name || err.message)
-      else throw err
-    })
-  await startPromise
-
   const silenceTrack = getSilenceTrack()
-  silenceTrack.start()
+
+  const timeoutPromise = waitMillis(10*1000)
+    .then(() => Promise.reject(new Error("Timeout, TTS never started, try picking another voice?")))
+  const {abortPromise, abort} = makeAbortable()
+  const readyPromise = Promise.resolve(urlPromise)
+    .then(async url => {
+      const canPlayPromise = new Promise((fulfill, reject) => {
+        audio.oncanplay = fulfill
+        audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
+      })
+      audio.src = url
+      await canPlayPromise
+
+      if (startTime) {
+        const waitTime = startTime - Date.now()
+        if (waitTime > 0) await waitMillis(waitTime)
+      }
+    })
+
+  const startPromise = Promise.race([readyPromise, abortPromise, timeoutPromise])
+    .then(async () => {
+      await audio.play()
+        .catch(err => {
+          if (err instanceof DOMException) throw new Error(err.name || err.message)
+          else throw err
+        })
+      silenceTrack.start()
+    })
 
   const endPromise = new Promise((fulfill, reject) => {
     audio.onended = fulfill
@@ -735,8 +738,10 @@ async function playAudioHere(urlPromise, options, startTime) {
   .finally(() => silenceTrack.stop())
 
   return {
+    startPromise,
     endPromise: endPromise,
     pause() {
+      abort(new Error("Aborted"))
       audio.pause()
       silenceTrack.stop()
     },
@@ -815,4 +820,12 @@ async function getRemoteConfig() {
   remoteConfig.expire = Date.now() + 3600*1000
   await updateSettings({remoteConfig})
   return remoteConfig
+}
+
+function makeAbortable() {
+  let abort
+  return {
+    abortPromise: new Promise((f,r) => abort = r),
+    abort
+  }
 }

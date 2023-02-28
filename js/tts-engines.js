@@ -156,7 +156,7 @@ function RemoteTtsEngine(serviceUrl) {
   var nextStartTime = 0;
   var authToken;
   var clientId;
-  var speakPromise;
+  var audio;
   function ready(options) {
     return getAuthToken()
       .then(function(token) {authToken = token})
@@ -178,32 +178,29 @@ function RemoteTtsEngine(serviceUrl) {
       .then(function() {
         return getAudioUrl(utterance, options.lang, options.voice)
       })
-    speakPromise = playAudio(urlPromise, options, nextStartTime)
-    speakPromise
-      .then(audio => {
+    audio = playAudio(urlPromise, options, nextStartTime)
+    audio.startPromise
+      .then(() => {
         onEvent({type: "start", charIndex: 0})
         isSpeaking = true;
-
-        audio.endPromise
-          .then(() => onEvent({type: "end", charIndex: utterance.length}),
-            err => onEvent({type: "error", error: err}))
-          .finally(() => isSpeaking = false)
       })
       .catch(function(err) {
         onEvent({type: "error", error: err})
       })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
   }
   this.isSpeaking = function(callback) {
     callback(isSpeaking);
   }
   this.pause =
   this.stop = function() {
-    speakPromise
-      .then(audio => audio.pause())
+    audio.pause()
   }
   this.resume = function() {
-    return speakPromise
-      .then(audio => audio.resume())
+    return audio.resume()
   }
   this.prefetch = function(utterance, options) {
     if (!isIOS()) {
@@ -356,7 +353,7 @@ function RemoteTtsEngine(serviceUrl) {
 function GoogleTranslateTtsEngine() {
   var prefetchAudio;
   var isSpeaking = false;
-  var speakPromise;
+  var audio;
   this.ready = function() {
     return googleTranslateReady();
   };
@@ -367,32 +364,29 @@ function GoogleTranslateTtsEngine() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.voice.lang);
       })
-    speakPromise = playAudio(urlPromise, options)
-    speakPromise
-      .then(audio => {
+    audio = playAudio(urlPromise, options)
+    audio.startPromise
+      .then(() => {
         onEvent({type: "start", charIndex: 0})
         isSpeaking = true;
-
-        audio.endPromise
-          .then(() => onEvent({type: "end", charIndex: utterance.length}),
-            err => onEvent({type: "error", error: err}))
-          .finally(() => isSpeaking = false)
       })
       .catch(function(err) {
         onEvent({type: "error", error: err})
       })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
   };
   this.isSpeaking = function(callback) {
     callback(isSpeaking);
   };
   this.pause =
   this.stop = function() {
-    speakPromise
-      .then(audio => audio.pause())
+    audio.pause()
   };
   this.resume = function() {
-    return speakPromise
-      .then(audio => audio.resume())
+    return audio.resume()
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.voice.lang)
@@ -484,39 +478,36 @@ function AmazonPollyTtsEngine() {
   var pollyPromise;
   var prefetchAudio;
   var isSpeaking = false;
-  var speakPromise;
+  var audio;
   this.speak = function(utterance, options, onEvent) {
     const urlPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.lang, options.voice, options.pitch);
       })
-    speakPromise = playAudio(urlPromise, options)
-    speakPromise
-      .then(audio => {
+    audio = playAudio(urlPromise, options)
+    audio.startPromise
+      .then(() => {
         onEvent({type: "start", charIndex: 0})
         isSpeaking = true;
-
-        audio.endPromise
-          .then(() => onEvent({type: "end", charIndex: utterance.length}),
-            err => onEvent({type: "error", error: err}))
-          .finally(() => isSpeaking = false)
       })
       .catch(function(err) {
         onEvent({type: "error", error: err})
       })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
   };
   this.isSpeaking = function(callback) {
     callback(isSpeaking);
   };
   this.pause =
   this.stop = function() {
-    speakPromise
-      .then(audio => audio.pause())
+    audio.pause()
   };
   this.resume = function() {
-    return speakPromise
-      .then(audio => audio.resume())
+    return audio.resume()
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.lang, options.voice, options.pitch)
@@ -723,39 +714,36 @@ function AmazonPollyTtsEngine() {
 function GoogleWavenetTtsEngine() {
   var prefetchAudio;
   var isSpeaking = false;
-  var speakPromise;
+  var audio;
   this.speak = function(utterance, options, onEvent) {
     const urlPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.voice, options.pitch);
       })
-    speakPromise = playAudio(urlPromise, options)
-    speakPromise
-      .then(audio => {
+    audio = playAudio(urlPromise, options)
+    audio.startPromise
+      .then(() => {
         onEvent({type: "start", charIndex: 0})
         isSpeaking = true;
-
-        audio.endPromise
-          .then(() => onEvent({type: "end", charIndex: utterance.length}),
-            err => onEvent({type: "error", error: err}))
-          .finally(() => isSpeaking = false)
       })
       .catch(function(err) {
         onEvent({type: "error", error: err})
       })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
   };
   this.isSpeaking = function(callback) {
     callback(isSpeaking);
   };
   this.pause =
   this.stop = function() {
-    speakPromise
-      .then(audio => audio.pause())
+    audio.pause()
   };
   this.resume = function() {
-    return speakPromise
-      .then(audio => audio.resume())
+    return audio.resume()
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.voice, options.pitch)
@@ -1025,35 +1013,32 @@ function GoogleWavenetTtsEngine() {
 
 function IbmWatsonTtsEngine() {
   var isSpeaking = false;
-  var speakPromise;
+  var audio;
   this.speak = function(utterance, options, onEvent) {
     const urlPromise = getAudioUrl(utterance, options.voice)
-    speakPromise = playAudio(urlPromise, options)
-    speakPromise
-      .then(audio => {
+    audio = playAudio(urlPromise, options)
+    audio.startPromise
+      .then(() => {
         onEvent({type: "start", charIndex: 0})
         isSpeaking = true;
-
-        audio.endPromise
-          .then(() => onEvent({type: "end", charIndex: utterance.length}),
-            err => onEvent({type: "error", error: err}))
-          .finally(() => isSpeaking = false)
       })
       .catch(function(err) {
         onEvent({type: "error", error: err})
       })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
   };
   this.isSpeaking = function(callback) {
     callback(isSpeaking);
   };
   this.pause =
   this.stop = function() {
-    speakPromise
-      .then(audio => audio.pause())
+    audio.pause()
   };
   this.resume = function() {
-    return speakPromise
-      .then(audio => audio.resume())
+    return audio.resume()
   };
   this.prefetch = function(utterance, options) {
   };

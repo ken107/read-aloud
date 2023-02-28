@@ -51,7 +51,7 @@ $(function() {
       else {
         return bgPageInvoke("getPlaybackState")
           .then(function(stateInfo) {
-            if (stateInfo.state != "PLAYING") $("#btnPlay").click()
+            if (stateInfo.state == "PAUSED" || stateInfo.state == "STOPPED") $("#btnPlay").click()
           })
       }
     })

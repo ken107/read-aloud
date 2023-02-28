@@ -178,13 +178,12 @@ function reportError(err) {
   }
 }
 
-async function playAudio(urlPromise, options, startTime) {
+function playAudio(urlPromise, options, startTime) {
   if (brapi.offscreen) {
     return playAudioOffscreen(urlPromise, options, startTime)
   }
   else {
-    await requestAudioPlaybackPermission()
-    return playAudioHere(urlPromise, options, startTime)
+    return playAudioHere(requestAudioPlaybackPermission().then(() => urlPromise), options, startTime)
   }
 }
 
@@ -212,8 +211,7 @@ function startTimer(timeout, callback) {
   }
 }
 
-async function playAudioOffscreen(urlPromise, options, startTime) {
-  const url = await urlPromise
+async function createOffscreenIfNotExist() {
   const hasOffscreen = await sendToOffscreen({method: "pause"}).then(res => res == true, err => false)
   if (!hasOffscreen) {
     const readyPromise = new Promise(f => messageHandlers.offscreenCheckIn = f)
@@ -224,34 +222,41 @@ async function playAudioOffscreen(urlPromise, options, startTime) {
     })
     await readyPromise
   }
+}
+
+function playAudioOffscreen(urlPromise, options, startTime) {
+  const readyPromise = createOffscreenIfNotExist().then(() => urlPromise)
+  const startPromise = readyPromise.then(url => sendToOffscreen({method: "play", args: [url, options, startTime]}))
   const endPromise = new Promise((fulfill, reject) => {
     messageHandlers.offscreenPlaybackEnded = err => err ? reject(err) : fulfill()
   })
-  await sendToOffscreen({method: "play", args: [url, options, startTime]})
   return {
+    startPromise,
     endPromise: endPromise,
     pause: function() {
-      sendToOffscreen({method: "pause"})
+      readyPromise
+        .then(() => sendToOffscreen({method: "pause"}))
         .catch(console.error)
     },
     resume: function() {
-      return sendToOffscreen({method: "resume"})
+      return readyPromise
+        .then(() => sendToOffscreen({method: "resume"}))
         .then(res => {
           if (res != true) throw new Error("Offscreen player unreachable")
         })
     },
   }
+}
 
-  async function sendToOffscreen(message) {
-    message.dest = "offscreen"
-    const result = await brapi.runtime.sendMessage(message)
-      .catch(err => {
-        if (/^(A listener indicated|Could not establish)/.test(err.message)) throw new Error(err.message + " " + message.method)
-        throw err
-      })
-    if (result && result.error) throw result.error
-    else return result
-  }
+async function sendToOffscreen(message) {
+  message.dest = "offscreen"
+  const result = await brapi.runtime.sendMessage(message)
+    .catch(err => {
+      if (/^(A listener indicated|Could not establish)/.test(err.message)) throw new Error(err.message + " " + message.method)
+      throw err
+    })
+  if (result && result.error) throw result.error
+  else return result
 }
 
 async function shouldPlaySilence(providerId) {

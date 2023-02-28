@@ -15,10 +15,11 @@
 
 
   async function play(url, options, startTime) {
-    audio = await playAudioHere(url, options, startTime)
+    audio = playAudioHere(url, options, startTime)
     audio.endPromise
       .then(() => sendToPlayer({method: "offscreenPlaybackEnded"}),
         err => sendToPlayer({method: "offscreenPlaybackEnded", args: [errorToJson(err)]}))
+    await audio.startPromise
   }
 
   function pause() {

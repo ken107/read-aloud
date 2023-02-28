@@ -207,7 +207,9 @@ function Speech(texts, options) {
           }
         }
         else if (event.type == "error") {
-          if (state == "IDLE") {
+          if (event.error.message == "Aborted") {
+          }
+          else if (state == "IDLE") {
             reject(event.error);
             state = "ERROR";
           }
