@@ -45,6 +45,10 @@
       || location.pathname.match(/\.pdf$/)
       || $("embed[type='application/pdf']").length
       || $("iframe[src*='.pdf']").length) return ["js/content/pdf-doc.js"];
+    else if (/^\d+\.\d+\.\d+\.\d+$/.test(location.hostname)
+        && location.port === "1122"
+        && location.protocol === "http:"
+        && location.pathname === "/bookshelf/index.html") return  ["js/content/yd-app-web.js"];
     else return ["js/content/html-doc.js"];
   }
 
