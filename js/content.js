@@ -45,7 +45,7 @@
       || location.pathname.match(/\.pdf$/)
       || $("embed[type='application/pdf']").length
       || $("iframe[src*='.pdf']").length) return ["js/content/pdf-doc.js"];
-    else if (isIPAddress(location.hostname)
+    else if (/^\d+\.\d+\.\d+\.\d+$/.test(location.hostname)
         && location.port === "1122"
         && location.protocol === "http:"
         && location.pathname === "/bookshelf/index.html") return  ["js/content/yd-app-web.js"];
@@ -210,20 +210,3 @@ function repeat(opt) {
       })
   }
 }
-
-function isIPAddress(str) {
-  // IP 地址的正则表达式
-  const regex = /^(\d{1,3}\.){3}\d{1,3}$/;
-
-  // 检查字符串是否符合 IP 地址格式
-  if (regex.test(str)) {
-    // 拆分字符串为四个数字
-    const parts = str.split('.');
-    // 检查每个数字是否在有效范围内
-    return parts.every(part => parseInt(part, 10) >= 0 && parseInt(part, 10) <= 255);
-  }
-  console.log("不是ip")
-  // 如果字符串不符合 IP 地址格式，返回 false
-  return false;
-}
-
