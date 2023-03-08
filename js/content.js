@@ -45,6 +45,7 @@
       || location.pathname.match(/\.pdf$/)
       || $("embed[type='application/pdf']").length
       || $("iframe[src*='.pdf']").length) return ["js/content/pdf-doc.js"];
+    else if (location.pathname === "/bookshelf/index.html") return  ["js/content/yd-app-web.js"];
     else return ["js/content/html-doc.js"];
   }
 
