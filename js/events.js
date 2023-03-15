@@ -152,7 +152,7 @@ async function playTab(tabId) {
       await setState("sourceUri", handler.getSourceUri(tab))
     }
     else {
-      const frameId = handler.getFrameId && await getAllFrames(tab.id).then(handler.getFrameId)
+      const frameId = handler.getFrameId && await getAllFrames(tab.id).then(frames => handler.getFrameId(frames))
       if (!await contentScriptAlreadyInjected(tab, frameId)) await injectContentScript(tab, frameId, handler.extraScripts)
       await setState("sourceUri", "contentscript:" + tab.id)
     }

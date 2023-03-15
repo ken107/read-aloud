@@ -83,12 +83,17 @@ var contentHandlers = [
   // OneDrive Doc -----------------------------------------------------------
   {
     match: function(url, title) {
-      return url.startsWith("https://onedrive.live.com/edit.aspx") && title.includes(".docx");
+      return url.startsWith("https://onedrive.live.com/edit.aspx") && title.includes(".docx")
+        || /^https:\/\/[^/]+\.sharepoint\.com\//.test(url)
     },
+    targetOrigins: [
+      "https://word-edit.officeapps.live.com/",
+      "https://usc-word-edit.officeapps.live.com/",
+    ],
     validate: function() {
       var perms = {
         permissions: ["webNavigation"],
-        origins: ["https://word-edit.officeapps.live.com/"]
+        origins: this.targetOrigins
       }
       return hasPermissions(perms)
         .then(function(has) {
@@ -96,9 +101,7 @@ var contentHandlers = [
         })
     },
     getFrameId: function(frames) {
-      var frame = frames.find(function(frame) {
-        return frame.url.startsWith("https://word-edit.officeapps.live.com/");
-      })
+      const frame = frames.find(frame => this.targetOrigins.some(origin => frame.url.startsWith(origin)))
       return frame && frame.frameId;
     },
     extraScripts: ["js/content/onedrive-doc.js"]

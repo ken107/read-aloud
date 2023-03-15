@@ -1,5 +1,5 @@
 
-var readAloudDoc = location.hostname == "word-edit.officeapps.live.com" ? new Docx() : new Pdf()
+var readAloudDoc = ["word-edit.officeapps.live.com", "usc-word-edit.officeapps.live.com"].includes(location.hostname) ? new Docx() : new Pdf()
 
 
 function Docx() {
