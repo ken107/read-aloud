@@ -1,10 +1,8 @@
 
-var activeDoc;
-var playbackError = null;
-var silenceLoop = new Audio("sound/silence.mp3");
-silenceLoop.loop = true;
-
-brapi.runtime.onInstalled.addListener(installContextMenus);
+brapi.runtime.onInstalled.addListener(function() {
+  installContentScripts()
+  installContextMenus()
+})
 if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
 
 
@@ -14,62 +12,56 @@ if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContex
 var handlers = {
   playText: playText,
   playTab: playTab,
+  reloadAndPlayTab: reloadAndPlayTab,
   stop: stop,
   pause: pause,
+  resume: resume,
   getPlaybackState: getPlaybackState,
   forward: forward,
   rewind: rewind,
   seek: seek,
   reportIssue: reportIssue,
   authWavenet: authWavenet,
-  ibmFetchVoices: function(apiKey, url) {
-    return ibmWatsonTtsEngine.fetchVoices(apiKey, url);
-  },
-  getSpeechPosition: function() {
-    return getActiveSpeech()
-      .then(function(speech) {
-        return speech && speech.getPosition();
-      })
-  },
-  getPlaybackError: function() {
-    if (playbackError) return {message: playbackError.message}
-  },
 }
 
-brapi.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    var handler = handlers[request.method];
-    if (handler) {
-      Promise.resolve(handler.apply(null, request.args))
-        .then(sendResponse)
-        .catch(function(err) {
-          sendResponse({error: err.message});
-        })
-      return true;
-    }
-    else {
-      sendResponse({error: "BAD_METHOD"});
-    }
-  }
-);
+registerMessageListener("serviceWorker", handlers)
 
 
 /**
- * Context menu installer & handlers
+ * Installers
  */
+function installContentScripts() {
+  brapi.scripting.registerContentScripts([{
+    matches: ["https://docs.google.com/document/*"],
+    id: "google-docs",
+    js: ["js/page/google-doc.js"],
+    runAt: "document_start",
+    world: "MAIN"
+  }])
+  .then(() => console.info("Installed content scripts"), console.error)
+}
+
 function installContextMenus() {
   if (brapi.contextMenus)
   brapi.contextMenus.create({
     id: "read-selection",
     title: brapi.i18n.getMessage("context_read_selection"),
     contexts: ["selection"]
-  });
+  },
+  function() {
+    if (brapi.runtime.lastError) console.error(brapi.runtime.lastError)
+    else console.info("Installed context menus")
+  })
 }
 
+
+/**
+ * Context menu handlers
+ */
 if (brapi.contextMenus)
 brapi.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection")
-    stop()
+    Promise.resolve()
       .then(function() {
         if (tab && tab.id != -1) return detectTabLanguage(tab.id)
         else return undefined
@@ -77,154 +69,166 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
       .then(function(lang) {
         return playText(info.selectionText, {lang: lang})
       })
-      .catch(console.error)
+      .catch(handleHeadlessError)
 })
 
 
 /**
  * Shortcut keys handlers
  */
-function execCommand(command) {
-  if (command == "play") {
-    getPlaybackState()
-      .then(function(state) {
-        if (state == "PLAYING") return pause();
-        else if (state == "STOPPED" || state == "PAUSED") return playTab()
-      })
-      .catch(console.error)
-  }
-  else if (command == "stop") stop();
-  else if (command == "forward") forward();
-  else if (command == "rewind") rewind();
-}
-
 if (brapi.commands)
 brapi.commands.onCommand.addListener(function(command) {
-  execCommand(command)
+  if (command == "play") {
+    getPlaybackState()
+      .then(function(stateInfo) {
+        switch (stateInfo.state) {
+          case "PLAYING": return pause()
+          case "PAUSED": return resume()
+          case "STOPPED": return playTab()
+        }
+      })
+      .catch(handleHeadlessError)
+  }
+  else if (command == "stop") {
+    stop()
+      .catch(handleHeadlessError)
+  }
+  else if (command == "forward") {
+    forward()
+      .catch(handleHeadlessError)
+  }
+  else if (command == "rewind") {
+    rewind()
+      .catch(handleHeadlessError)
+  }
 })
-
-
-/**
- * chrome.ttsEngine handlers
- */
-if (brapi.ttsEngine) (function() {
-  brapi.ttsEngine.onSpeak.addListener(function(utterance, options, onEvent) {
-    options = Object.assign({}, options, {voice: {voiceName: options.voiceName}});
-    remoteTtsEngine.speak(utterance, options, onEvent);
-  });
-  brapi.ttsEngine.onStop.addListener(remoteTtsEngine.stop);
-  brapi.ttsEngine.onPause.addListener(remoteTtsEngine.pause);
-  brapi.ttsEngine.onResume.addListener(remoteTtsEngine.resume);
-})()
 
 
 
 /**
  * METHODS
  */
-function playText(text, opts) {
-  opts = opts || {}
-  playbackError = null
-  if (!activeDoc) {
-    openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/), {lang: opts.lang}), function(err) {
-      if (err) playbackError = err
-    })
+var currentTask = {
+  task: null,
+  isActive() {
+    return this.task && this.task.isActive
+  },
+  begin() {
+    if (this.task) this.task.cancel()
+    return this.task = {
+      isActive: true,
+      cancel() {
+        this.isActive = false
+      },
+      end() {
+        if (!this.isActive) throw new Error("Canceled")
+        this.isActive = false
+      }
+    }
+  },
+  cancel() {
+    if (this.task) {
+      this.task.cancel()
+      this.task = null
+    }
   }
-  return activeDoc.play()
-    .catch(function(err) {
-      handleError(err);
-      closeDoc();
-      throw err;
-    })
 }
 
-function playTab(tabId) {
-  playbackError = null
-  if (!activeDoc) {
-    openDoc(new TabSource(tabId), function(err) {
-      if (err) playbackError = err
-    })
+async function playText(text, opts) {
+  const hasPlayer = await stop().then(res => res == true, err => false)
+  if (!hasPlayer) await injectPlayer(await getActiveTab())
+  await sendToPlayer({method: "playText", args: [text, opts]})
+}
+
+async function playTab(tabId) {
+  const tab = tabId ? await getTab(tabId) : await getActiveTab()
+  if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}))
+
+  const task = currentTask.begin()
+  try {
+    const handler = contentHandlers.find(h => h.match(tab.url || "", tab.title))
+    if (handler.validate) await handler.validate(tab)
+    if (handler.getSourceUri) {
+      await setState("sourceUri", handler.getSourceUri(tab))
+    }
+    else {
+      const frameId = handler.getFrameId && await getAllFrames(tab.id).then(frames => handler.getFrameId(frames))
+      if (!await contentScriptAlreadyInjected(tab, frameId)) await injectContentScript(tab, frameId, handler.extraScripts)
+      await setState("sourceUri", "contentscript:" + tab.id)
+    }
   }
-  return activeDoc.play()
-    .catch(function(err) {
-      handleError(err);
-      closeDoc();
-      throw err;
+  finally {
+    task.end()
+  }
+
+  const hasPlayer = await stop().then(res => res == true, err => false)
+  if (!hasPlayer) await injectPlayer(tab)
+  await sendToPlayer({method: "playTab"})
+}
+
+async function reloadAndPlayTab(tabId) {
+  const tab = tabId ? await getTab(tabId) : await getActiveTab()
+
+  const task = currentTask.begin()
+  try {
+    const tabLoadComplete = new Promise(fulfill => {
+      function listener(changeTabId, changeInfo) {
+        if (changeTabId == tab.id && changeInfo.status == "complete") {
+          brapi.tabs.onUpdated.removeListener(listener)
+          fulfill()
+        }
+      }
+      brapi.tabs.onUpdated.addListener(listener)
     })
+    await brapi.tabs.reload(tab.id)
+    await tabLoadComplete
+  }
+  finally {
+    task.end()
+  }
+
+  await playTab(tab.id)
 }
 
 function stop() {
-  if (activeDoc) {
-    activeDoc.stop();
-    closeDoc();
-    return Promise.resolve();
-  }
-  else return Promise.resolve();
+  currentTask.cancel()
+  return sendToPlayer({method: "stop"})
 }
 
 function pause() {
-  if (activeDoc) return activeDoc.pause();
-  else return Promise.resolve();
+  return sendToPlayer({method: "pause"})
 }
 
-function getPlaybackState() {
-  if (activeDoc) return activeDoc.getState();
-  else return Promise.resolve("STOPPED");
+function resume() {
+  return sendToPlayer({method: "resume"})
 }
 
-function getActiveSpeech() {
-  if (activeDoc) return activeDoc.getActiveSpeech();
-  else return Promise.resolve(null);
-}
-
-function openDoc(source, onEnd) {
-  activeDoc = new Doc(source, function(err) {
-    handleError(err);
-    closeDoc();
-    if (typeof onEnd == "function") onEnd(err);
-  })
-  silenceLoop.play();
-}
-
-function closeDoc() {
-  if (activeDoc) {
-    activeDoc.close();
-    activeDoc = null;
-    silenceLoop.pause();
+async function getPlaybackState() {
+  if (currentTask.isActive()) return {state: "LOADING"}
+  try {
+    return await sendToPlayer({method: "getPlaybackState"}) || {state: "STOPPED"}
+  }
+  catch (err) {
+    return {state: "STOPPED"}
   }
 }
 
 function forward() {
-  if (activeDoc) return activeDoc.forward();
-  else return Promise.reject(new Error("Can't forward, not active"));
+  return sendToPlayer({method: "forward"})
 }
 
 function rewind() {
-  if (activeDoc) return activeDoc.rewind();
-  else return Promise.reject(new Error("Can't rewind, not active"));
+  return sendToPlayer({method: "rewind"})
 }
 
 function seek(n) {
-  if (activeDoc) return activeDoc.seek(n);
-  else return Promise.reject(new Error("Can't seek, not active"));
+  return sendToPlayer({method: "seek", args: [n]})
 }
 
-function handleError(err) {
-  if (err) {
-    var code = /^{/.test(err.message) ? JSON.parse(err.message).code : err.message;
-    if (code == "error_payment_required") clearSettings(["voiceName"]);
-    reportError(err);
-  }
-}
 
-function reportError(err) {
-  if (err && err.stack) {
-    var details = err.stack;
-    if (!details.startsWith(err.name)) details = err.name + ": " + err.message + "\n" + details;
-    getState("lastUrl")
-      .then(function(url) {return reportIssue(url, details)})
-      .catch(console.error)
-  }
+
+function handleHeadlessError(err) {
+  //TODO: let user knows somehow
 }
 
 function reportIssue(url, comment) {
@@ -261,7 +265,7 @@ function authWavenet() {
         }
       }
       function onRequest(details) {
-        var parser = parseUrl(details.url);
+        var parser = new URL(details.url);
         var qs = parser.search ? parseQueryString(parser.search) : {};
         if (qs.token) {
           updateSettings({gcpToken: qs.token});
@@ -269,42 +273,136 @@ function authWavenet() {
         }
       }
       function showInstructions() {
-        return executeScript({
-          tabId: tab.id,
-          code: [
-            "var elem = document.createElement('DIV')",
-            "elem.id = 'ra-notice'",
-            "elem.style.position = 'fixed'",
-            "elem.style.top = '0'",
-            "elem.style.left = '0'",
-            "elem.style.right = '0'",
-            "elem.style.backgroundColor = 'yellow'",
-            "elem.style.padding = '20px'",
-            "elem.style.fontSize = 'larger'",
-            "elem.style.zIndex = 999000",
-            "elem.style.textAlign = 'center'",
-            "elem.innerHTML = 'Please click the blue SPEAK-IT button, then check the I-AM-NOT-A-ROBOT checkbox.'",
-            "document.body.appendChild(elem)",
-          ]
-          .join(";\n")
+        return brapi.scripting.executeScript({
+          target: {tabId: tab.id},
+          func: function() {
+            var elem = document.createElement('DIV')
+            elem.id = 'ra-notice'
+            elem.style.position = 'fixed'
+            elem.style.top = '0'
+            elem.style.left = '0'
+            elem.style.right = '0'
+            elem.style.backgroundColor = 'yellow'
+            elem.style.padding = '20px'
+            elem.style.fontSize = 'larger'
+            elem.style.zIndex = 999000
+            elem.style.textAlign = 'center'
+            elem.innerHTML = 'Please click the blue SPEAK-IT button, then check the I-AM-NOT-A-ROBOT checkbox.'
+            document.body.appendChild(elem)
+          }
         })
       }
       function showSuccess() {
-        return executeScript({
-          tabId: tab.id,
-          code: [
-            "var elem = document.getElementById('ra-notice')",
-            "elem.style.backgroundColor = '#0d0'",
-            "elem.innerHTML = 'Successful, you can now use Google Wavenet voices. You may close this tab.'"
-          ]
-          .join(";\n")
+        return brapi.scripting.executeScript({
+          target: {tabId: tab.id},
+          func: function() {
+            var elem = document.getElementById('ra-notice')
+            elem.style.backgroundColor = '#0d0'
+            elem.innerHTML = 'Successful, you can now use Google Wavenet voices. You may close this tab.'
+          }
         })
       }
     })
 }
 
-function userGestureActivate() {
-  var audio = document.createElement("AUDIO");
-  audio.src = "data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==";
-  audio.play();
+async function openPdfViewer(tabId, pdfUrl) {
+  const perms = {
+    origins: ["http://*/", "https://*/"]
+  }
+  if (!await brapi.permissions.contains(perms)) {
+    throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
+  }
+  await setTabUrl(tabId, brapi.runtime.getURL("pdf-viewer.html?url=" + encodeURIComponent(pdfUrl)))
+  await new Promise(f => handlers.pdfViewerCheckIn = f)
+}
+
+
+
+async function contentScriptAlreadyInjected(tab, frameId) {
+  const items = await brapi.scripting.executeScript({
+    target: {
+      tabId: tab.id,
+      frameIds: frameId ? [frameId] : undefined,
+    },
+    func: function() {
+      return typeof brapi != "undefined"
+    }
+  })
+  return items[0].result == true
+}
+
+async function injectContentScript(tab, frameId, extraScripts) {
+  await brapi.scripting.executeScript({
+    target: {
+      tabId: tab.id,
+      frameIds: frameId ? [frameId] : undefined,
+    },
+    files: [
+      "js/jquery-3.1.1.min.js",
+      "js/defaults.js",
+      "js/messaging.js",
+      "js/content.js",
+    ]
+  })
+  const files = extraScripts || await brapi.tabs.sendMessage(tab.id, {dest: "contentScript", method: "getRequireJs"})
+  await brapi.scripting.executeScript({
+    target: {
+      tabId: tab.id,
+      frameIds: frameId ? [frameId] : undefined,
+    },
+    files: files
+  })
+  console.info("Content handler", files)
+}
+
+async function injectPlayer(tab) {
+  const promise = new Promise(f => handlers.playerCheckIn = f)
+  if ((await getSettings()).useEmbeddedPlayer) {
+    try {
+      if (tab.incognito) {
+        //https://developer.chrome.com/docs/extensions/mv3/manifest/incognito/
+        throw new Error("Incognito tab")
+      }
+      await brapi.scripting.executeScript({
+        target: {tabId: tab.id},
+        func: createPlayerFrame
+      })
+    }
+    catch (err) {
+      console.warn("Cannot embed player", err)
+      await createPlayerTab()
+    }
+  }
+  else {
+    await createPlayerTab()
+  }
+  await promise
+}
+
+function createPlayerFrame() {
+  const brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {})
+  const frame = document.createElement("iframe")
+  frame.src = brapi.runtime.getURL("player.html")
+  frame.style.position = "absolute"
+  frame.style.height = "0"
+  frame.style.borderWidth = "0"
+  document.body.appendChild(frame)
+}
+
+async function createPlayerTab() {
+  const tab = await brapi.tabs.create({
+    url: brapi.runtime.getURL("player.html?autoclose"),
+    index: 0,
+    active: false,
+  })
+  await brapi.tabs.update(tab.id, {pinned: true})
+}
+
+
+
+async function sendToPlayer(message) {
+  message.dest = "player"
+  const result = await brapi.runtime.sendMessage(message)
+  if (result && result.error) throw result.error
+  else return result
 }

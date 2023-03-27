@@ -23,303 +23,34 @@ function SimpleSource(texts, opts) {
 }
 
 
-function TabSource(tabId) {
-  var handlers = [
-    // Unsupported Sites --------------------------------------------------------
-    {
-      match: function(url) {
-        return config.unsupportedSites.some(function(site) {
-          return (typeof site == "string" && url.startsWith(site)) || (site instanceof RegExp && site.test(url));
-        })
-      },
-      validate: function() {
-        throw new Error(JSON.stringify({code: "error_page_unreadable"}));
-      }
-    },
-
-    // PDF file:// --------------------------------------------------------------
-    {
-      match: function(url) {
-        return /^file:.*\.pdf$/i.test(url.split("?")[0]);
-      },
-      validate: function() {
-        throw new Error(JSON.stringify({code: "error_upload_pdf", tabId: tab.id}));
-      }
-    },
-
-    // file:// ------------------------------------------------------------------
-    {
-      match: function(url) {
-        return /^file:/.test(url);
-      },
-      validate: function() {
-        return new Promise(function(fulfill) {
-          brapi.extension.isAllowedFileSchemeAccess(fulfill);
-        })
-        .then(function(allowed) {
-          if (!allowed) throw new Error(JSON.stringify({code: "error_file_access"}));
-        })
-      }
-    },
-
-    // Google Play Books ---------------------------------------------------------
-    {
-      match: function(url) {
-        return /^https:\/\/play.google.com\/books\/reader/.test(url) || /^https:\/\/books.google.com\/ebooks\/app#reader/.test(url);
-      },
-      validate: function() {
-        var perms = {
-          permissions: ["webNavigation"],
-          origins: ["https://books.googleusercontent.com/"]
-        }
-        return hasPermissions(perms)
-          .then(function(has) {
-            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
-          })
-      },
-      getFrameId: function(frames) {
-        var frame = frames.find(function(frame) {
-          return frame.url.startsWith("https://books.googleusercontent.com/");
-        })
-        return frame && frame.frameId;
-      },
-      extraScripts: ["js/content/google-play-book.js"]
-    },
-
-    // OneDrive Doc -----------------------------------------------------------
-    {
-      match: function(url) {
-        return url.startsWith("https://onedrive.live.com/edit.aspx") && url.includes("docx");
-      },
-      validate: function() {
-        var perms = {
-          permissions: ["webNavigation"],
-          origins: ["https://word-edit.officeapps.live.com/"]
-        }
-        return hasPermissions(perms)
-          .then(function(has) {
-            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
-          })
-      },
-      getFrameId: function(frames) {
-        var frame = frames.find(function(frame) {
-          return frame.url.startsWith("https://word-edit.officeapps.live.com/");
-        })
-        return frame && frame.frameId;
-      },
-      extraScripts: ["js/content/onedrive-doc.js"]
-    },
-
-    // Chegg NEW --------------------------------------------------------------
-    {
-      match: function(url) {
-        return /^https:\/\/www\.chegg\.com\/reader\//.test(url);
-      },
-      validate: function() {
-        var perms = {
-          permissions: ["webNavigation"],
-          origins: ["https://ereader-web-viewer.chegg.com/"]
-        }
-        return hasPermissions(perms)
-          .then(function(has) {
-            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
-          })
-      },
-      getFrameId: function(frames) {
-        var frame = frames.find(function(frame) {
-          return frame.url.startsWith("https://ereader-web-viewer.chegg.com/");
-        })
-        return frame && frame.frameId;
-      },
-      extraScripts: ["js/content/chegg-book.js"]
-    },
-
-    // VitalSource/Chegg ---------------------------------------------------------
-    {
-      match: function(url) {
-        return /^https:\/\/\w+\.vitalsource\.com\/(#|reader)\/books\//.test(url) ||
-          /^https:\/\/\w+\.chegg\.com\/(#|reader)\/books\//.test(url)
-      },
-      validate: function() {
-        var perms = {
-          permissions: ["webNavigation"],
-          origins: ["https://jigsaw.vitalsource.com/", "https://jigsaw.chegg.com/"]
-        }
-        return hasPermissions(perms)
-          .then(function(has) {
-            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
-          })
-      },
-      getTexts: function(tab) {
-        function tryGetFrame(millis) {
-          return getAllFrames(tab.id)
-            .then(function(frames) {
-              return frames.find(function(frame) {return frame.frameId && frame.parentFrameId});
-            })
-            .then(function(frame) {
-              if (!frame && millis > 0) return waitMillis(500).then(tryGetFrame.bind(null, millis-500));
-              else return frame;
-            })
-        }
-        return tryGetFrame(5000)
-          .then(function(frame) {
-            if (frame) return getFrameTexts(tab.id, frame.frameId, ["js/jquery-3.1.1.min.js", "js/messaging.js", "js/content/vitalsource-book.js"]);
-            else return null;
-          })
-      },
-      extraScripts: ["js/content/vitalsource-book.js"]
-    },
-
-    // Liberty University ---------------------------------------------------------
-    {
-      match: function(url) {
-        return url.startsWith("https://luoa.instructure.com/courses/")
-      },
-      validate: function() {
-        var perms = {
-          permissions: ["webNavigation"],
-          origins: ["https://luoa-content.s3.amazonaws.com/"]
-        }
-        return hasPermissions(perms)
-          .then(function(has) {
-            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
-          })
-      },
-      getFrameId: function(frames) {
-        var frame = frames.find(function(frame) {
-          return frame.url && frame.url.startsWith("https://luoa-content.s3.amazonaws.com/")
-        })
-        return frame && frame.frameId
-      }
-    },
-
-    // EPUBReader ---------------------------------------------------------------
-    {
-      match: function(url) {
-        return /^(chrome-|edge-)?extension:\/\/gbfdomjljjkagpgdlidoicebkgpienmf\/reader.html/.test(url);
-      },
-      validate: function() {
-      },
-      connect: function() {
-        function call(method) {
-          return new Promise(function(fulfill) {
-            brapi.runtime.sendMessage("gbfdomjljjkagpgdlidoicebkgpienmf", {name: method}, fulfill);
-          })
-        }
-        function parseXhtml(xml) {
-          var dom = new DOMParser().parseFromString(xml, "text/xml");
-          var nodes = dom.body.querySelectorAll("h1, h2, h3, h4, h5, h6, p");
-          return Array.prototype.slice.call(nodes)
-            .map(function(node) {
-              return node.innerText && node.innerText.trim().replace(/\r?\n/g, " ");
-            })
-            .filter(function(text) {
-              return text;
-            })
-        }
-        var currentPage = 0;
-        peer = {
-          invoke: function(method, index) {
-            if (method == "getCurrentIndex") return Promise.resolve(currentPage);
-            else if (method == "getTexts") {
-              var promise = Promise.resolve({success: true, paged: true});
-              for (; currentPage<index; currentPage++) promise = promise.then(call.bind(null, "pageForward"));
-              for (; currentPage>index; currentPage--) promise = promise.then(call.bind(null, "pageBackward"));
-              return promise
-                .then(function(res) {
-                  if (!res.success) throw new Error("Failed to flip EPUB page");
-                  return res.paged ? call("getPageText") : {success: true, text: null};
-                })
-                .then(function(res) {
-                  if (!res.success) throw new Error("Failed to get EPUB text");
-                  return res.text && parseXhtml(res.text);
-                })
-            }
-            else return Promise.reject(new Error("Bad method"));
-          },
-          disconnect: function() {}
-        }
-        return call("getDocumentInfo")
-          .then(extraAction(function(res) {
-            if (!res.success) throw new Error("Failed to get EPUB document info");
-            if (res.lang && !/^[a-z][a-z](-[A-Z][A-Z])?$/.test(res.lang)) res.lang = null;
-            if (res.lang) res.detectedLang = res.lang;   //prevent lang detection
-          }))
-      }
-    },
-
-    // LibbyApp ---------------------------------------------------------------
-    {
-      match: function(url) {
-        return url.startsWith("https://libbyapp.com/open/")
-      },
-      validate: function() {
-        var perms = {
-          permissions: ["webNavigation"],
-          origins: ["https://*.read.libbyapp.com/"]
-        }
-        return hasPermissions(perms)
-          .then(function(has) {
-            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
-          })
-      },
-      getFrameId: function(frames) {
-        var frame = frames.find(function(frame) {
-          return frame.url && new URL(frame.url).hostname.endsWith(".read.libbyapp.com")
-        })
-        return frame && frame.frameId
-      },
-      extraScripts: ["js/content/libbyapp.js"]
-    },
-
-    // default -------------------------------------------------------------------
-    {
-      match: function() {
-        return true;
-      },
-      validate: function() {
-      }
-    }
-  ]
-
-
-  var tabPromise = tabId ? getTab(tabId) : getActiveTab();
-  var tab, handler, frameId, peer;
+function TabSource() {
   var waiting = true;
+  var sendToSource;
 
-  this.ready = tabPromise
-    .then(function(res) {
-      if (!res) throw new Error(JSON.stringify({code: "error_page_unreadable"}));
-      tab = res;
-      handler = handlers.find(function(h) {return h.match(tab.url || "")});
-      return handler.validate();
-    })
-    .then(function() {
-      if (handler.getFrameId)
-        return getAllFrames(tab.id).then(handler.getFrameId).then(function(res) {frameId = res});
-    })
-    .then(function() {
-      if (handler.connect) return handler.connect();
-      return waitForConnect()
-        .then(function(port) {
-      return new Promise(function(fulfill) {
-        peer = new RpcPeer(new ExtensionMessagingPeer(port));
-        peer.onInvoke = function(method, arg0) {
-          if (method == "onReady") fulfill(arg0);
-          else console.error("Unknown method", method);
-        }
-        peer.onDisconnect = function() {
-          peer = null;
-        }
-      })
-        })
-    })
-    .then(extraAction(function(info) {
-      if (info.requireJs) {
-        var tasks = info.requireJs.map(function(file) {return inject.bind(null, file)});
-        return inSequence(tasks);
+  this.ready = getState("sourceUri")
+    .then(uri => {
+      if (uri.startsWith("contentscript:")) {
+        const tabId = Number(uri.substr(14))
+        sendToSource = sendToContentScript.bind(null, tabId)
+        return sendToSource({method: "getDocumentInfo"})
       }
-    }))
+      else if (uri.startsWith("epubreader:")) {
+        const extensionId = uri.substr(11)
+        sendToSource = sendToEpubReader.bind({}, extensionId)
+        return sendToSource({method: "getDocumentInfo"})
+          .then(res => {
+            if (!res.success) throw new Error("Failed to get EPUB document info")
+            if (res.lang && !/^[a-z][a-z](-[A-Z][A-Z])?$/.test(res.lang)) res.lang = null
+            if (res.lang) res.detectedLang = res.lang   //prevent lang detection
+            return res
+          })
+      }
+      else if (uri.startsWith("pdfviewer:")) {
+        sendToSource = sendToPdfViewer
+        return sendToSource({method: "getDocumentInfo"})
+      }
+      else throw new Error("Invalid source")
+    })
     .finally(function() {
       waiting = false;
     })
@@ -328,66 +59,70 @@ function TabSource(tabId) {
     return waiting;
   }
   this.getCurrentIndex = function() {
-    if (!peer) return Promise.resolve(0);
     waiting = true;
-    return peer.invoke("getCurrentIndex").finally(function() {waiting = false});
+    return sendToSource({method: "getCurrentIndex"})
+      .finally(function() {waiting = false})
   }
   this.getTexts = function(index, quietly) {
-    if (!peer) return Promise.resolve(null);
     waiting = true;
-    return peer.invoke("getTexts", index, quietly)
-      .then(function(res) {
-        if (handler.getTexts) return handler.getTexts(tab);
-        else return res;
-      })
+    return sendToSource({method: "getTexts", args: [index, quietly]})
       .finally(function() {waiting = false})
   }
   this.close = function() {
-    if (peer) peer.disconnect();
     return Promise.resolve();
   }
   this.getUri = function() {
-    return tabPromise.then(function(tab) {return tab && tab.url});
+    return this.ready
+      .then(function(info) {return info.url})
   }
 
-  function waitForConnect() {
-    return new Promise(function(fulfill, reject) {
-      function onConnect(port) {
-        if (port.name == "ReadAloudContentScript") {
-          brapi.runtime.onConnect.removeListener(onConnect);
-          clearTimeout(timer);
-          fulfill(port);
-        }
-      }
-      function onError(err) {
-        brapi.runtime.onConnect.removeListener(onConnect);
-        clearTimeout(timer);
-        reject(err);
-      }
-      function onTimeout() {
-        brapi.runtime.onConnect.removeListener(onConnect);
-        reject(new Error("Timeout waiting for content script to connect"));
-      }
-      brapi.runtime.onConnect.addListener(onConnect);
-      injectScripts().catch(onError);
-      var timer = setTimeout(onTimeout, 15000);
-    })
-  }
-  function injectScripts() {
-    return inject("js/jquery-3.1.1.min.js")
-      .then(inject.bind(null, "js/messaging.js"))
-      .then(function() {
-        if (handler.extraScripts) {
-          var tasks = handler.extraScripts.map(function(file) {return inject.bind(null, file)});
-          return inSequence(tasks);
-        }
+  async function sendToContentScript(tabId, message) {
+    message.dest = "contentScript"
+    const result = await brapi.tabs.sendMessage(tabId, message)
+      .catch(err => {
+        clearState("contentScriptTabId")
+        if (/^(A listener indicated|Could not establish)/.test(err.message)) throw new Error(err.message + " " + message.method)
+        throw err
       })
-      .then(inject.bind(null, "js/content.js"))
+    if (result && result.error) throw result.error
+    else return result
   }
-  function inject(file) {
-    var details = {file: file, tabId: tab.id};
-    if (frameId) details.frameId = frameId;
-    return executeScript(details);
+
+  async function sendToEpubReader(extId, message) {
+    if (this.currentPage == null) this.currentPage = 0
+    switch (message.method) {
+      case "getDocumentInfo": return brapi.runtime.sendMessage(extId, {name: "getDocumentInfo"})
+      case "getCurrentIndex": return this.currentPage
+      case "getTexts": return getTexts.apply(this, message.args)
+      default: throw new Error("Bad method")
+    }
+    async function getTexts(index) {
+      var res = {success: true, paged: true}
+      for (; this.currentPage<index; this.currentPage++) res = await brapi.runtime.sendMessage(extId, {name: "pageForward"})
+      for (; this.currentPage>index; this.currentPage--) res = await brapi.runtime.sendMessage(extId, {name: "pageBackward"})
+      if (!res.success) throw new Error("Failed to flip EPUB page");
+      res = res.paged ? await brapi.runtime.sendMessage(extId, {name: "getPageText"}) : {success: true, text: null}
+      if (!res.success) throw new Error("Failed to get EPUB text");
+      return res.text && parseXhtml(res.text)
+    }
+    function parseXhtml(xml) {
+      const dom = new DOMParser().parseFromString(xml, "text/xml");
+      const nodes = dom.body.querySelectorAll("h1, h2, h3, h4, h5, h6, p");
+      return Array.prototype.slice.call(nodes)
+        .map(node => node.innerText && node.innerText.trim().replace(/\r?\n/g, " "))
+        .filter(text => text)
+    }
+  }
+
+  async function sendToPdfViewer(message) {
+    message.dest = "pdfViewer"
+    const result = await brapi.runtime.sendMessage(message)
+      .catch(err => {
+        if (/^(A listener indicated|Could not establish)/.test(err.message)) throw new Error(err.message + " " + message.method)
+        throw err
+      })
+    if (result && result.error) throw result.error
+    else return result
   }
 }
 
@@ -423,74 +158,59 @@ function Doc(source, onEnd) {
   }
 
   //method play
-  function play() {
-    return ready
-      .then(function() {
-        if (activeSpeech) return activeSpeech.play();
-        else {
-          return source.getCurrentIndex()
-            .then(function(index) {currentIndex = index})
-            .then(function() {return readCurrent()})
-        }
-      })
+  async function play() {
+    if (activeSpeech) return activeSpeech.play();
+    await ready
+    currentIndex = await source.getCurrentIndex()
+    return readCurrent()
   }
 
-  function readCurrent(rewinded) {
-    return source.getTexts(currentIndex)
-      .catch(function() {
-        return null;
-      })
-      .then(function(texts) {
-        if (texts) {
-          if (texts.length) {
-            foundText = true;
-            return read(texts);
-          }
-          else {
-            currentIndex++;
-            return readCurrent();
-          }
-        }
-        else {
-          if (!foundText) throw new Error(JSON.stringify({code: "error_no_text"}))
-          if (onEnd) onEnd()
-        }
-      })
-    function read(texts) {
-      texts = texts.map(preprocess)
-      return Promise.resolve()
-        .then(function() {
-          if (info.detectedLang == null)
-            return detectLanguage(texts)
-              .then(function(lang) {
-                info.detectedLang = lang || "";
-              })
-        })
-        .then(getSpeech.bind(null, texts))
-        .then(function(speech) {
-          if (activeSpeech) return;
-          activeSpeech = speech;
-          activeSpeech.onEnd = function(err) {
-            if (err) {
-              if (onEnd) onEnd(err);
-            }
-            else {
-              activeSpeech = null;
-              currentIndex++;
-              readCurrent()
-                .catch(function(err) {
-                  if (onEnd) onEnd(err)
-                })
-            }
-          };
-          if (rewinded) activeSpeech.gotoEnd();
-          return activeSpeech.play();
-        })
+  async function readCurrent(rewinded) {
+    const texts = await source.getTexts(currentIndex).catch(err => null)
+    if (texts) {
+      if (texts.length) {
+        foundText = true;
+        return read(texts, rewinded);
+      }
+      else {
+        currentIndex++;
+        return readCurrent();
+      }
     }
-    function preprocess(text) {
-      text = truncateRepeatedChars(text, 3)
-      return text.replace(/https?:\/\/\S+/g, "HTTP URL.")
+    else {
+      if (!foundText) throw new Error(JSON.stringify({code: "error_no_text"}))
+      if (onEnd) onEnd()
     }
+  }
+
+  async function read(texts, rewinded) {
+    texts = texts.map(preprocess)
+    if (info.detectedLang == null) {
+      const lang = await detectLanguage(texts)
+      info.detectedLang = lang || "";
+    }
+    if (activeSpeech) return;
+    activeSpeech = await getSpeech(texts);
+    activeSpeech.onEnd = function(err) {
+      if (err) {
+        if (onEnd) onEnd(err);
+      }
+      else {
+        activeSpeech = null;
+        currentIndex++;
+        readCurrent()
+          .catch(function(err) {
+            if (onEnd) onEnd(err)
+          })
+      }
+    };
+    if (rewinded) await activeSpeech.gotoEnd();
+    return activeSpeech.play();
+  }
+
+  function preprocess(text) {
+    text = truncateRepeatedChars(text, 3)
+    return text.replace(/https?:\/\/\S+/g, "HTTP URL.")
   }
 
   function detectLanguage(texts) {
@@ -547,7 +267,7 @@ function Doc(source, onEnd) {
       brapi.i18n.detectLanguage(text, fulfill);
     })
     .then(function(result) {
-      if (result && result.isReliable != false) {
+      if (result) {
           var list = result.languages.filter(function(item) {return item.language != "und"});
           list.sort(function(a,b) {return b.percentage-a.percentage});
           return list[0] && list[0].language;
@@ -575,10 +295,8 @@ function Doc(source, onEnd) {
   function getSpeech(texts) {
     return getSettings()
       .then(function(settings) {
-        console.log("Declared", info.lang)
-        console.log("Detected", info.detectedLang)
         var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
-        console.log("Chosen", lang)
+        console.log("Declared", info.lang, "- Detected", info.detectedLang, "- Chosen", lang)
         var options = {
           rate: settings.rate || defaults.rate,
           pitch: settings.pitch || defaults.pitch,

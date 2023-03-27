@@ -20,7 +20,7 @@ function initialize(allVoices, settings) {
     .click(function() {
       getAuthToken({interactive: true})
         .then(function(token) {
-          brapi.tabs.create({url: config.webAppUrl + "/premium-voices.html?t=" + token});
+          return brapi.tabs.create({url: config.webAppUrl + "/premium-voices.html?t=" + token});
         })
         .catch(handleError)
       return false;
@@ -33,7 +33,7 @@ function initialize(allVoices, settings) {
         .then(function() {
           showAccountInfo(null);
         })
-        .catch(console.error)
+        .catch(handleError)
       return false;
     })
 
@@ -95,6 +95,18 @@ function initialize(allVoices, settings) {
     })
 
 
+  //audioPlayback
+  $("#audio-playback")
+    .val(settings.useEmbeddedPlayer ? "true" : "false")
+    .change(function() {
+      saveSettings({useEmbeddedPlayer: JSON.parse($(this).val())})
+        .catch(console.error)
+      brapi.runtime.sendMessage({dest: "player", method: "close"})
+        .catch(err => "OK")
+    })
+  $(".audio-playback-visible").toggle(settings.useEmbeddedPlayer ? true : false)
+
+
   //buttons
   var demoSpeech = {};
   $("#test-voice").click(function() {
@@ -113,10 +125,7 @@ function initialize(allVoices, settings) {
           })
       })
       .then(function(result) {
-        return bgPageInvoke("stop")
-          .then(function() {
             return bgPageInvoke("playText", [result.text, {lang: lang}]);
-          })
       })
       .catch(function(err) {
         handleError(err);
@@ -152,16 +161,30 @@ function populateVoices(allVoices, settings) {
 
   //group by standard/premium
   var groups = Object.assign({
+      offline: [],
       premium: [],
       standard: [],
     },
     voices.groupBy(function(voice) {
+      if (isOfflineVoice(voice)) return "offline"
       if (isPremiumVoice(voice)) return "premium";
       else return "standard";
     }))
   for (var name in groups) groups[name].sort(voiceSorter);
 
+  //create the offline optgroup
+  const offline = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_offline"))
+    .appendTo($("#voices"))
+  for (const voice of groups.offline) {
+    $("<option>")
+      .val(voice.voiceName)
+      .text(voice.voiceName)
+      .appendTo(offline)
+  }
+
   //create the standard optgroup
+  $("<optgroup>").appendTo($("#voices"))
   var standard = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_standard"))
     .appendTo($("#voices"));
@@ -207,20 +230,20 @@ function populateVoices(allVoices, settings) {
 }
 
 function voiceSorter(a, b) {
-  if (isRemoteVoice(a)) {
-    if (isRemoteVoice(b)) return a.voiceName.localeCompare(b.voiceName);
-    else return 1;
+  function getWeight(voice) {
+    var weight = 0
+    if (isRemoteVoice(voice)) weight += 10
+    if (!isReadAloudCloud(voice)) weight += 1
+    return weight
   }
-  else {
-    if (isRemoteVoice(b)) return -1;
-    else return a.voiceName.localeCompare(b.voiceName);
-  }
+  return getWeight(a)-getWeight(b) || a.voiceName.localeCompare(b.voiceName)
 }
 
 
 
 function saveSettings(delta) {
-  bgPageInvoke("stop");
+  bgPageInvoke("stop")
+    .catch(err => "OK")
   return updateSettings(delta)
     .then(showConfirmation)
     .then(getSettings)
@@ -264,13 +287,6 @@ function handleError(err) {
           requestPermissions(config.wavenetPerms)
             .then(function(granted) {
               if (granted) bgPageInvoke("authWavenet");
-            })
-          break;
-        case "#user-gesture":
-          getBackgroundPage()
-            .then(callMethod("userGestureActivate"))
-            .then(function() {
-              $("#test-voice").click();
             })
           break;
       }

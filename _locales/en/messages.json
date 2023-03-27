@@ -14,6 +14,9 @@
   "options_voice_label": {
     "message": "Voice"
   },
+  "options_voicegroup_offline": {
+    "message": "Offline Voices"
+  },
   "options_voicegroup_standard": {
     "message": "Standard Voices"
   },
@@ -22,12 +25,6 @@
   },
   "options_voicegroup_additional": {
     "message": "Additional Voices"
-  },
-  "options_enable_premium_voices": {
-    "message": "Enable Premium Voices"
-  },
-  "options_premium_voices_enabled": {
-    "message": "Premium voices are enabled"
   },
   "options_enable_custom_voices": {
     "message": "Enable Custom Voices"
@@ -56,20 +53,23 @@
   "options_highlighting_window": {
     "message": "Show in a separate window"
   },
+  "options_audio_playback": {
+    "message": "Audio Playback"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Use separate tab"
+  },
+  "options_audio_playback_embedded": {
+    "message": "In page"
+  },
   "options_hotkeys_link": {
     "message": "Edit shortcut keys"
-  },
-  "options_save_button": {
-    "message": "Save"
   },
   "options_test_button": {
     "message": "Test"
   },
   "options_reset_button": {
     "message": "Reset"
-  },
-  "options_success_status": {
-    "message": "Changes saved."
   },
   "options_logged_in_as": {
     "message": "Logged in as"
@@ -80,11 +80,38 @@
   "options_logout_button": {
     "message": "Logout"
   },
+  "player_tab_explanation": {
+    "message": "Read Aloud uses this tab for audio playback. This tab will automatically close after 5 minutes of no activity."
+  },
+  "player_hidethistab_link": {
+    "message": "Hide this tab"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Hide this tab?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "If you hide this tab, Read Aloud will play audio inside the current webpage. This means navigating away from the page will cause the speech to stop.\n\n(This setting can be reverted from the extension Options page)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Hide"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Cancel"
+  },
+  "player_permission_dialog_title": {
+    "message": "Permission Requested"
+  },
+  "player_permission_dialog_body": {
+    "message": "Allow Read Aloud to play audio?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Allow"
+  },
   "context_read_selection": {
     "message": "Read aloud selected text"
   },
   "error_no_text": {
-    "message": "Didn't find any text to read"
+    "message": "Didn't find any text to read, try selecting the text you want to read first"
   },
   "error_no_voice": {
     "message": "Language not supported '{lang}'"
@@ -111,13 +138,10 @@
     "message": "Voice unavailable, please pick another"
   },
   "error_payment_required": {
-    "message": "Out of credit"
+    "message": "Out of credits"
   },
   "error_wavenet_auth_required": {
     "message": "You need to grant additional [permissions](auth-wavenet) to enable Google Wavenet voices"
-  },
-  "error_user_gesture_required": {
-    "message": "Click [here](user-gesture) to start"
   },
   "languages_heading": {
     "message": "Language Options"

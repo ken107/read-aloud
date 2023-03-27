@@ -1,5 +1,8 @@
 
-var readAloudDoc = new function() {
+var readAloudDoc = ["word-edit.officeapps.live.com", "usc-word-edit.officeapps.live.com"].includes(location.hostname) ? new Docx() : new Pdf()
+
+
+function Docx() {
   this.getCurrentIndex = function() {
     if (hasSelection()) return -1
     return 0
@@ -32,5 +35,31 @@ var readAloudDoc = new function() {
     return $("p.Paragraph").get()
       .map(getInnerText)
       .filter(isNotEmpty)
+  }
+}
+
+
+
+function Pdf() {
+  this.getCurrentIndex = function() {
+    const halfHeight = $(window).height() / 2
+    const page = $(".OneUp-pdf--loaded .page[data-page-number]").get()
+      .reverse()
+      .find(page => page.getBoundingClientRect().top < halfHeight)
+    return page ? Number($(page).data("pageNumber")) : 0
+  }
+
+  this.getTexts = function(index, quietly) {
+    const page = $(".OneUp-pdf--loaded .page[data-page-number=" + index + "]").get(0)
+    if (page) {
+      if (!quietly) page.scrollIntoView()
+      const lines = $(".textLayer >span", page).get()
+        .map(getInnerText)
+        .filter(isNotEmpty)
+      return fixParagraphs(lines)
+    }
+    else {
+      return null
+    }
   }
 }

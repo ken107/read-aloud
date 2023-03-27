@@ -19,8 +19,8 @@ function submit() {
     .then(function() {
       $("#img-spinner").hide();
       $("#lbl-status").text("Issue has been reported, thank you!").show();
-    })
-    .catch(function() {
+    },
+    function() {
       $("#img-spinner").hide();
       $("#lbl-error").text("Server could not be contacted, please email me directly at hai.phan@gmail.com. Thank you!").show();
     })

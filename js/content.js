@@ -1,20 +1,10 @@
 
-var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefined' ? browser : {});
-
 (function() {
-  var port = brapi.runtime.connect({name: "ReadAloudContentScript"});
-  var peer = new RpcPeer(new ExtensionMessagingPeer(port));
-  peer.onInvoke = function(method) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    var handlers = {
-      getCurrentIndex: getCurrentIndex,
-      getTexts: getTexts
-    }
-    if (handlers[method]) return handlers[method].apply(handlers, args);
-    else console.error("Unknown method", method);
-  }
-  $(function() {
-    peer.invoke("onReady", getInfo());
+  registerMessageListener("contentScript", {
+    getRequireJs: getRequireJs,
+    getDocumentInfo: getInfo,
+    getCurrentIndex: getCurrentIndex,
+    getTexts: getTexts
   })
 
   function getInfo() {
@@ -22,7 +12,6 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
       url: location.href,
       title: document.title,
       lang: getLang(),
-      requireJs: getRequireJs()
     }
   }
 
@@ -33,7 +22,6 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
   }
 
   function getRequireJs() {
-    if (typeof readAloudDoc != "undefined") return null;
     if (location.hostname == "docs.google.com") {
       if (/^\/presentation\/d\//.test(location.pathname)) return ["js/content/google-slides.js"];
       else if (/\/document\/d\//.test(location.pathname)) return ["js/content/googleDocsUtil.js", "js/content/google-doc.js"];
@@ -44,6 +32,7 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
       if ($(".drive-viewer-paginated-scrollable").length) return ["js/content/google-drive-doc.js"];
       else return ["js/content/google-drive-preview.js"];
     }
+    else if (location.hostname == "onedrive.live.com" && $(".OneUp-pdf--loaded").length) return ["js/content/onedrive-doc.js"];
     else if (/^read\.amazon\./.test(location.hostname)) return ["js/content/kindle-book.js"];
     else if (location.hostname.endsWith(".khanacademy.org")) return ["js/content/khan-academy.js"];
     else if (location.hostname.endsWith("acrobatiq.com")) return ["js/content/html-doc.js", "js/content/acrobatiq.js"];
@@ -52,10 +41,14 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
     else if (location.hostname == "www.ixl.com") return ["js/content/ixl.js"];
     else if (location.hostname == "www.webnovel.com" && location.pathname.startsWith("/book/")) return ["js/content/webnovel.js"];
     else if (location.hostname == "archiveofourown.org") return ["js/content/archiveofourown.js"];
-    else if (location.pathname.match(/pdf-upload\.html$/)
+    else if (location.pathname.match(/readaloud\.html$/)
       || location.pathname.match(/\.pdf$/)
       || $("embed[type='application/pdf']").length
       || $("iframe[src*='.pdf']").length) return ["js/content/pdf-doc.js"];
+    else if (/^\d+\.\d+\.\d+\.\d+$/.test(location.hostname)
+        && location.port === "1122"
+        && location.protocol === "http:"
+        && location.pathname === "/bookshelf/index.html") return  ["js/content/yd-app-web.js"];
     else return ["js/content/html-doc.js"];
   }
 
@@ -81,7 +74,39 @@ var brapi = (typeof chrome != 'undefined') ? chrome : (typeof browser != 'undefi
   }
 
   function getSelectedText() {
+    if (readAloudDoc.getSelectedText) return readAloudDoc.getSelectedText()
     return window.getSelection().toString().trim();
+  }
+
+
+  getRemoteConfig()
+    .then(settings => {
+      if (settings.enableContentScriptSilenceTrack)
+        setInterval(updateSilenceTrack.bind(null, Math.random()), 5000)
+    })
+
+  async function updateSilenceTrack(providerId) {
+    if (!audioCanPlay()) return;
+    const silenceTrack = getSilenceTrack()
+    try {
+      const should = await sendToPlayer({method: "shouldPlaySilence", args: [providerId]})
+      if (should) silenceTrack.start()
+      else silenceTrack.stop()
+    }
+    catch (err) {
+      silenceTrack.stop()
+    }
+  }
+
+  function audioCanPlay() {
+    return navigator.userActivation && navigator.userActivation.hasBeenActive
+  }
+
+  async function sendToPlayer(message) {
+    message.dest = "player"
+    const result = await brapi.runtime.sendMessage(message)
+    if (result && result.error) throw result.error
+    else return result
   }
 })()
 
@@ -133,12 +158,6 @@ function tryGetTexts(getTexts, millis) {
     })
 }
 
-function waitMillis(millis) {
-  return new Promise(function(fulfill) {
-    setTimeout(fulfill, millis);
-  })
-}
-
 function loadPageScript(url) {
   if (!$("head").length) $("<head>").prependTo("html");
   $.ajax({
@@ -166,18 +185,6 @@ function simulateClick(elementToClick) {
   simulateMouseEvent (elementToClick, "mousedown", coordX, coordY);
   simulateMouseEvent (elementToClick, "mouseup", coordX, coordY);
   simulateMouseEvent (elementToClick, "click", coordX, coordY);
-}
-
-function getSettings(names) {
-  return new Promise(function(fulfill) {
-    brapi.storage.local.get(names, fulfill);
-  });
-}
-
-function updateSettings(items) {
-  return new Promise(function(fulfill) {
-    brapi.storage.local.set(items, fulfill);
-  });
 }
 
 /**

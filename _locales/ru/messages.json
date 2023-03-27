@@ -1,0 +1,161 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Преобразование текста в речь"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Прочитайте вслух текущую статью на веб-странице одним щелчком мыши, используя преобразование текста в речь (TTS). Поддерживает более 40 языков."
+  },
+  "options_heading": {
+    "message": "Параметры"
+  },
+  "options_voice_label": {
+    "message": "Голос"
+  },
+  "options_voicegroup_offline": {
+    "message": "Автономные голоса"
+  },
+  "options_voicegroup_standard": {
+    "message": "Стандартные голоса"
+  },
+  "options_voicegroup_premium": {
+    "message": "Премиум-голоса"
+  },
+  "options_voicegroup_additional": {
+    "message": "Дополнительные голоса"
+  },
+  "options_enable_custom_voices": {
+    "message": "Включить пользовательские голоса"
+  },
+  "options_rate_label": {
+    "message": "Скорость"
+  },
+  "options_rate_warning": {
+    "message": "Примечание: некоторые голоса могут не работать на высокой скорости."
+  },
+  "options_pitch_label": {
+    "message": "Высота"
+  },
+  "options_volume_label": {
+    "message": "Громкость"
+  },
+  "options_show_highlighting": {
+    "message": "Выделение текста"
+  },
+  "options_highlighting_off": {
+    "message": "Выключить"
+  },
+  "options_highlighting_popup": {
+    "message": "Показать во всплывающем окне"
+  },
+  "options_highlighting_window": {
+    "message": "Показать в отдельном окне"
+  },
+  "options_audio_playback": {
+    "message": "Воспроизведение аудио"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Использовать отдельную вкладку"
+  },
+  "options_audio_playback_embedded": {
+    "message": "На странице"
+  },
+  "options_hotkeys_link": {
+    "message": "Изменить сочетания клавиш"
+  },
+  "options_test_button": {
+    "message": "Тест"
+  },
+  "options_reset_button": {
+    "message": "Сброс"
+  },
+  "options_logged_in_as": {
+    "message": "Вы вошли как"
+  },
+  "options_account_button": {
+    "message": "Аккаунт"
+  },
+  "options_logout_button": {
+    "message": "Выйти"
+  },
+  "player_tab_explanation": {
+    "message": "Функция «Чтение вслух» использует эту вкладку для воспроизведения звука. Эта вкладка автоматически закроется через 5 минут бездействия."
+  },
+  "player_hidethistab_link": {
+    "message": "Скрыть эту вкладку"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Скрыть эту вкладку?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Если вы скроете эту вкладку, «Читать вслух» будет воспроизводить аудио на текущей веб-странице. Это означает, что переход со страницы приведет к остановке речи. (Эту настройку можно отменить на странице параметров расширения)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Скрывать"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Отмена"
+  },
+  "player_permission_dialog_title": {
+    "message": "Запрошено разрешение"
+  },
+  "player_permission_dialog_body": {
+    "message": "Разрешить чтение вслух для воспроизведения звука?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Разрешать"
+  },
+  "context_read_selection": {
+    "message": "Прочитать вслух выделенный текст"
+  },
+  "error_no_text": {
+    "message": "Не удалось найти текст для чтения. Попробуйте сначала выделить текст, который хотите прочитать."
+  },
+  "error_no_voice": {
+    "message": "Язык '{lang}' не поддерживается"
+  },
+  "error_upload_pdf": {
+    "message": "Пожалуйста, используйте форму, чтобы загрузить файл PDF для чтения вслух"
+  },
+  "error_ajax_pdf": {
+    "message": "Сохраните этот PDF-файл на свой компьютер и откройте его в [средстве просмотра PDF](open-pdf-viewer), чтобы прочитать вслух."
+  },
+  "error_page_unreadable": {
+    "message": "Невозможно прочитать вслух этот сайт"
+  },
+  "error_file_access": {
+    "message": "Вам необходимо предоставить доступ для Read Aloud к URL-адресам файлов в расширении [настройки](open-extension-settings)"
+  },
+  "error_add_permissions": {
+    "message": "Вам необходимо предоставить Read Aloud дополнительные [разрешения](request-permissions) для этого веб-сайта."
+  },
+  "error_login_required": {
+    "message": "Пожалуйста, [войдите](sign-in), чтобы использовать Премиум-голоса"
+  },
+  "error_voice_unavailable": {
+    "message": "Голос недоступен, выберите другой"
+  },
+  "error_payment_required": {
+    "message": "Требуется оплата"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Вам необходимо предоставить дополнительные [разрешения](auth-wavenet), чтобы включить голоса Google Wavenet."
+  },
+  "languages_heading": {
+    "message": "Параметры языка"
+  },
+  "languages_back_button": {
+    "message": "Вернуться к параметрам"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud хотел бы использовать Google Translate для преобразования текста в речь."
+  },
+  "google_translate_allow_button": {
+    "message": "Разрешить"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud использует Google Translate для преобразования текста в речь.  Пожалуйста, держите эту вкладку открытой."
+  }
+}
