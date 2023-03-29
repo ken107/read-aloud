@@ -125,7 +125,7 @@ function playClipboard(){
   document.execCommand("paste");
   let clipboardText = t.value; //this is your clipboard data
   console.log(clipboardText)
-  clipboardText = clipboardText.replace(/[\n#]/g, '');
+  clipboardText = clipboardText.replace(/\n|#|\s/g, "");
   document.body.removeChild(t);
   stop()
       .then(function() {
