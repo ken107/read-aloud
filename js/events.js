@@ -126,6 +126,7 @@ function playClipboard(){
   let clipboardText = t.value; //this is your clipboard data
   console.log(clipboardText)
   clipboardText = clipboardText.replace(/\n|#|\s/g, "");
+  clipboardText = clipboardText.replace(/[\u{1F600}-\u{1F64F}\u{2702}-\u{27B0}]/gu, '');
   document.body.removeChild(t);
   stop()
       .then(function() {
