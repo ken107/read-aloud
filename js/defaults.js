@@ -839,3 +839,53 @@ function makeAbortable() {
     abort
   }
 }
+
+/**
+ * Repeat an action
+ * @param {Object} opt - options
+ * @param {Function} opt.action - action to repeat
+ * @param {Function} opt.until - termination condition
+ * @param {Number} opt.delay - delay between actions
+ * @param {Number} opt.max - maximum number of repetitions
+ * @returns {Promise}
+ */
+function repeat(opt) {
+  if (!opt || !opt.action) throw new Error("Missing action")
+  return iter(1)
+  function iter(n) {
+    return Promise.resolve()
+      .then(opt.action)
+      .then(function(result) {
+        if (opt.until && opt.until(result)) return result
+        if (opt.max && n >= opt.max) return result
+        if (!opt.delay) return iter(n+1)
+        return new Promise(function(f) {setTimeout(f, opt.delay)}).then(iter.bind(null, n+1))
+      })
+  }
+}
+
+function when(pred, val) {
+  if (typeof pred == "function" ? pred() : pred) {
+    return {
+      when() {
+        return this
+      },
+      else() {
+        return typeof val == "function" ? val() : val
+      }
+    }
+  }
+  else {
+    return {
+      when,
+      else(val) {
+        return typeof val == "function" ? val() : val
+      }
+    }
+  }
+}
+
+function removeAllAttrs(el, recursive) {
+  while (el.attributes.length > 0) el.removeAttribute(el.attributes[0].name)
+  if (recursive) for (const child of el.children) removeAllAttrs(child, true)
+}
