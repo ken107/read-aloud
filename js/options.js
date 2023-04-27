@@ -315,7 +315,8 @@ function createSlider(elem, defaultValue, onChange, onSlideChange) {
   var step = 1 / ($(elem).data("steps") || 20);
   var $bg = $(elem).empty().toggleClass("slider", true);
   var $bar = $("<div class='bar'>").appendTo(elem);
-  var $knob = $("<div class='knob'>").appendTo(elem);
+  var $track = $("<div class='track'>").appendTo(elem);
+  var $knob = $("<div class='knob'>").appendTo($track);
   setPosition((defaultValue-min) / (max-min));
 
   $bg.click(function(e) {
@@ -346,7 +347,7 @@ function createSlider(elem, defaultValue, onChange, onSlideChange) {
     $bar.css("width", percent);
   }
   function calcPosition(e) {
-    var rect = $bg.get(0).getBoundingClientRect();
+    var rect = $track.get(0).getBoundingClientRect();
     var position = (e.clientX - rect.left) / rect.width;
     position = Math.min(1, Math.max(position, 0));
     return step * Math.round(position / step);
