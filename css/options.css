@@ -13,6 +13,7 @@ body {
 .container-fluid {
   padding-left: 15px;
   padding-right: 15px;
+  overflow: hidden;
 }
 
 button.close {
@@ -297,6 +298,20 @@ input[type=checkbox], input[type=radio] {
   border-radius: .4em;
   background: linear-gradient(to right, #2a737b, #77bbb3, #77bbb3, #2a737b);
   touch-action: none;
+}
+.slider .tooltip {
+  position: absolute;
+  pointer-events: none;
+  touch-action: none;
+}
+.slider .tooltip .text {
+  position: relative;
+  transform: translate(-50%, -150%);
+  padding: 0 .4em .1em .4em;
+  border-radius: .25em;
+  background-color: black;
+  color: white;
+  font-size: smaller;
 }
 
 #account-info {

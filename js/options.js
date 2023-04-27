@@ -43,16 +43,34 @@ function initialize(allVoices, settings) {
     value = Math.pow($("#rate").data("pow"), value);
     $("#rate-input").val(value.toFixed(3));
     saveSettings({rate: Number($("#rate-input").val())});
+  }, {
+    getTooltipText(value) {
+      value = Math.pow($("#rate").data("pow"), value);
+      const text = value.toFixed(2)
+      if (text == "1.00") return "1x"
+      return text + "x"
+    }
   })
 
   //pitch slider
   createSlider($("#pitch").get(0), settings.pitch || defaults.pitch, function(value) {
     saveSettings({pitch: value});
+  }, {
+    getTooltipText(value) {
+      const text = (value -1).toFixed(2)
+      if (text == "0.00") return "+0"
+      if (text.startsWith("-")) return text
+      return "+" + text
+    }
   })
 
   //volume slider
   createSlider($("#volume").get(0), settings.volume || defaults.volume, function(value) {
     saveSettings({volume: value});
+  }, {
+    getTooltipText(value) {
+      return Math.round(value * 100) + "%"
+    }
   })
 
 
@@ -309,7 +327,9 @@ function showAccountInfo(account) {
 
 
 
-function createSlider(elem, defaultValue, onChange, onSlideChange) {
+function createSlider(elem, defaultValue, onChange, opts) {
+  if (!opts) opts = {}
+  if (!opts.getTooltipText) opts.getTooltipText = (value, pos) => Math.round(100 * pos) + "%"
   var min = $(elem).data("min") || 0;
   var max = $(elem).data("max") || 1;
   var step = 1 / ($(elem).data("steps") || 20);
@@ -317,26 +337,37 @@ function createSlider(elem, defaultValue, onChange, onSlideChange) {
   var $bar = $("<div class='bar'>").appendTo(elem);
   var $track = $("<div class='track'>").appendTo(elem);
   var $knob = $("<div class='knob'>").appendTo($track);
-  setPosition((defaultValue-min) / (max-min));
+  const $tooltip = $("<div class='tooltip'><div class='text'></div></div>").hide().appendTo(elem)
+  const defaultPos = (defaultValue-min) / (max-min)
+  setPosition(defaultPos)
+  setTooltipText(defaultValue, defaultPos)
 
   $bg.click(function(e) {
     var pos = calcPosition(e);
+    const value = min + pos*(max-min)
     setPosition(pos);
-    onChange(min + pos*(max-min));
+    setTooltipText(value, pos)
+    onChange(value)
   })
   $knob.click(function() {
     return false;
   })
   $knob.on("mousedown touchstart", function() {
+    $tooltip.finish().show()
     onSlideStart(function(e) {
       var pos = calcPosition(e);
+      const value = min + pos*(max-min)
       setPosition(pos);
-      if (onSlideChange) onSlideChange(min + pos*(max-min));
+      setTooltipText(value, pos)
+      if (opts.onSlideChange) onSlideChange(value)
     },
     function(e) {
+      $tooltip.fadeOut("fast")
       var pos = calcPosition(e);
+      const value = min + pos*(max-min)
       setPosition(pos);
-      onChange(min + pos*(max-min));
+      setTooltipText(value, pos)
+      onChange(value)
     })
     return false;
   })
@@ -344,6 +375,7 @@ function createSlider(elem, defaultValue, onChange, onSlideChange) {
   function setPosition(pos) {
     var percent = (100 * pos) + "%";
     $knob.css("left", percent);
+    $tooltip.css("left", percent);
     $bar.css("width", percent);
   }
   function calcPosition(e) {
@@ -351,6 +383,9 @@ function createSlider(elem, defaultValue, onChange, onSlideChange) {
     var position = (e.clientX - rect.left) / rect.width;
     position = Math.min(1, Math.max(position, 0));
     return step * Math.round(position / step);
+  }
+  function setTooltipText(value, pos) {
+    $tooltip.find(".text").text(opts.getTooltipText(value, pos))
   }
 }
 
