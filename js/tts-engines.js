@@ -1105,10 +1105,12 @@ function IbmWatsonTtsEngine() {
 
 
 function NvidiaRivaTtsEngine() {
+  const RIVA_VOICE_PREFIX = "Nvidia-Riva "
   var isSpeaking = false;
   var audio;
   this.speak = function(utterance, options, onEvent) {
-    const urlPromise = getAudioUrl(utterance, options.voice)
+    const urlPromise = getAudioUrl(utterance, options.voice, options.pitch, options.rate)
+    delete options['rate'] // Riva takes care of this
     audio = playAudio(urlPromise, options)
     audio.startPromise
       .then(() => {
@@ -1141,7 +1143,7 @@ function NvidiaRivaTtsEngine() {
     return getSettings(["rivaVoices", "rivaCreds"])
       .then(function(items) {
         if (!items.rivaCreds) return [];
-        // if (items.rivaVoices && Date.now()-items.rivaVoices[0].ts < 24*3600*1000) return items.rivaVoices;
+        if (items.rivaVoices && Date.now()-items.rivaVoices[0].ts < 24*3600*1000) return items.rivaVoices;
         return fetchVoices(items.rivaCreds.url)
           .then(function(list) {
             list[0].ts = Date.now();
@@ -1154,22 +1156,30 @@ function NvidiaRivaTtsEngine() {
           })
       })
   }
-  this.fetchVoices = fetchVoices;
-
-  function getAudioUrl(text, voice) {
+  async function getAudioUrl(text, voice, pitch, rate) {
     assert(text && voice);
-    return getSettings(["rivaCreds"])
-      .then(function(settings) {
-        return ajaxGet({
-          url: settings.rivaCreds.url + "/tts?text=" + encodeURIComponent(escapeHtml(text)) + "&voice=" + encodeURIComponent(voice.voiceName.replace('Nvidia-Riva ','')) + "&accept=" + encodeURIComponent("audio/ogg;codecs=opus"),
-          responseType: "blob"
-        })
+    const settings = await getSettings(["rivaCreds"])
+    const res = await fetch(settings.rivaCreds.url + "/tts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "audio/ogg;codecs=opus"
+      },
+      body: JSON.stringify({
+        voice: voice.voiceName.replace(RIVA_VOICE_PREFIX,''),
+        text: escapeHtml(text),
+        pitch,
+        rate
       })
-      .then(function(blob) {
-        return URL.createObjectURL(blob);
-      })
+    })
+    if (!res.ok) throw new Error("Server returns " + res.status)
+    const blob = await res.blob()
+    return URL.createObjectURL(blob);
   }
+  this.fetchVoices = fetchVoices;
   function fetchVoices(url) {
-    return ajaxGet({ url: url + "/voices" }).then(JSON.parse)
+    return ajaxGet({ url: url + "/voices" }).then(JSON.parse).then((voices)=>{
+      return voices.map((v)=>({...v, voiceName:RIVA_VOICE_PREFIX+v.voiceName}))
+    })
   }
 }
