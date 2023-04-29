@@ -105,6 +105,29 @@
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-header">
+        Enter a <a href="https://github.com/kfatehi/riva_tts_proxy">Riva TTS proxy server</a> URL to enable Nvidia Riva voices. 
+      </div>
+      <div class="card-body">
+        <form>
+          <div class="form-group">
+            <div class="input-group">
+              <input type="text" class="form-control" id="riva-url" placeholder="URL" />
+              <div class="input-group-append">
+                <button type="button" class="btn btn-primary" id="riva-save-button">Save</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <img id="riva-progress" class="status progress" src="img/loading.gif" />
+            <div id="riva-success" class="status alert alert-success"></div>
+            <div id="riva-error" class="status alert alert-danger"></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div class="mt-4 mb-3">
       <a href="options.html" class="btn btn-secondary">Back to Options</a>
     </div>

@@ -5,6 +5,7 @@ var googleTranslateTtsEngine = new GoogleTranslateTtsEngine();
 var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
 var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
 var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
+var nvidiaRivaTtsEngine = new NvidiaRivaTtsEngine();
 
 
 /*
@@ -1099,5 +1100,76 @@ function IbmWatsonTtsEngine() {
           }
         })
       })
+  }
+}
+
+
+function NvidiaRivaTtsEngine() {
+  var isSpeaking = false;
+  var audio;
+  this.speak = function(utterance, options, onEvent) {
+    const urlPromise = getAudioUrl(utterance, options.voice)
+    audio = playAudio(urlPromise, options)
+    audio.startPromise
+      .then(() => {
+        onEvent({type: "start", charIndex: 0})
+        isSpeaking = true;
+      })
+      .catch(function(err) {
+        onEvent({type: "error", error: err})
+      })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
+  };
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking);
+  };
+  this.pause =
+  this.stop = function() {
+    audio.pause()
+  };
+  this.resume = function() {
+    return audio.resume()
+  };
+  this.prefetch = function(utterance, options) {
+  };
+  this.setNextStartTime = function() {
+  };
+  this.getVoices = function() {
+    return getSettings(["rivaVoices", "rivaCreds"])
+      .then(function(items) {
+        if (!items.rivaCreds) return [];
+        // if (items.rivaVoices && Date.now()-items.rivaVoices[0].ts < 24*3600*1000) return items.rivaVoices;
+        return fetchVoices(items.rivaCreds.url)
+          .then(function(list) {
+            list[0].ts = Date.now();
+            updateSettings({rivaVoices: list}).catch(console.error);
+            return list;
+          })
+          .catch(function(err) {
+            console.error(err);
+            return [];
+          })
+      })
+  }
+  this.fetchVoices = fetchVoices;
+
+  function getAudioUrl(text, voice) {
+    assert(text && voice);
+    return getSettings(["rivaCreds"])
+      .then(function(settings) {
+        return ajaxGet({
+          url: settings.rivaCreds.url + "/tts?text=" + encodeURIComponent(escapeHtml(text)) + "&voice=" + encodeURIComponent(voice.voiceName.replace('Nvidia-Riva ','')) + "&accept=" + encodeURIComponent("audio/ogg;codecs=opus"),
+          responseType: "blob"
+        })
+      })
+      .then(function(blob) {
+        return URL.createObjectURL(blob);
+      })
+  }
+  function fetchVoices(url) {
+    return ajaxGet({ url: url + "/voices" }).then(JSON.parse)
   }
 }
