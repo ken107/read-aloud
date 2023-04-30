@@ -1110,8 +1110,8 @@ function NvidiaRivaTtsEngine() {
   var audio;
   this.speak = function(utterance, options, onEvent) {
     const urlPromise = getAudioUrl(utterance, options.voice, options.pitch, options.rate)
-    delete options['rate'] // Riva takes care of this
-    audio = playAudio(urlPromise, options)
+    // Rate supplied to player is always 1 because it is already represented in the generated audio
+    audio = playAudio(urlPromise, {...options, rate: 1})
     audio.startPromise
       .then(() => {
         onEvent({type: "start", charIndex: 0})
