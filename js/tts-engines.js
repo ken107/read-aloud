@@ -1106,10 +1106,15 @@ function IbmWatsonTtsEngine() {
 
 function NvidiaRivaTtsEngine() {
   const RIVA_VOICE_PREFIX = "Nvidia-Riva "
+  var prefetchAudio;
   var isSpeaking = false;
   var audio;
   this.speak = function(utterance, options, onEvent) {
-    const urlPromise = getAudioUrl(utterance, options.voice, options.pitch, options.rate)
+    const urlPromise = Promise.resolve()
+      .then(function() {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
+        else return getAudioUrl(utterance, options.voice, options.pitch, options.rate);
+      })
     // Rate supplied to player is always 1 because it is already represented in the generated audio
     audio = playAudio(urlPromise, {...options, rate: 1})
     audio.startPromise
@@ -1136,6 +1141,11 @@ function NvidiaRivaTtsEngine() {
     return audio.resume()
   };
   this.prefetch = function(utterance, options) {
+    getAudioUrl(utterance, options.voice, options.pitch, options.rate)
+      .then(function(url) {
+        prefetchAudio = [utterance, options, url];
+      })
+      .catch(console.error)
   };
   this.setNextStartTime = function() {
   };
