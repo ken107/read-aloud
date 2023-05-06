@@ -5,6 +5,7 @@ var googleTranslateTtsEngine = new GoogleTranslateTtsEngine();
 var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
 var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
 var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
+var nvidiaRivaTtsEngine = new NvidiaRivaTtsEngine();
 
 
 /*
@@ -1099,5 +1100,96 @@ function IbmWatsonTtsEngine() {
           }
         })
       })
+  }
+}
+
+
+function NvidiaRivaTtsEngine() {
+  const RIVA_VOICE_PREFIX = "Nvidia-Riva "
+  var prefetchAudio;
+  var isSpeaking = false;
+  var audio;
+  this.speak = function(utterance, options, onEvent) {
+    const urlPromise = Promise.resolve()
+      .then(function() {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
+        else return getAudioUrl(utterance, options.voice, options.pitch, options.rate);
+      })
+    // Rate supplied to player is always 1 because it is already represented in the generated audio
+    audio = playAudio(urlPromise, {...options, rate: 1})
+    audio.startPromise
+      .then(() => {
+        onEvent({type: "start", charIndex: 0})
+        isSpeaking = true;
+      })
+      .catch(function(err) {
+        onEvent({type: "error", error: err})
+      })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
+  };
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking);
+  };
+  this.pause =
+  this.stop = function() {
+    audio.pause()
+  };
+  this.resume = function() {
+    return audio.resume()
+  };
+  this.prefetch = function(utterance, options) {
+    getAudioUrl(utterance, options.voice, options.pitch, options.rate)
+      .then(function(url) {
+        prefetchAudio = [utterance, options, url];
+      })
+      .catch(console.error)
+  };
+  this.setNextStartTime = function() {
+  };
+  this.getVoices = function() {
+    return getSettings(["rivaVoices", "rivaCreds"])
+      .then(function(items) {
+        if (!items.rivaCreds) return [];
+        if (items.rivaVoices && Date.now()-items.rivaVoices[0].ts < 24*3600*1000) return items.rivaVoices;
+        return fetchVoices(items.rivaCreds.url)
+          .then(function(list) {
+            list[0].ts = Date.now();
+            updateSettings({rivaVoices: list}).catch(console.error);
+            return list;
+          })
+          .catch(function(err) {
+            console.error(err);
+            return [];
+          })
+      })
+  }
+  async function getAudioUrl(text, voice, pitch, rate) {
+    assert(text && voice);
+    const settings = await getSettings(["rivaCreds"])
+    const res = await fetch(settings.rivaCreds.url + "/tts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "audio/ogg;codecs=opus"
+      },
+      body: JSON.stringify({
+        voice: voice.voiceName.replace(RIVA_VOICE_PREFIX,''),
+        text: escapeHtml(text),
+        pitch,
+        rate
+      })
+    })
+    if (!res.ok) throw new Error("Server returns " + res.status)
+    const blob = await res.blob()
+    return URL.createObjectURL(blob);
+  }
+  this.fetchVoices = fetchVoices;
+  function fetchVoices(url) {
+    return ajaxGet({ url: url + "/voices" }).then(JSON.parse).then((voices)=>{
+      return voices.map((v)=>({...v, voiceName:RIVA_VOICE_PREFIX+v.voiceName}))
+    })
   }
 }

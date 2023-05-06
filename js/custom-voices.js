@@ -1,6 +1,6 @@
 
 $(function() {
-  getSettings(["awsCreds", "gcpCreds", "ibmCreds"])
+  getSettings(["awsCreds", "gcpCreds", "ibmCreds", "rivaCreds"])
     .then(function(items) {
       if (items.awsCreds) {
         $("#aws-access-key-id").val(obfuscate(items.awsCreds.accessKeyId));
@@ -13,11 +13,15 @@ $(function() {
         $("#ibm-api-key").val(obfuscate(items.ibmCreds.apiKey));
         $("#ibm-url").val(obfuscate(items.ibmCreds.url));
       }
+      if (items.rivaCreds) {
+        $("#riva-url").val(obfuscate(items.rivaCreds.url));
+      }
     })
   $(".status").hide();
   $("#aws-save-button").click(awsSave);
   $("#gcp-save-button").click(gcpSave);
   $("#ibm-save-button").click(ibmSave);
+  $("#riva-save-button").click(rivaSave);
 })
 
 function obfuscate(key) {
@@ -135,4 +139,42 @@ function testIbm(apiKey, url) {
     .then(function() {
       return ibmWatsonTtsEngine.fetchVoices(apiKey, url);
     })
+}
+
+function rivaSave() {
+  $(".status").hide();
+  var url = $("#riva-url").val().trim();
+  if (url) {
+    $("#riva-progress").show();
+    testRiva(url)
+      .then(function() {
+        $("#riva-progress").hide();
+        updateSettings({rivaCreds: {url: url}});
+        $("#riva-success").text("Nvidia Riva voices are enabled.").show();
+        $("#riva-url").val(obfuscate(url));
+      },
+      function(err) {
+        $("#riva-progress").hide();
+        $("#riva-error").text("Test failed: " + err.message).show();
+      })
+  }
+  else if (!url) {
+    clearSettings(["rivaCreds"])
+      .then(function() {
+        $("#riva-success").text("Nvidia Riva voices are disabled.").show();
+      })
+  }
+  else {
+    $("#riva-error").text("Missing required fields.").show();
+  }
+}
+
+function testRiva(url) {
+  return requestPermissions({origins: [url + "/*"]})
+  .then(function(granted) {
+    if (!granted) throw new Error("Permission not granted");
+  })
+  .then(function() {
+    return nvidiaRivaTtsEngine.fetchVoices(url);
+  })
 }

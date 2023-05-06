@@ -132,6 +132,7 @@ function getVoices() {
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
         ibmWatsonTtsEngine.getVoices(),
+        nvidiaRivaTtsEngine.getVoices(),
       ])
     })
     .then(function(arr) {
@@ -179,8 +180,12 @@ function isIbmWatson(voice) {
   return /^IBM-Watson /.test(voice.voiceName);
 }
 
+function isNvidiaRiva(voice) {
+  return /^Nvidia-Riva /.test(voice.voiceName);
+}
+
 function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isNvidiaRiva(voice);
 }
 
 function isPremiumVoice(voice) {
