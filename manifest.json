@@ -8,7 +8,7 @@
   "default_locale": "en",
   "browser_specific_settings": {
     "gecko": {
-      "id": "{ddc62400-f22d-4dd3-8b4a-05837de53c2e}"
+      "id": "read-aloud@lsdsoftware.com"
     }
   },
 
@@ -25,11 +25,6 @@
     "16": "img/icon-16.png",
     "48": "img/icon-48.png",
     "128": "img/icon.png"
-  },
-  "applications": {
-    "gecko": {
-      "id": "read-aloud@lsdsoftware.com"
-    }
   },
   "permissions": [
     "activeTab",
@@ -61,7 +56,7 @@
       "js/document.js",
       "js/events.js"
     ],
-    "persistent": true
+    "persistent": false
   },
   "options_page": "options.html",
   "options_ui": {
