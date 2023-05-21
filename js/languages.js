@@ -67,6 +67,11 @@ function createCheckboxes(voicesForLang) {
       $("<input>").attr("type", "radio").attr("name", item.code).attr("data-voice", voice.voiceName).appendTo(label);
       $("<span>").text(voice.voiceName).appendTo(label);
     }
+    for (var voice of voicesForLang["<any>"] || []) {
+      label = $("<label>").addClass("form-check-label d-block").appendTo(div);
+      $("<input>").attr("type", "radio").attr("name", item.code).attr("data-voice", voice.voiceName).appendTo(label);
+      $("<span>").text(voice.voiceName).appendTo(label);
+    }
   }
 }
 

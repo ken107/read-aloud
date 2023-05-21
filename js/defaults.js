@@ -329,8 +329,8 @@ function isMicrosoftCloud(voice) {
   return /^Microsoft /.test(voice.voiceName) && voice.voiceName.indexOf(' - ') == -1;
 }
 
-function isOpenFPT(voice) {
-  return /^OpenFPT /.test(voice.voiceName);
+function isReadAloudCloud(voice) {
+  return /^ReadAloud /.test(voice.voiceName)
 }
 
 function isAmazonPolly(voice) {
@@ -346,7 +346,7 @@ function isIbmWatson(voice) {
 }
 
 function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isOpenFPT(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
 }
 
 function isPremiumVoice(voice) {
@@ -367,6 +367,7 @@ function getSpeechVoice(voiceName, lang) {
       if (!voice && lang) {
         voice = findVoiceByLang(voices.filter(isGoogleNative), lang)
           || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
+          || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
           || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
           || findVoiceByLang(voices.filter(negate(isPremiumVoice)), lang)
           || findVoiceByLang(voices, lang);
@@ -388,19 +389,29 @@ function findVoiceByLang(voices, lang) {
     if (voice.lang) {
       var voiceLang = parseLang(voice.lang);
       if (voiceLang.lang == speechLang.lang) {
+        //language matches
         if (voiceLang.rest == speechLang.rest) {
+          //dialect matches, prefer female
           if (voice.gender == "female") match.first = match.first || voice;
           else match.second = match.second || voice;
         }
-        else if (!voiceLang.rest) match.third = match.third || voice;
+        else if (!voiceLang.rest) {
+          //voice specifies no dialect
+          match.third = match.third || voice;
+        }
         else {
-          if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = voice;
-          else match.fourth = match.fourth || voice;
+          //dialect mismatch, prefer en-US (if english)
+          if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = match.fourth || voice;
+          else match.sixth = match.sixth || voice;
         }
       }
     }
+    else {
+      //voice specifies no language, assume can handle any lang
+      match.fifth = match.fifth || voice;
+    }
   });
-  return match.first || match.second || match.third || match.fourth;
+  return match.first || match.second || match.third || match.fourth || match.fifth || match.sixth;
 }
 
 

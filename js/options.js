@@ -209,14 +209,13 @@ function populateVoices(allVoices, settings) {
 }
 
 function voiceSorter(a, b) {
-  if (isRemoteVoice(a)) {
-    if (isRemoteVoice(b)) return a.voiceName.localeCompare(b.voiceName);
-    else return 1;
+  function getWeight(voice) {
+    var weight = 0
+    if (isRemoteVoice(voice)) weight += 10
+    if (!isReadAloudCloud(voice)) weight += 1
+    return weight
   }
-  else {
-    if (isRemoteVoice(b)) return -1;
-    else return a.voiceName.localeCompare(b.voiceName);
-  }
+  return getWeight(a)-getWeight(b) || a.voiceName.localeCompare(b.voiceName)
 }
 
 

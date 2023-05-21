@@ -13,15 +13,15 @@ function DummyReadAloudDoc() {
         if (event.data.type == "ReadAloudText") {
           window.removeEventListener("message", listener)
           if (event.data.error) reject(new Error(event.data.error))
-          else fulfill(event.data.text)
+          else fulfill(event.data.texts)
         }
       }
       window.addEventListener("message", listener)
-      loadPageScript(brapi.runtime.getURL("js/page/google-doc.js"))
+      loadPageScript("https://assets.lsdsoftware.com/read-aloud/page-scripts/google-doc.js")
     })
-    .then(function(text) {
+    .then(function(texts) {
       altTextsPromise = null
-      return text.split(/\s*\r?\n\s*/)
+      return texts
     })
   }
 
@@ -29,6 +29,7 @@ function DummyReadAloudDoc() {
 
   var $popup = createPopup();
   var cache = {expires: 0}
+  var shouldShowPopupOnError = new WeakMap()
 
   addEventListener("message", function(event) {
     if (event.data.type == "ra-advertise") {
@@ -49,10 +50,10 @@ function DummyReadAloudDoc() {
         addonFailed = true
         return altGetTexts()
           .then(function(texts) {
-            $popup.hide()
             return 0
           })
           .catch(function() {
+            if (shouldShowPopupOnError.has(err)) showPopup()
             throw err
           })
       })
@@ -108,7 +109,7 @@ function DummyReadAloudDoc() {
       return waitForSource(waitDuration)
     })
     .catch(function(err) {
-      showPopup()
+      shouldShowPopupOnError.set(err, true)
       throw err
     })
   }
