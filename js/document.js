@@ -582,7 +582,7 @@ function Doc(source, onEnd) {
         // 根据文字动态切换英文
         if (lang === 'en') {
           settings.voiceName = "Microsoft Jenny Online (Natural) - English (United States) (en-US)";
-          settings.rate=1;
+          settings.rate=1.1;
         }
         console.log("声音设置: ", settings)
         var options = {
