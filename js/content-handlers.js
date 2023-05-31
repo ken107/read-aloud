@@ -85,6 +85,7 @@ var contentHandlers = [
     match: function(url, title) {
       return url.startsWith("https://onedrive.live.com/edit.aspx") && title.includes(".docx")
         || /^https:\/\/[^/]+\.sharepoint\.com\//.test(url)
+        || url.startsWith("https://www.dropbox.com/") && url.split("?")[0].endsWith(".docx")
     },
     targetOrigins: [
       "https://word-edit.officeapps.live.com/",
