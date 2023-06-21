@@ -133,6 +133,7 @@ function getVoices() {
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
         ibmWatsonTtsEngine.getVoices(),
         nvidiaRivaTtsEngine.getVoices(),
+        phoneTtsEngine.getVoices(),
       ])
     })
     .then(function(arr) {
@@ -184,6 +185,10 @@ function isNvidiaRiva(voice) {
   return /^Nvidia-Riva /.test(voice.voiceName);
 }
 
+function isUseMyPhone(voice) {
+  return voice.isUseMyPhone == true
+}
+
 function isRemoteVoice(voice) {
   return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isNvidiaRiva(voice);
 }
@@ -198,11 +203,15 @@ function getSpeechVoice(voiceName, lang) {
       var voices = res[0];
       var preferredVoiceByLang = res[1].preferredVoices || {};
       var voice;
+      //if a specific voice is indicated
       if (voiceName) voice = findVoiceByName(voices, voiceName);
+      //if no specific voice indicated, but a preferred voice was configured for the language
       if (!voice && lang) {
         voiceName = preferredVoiceByLang[lang.split("-")[0]];
         if (voiceName) voice = findVoiceByName(voices, voiceName);
       }
+      //otherwise, auto-select
+      voices = voices.filter(negate(isUseMyPhone))    //do not auto-select "Use My Phone"
       if (!voice && lang) {
         voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
           || findVoiceByLang(voices.filter(isGoogleNative), lang)

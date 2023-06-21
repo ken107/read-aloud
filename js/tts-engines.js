@@ -6,6 +6,7 @@ var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
 var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
 var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
 var nvidiaRivaTtsEngine = new NvidiaRivaTtsEngine();
+var phoneTtsEngine = new PhoneTtsEngine();
 
 
 /*
@@ -1191,5 +1192,118 @@ function NvidiaRivaTtsEngine() {
     return ajaxGet({ url: url + "/voices" }).then(JSON.parse).then((voices)=>{
       return voices.map((v)=>({...v, voiceName:RIVA_VOICE_PREFIX+v.voiceName}))
     })
+  }
+}
+
+
+function PhoneTtsEngine() {
+  var isSpeaking = false
+  var conn
+  const pendingRequests = new Map()
+  const getPairingCode = lazy(() => 100000 + Math.floor(Math.random() * 900000))
+  const getPeer = lazy(async () => {
+    const peer = new Peer("readaloud-" + getPairingCode(), {debug: 2})
+    await new Promise((f,r) => peer.once("open", f).once("error", r))
+    peer.on("connection", newConn => {
+      if (conn) conn.close()
+      conn = newConn
+      const makeError = reason => new Error(JSON.stringify({code: "error_phone_disconnected", reason}))
+      conn.readyPromise = new Promise((fulfill, reject) => {
+        conn.once("open", fulfill)
+          .once("error", err => reject(makeError(err.message || err)))
+      })
+      conn.once("close", () => conn.readyPromise = Promise.reject(makeError("Connection lost")))
+      conn.on("error", console.error)
+      conn.on("data", res => {
+        const pending = pendingRequests.get(res.id)
+        if (pending) {
+          if (res.error) pending.reject(new Error(res.error))
+          else pending.fulfill(res.value)
+        }
+        else {
+          console.warn("Response received but no pending request", res)
+        }
+      })
+    })
+    window.addEventListener("beforeunload", () => peer.destroy())
+    return peer
+  })
+  this.startPairing = async function() {
+    if (conn) {
+      conn.close()
+      conn = null
+    }
+    const peer = await getPeer()
+    if (peer.disconnected) peer.reconnect()
+    return getPairingCode()
+  }
+  this.isPaired = async function() {
+    return conn != null
+  }
+  async function sendRequest(req, timeout) {
+    req.id = String(Math.random())
+    await conn.readyPromise
+    conn.send(req)
+    const responsePromise = new Promise((fulfill, reject) => pendingRequests.set(req.id, {fulfill, reject}))
+    try {
+      return await promiseTimeout(timeout || 7000, "Request timed out", responsePromise)
+    }
+    catch(err) {
+      if (err.message == "Request timed out") {
+        console.warn("Request timed out, assuming phone connection lost")
+        conn.close()
+      }
+      throw err
+    }
+    finally {
+      pendingRequests.delete(req.id)
+    }
+  }
+  this.speak = function(text, options, onEvent) {
+    if (!conn) {
+      onEvent({type: "error", error: new Error(JSON.stringify({code: "error_phone_not_connected"}))})
+      return
+    }
+    sendRequest({
+        method: "speak",
+        text,
+        options: {
+          lang: options.lang,
+          rate: options.rate,
+          pitch: options.pitch,
+          volume: options.volume
+        }
+      })
+      .then(({speechId}) => {
+        onEvent({type: "start", charIndex: 0})
+        isSpeaking = true
+        sendRequest({method: "waitFinish", speechId}, 3*60*1000)
+          .then(() => onEvent({type: "end", charIndex: text.length}),
+            err => {
+              if (err.message != "interrupted") onEvent({type: "error", error: err})
+            })
+          .finally(() => isSpeaking = false)
+      })
+      .catch(err => {
+        if (err.message != "canceled") onEvent({type: "error", error: err})
+      })
+  }
+  this.stop = function() {
+    if (!conn) return;
+    sendRequest({method: "stop"}).catch(console.error)
+  }
+  this.pause = function() {
+    sendRequest({method: "pause"}).catch(console.error)
+  }
+  this.resume = function() {
+    sendRequest({method: "resume"}).catch(console.error)
+  }
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking)
+  }
+  this.getVoices = function() {
+    return [
+      {voiceName: "Use My Phone", remote: false, isUseMyPhone: true},
+    ]
   }
 }

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Connect Phone</title>
+
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <style>
+      .container {
+        min-width: 400px;
+        padding-bottom: 15px;
+      }
+      h2 {
+        margin-top: 15px;
+        margin-bottom: 20px;
+      }
+      .spinner {
+        display: inline-block;
+        vertical-align: middle;
+        border: 3px solid #333;
+        border-top: 3px solid rgba(0,0,0,0);
+        border-radius: 50%;
+        box-sizing: border-box;
+        width: 16px;
+        height: 16px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      #state-loading, #state-pairing, #state-success, #state-fail {
+        display: none;
+      }
+      #pairing-domain {
+        font-weight: bold;
+        color: blue;
+      }
+      #pairing-code {
+        font-size: 2em;
+        font-weight: bold;
+        color: #888;
+      }
+    </style>
+
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="js/defaults.js"></script>
+    <script src="js/connect-phone.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <button type="button" class="close" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <h2>Use My Phone</h2>
+
+      <div id="state-loading">
+        <div class="spinner"></div>
+      </div>
+      <div id="state-pairing">
+        <p>Open https://<span id="pairing-domain">readaloud.link</span> on your phone and enter this pairing code:</p>
+        <span id="pairing-code"></span>
+      </div>
+      <div id="state-success">
+        Pairing successful.
+      </div>
+      <div id="state-fail">
+        Pairing unsuccessful.
+        <span id="try-again-button" class="link">Try again</span>
+      </div>
+    </div>
+  </body>
+</html>
