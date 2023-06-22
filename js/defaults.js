@@ -822,6 +822,25 @@ function escapeHtml(text) {
   })
 }
 
+function unescapeHtmlEntities(text) {
+  const named = {
+    nbsp: 160,
+    lt: 60,
+    gt: 62,
+    amp: 38,
+    quot: 34,
+    apos: 39,
+  }
+  return text.replace(/&(?:[a-z]{2,4}|#\d{2,4}|#x[0-9a-fA-F]{2,5});/g, token => {
+    if (token.startsWith("&#x")) return String.fromCodePoint(Number.parseInt(token.slice(3,-1), 16))
+    else if (token.startsWith("&#")) return String.fromCodePoint(Number.parseInt(token.slice(2,-1)))
+    else {
+      const codePoint = named[token.slice(1,-1)]
+      return codePoint ? String.fromCodePoint(codePoint) : token
+    }
+  })
+}
+
 function getUniqueClientId() {
   return getSettings(["uniqueClientId"])
     .then(function(settings) {
