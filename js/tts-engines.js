@@ -1205,16 +1205,14 @@ function PhoneTtsEngine() {
     const peer = new Peer("readaloud-" + getPairingCode(), {debug: 2})
     await new Promise((f,r) => peer.once("open", f).once("error", r))
     peer.on("connection", newConn => {
-      if (conn) conn.close()
-      conn = newConn
       const makeError = reason => new Error(JSON.stringify({code: "error_phone_disconnected", reason}))
-      conn.readyPromise = new Promise((fulfill, reject) => {
-        conn.once("open", fulfill)
+      newConn.readyPromise = new Promise((fulfill, reject) => {
+        newConn.once("open", fulfill)
           .once("error", err => reject(makeError(err.message || err)))
       })
-      conn.once("close", () => conn.readyPromise = Promise.reject(makeError("Connection lost")))
-      conn.on("error", console.error)
-      conn.on("data", res => {
+      newConn.once("close", () => newConn.readyPromise = Promise.reject(makeError("Connection lost")))
+      newConn.on("error", console.error)
+      newConn.on("data", res => {
         const pending = pendingRequests.get(res.id)
         if (pending) {
           if (res.error) pending.reject(new Error(res.error))
@@ -1224,6 +1222,12 @@ function PhoneTtsEngine() {
           console.warn("Response received but no pending request", res)
         }
       })
+      newConn.peerConnection.addEventListener("connectionstatechange", () => {
+        //https://bugs.chromium.org/p/chromium/issues/detail?id=982793#c15
+        if (newConn.peerConnection.connectionState == "failed") newConn.close()
+      })
+      if (conn) conn.close()
+      conn = newConn
     })
     window.addEventListener("beforeunload", () => peer.destroy())
     return peer
@@ -1246,7 +1250,7 @@ function PhoneTtsEngine() {
     conn.send(req)
     const responsePromise = new Promise((fulfill, reject) => pendingRequests.set(req.id, {fulfill, reject}))
     try {
-      return await promiseTimeout(timeout || 7000, "Request timed out", responsePromise)
+      return await promiseTimeout(timeout || 5000, "Request timed out", responsePromise)
     }
     catch(err) {
       if (err.message == "Request timed out") {
