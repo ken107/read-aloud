@@ -6,13 +6,16 @@ var messageParser = {
       case "multipart/mixed":
       case "multipart/digest":
       case "multipart/parallel": {
-        return Promise.all(messagePart.parts.map(x => this.getPartTexts(x)))
+        return messagePart.parts.map(x => this.getPartTexts(x))
       }
       case "multipart/alternative": {
         var part = messagePart.parts.find(x => x.contentType.startsWith("text/plain"))
         if (part) return this.parseTextBody(part.body)
         part = messagePart.parts.find(x => x.contentType.startsWith("text/html"))
-        if (part) return this.parseHtmlBody(part.body)
+        if (part) {
+          const doc = this.domParser.parseFromString(part.body, part.contentType)
+          return this.parseTextBody(doc.body.innerText)
+        }
         return []
       }
       case "text/plain": {
@@ -27,6 +30,7 @@ var messageParser = {
       }
       default: {
         console.warn("Ignoring part with contentType", messagePart.contentType)
+        return []
       }
     }
   },
