@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.63.1",
+  "version": "1.63.2",
   "default_locale": "en",
   "browser_specific_settings": {
     "gecko": {
@@ -31,6 +31,7 @@
     "menus",
     "identity",
     "messagesRead",
+    "sensitiveDataUpload",
     "storage",
     "https://translate.google.com/*"
   ],
