@@ -22,6 +22,7 @@ var config = {
   unsupportedSites: [
     'https://chrome.google.com/webstore',
     'https://addons.mozilla.org',
+    'moz-extension://',
   ],
   wavenetPerms: {
     permissions: ["webRequest"],

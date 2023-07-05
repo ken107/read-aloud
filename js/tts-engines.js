@@ -206,7 +206,9 @@ function RemoteTtsEngine(serviceUrl) {
       isSpeaking = false;
     };
     audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
+      var message = audio.error.message
+      if (/^Failed to (open|decode) media/.test(message)) message += " " + audio.src
+      onEvent({type: "error", errorMessage: message});
       isSpeaking = false;
     };
     audio.load();
