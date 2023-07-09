@@ -200,7 +200,16 @@ var contentHandlers = [
   // Adobe Acrobat extension -------------------------------------------------
   {
     match: url => url.startsWith("chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/"),
-    validate: tab => openPdfViewer(tab.id, tab.url.substr(52)),
+    async validate(tab) {
+      const pdfUrl = tab.url.substr(52)
+      if (pdfUrl.startsWith("file://")) {
+        await setTabUrl(tab.id, config.pdfViewerUrl)
+        throw new Error(JSON.stringify({code: "error_upload_pdf"}))
+      }
+      else {
+        await openPdfViewer(tab.id, pdfUrl)
+      }
+    },
     getSourceUri: () => "pdfviewer:",
   },
 
