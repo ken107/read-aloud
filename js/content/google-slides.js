@@ -20,7 +20,9 @@ var readAloudDoc = new function() {
         simulateClick(slide);
         scroller.scrollTop = $(slide).offset().top - $(scroller.firstChild).offset().top;
       }
-      return getTexts(slide);
+      const texts = getTexts(slide)
+      texts.unshift("Slide " + (index +1) + ".")
+      return texts
     }
     else return null;
   }
@@ -41,7 +43,7 @@ var readAloudDoc = new function() {
   }
 
   function getCurrentSlide() {
-    return $(".punch-filmstrip-thumbnail-background[fill]").parent().get(0);
+    return $(".punch-filmstrip-thumbnail-border[style^=stroke]").parent().get(0);
   }
 
   function createOptionsPanel() {

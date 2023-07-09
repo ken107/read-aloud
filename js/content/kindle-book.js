@@ -13,7 +13,7 @@ var readAloudDoc = new function() {
   }
 
   function getTexts() {
-    const img = $(".kg-full-page-img").get(0)
+    const img = $(".kg-full-page-img > img").get(0)
     const canvas = document.createElement("canvas")
     canvas.width = img.width
     canvas.height = img.height
