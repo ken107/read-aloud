@@ -1310,7 +1310,7 @@ function PhoneTtsEngine() {
   }
   this.getVoices = function() {
     return [
-      {voiceName: "Use My Phone", remote: false, isUseMyPhone: true},
+      {voiceName: "Use My Phone", localService: true, isUseMyPhone: true},
     ]
   }
 }

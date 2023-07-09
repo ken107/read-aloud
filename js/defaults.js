@@ -146,7 +146,7 @@ function getVoices() {
 }
 
 function isOfflineVoice(voice) {
-  return voice.remote == false
+  return voice.localService == true
 }
 
 function isGoogleNative(voice) {
