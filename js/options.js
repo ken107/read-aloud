@@ -152,16 +152,30 @@ function populateVoices(allVoices, settings) {
 
   //group by standard/premium
   var groups = Object.assign({
+      offline: [],
       premium: [],
       standard: [],
     },
     voices.groupBy(function(voice) {
+      if (isOfflineVoice(voice)) return "offline"
       if (isPremiumVoice(voice)) return "premium";
       else return "standard";
     }))
   for (var name in groups) groups[name].sort(voiceSorter);
 
+  //create the offline optgroup
+  const offline = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_offline"))
+    .appendTo($("#voices"))
+  for (const voice of groups.offline) {
+    $("<option>")
+      .val(voice.voiceName)
+      .text(voice.voiceName)
+      .appendTo(offline)
+  }
+
   //create the standard optgroup
+  $("<optgroup>").appendTo($("#voices"))
   var standard = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_standard"))
     .appendTo($("#voices"));

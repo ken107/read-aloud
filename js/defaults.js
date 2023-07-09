@@ -313,6 +313,10 @@ function getVoices() {
     })
 }
 
+function isOfflineVoice(voice) {
+  return voice.localService == true
+}
+
 function isGoogleNative(voice) {
   return /^Google\s/.test(voice.voiceName);
 }
@@ -377,7 +381,8 @@ function getSpeechVoice(voiceName, lang) {
       //otherwise, auto-select
       voices = voices.filter(negate(isUseMyPhone))    //do not auto-select "Use My Phone"
       if (!voice && lang) {
-        voice = findVoiceByLang(voices.filter(isGoogleNative), lang)
+        voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
+          || findVoiceByLang(voices.filter(isGoogleNative), lang)
           || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
           || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
           || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
