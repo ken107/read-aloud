@@ -234,10 +234,6 @@ input[type=checkbox], input[type=radio] {
   margin-top: 1.5em;
 }
 
-#rate-edit-button > i, #languages-edit-button > i {
-  font-size: 12px;
-}
-
 #rate-input-div {
   display: none;
 }
