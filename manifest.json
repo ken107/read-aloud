@@ -51,6 +51,7 @@
   "content_security_policy": "script-src 'self'; object-src 'self'",
   "background": {
     "scripts": [
+      "js/peerjs-1.4.7.min.js",
       "js/defaults.js",
       "js/messaging.js",
       "js/google-translate.js",

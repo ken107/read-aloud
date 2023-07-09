@@ -125,6 +125,9 @@ function handleError(err) {
         case "#open-pdf-viewer":
           brapi.tabs.create({url: config.pdfViewerUrl})
           break
+        case "#connect-phone":
+          location.href = "connect-phone.html"
+          break
       }
     })
 

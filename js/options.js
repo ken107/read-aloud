@@ -213,6 +213,7 @@ function voiceSorter(a, b) {
     var weight = 0
     if (isRemoteVoice(voice)) weight += 10
     if (!isReadAloudCloud(voice)) weight += 1
+    if (isUseMyPhone(voice)) weight += 1
     return weight
   }
   return getWeight(a)-getWeight(b) || a.voiceName.localeCompare(b.voiceName)
@@ -288,6 +289,9 @@ function handleError(err) {
               $("#test-voice").click();
             })
           break;
+        case "#connect-phone":
+          location.href = "connect-phone.html"
+          break
       }
     })
   }

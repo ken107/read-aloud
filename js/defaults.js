@@ -228,6 +228,11 @@ if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').match
 /**
  * HELPERS
  */
+function lazy(get) {
+  var value
+  return () => value || (value = get())
+}
+
 function getQueryString() {
   return location.search ? parseQueryString(location.search) : {};
 }
@@ -300,6 +305,7 @@ function getVoices() {
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : [],
         ibmWatsonTtsEngine.getVoices(),
+        phoneTtsEngine.getVoices(),
       ])
     })
     .then(function(arr) {
@@ -343,6 +349,10 @@ function isIbmWatson(voice) {
   return /^IBM-Watson /.test(voice.voiceName);
 }
 
+function isUseMyPhone(voice) {
+  return voice.isUseMyPhone == true
+}
+
 function isRemoteVoice(voice) {
   return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
 }
@@ -357,11 +367,15 @@ function getSpeechVoice(voiceName, lang) {
       var voices = res[0];
       var preferredVoiceByLang = res[1].preferredVoices || {};
       var voice;
+      //if a specific voice is indicated
       if (voiceName) voice = findVoiceByName(voices, voiceName);
+      //if no specific voice indicated, but a preferred voice was configured for the language
       if (!voice && lang) {
         voiceName = preferredVoiceByLang[lang.split("-")[0]];
         if (voiceName) voice = findVoiceByName(voices, voiceName);
       }
+      //otherwise, auto-select
+      voices = voices.filter(negate(isUseMyPhone))    //do not auto-select "Use My Phone"
       if (!voice && lang) {
         voice = findVoiceByLang(voices.filter(isGoogleNative), lang)
           || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
@@ -1406,4 +1420,28 @@ function truncateRepeatedChars(text, max) {
   }
   if (count < max) result += text.slice(startIndex)
   return result
+}
+
+/**
+ * Repeat an action
+ * @param {Object} opt - options
+ * @param {Function} opt.action - action to repeat
+ * @param {Function} opt.until - termination condition
+ * @param {Number} opt.delay - delay between actions
+ * @param {Number} opt.max - maximum number of repetitions
+ * @returns {Promise}
+ */
+function repeat(opt) {
+  if (!opt || !opt.action) throw new Error("Missing action")
+  return iter(1)
+  function iter(n) {
+    return Promise.resolve()
+      .then(opt.action)
+      .then(function(result) {
+        if (opt.until && opt.until(result)) return result
+        if (opt.max && n >= opt.max) return result
+        if (!opt.delay) return iter(n+1)
+        return new Promise(function(f) {setTimeout(f, opt.delay)}).then(iter.bind(null, n+1))
+      })
+  }
 }

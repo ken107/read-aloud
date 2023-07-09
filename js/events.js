@@ -39,6 +39,12 @@ var handlers = {
   getPlaybackError: function() {
     if (playbackError) return {message: playbackError.message}
   },
+  startPairing: function() {
+    return phoneTtsEngine.startPairing()
+  },
+  isPaired: function() {
+    return phoneTtsEngine.isPaired()
+  },
 }
 
 brapi.runtime.onMessage.addListener(

@@ -125,6 +125,12 @@
   "error_user_gesture_required": {
     "message": "Click [here](user-gesture) to start"
   },
+  "error_phone_not_connected": {
+    "message": "Phone not connected. [Connect](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Phone disconnected ({reason}). [Reconnect](connect-phone)"
+  },
   "languages_heading": {
     "message": "Language Options"
   },
