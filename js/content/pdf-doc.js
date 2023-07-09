@@ -1,60 +1,95 @@
 
-var readAloudDoc = new function() {
-  var queue = new EventQueue("PdfDoc");
-  var ready = location.pathname.match(/pdf-upload\.html$/)
-    ? Promise.resolve()
-    : Promise.resolve()
+var readAloudDoc = location.pathname.match(/readaloud\.html$/) ? new Standalone() : new Embedded()
+
+
+function Embedded() {
+  const pdfViewerUrl = new URL("https://assets.lsdsoftware.com/read-aloud/pdf-viewer-2/web/readaloud.html?embedded")
+  const ready = Promise.resolve()
         .then(function() {
           var url = location.href
           console.info("Trying location.href", url)
           return tryLoadPdf(url)
-            .then(loadPdfViewer.bind(null, url))
         })
         .catch(function(err) {
           var url = $("embed[type='application/pdf']").attr("src")
           if (!url || url == "about:blank") throw err
           console.info("Trying embed", url)
           return tryLoadPdf(url)
-            .then(loadPdfViewer.bind(null, url))
         })
         .catch(function(err) {
           var url = $("iframe[src*='.pdf']").attr("src")
           if (!url) throw err
           console.info("Trying iframe", url)
           return tryLoadPdf(url)
-            .then(loadPdfViewer.bind(null, url))
         })
+        .then(loadViewer)
         .catch(function() {
           throw new Error(JSON.stringify({code: "error_ajax_pdf"}))
         })
 
-  function tryLoadPdf(url) {
-    return new Promise(function(fulfill, reject) {
-        var xhr = new XMLHttpRequest()
-        xhr.open("GET", url, true)
-        xhr.onreadystatechange = function() {
-          if (xhr.readyState == XMLHttpRequest.HEADERS_RECEIVED) {
-            if (xhr.status == 200 && /application\/pdf/.test(xhr.getResponseHeader("Content-Type"))) {
-              xhr.abort()
-              fulfill()
-            }
-            else reject("Non-OK status")
-          }
-        }
-        xhr.onerror = reject
-        xhr.send()
-      })
+  async function tryLoadPdf(url) {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error("Non-OK status")
+    const contentType = res.headers.get("Content-Type")
+    if (!/application\/pdf/.test(contentType)) throw new Error("Non-PDF content")
+    return await res.arrayBuffer()
   }
 
-  function loadPdfViewer(url) {
-    return new Promise(function(fulfill) {
-        queue.once("pageScriptLoaded", function() {
-          queue.trigger("loadDocument", url);
-        })
-        queue.once("documentLoaded", fulfill);
-        loadPageScript("https://assets.lsdsoftware.com/read-aloud/page-scripts/pdf-viewer.js");
-      })
+  async function loadViewer(buffer) {
+    const frame = createViewerFrame(pdfViewerUrl.href)
+    var queue
+    await new Promise(f => queue = new MessageQueue(frame.contentWindow, pdfViewerUrl.origin, {viewerReady: f}))
+    await queue.send({method: "loadDocument", buffer: buffer}, [buffer])
+    return queue
   }
+
+  function createViewerFrame(url) {
+    const frame = document.createElement("iframe")
+    frame.src = url
+    frame.style.position = "fixed"
+    frame.style.top = "0"
+    frame.style.left = "0"
+    frame.style.width = "100%"
+    frame.style.height = "100%"
+    frame.style.zIndex = "999000"
+    frame.style.borderWidth = "0"
+    document.body.appendChild(frame)
+    return frame
+  }
+
+  this.getCurrentIndex = function() {
+    return ready
+      .then(queue => queue.send({method: "getCurrentIndex"}))
+      .then(res => res.value)
+  }
+  this.getTexts = function(index, quietly) {
+    return ready
+      .then(queue => queue.send({method: "getTexts", index: index, quietly: quietly}))
+      .then(res => res.value)
+  }
+
+  function MessageQueue(targetWindow, targetOrigin, handlers) {
+    const pending = {}
+    window.addEventListener("message", event => {
+      if (event.origin == targetOrigin) {
+        if (handlers[event.data.method]) handlers[event.data.method](event.data)
+        else if (pending[event.data.id]) pending[event.data.id](event.data)
+        else console.error("Unhandled", event)
+      }
+    })
+    this.send = function(message, transfer) {
+      message.id = Math.random()
+      targetWindow.postMessage(message, targetOrigin, transfer)
+      return new Promise(f => pending[message.id] = f)
+        .finally(() => delete pending[message.id])
+    }
+  }
+}
+
+
+function Standalone() {
+  var queue = new EventQueue("PdfDoc");
+  var ready = new Promise(f => queue.once("documentLoaded", f).trigger("loadDocument"))
 
   this.getCurrentIndex = function() {
     return ready.then(function() {

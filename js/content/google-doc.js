@@ -1,32 +1,29 @@
 
-var readAloudDoc = $(".kix-paragraphrenderer").length ? new ReadAloudDoc() : new DummyReadAloudDoc();
+var readAloudDoc = (function() {
+  if ($(".kix-canvas-tile-content > svg").length) return new SvgReadAloudDoc()
+  if ($(".kix-paragraphrenderer").length) return new LegacyReadAloudDoc()
+  return new AddonReadAloudDoc()
+})();
 
 
-function DummyReadAloudDoc() {
+async function altGetTexts() {
+  const text = Array.from(document.body.children)
+    .filter(el => el.tagName == "SCRIPT")
+    .map(el => el.innerText)
+    .filter(text => text.startsWith("DOCS_modelChunk = ") && text.endsWith("; DOCS_modelChunkLoadStart = new Date().getTime(); _getTimingInstance().incrementTime('mp', DOCS_modelChunkLoadStart - DOCS_modelChunkParseStart); DOCS_warmStartDocumentLoader.loadModelChunk(DOCS_modelChunk); DOCS_modelChunk = undefined;"))
+    .map(text => text.slice(18, -237))
+    .map(JSON.parse)
+    .map(data => data[0].s)
+    .join("")
+    .trim()
+  if (!text) throw new Error("No text found")
+  return text.split(/\s*\r?\n\s*/)
+}
+
+
+
+function AddonReadAloudDoc() {
   var addonFailed = false
-  var altTextsPromise
-
-  function altGetTexts() {
-    if (altTextsPromise) return altTextsPromise
-    return altTextsPromise = new Promise(function(fulfill, reject) {
-      var listener = function(event) {
-        if (event.data.type == "ReadAloudText") {
-          window.removeEventListener("message", listener)
-          if (event.data.error) reject(new Error(event.data.error))
-          else fulfill(event.data.texts)
-        }
-      }
-      window.addEventListener("message", listener)
-      loadPageScript("https://assets.lsdsoftware.com/read-aloud/page-scripts/google-doc.js")
-    })
-    .then(function(texts) {
-      altTextsPromise = null
-      return texts
-    })
-  }
-
-
-
   var $popup = createPopup();
   var cache = {expires: 0}
   var shouldShowPopupOnError = new WeakMap()
@@ -45,13 +42,11 @@ function DummyReadAloudDoc() {
       .then(function(result) {
         addonFailed = false
         return result
-      })
-      .catch(function(err) {
+      },
+      function(err) {
         addonFailed = true
         return altGetTexts()
-          .then(function(texts) {
-            return 0
-          })
+          .then(() => 0)
           .catch(function() {
             if (shouldShowPopupOnError.has(err)) showPopup()
             throw err
@@ -61,10 +56,7 @@ function DummyReadAloudDoc() {
 
   this.getTexts = function(index) {
     if (addonFailed) {
-      return altGetTexts()
-        .then(function(texts) {
-          return index == 0 ? texts : null
-        })
+      return index == 0 ? altGetTexts() : null
     }
     return invoke({method: "ra-getTexts", index: index})
   }
@@ -225,14 +217,14 @@ function DummyReadAloudDoc() {
         padding: "1em",
         borderRadius: ".5em",
       })
-    return $popup;
+    return $popup.hide();
   }
 }
 
 
 
 
-function ReadAloudDoc() {
+function LegacyReadAloudDoc() {
   var viewport = $(".kix-appview-editor").get(0);
   var pages = $(".kix-page");
 
@@ -337,5 +329,154 @@ function ReadAloudDoc() {
     return line.nextElementSibling ||
       line.parentNode.nextElementSibling && line.parentNode.nextElementSibling.firstElementChild ||
       $(line).closest(".kix-page").next().find(".kix-page-content-wrapper .kix-lineview").get(0)
+  }
+}
+
+
+
+
+function SvgReadAloudDoc() {
+  var currentPageMarker, currentPageNumber
+  const $pagelessInstructionPopup = createPagelessInstructionPopup()
+
+  this.getCurrentIndex = function() {
+    currentPageMarker = markPage(getCurrentlyVisiblePage(getPages()))
+    return currentPageNumber = 1000
+  }
+
+  this.getTexts = async function(nextPageNumber, quietly) {
+    var pages = getPages(), head = 0, tail = pages.length-1
+
+    // find index of current page and next page
+    const currentIndex = pages.findIndex(currentPageMarker.matches)
+    if (currentIndex == -1) return null
+    var nextIndex = currentIndex + (nextPageNumber - currentPageNumber)
+
+    // if the next page is not loaded and is an earlier page
+    if (nextIndex < head) {
+      pages[head].scrollIntoView(); await waitMillis(500)
+      nextIndex -= head
+      const headMarker = markPage(pages[head])
+      pages = getPages()
+      nextIndex += pages.findIndex(headMarker.matches)
+      if (outOfBounds(nextIndex, pages)) return null
+    }
+
+    // if the next page is not loaded and is a later page
+    if (nextIndex > tail) {
+      pages[tail].scrollIntoView(false); await waitMillis(500)
+      nextIndex -= tail
+      const tailMarker = markPage(pages[tail])
+      pages = getPages()
+      nextIndex += pages.findIndex(tailMarker.matches)
+      if (outOfBounds(nextIndex, pages)) return null
+    }
+
+    // set next page as current
+    const currentPage = pages[nextIndex]
+    currentPageMarker = markPage(currentPage)
+    currentPageNumber = nextPageNumber
+
+    // scroll into view and return text
+    if (!quietly) currentPage.scrollIntoView()
+    return $("svg > g[role=paragraph]", currentPage).get()
+      .map(para => {
+        return $(para).children("rect").get()
+          .map(el => el.getAttribute("aria-label"))
+          .filter(makeDeduper())
+          .join(" ")
+      })
+  }
+
+  this.getSelectedText = function() {
+    const overlaps = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+    const page = getCurrentlyVisiblePage(getPages())
+    const selectionRects = $(".kix-canvas-tile-selection > svg > rect", page).get()
+      .map(el => el.getBoundingClientRect())
+    return $("svg > g[role=paragraph] > rect", page).get()
+      .map(el => ({el: el, rect: el.getBoundingClientRect()}))
+      .filter(item => selectionRects.some(rect => overlaps(item.rect, rect)))
+      .map(item => item.el.getAttribute("aria-label"))
+      .filter(makeDeduper())
+      .join(" ")
+  }
+
+  function getPages() {
+    if (!$(".kix-page-paginated").length) {
+      $pagelessInstructionPopup.show(); $(document.body).one("click", () => $pagelessInstructionPopup.hide())
+      throw new Error("Cannot read aloud Google Docs in 'Pageless' mode")
+    }
+    return $(".kix-page-paginated").get()
+      .map(page => ({page: page, top: page.getBoundingClientRect().top}))
+      .sort((a,b) => a.top-b.top)
+      .map(item => item.page)
+  }
+
+  function getCurrentlyVisiblePage(pages) {
+    const halfHeight = $(window).height() / 2
+    for (var i=pages.length-1; i>=0; i--) if (pages[i].getBoundingClientRect().top < halfHeight) return pages[i]
+    throw new Error("Can't get the currently visible page")
+  }
+
+  function markPage(page) {
+    const top = page.style.top
+    return {
+      matches: x => x.style.top == top
+    }
+  }
+
+  function outOfBounds(index, arr) {
+    return index < 0 || index >= arr.length
+  }
+
+  function makeDeduper() {
+    let prev
+    return function(text) {
+      if (text == prev) return false
+      prev = text
+      return true
+    }
+  }
+
+  function createPagelessInstructionPopup() {
+    const $anchor = $("#docs-file-menu")
+    const anchorOffset = $anchor.offset()
+    const anchorDimension = {
+      width: $anchor.outerWidth(),
+      height: $anchor.outerHeight()
+    }
+    const $popup = $("<div>")
+      .appendTo(document.body)
+      .css({
+        position: "absolute",
+        left: anchorOffset.left + anchorDimension.width/2 - 300,
+        top: anchorOffset.top + anchorDimension.height,
+        width: 600,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        zIndex: 999000,
+        fontSize: "larger",
+      })
+    $("<div>")
+      .appendTo($popup)
+      .css({
+        width: 0,
+        height: 0,
+        borderLeft: ".5em solid transparent",
+        borderRight: ".5em solid transparent",
+        borderBottom: ".5em solid #333",
+      })
+    $("<div>")
+      .appendTo($popup)
+      .html("Read Aloud doesn't work in 'Pageless' mode. Please go to Page Setup and change to 'Pages' mode and try again.")
+      .css({
+        marginLeft: 10 - Math.min(0, anchorOffset.left + anchorDimension.width/2 - 300),
+        backgroundColor: "#333",
+        color: "#fff",
+        padding: "1em",
+        borderRadius: ".5em",
+      })
+    return $popup.hide()
   }
 }

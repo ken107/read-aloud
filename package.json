@@ -6,7 +6,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "package": "zip -u -r build/package.zip _locales css img js sound *.html manifest.json || true",
+    "package": "zip -u -r build/package.zip _locales css img js sound *.html manifest.json background.js || true",
     "sync-page-scripts": "rsync -avz js/messaging.js page-scripts/ && aws s3 sync --delete --metadata-directive REPLACE --cache-control max-age=14400,public page-scripts s3://lsdsoftware-assets/read-aloud/page-scripts"
   },
   "repository": {
@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/ken107/read-aloud/issues"
   },
-  "homepage": "https://readaloud.app"
+  "homepage": "https://readaloud.app",
+  "devDependencies": {
+    "@google-cloud/translate": "^7.0.5"
+  }
 }

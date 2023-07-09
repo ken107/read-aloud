@@ -13,6 +13,8 @@ function Speech(texts, options) {
   var ready = Promise.resolve(pickEngine())
     .then(function(x) {
       engine = x;
+    })
+    .then(function() {
       if (texts.length) texts = getChunks(texts.join("\n\n"));
     })
 
@@ -28,6 +30,8 @@ function Speech(texts, options) {
   this.gotoEnd = gotoEnd;
 
   function pickEngine() {
+    if (isUseMyPhone(options.voice)) return phoneTtsEngine;
+    if (isNvidiaRiva(options.voice)) return nvidiaRivaTtsEngine;
     if (isGoogleTranslate(options.voice) && !/\s(Hebrew|Telugu)$/.test(options.voice.voiceName)) {
       return googleTranslateTtsEngine.ready()
         .then(function() {return googleTranslateTtsEngine})
@@ -86,8 +90,13 @@ function Speech(texts, options) {
     }
     else if (state == "PAUSED") {
       state = "PLAYING";
-      engine.resume();
-      return Promise.resolve();
+      return Promise.resolve()
+        .then(() => engine.resume())
+        .catch(err => {
+          console.error("Couldn't resume", err)
+          state = "IDLE"
+          return play()
+        })
     }
     else {
       state = new String("PLAYING");
@@ -172,10 +181,11 @@ function Speech(texts, options) {
 
   function seek(n) {
     index = n;
-    return play();
+    return stop().then(play)
   }
 
-  function gotoEnd() {
+  async function gotoEnd() {
+    await ready
     index = texts.length && texts.length-1;
   }
 
@@ -200,12 +210,14 @@ function Speech(texts, options) {
           }
         }
         else if (event.type == "error") {
-          if (state == "IDLE") {
-            reject(new Error(event.errorMessage || "Unknown TTS error"));
+          if (event.error.message == "Aborted") {
+          }
+          else if (state == "IDLE") {
+            reject(event.error);
             state = "ERROR";
           }
           else if (state == "STARTED") {
-            onError(new Error(event.errorMessage || "Unknown TTS error"));
+            onError(event.error);
             state = "ERROR";
           }
         }

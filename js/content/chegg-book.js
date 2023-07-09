@@ -28,7 +28,7 @@ var readAloudDoc = new function() {
   function waitFrameChange(oldEl) {
     return repeat({
       action: function() {return $(".pf").get(0)},
-      until: function(el) {return el && el != oldEl},
+      until: function(el) {return el && el.id && el.id != oldEl.id},
       max: 20,
       delay: 500
     })

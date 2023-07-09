@@ -2,20 +2,11 @@
 var brapi = browser;
 
 (function() {
-  var port = brapi.runtime.connect({name: "ReadAloudContentScript"});
-  var peer = new RpcPeer(new ExtensionMessagingPeer(port));
-  peer.onInvoke = function(method) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    var handlers = {
-      getCurrentIndex: getCurrentIndex,
-      getTexts: getTexts
-    }
-    if (handlers[method]) return handlers[method].apply(handlers, args);
-    else console.error("Unknown method", method);
-  }
-  if (document.readyState != 'loading') peer.invoke("onReady", getInfo());
-  else $(function() {
-    peer.invoke("onReady", getInfo());
+  registerMessageListener("contentScript", {
+    getRequireJs: getRequireJs,
+    getDocumentInfo: getInfo,
+    getCurrentIndex: getCurrentIndex,
+    getTexts: getTexts
   })
 
   function getInfo() {
@@ -23,7 +14,6 @@ var brapi = browser;
       url: location.href,
       title: document.title,
       lang: getLang(),
-      requireJs: getRequireJs()
     }
   }
 
@@ -34,7 +24,6 @@ var brapi = browser;
   }
 
   function getRequireJs() {
-    if (typeof readAloudDoc != "undefined") return null;
     if (location.hostname == "docs.google.com") {
       if (/^\/presentation\/d\//.test(location.pathname)) return ["js/content/google-slides.js"];
       else if (/\/document\/d\//.test(location.pathname)) return ["js/content/googleDocsUtil.js", "js/content/google-doc.js"];
@@ -54,21 +43,25 @@ var brapi = browser;
     else if (location.hostname == "www.ixl.com") return ["js/content/ixl.js"];
     else if (location.hostname == "www.webnovel.com" && location.pathname.startsWith("/book/")) return ["js/content/webnovel.js"];
     else if (location.hostname == "archiveofourown.org") return ["js/content/archiveofourown.js"];
-    else if (location.pathname.match(/pdf-upload\.html$/)
+    else if (location.pathname.match(/readaloud\.html$/)
       || location.pathname.match(/\.pdf$/)
       || $("embed[type='application/pdf']").length
       || $("iframe[src*='.pdf']").length) return ["js/content/pdf-doc.js"];
+    else if (/^\d+\.\d+\.\d+\.\d+$/.test(location.hostname)
+        && location.port === "1122"
+        && location.protocol === "http:"
+        && location.pathname === "/bookshelf/index.html") return  ["js/content/yd-app-web.js"];
     else return ["js/content/html-doc.js"];
   }
 
-  function getCurrentIndex() {
-    if (getSelectedText()) return -100;
+  async function getCurrentIndex() {
+    if (await getSelectedText()) return -100;
     else return readAloudDoc.getCurrentIndex();
   }
 
-  function getTexts(index, quietly) {
+  async function getTexts(index, quietly) {
     if (index < 0) {
-      if (index == -100) return getSelectedText().split(paragraphSplitter);
+      if (index == -100) return (await getSelectedText()).split(paragraphSplitter);
       else return null;
     }
     else {
@@ -83,7 +76,39 @@ var brapi = browser;
   }
 
   function getSelectedText() {
+    if (readAloudDoc.getSelectedText) return readAloudDoc.getSelectedText()
     return window.getSelection().toString().trim();
+  }
+
+
+  getRemoteConfig()
+    .then(settings => {
+      if (settings.enableContentScriptSilenceTrack)
+        setInterval(updateSilenceTrack.bind(null, Math.random()), 5000)
+    })
+
+  async function updateSilenceTrack(providerId) {
+    if (!audioCanPlay()) return;
+    const silenceTrack = getSilenceTrack()
+    try {
+      const should = await sendToPlayer({method: "shouldPlaySilence", args: [providerId]})
+      if (should) silenceTrack.start()
+      else silenceTrack.stop()
+    }
+    catch (err) {
+      silenceTrack.stop()
+    }
+  }
+
+  function audioCanPlay() {
+    return navigator.userActivation && navigator.userActivation.hasBeenActive
+  }
+
+  async function sendToPlayer(message) {
+    message.dest = "player"
+    const result = await brapi.runtime.sendMessage(message)
+    if (result && result.error) throw result.error
+    else return result
   }
 })()
 
@@ -135,12 +160,6 @@ function tryGetTexts(getTexts, millis) {
     })
 }
 
-function waitMillis(millis) {
-  return new Promise(function(fulfill) {
-    setTimeout(fulfill, millis);
-  })
-}
-
 function simulateMouseEvent(element, eventName, coordX, coordY) {
   element.dispatchEvent(new MouseEvent(eventName, {
     view: window,
@@ -161,38 +180,61 @@ function simulateClick(elementToClick) {
   simulateMouseEvent (elementToClick, "click", coordX, coordY);
 }
 
-function getSettings(names) {
-  return new Promise(function(fulfill) {
-    brapi.storage.local.get(names, fulfill);
-  });
-}
+const getMath = (function() {
+  let promise = Promise.resolve(null)
+  return () => promise = promise.then(math => math || makeMath())
+})();
 
-function updateSettings(items) {
-  return new Promise(function(fulfill) {
-    brapi.storage.local.set(items, fulfill);
-  });
-}
+async function makeMath() {
+  const getXmlFromMathEl = function(mathEl) {
+    const clone = mathEl.cloneNode(true)
+    $("annotation, annotation-xml", clone).remove()
+    removeAllAttrs(clone, true)
+    return clone.outerHTML
+  }
 
-/**
- * Repeat an action
- * @param {Object} opt - options
- * @param {Function} opt.action - action to repeat
- * @param {Function} opt.until - termination condition
- * @param {Number} opt.delay - delay between actions
- * @param {Number} opt.max - maximum number of repetitions
- * @returns {Promise}
- */
-function repeat(opt) {
-  if (!opt || !opt.action) throw new Error("Missing action")
-  return iter(1)
-  function iter(n) {
-    return Promise.resolve()
-      .then(opt.action)
-      .then(function(result) {
-        if (opt.until && opt.until(result)) return result
-        if (opt.max && n >= opt.max) return result
-        if (!opt.delay) return iter(n+1)
-        return new Promise(function(f) {setTimeout(f, opt.delay)}).then(iter.bind(null, n+1))
-      })
+  //determine the mml markup
+  const math =
+    when(document.querySelector(".MathJax, .MathJax_Preview"), {
+      selector: ".MathJax[data-mathml]",
+      getXML(el) {
+        const mathEl = el.querySelector("math")
+        return mathEl ? getXmlFromMathEl(mathEl) : el.getAttribute("data-mathml")
+      },
+    })
+    .when(() => document.querySelector("math"), {
+      selector: "math",
+      getXML: getXmlFromMathEl,
+    })
+    .else(null)
+
+  if (!math) return null
+  const elems = $(math.selector).get()
+  if (!elems.length) return null
+
+  //create speech surrogates
+  try {
+    const xmls = elems.map(math.getXML)
+    const texts = await ajaxPost(config.serviceUrl + "/read-aloud/mathml", xmls, "json").then(JSON.parse)
+    elems.forEach((el, i) => $("<span>").addClass("readaloud-mathml").text(texts[i] || "math expression").insertBefore(el))
+  }
+  catch (err) {
+    console.error(err)
+    return {
+      show() {},
+      hide() {}
+    }
+  }
+
+  //return functions to toggle between mml and speech
+  return {
+    show() {
+      for (const el of elems) el.style.setProperty("display", "none", "important")
+      $(".readaloud-mathml").show()
+    },
+    hide() {
+      $(elems).css("display", "")
+      $(".readaloud-mathml").hide()
+    }
   }
 }

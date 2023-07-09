@@ -48,13 +48,11 @@ $(function() {
           })
           .then(window.close)
       }
-      else if (queryString.tab) {
-        return bgPageInvoke("stop")
-          .then(function() {$("#btnPlay").click()})
-      }
       else {
         return bgPageInvoke("getPlaybackState")
-          .then(function(state) {if (state != "PLAYING") $("#btnPlay").click()})
+          .then(function(stateInfo) {
+            if (stateInfo.state == "PAUSED" || stateInfo.state == "STOPPED") $("#btnPlay").click()
+          })
       }
     })
   setInterval(updateButtons, 500);
@@ -64,6 +62,7 @@ $(function() {
 
 function handleError(err) {
   if (!err) return;
+
   if (/^{/.test(err.message)) {
     var errInfo = JSON.parse(err.message);
 
@@ -81,12 +80,14 @@ function handleError(err) {
           }
           requestPermissions(errInfo.perms)
             .then(function(granted) {
-              if (granted) $("#btnPlay").click();
+              if (granted) {
+                if (errInfo.reload) return reloadAndPlay()
+                else $("#btnPlay").click()
+              }
             })
           break;
         case "#sign-in":
-          getBackgroundPage()
-            .then(callMethod("getAuthToken", {interactive: true}))
+          getAuthToken({interactive: true})
             .then(function(token) {
               if (token) $("#btnPlay").click();
             })
@@ -115,22 +116,14 @@ function handleError(err) {
               })
           }
           break;
-        case "#user-gesture":
-          getBackgroundPage()
-            .then(callMethod("userGestureActivate"))
-            .then(function() {
-              $("#btnPlay").click();
-            })
-          break;
         case "#open-pdf-viewer":
           brapi.tabs.create({url: config.pdfViewerUrl})
           break
+        case "#connect-phone":
+          location.href = "connect-phone.html"
+          break
       }
     })
-
-    if (errInfo.code == "error_upload_pdf") {
-      setTabUrl(errInfo.tabId, config.pdfViewerUrl)
-    }
   }
   else {
     $("#status").text(err.message).show();
@@ -141,10 +134,12 @@ function updateButtons() {
     return Promise.all([
       getSettings(),
       bgPageInvoke("getPlaybackState"),
-      bgPageInvoke("getSpeechPosition"),
-      bgPageInvoke("getPlaybackError")
     ])
-  .then(spread(function(settings, state, speechPos, playbackErr) {
+  .then(spread(function(settings, stateInfo) {
+    var state = stateInfo.state
+    var speechPos = stateInfo.speechPosition
+    var playbackErr = stateInfo.playbackError
+
     if (playbackErr) playbackErrorProcessor.next(playbackErr)
 
     $("#imgLoading").toggle(state == "LOADING");
@@ -181,9 +176,26 @@ function updateButtons() {
   }));
 }
 
+var currentPlayRequestId
+
 function onPlay() {
   $("#status").hide();
-  (queryString.tab ? bgPageInvoke("playTab", [Number(queryString.tab)]) : bgPageInvoke("playTab"))
+  const requestId = currentPlayRequestId = Math.random()
+  bgPageInvoke("getPlaybackState")
+    .then(function(stateInfo) {
+      if (stateInfo.state == "PAUSED") return bgPageInvoke("resume")
+      else return bgPageInvoke("playTab", queryString.tab ? [Number(queryString.tab)] : [])
+    })
+    .then(updateButtons)
+    .catch(err => {
+      if (requestId == currentPlayRequestId) handleError(err)
+      else console.debug("Ignoring error from an earlier request", err)
+    })
+}
+
+function reloadAndPlay() {
+  $("#status").hide();
+  bgPageInvoke("reloadAndPlayTab", queryString.tab ? [Number(queryString.tab)] : [])
     .then(updateButtons)
     .catch(handleError)
 }

@@ -14,17 +14,20 @@
   "options_voice_label": {
     "message": "Voce"
   },
+  "options_voicegroup_offline": {
+    "message": "Voci non in linea"
+  },
   "options_voicegroup_standard": {
     "message": "Voci Standard"
   },
   "options_voicegroup_premium": {
     "message": "Voci Premium"
   },
-  "options_enable_premium_voices": {
-    "message": "Abilita Voci Premium"
+  "options_voicegroup_additional": {
+    "message": "Voci aggiuntive"
   },
-  "options_premium_voices_enabled": {
-    "message": "Le voci premium sono abilitate"
+  "options_enable_custom_voices": {
+    "message": "Abilita voci personalizzate"
   },
   "options_rate_label": {
     "message": "Velocità"
@@ -41,11 +44,26 @@
   "options_show_highlighting": {
     "message": "Evidenzia Testo"
   },
+  "options_highlighting_off": {
+    "message": "Spegnere"
+  },
+  "options_highlighting_popup": {
+    "message": "Mostra in popup"
+  },
+  "options_highlighting_window": {
+    "message": "Mostra in una finestra separata"
+  },
+  "options_audio_playback": {
+    "message": "Riproduzione dell&#39;audio"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Usa una scheda separata"
+  },
+  "options_audio_playback_embedded": {
+    "message": "A pag"
+  },
   "options_hotkeys_link": {
     "message": "Modifica i tasti di scelta rapida"
-  },
-  "options_save_button": {
-    "message": "Salva"
   },
   "options_test_button": {
     "message": "Testare"
@@ -53,8 +71,41 @@
   "options_reset_button": {
     "message": "Reset"
   },
-  "options_success_status": {
-    "message": "Modifiche salvate."
+  "options_logged_in_as": {
+    "message": "Collegato come"
+  },
+  "options_account_button": {
+    "message": "Account"
+  },
+  "options_logout_button": {
+    "message": "Disconnettersi"
+  },
+  "player_tab_explanation": {
+    "message": "Leggi ad alta voce utilizza questa scheda per la riproduzione audio. Questa scheda si chiuderà automaticamente dopo 5 minuti di inattività."
+  },
+  "player_hidethistab_link": {
+    "message": "Nascondi questa scheda"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Nascondere questa scheda?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Se nascondi questa scheda, Leggi ad alta voce riprodurrà l&#39;audio all&#39;interno della pagina web corrente. Ciò significa che allontanarsi dalla pagina causerà l&#39;interruzione del discorso. (Questa impostazione può essere ripristinata dalla pagina delle opzioni dell&#39;estensione)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Nascondere"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Annulla"
+  },
+  "player_permission_dialog_title": {
+    "message": "Autorizzazione richiesta"
+  },
+  "player_permission_dialog_body": {
+    "message": "Consenti a Leggi ad alta voce di riprodurre l&#39;audio?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Permettere"
   },
   "context_read_selection": {
     "message": "Leggi il testo selezionato"
@@ -68,14 +119,29 @@
   "error_upload_pdf": {
     "message": "Usa il modulo per caricare il tuo file PDF per leggere ad alta voce"
   },
+  "error_ajax_pdf": {
+    "message": "Salva questo file PDF sul tuo computer e aprilo all&#39;interno di questo [visualizzatore PDF](open-pdf-viewer) per leggerlo ad alta voce"
+  },
   "error_page_unreadable": {
     "message": "Non posso leggere ad alta voce questo sito"
+  },
+  "error_file_access": {
+    "message": "Devi concedere l&#39;accesso Leggi ad alta voce agli URL dei file nell&#39;estensione [settings](open-extension-settings)"
+  },
+  "error_add_permissions": {
+    "message": "Devi concedere Leggi ad alta voce [autorizzazioni](request-permissions) aggiuntive per questo sito web"
   },
   "error_login_required": {
     "message": "[Accedi](sign-in) per utilizzare le voci Premium"
   },
   "error_voice_unavailable": {
     "message": "Voce non disponibile, per favore sceglierne un'altra"
+  },
+  "error_payment_required": {
+    "message": "Senza crediti"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Devi concedere [autorizzazioni](auth-wavenet) aggiuntive per abilitare le voci di Google Wavenet"
   },
   "languages_heading": {
     "message": "Opzioni di lingua"

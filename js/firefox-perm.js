@@ -9,8 +9,8 @@ $(function() {
     brapi.permissions.request(perms, function(granted) {
       if (granted) {
         $("#success").show();
-        if (query.then == "auth-wavenet") getBackgroundPage().then(callMethod("authWavenet")).then(closeThisTab);
-        else if (query.then == "auth-gtranslate") getBackgroundPage().then(callMethod("authGoogleTranslate"))
+        if (query.then == "auth-wavenet") bgPageInvoke("authWavenet").then(closeThisTab).catch(console.error)
+        else if (query.then == "auth-gtranslate") bgPageInvoke("authGoogleTranslate").catch(console.error)
       }
       else $("#error").show();
     })

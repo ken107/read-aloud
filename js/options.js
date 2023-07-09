@@ -20,7 +20,7 @@ function initialize(allVoices, settings) {
     .click(function() {
       getAuthToken({interactive: true})
         .then(function(token) {
-          brapi.tabs.create({url: config.webAppUrl + "/premium-voices.html?t=" + token});
+          return brapi.tabs.create({url: config.webAppUrl + "/premium-voices.html?t=" + token});
         })
         .catch(handleError)
       return false;
@@ -33,7 +33,7 @@ function initialize(allVoices, settings) {
         .then(function() {
           showAccountInfo(null);
         })
-        .catch(console.error)
+        .catch(handleError)
       return false;
     })
 
@@ -95,6 +95,18 @@ function initialize(allVoices, settings) {
     })
 
 
+  //audioPlayback
+  $("#audio-playback")
+    .val(settings.useEmbeddedPlayer ? "true" : "false")
+    .change(function() {
+      saveSettings({useEmbeddedPlayer: JSON.parse($(this).val())})
+        .catch(console.error)
+      brapi.runtime.sendMessage({dest: "player", method: "close"})
+        .catch(err => "OK")
+    })
+  $(".audio-playback-visible").toggle(settings.useEmbeddedPlayer ? true : false)
+
+
   //buttons
   var demoSpeech = {};
   $("#test-voice").click(function() {
@@ -113,10 +125,7 @@ function initialize(allVoices, settings) {
           })
       })
       .then(function(result) {
-        return bgPageInvoke("stop")
-          .then(function() {
             return bgPageInvoke("playText", [result.text, {lang: lang}]);
-          })
       })
       .catch(function(err) {
         handleError(err);
@@ -152,16 +161,30 @@ function populateVoices(allVoices, settings) {
 
   //group by standard/premium
   var groups = Object.assign({
+      offline: [],
       premium: [],
       standard: [],
     },
     voices.groupBy(function(voice) {
+      if (isOfflineVoice(voice)) return "offline"
       if (isPremiumVoice(voice)) return "premium";
       else return "standard";
     }))
   for (var name in groups) groups[name].sort(voiceSorter);
 
+  //create the offline optgroup
+  const offline = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_offline"))
+    .appendTo($("#voices"))
+  for (const voice of groups.offline) {
+    $("<option>")
+      .val(voice.voiceName)
+      .text(voice.voiceName)
+      .appendTo(offline)
+  }
+
   //create the standard optgroup
+  $("<optgroup>").appendTo($("#voices"))
   var standard = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_standard"))
     .appendTo($("#voices"));
@@ -213,6 +236,7 @@ function voiceSorter(a, b) {
     var weight = 0
     if (isRemoteVoice(voice)) weight += 10
     if (!isReadAloudCloud(voice)) weight += 1
+    if (isUseMyPhone(voice)) weight += 1
     return weight
   }
   return getWeight(a)-getWeight(b) || a.voiceName.localeCompare(b.voiceName)
@@ -221,7 +245,8 @@ function voiceSorter(a, b) {
 
 
 function saveSettings(delta) {
-  bgPageInvoke("stop");
+  bgPageInvoke("stop")
+    .catch(err => "OK")
   return updateSettings(delta)
     .then(showConfirmation)
     .then(getSettings)
@@ -250,8 +275,7 @@ function handleError(err) {
     $("#status a").click(function() {
       switch ($(this).attr("href")) {
         case "#sign-in":
-          getBackgroundPage()
-            .then(callMethod("getAuthToken", {interactive: true}))
+          getAuthToken({interactive: true})
             .then(function(token) {
               if (token) {
                 $("#test-voice").click();
@@ -281,13 +305,9 @@ function handleError(err) {
               })
           }
           break;
-        case "#user-gesture":
-          getBackgroundPage()
-            .then(callMethod("userGestureActivate"))
-            .then(function() {
-              $("#test-voice").click();
-            })
-          break;
+        case "#connect-phone":
+          location.href = "connect-phone.html"
+          break
       }
     })
   }
@@ -314,7 +334,8 @@ function createSlider(elem, defaultValue, onChange, onSlideChange) {
   var step = 1 / ($(elem).data("steps") || 20);
   var $bg = $(elem).empty().toggleClass("slider", true);
   var $bar = $("<div class='bar'>").appendTo(elem);
-  var $knob = $("<div class='knob'>").appendTo(elem);
+  var $track = $("<div class='track'>").appendTo(elem);
+  var $knob = $("<div class='knob'>").appendTo($track);
   setPosition((defaultValue-min) / (max-min));
 
   $bg.click(function(e) {
@@ -345,7 +366,7 @@ function createSlider(elem, defaultValue, onChange, onSlideChange) {
     $bar.css("width", percent);
   }
   function calcPosition(e) {
-    var rect = $bg.get(0).getBoundingClientRect();
+    var rect = $track.get(0).getBoundingClientRect();
     var position = (e.clientX - rect.left) / rect.width;
     position = Math.min(1, Math.max(position, 0));
     return step * Math.round(position / step);

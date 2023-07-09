@@ -14,6 +14,9 @@
   "options_voice_label": {
     "message": "Ses"
   },
+  "options_voicegroup_offline": {
+    "message": "Çevrimdışı Sesler"
+  },
   "options_voicegroup_standard": {
     "message": "Standart Sesler"
   },
@@ -22,12 +25,6 @@
   },
   "options_voicegroup_additional": {
     "message": "Ek Sesler"
-  },
-  "options_enable_premium_voices": {
-    "message": "Premium Sesleri Etkinleştirme"
-  },
-  "options_premium_voices_enabled": {
-    "message": "Premium sesler etkinleştirildi"
   },
   "options_enable_custom_voices": {
     "message": "Özel Sesleri Etkinleştirme"
@@ -56,20 +53,23 @@
   "options_highlighting_window": {
     "message": "Ayrı bir pencerede göster"
   },
+  "options_audio_playback": {
+    "message": "Ses Çalma"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Ayrı sekme kullan"
+  },
+  "options_audio_playback_embedded": {
+    "message": "Sayfada"
+  },
   "options_hotkeys_link": {
     "message": "Kısayol tuşlarını düzenle"
-  },
-  "options_save_button": {
-    "message": "Kaydet"
   },
   "options_test_button": {
     "message": "Test"
   },
   "options_reset_button": {
     "message": "Sıfırla"
-  },
-  "options_success_status": {
-    "message": "Değişiklikler kaydedildi."
   },
   "options_logged_in_as": {
     "message": "Olarak oturum açtı"
@@ -79,6 +79,33 @@
   },
   "options_logout_button": {
     "message": "Çıkış Yap"
+  },
+  "player_tab_explanation": {
+    "message": "Sesli Oku, ses çalmak için bu sekmeyi kullanır. Bu sekme, 5 dakika boyunca herhangi bir işlem yapılmadığında otomatik olarak kapanacaktır."
+  },
+  "player_hidethistab_link": {
+    "message": "Bu sekmeyi gizle"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Bu sekme gizlensin mi?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Bu sekmeyi gizlerseniz, Sesli Oku mevcut web sayfasında ses çalar. Bu, sayfadan ayrılmanın konuşmanın durmasına neden olacağı anlamına gelir. (Bu ayar, uzantı Seçenekleri sayfasından geri alınabilir)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Saklamak"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "İptal"
+  },
+  "player_permission_dialog_title": {
+    "message": "İzin İstendi"
+  },
+  "player_permission_dialog_body": {
+    "message": "Sesli Okuma&#39;nın ses çalmasına izin verilsin mi?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "İzin vermek"
   },
   "context_read_selection": {
     "message": "Seçilen metni yüksek sesle oku"
@@ -99,25 +126,22 @@
     "message": "Bu web sitesi sesli okunamıyor"
   },
   "error_file_access": {
-    "message": "[ayarlar](aç-eklentiler-ayarlar) uzantısındaki dosya URL'lerine Sesli Okuma erişimi vermeniz gerekir"
+    "message": "[ayarlar](open-extension-settings) uzantısındaki dosya URL'lerine Sesli Okuma erişimi vermeniz gerekir"
   },
   "error_add_permissions": {
-    "message": "Bu web sitesi için Sesli Okuma ek [izinleri](istek-izinleri) vermeniz gerekiyor"
+    "message": "Bu web sitesi için Sesli Okuma ek [izinleri](request-permissions) vermeniz gerekiyor"
   },
   "error_login_required": {
-    "message": "Premium Sesleri kullanmak için lütfen [oturum açın](oturum açın)"
+    "message": "Premium Sesleri kullanmak için lütfen [oturum açın](sign-in)"
   },
   "error_voice_unavailable": {
     "message": "Ses kullanılamıyor, lütfen başka bir tane seçin"
   },
   "error_payment_required": {
-    "message": "Kredi bitti"
+    "message": "krediler bitti"
   },
   "error_wavenet_auth_required": {
     "message": "Google Wavenet seslerini etkinleştirmek için ek [izinler](auth-wavenet) vermeniz gerekir"
-  },
-  "error_user_gesture_required": {
-    "message": "Başlamak için [burayı](kullanıcı işâretini) tıklayın"
   },
   "languages_heading": {
     "message": "Dil Seçenekleri"

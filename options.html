@@ -38,7 +38,7 @@
       <div>
         <span data-i18n="options_voice_label"></span>
         <button id="languages-edit-button" type="button" class="btn btn-sm btn-light">
-          <i class="material-icons">mode_edit</i>
+          <i class="material-icons">filter_alt</i>
         </button>
       </div>
       <div>
@@ -86,6 +86,14 @@
         <option value="0" data-i18n="options_highlighting_off"></option>
         <option value="1" data-i18n="options_highlighting_popup"></option>
         <option value="2" data-i18n="options_highlighting_window"></option>
+      </select>
+
+      <div class="audio-playback-visible">
+        <span data-i18n="options_audio_playback"></span>
+      </div>
+      <select id="audio-playback" class="form-control audio-playback-visible">
+        <option value="false" data-i18n="options_audio_playback_standalone"></option>
+        <option value="true" data-i18n="options_audio_playback_embedded"></option>
       </select>
     </div>
 
