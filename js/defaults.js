@@ -132,6 +132,8 @@ function getVoices() {
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
         ibmWatsonTtsEngine.getVoices(),
+        nvidiaRivaTtsEngine.getVoices(),
+        phoneTtsEngine.getVoices(),
       ])
     })
     .then(function(arr) {
@@ -179,8 +181,16 @@ function isIbmWatson(voice) {
   return /^IBM-Watson /.test(voice.voiceName);
 }
 
+function isNvidiaRiva(voice) {
+  return /^Nvidia-Riva /.test(voice.voiceName);
+}
+
+function isUseMyPhone(voice) {
+  return voice.isUseMyPhone == true
+}
+
 function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isNvidiaRiva(voice);
 }
 
 function isPremiumVoice(voice) {
@@ -193,11 +203,15 @@ function getSpeechVoice(voiceName, lang) {
       var voices = res[0];
       var preferredVoiceByLang = res[1].preferredVoices || {};
       var voice;
+      //if a specific voice is indicated
       if (voiceName) voice = findVoiceByName(voices, voiceName);
+      //if no specific voice indicated, but a preferred voice was configured for the language
       if (!voice && lang) {
         voiceName = preferredVoiceByLang[lang.split("-")[0]];
         if (voiceName) voice = findVoiceByName(voices, voiceName);
       }
+      //otherwise, auto-select
+      voices = voices.filter(negate(isUseMyPhone))    //do not auto-select "Use My Phone"
       if (!voice && lang) {
         voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
           || findVoiceByLang(voices.filter(isGoogleNative), lang)
@@ -223,19 +237,29 @@ function findVoiceByLang(voices, lang) {
     if (voice.lang) {
       var voiceLang = parseLang(voice.lang);
       if (voiceLang.lang == speechLang.lang) {
+        //language matches
         if (voiceLang.rest == speechLang.rest) {
+          //dialect matches, prefer female
           if (voice.gender == "female") match.first = match.first || voice;
           else match.second = match.second || voice;
         }
-        else if (!voiceLang.rest) match.third = match.third || voice;
+        else if (!voiceLang.rest) {
+          //voice specifies no dialect
+          match.third = match.third || voice;
+        }
         else {
-          if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = voice;
-          else match.fourth = match.fourth || voice;
+          //dialect mismatch, prefer en-US (if english)
+          if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = match.fourth || voice;
+          else match.sixth = match.sixth || voice;
         }
       }
     }
+    else {
+      //voice specifies no language, assume can handle any lang
+      match.fifth = match.fifth || voice;
+    }
   });
-  return match.first || match.second || match.third || match.fourth;
+  return match.first || match.second || match.third || match.fourth || match.fifth || match.sixth;
 }
 
 
@@ -828,4 +852,54 @@ function makeAbortable() {
     abortPromise: new Promise((f,r) => abort = r),
     abort
   }
+}
+
+/**
+ * Repeat an action
+ * @param {Object} opt - options
+ * @param {Function} opt.action - action to repeat
+ * @param {Function} opt.until - termination condition
+ * @param {Number} opt.delay - delay between actions
+ * @param {Number} opt.max - maximum number of repetitions
+ * @returns {Promise}
+ */
+function repeat(opt) {
+  if (!opt || !opt.action) throw new Error("Missing action")
+  return iter(1)
+  function iter(n) {
+    return Promise.resolve()
+      .then(opt.action)
+      .then(function(result) {
+        if (opt.until && opt.until(result)) return result
+        if (opt.max && n >= opt.max) return result
+        if (!opt.delay) return iter(n+1)
+        return new Promise(function(f) {setTimeout(f, opt.delay)}).then(iter.bind(null, n+1))
+      })
+  }
+}
+
+function when(pred, val) {
+  if (typeof pred == "function" ? pred() : pred) {
+    return {
+      when() {
+        return this
+      },
+      else() {
+        return typeof val == "function" ? val() : val
+      }
+    }
+  }
+  else {
+    return {
+      when,
+      else(val) {
+        return typeof val == "function" ? val() : val
+      }
+    }
+  }
+}
+
+function removeAllAttrs(el, recursive) {
+  while (el.attributes.length > 0) el.removeAttribute(el.attributes[0].name)
+  if (recursive) for (const child of el.children) removeAllAttrs(child, true)
 }

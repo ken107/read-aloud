@@ -52,14 +52,14 @@
     else return ["js/content/html-doc.js"];
   }
 
-  function getCurrentIndex() {
-    if (getSelectedText()) return -100;
+  async function getCurrentIndex() {
+    if (await getSelectedText()) return -100;
     else return readAloudDoc.getCurrentIndex();
   }
 
-  function getTexts(index, quietly) {
+  async function getTexts(index, quietly) {
     if (index < 0) {
-      if (index == -100) return getSelectedText().split(paragraphSplitter);
+      if (index == -100) return (await getSelectedText()).split(paragraphSplitter);
       else return null;
     }
     else {
@@ -187,26 +187,61 @@ function simulateClick(elementToClick) {
   simulateMouseEvent (elementToClick, "click", coordX, coordY);
 }
 
-/**
- * Repeat an action
- * @param {Object} opt - options
- * @param {Function} opt.action - action to repeat
- * @param {Function} opt.until - termination condition
- * @param {Number} opt.delay - delay between actions
- * @param {Number} opt.max - maximum number of repetitions
- * @returns {Promise}
- */
-function repeat(opt) {
-  if (!opt || !opt.action) throw new Error("Missing action")
-  return iter(1)
-  function iter(n) {
-    return Promise.resolve()
-      .then(opt.action)
-      .then(function(result) {
-        if (opt.until && opt.until(result)) return result
-        if (opt.max && n >= opt.max) return result
-        if (!opt.delay) return iter(n+1)
-        return new Promise(function(f) {setTimeout(f, opt.delay)}).then(iter.bind(null, n+1))
-      })
+const getMath = (function() {
+  let promise = Promise.resolve(null)
+  return () => promise = promise.then(math => math || makeMath())
+})();
+
+async function makeMath() {
+  const getXmlFromMathEl = function(mathEl) {
+    const clone = mathEl.cloneNode(true)
+    $("annotation, annotation-xml", clone).remove()
+    removeAllAttrs(clone, true)
+    return clone.outerHTML
+  }
+
+  //determine the mml markup
+  const math =
+    when(document.querySelector(".MathJax, .MathJax_Preview"), {
+      selector: ".MathJax[data-mathml]",
+      getXML(el) {
+        const mathEl = el.querySelector("math")
+        return mathEl ? getXmlFromMathEl(mathEl) : el.getAttribute("data-mathml")
+      },
+    })
+    .when(() => document.querySelector("math"), {
+      selector: "math",
+      getXML: getXmlFromMathEl,
+    })
+    .else(null)
+
+  if (!math) return null
+  const elems = $(math.selector).get()
+  if (!elems.length) return null
+
+  //create speech surrogates
+  try {
+    const xmls = elems.map(math.getXML)
+    const texts = await ajaxPost(config.serviceUrl + "/read-aloud/mathml", xmls, "json").then(JSON.parse)
+    elems.forEach((el, i) => $("<span>").addClass("readaloud-mathml").text(texts[i] || "math expression").insertBefore(el))
+  }
+  catch (err) {
+    console.error(err)
+    return {
+      show() {},
+      hide() {}
+    }
+  }
+
+  //return functions to toggle between mml and speech
+  return {
+    show() {
+      for (const el of elems) el.style.setProperty("display", "none", "important")
+      $(".readaloud-mathml").show()
+    },
+    hide() {
+      $(elems).css("display", "")
+      $(".readaloud-mathml").hide()
+    }
   }
 }

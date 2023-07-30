@@ -8,10 +8,32 @@ var readAloudDoc = new function() {
     return 0;
   }
 
-  this.getTexts = function(index) {
-    if (index == 0) return parse();
+  this.getTexts = async function(index) {
+    if (index == 0) {
+      const math = await getMath()
+      try {
+        if (math) math.show()
+        return parse()
+      }
+      finally {
+        if (math) math.hide()
+      }
+    }
     else return null;
   }
+
+  this.getSelectedText = async function() {
+    const math = await getMath()
+    try {
+      if (math) math.show()
+      return window.getSelection().toString().trim()
+    }
+    finally {
+      if (math) math.hide()
+    }
+  }
+
+
 
   function parse() {
     //find blocks containing text
@@ -50,8 +72,7 @@ var readAloudDoc = new function() {
     $(toRead).addClass("read-aloud");   //for debugging only
 
     //extract texts
-    var texts = toRead.map(getTexts);
-    return flatten(texts).filter(isNotEmpty);
+    return toRead.flatMap(getTexts).filter(isNotEmpty);
   }
 
   function findTextBlocks(threshold) {
@@ -188,9 +209,5 @@ var readAloudDoc = new function() {
       child = child.nextSibling;
     }
     return false;
-  }
-
-  function flatten(array) {
-    return [].concat.apply([], array);
   }
 }
