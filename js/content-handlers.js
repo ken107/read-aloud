@@ -184,10 +184,10 @@ var contentHandlers = [
   // EPUBReader ---------------------------------------------------------------
   {
     match: function(url) {
-      return /^chrome-extension:\/\/jhhclmfgfllimlhabjkgkeebkbiadflb\/reader.html/.test(url);
+      return /^(chrome-|edge-)?extension:\/\/gbfdomjljjkagpgdlidoicebkgpienmf\/reader.html/.test(url);
     },
     getSourceUri: function() {
-      return "epubreader:jhhclmfgfllimlhabjkgkeebkbiadflb"
+      return "epubreader:gbfdomjljjkagpgdlidoicebkgpienmf"
     }
   },
 
@@ -199,9 +199,12 @@ var contentHandlers = [
 
   // Adobe Acrobat extension -------------------------------------------------
   {
-    match: url => url.startsWith("chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/"),
+    regex: /^(chrome-|edge-)?extension:\/\/elhekieabhbkpmcefcoobjddigjcaadp\//,
+    match(url) {
+      return this.regex.test(url)
+    },
     async validate(tab) {
-      const pdfUrl = tab.url.substr(52)
+      const pdfUrl = tab.url.substr(this.regex.exec(tab.url)[0].length)
       if (pdfUrl.startsWith("file://")) {
         await setTabUrl(tab.id, config.pdfViewerUrl)
         throw new Error(JSON.stringify({code: "error_upload_pdf"}))
