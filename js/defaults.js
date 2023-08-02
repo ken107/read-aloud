@@ -20,9 +20,8 @@ var config = {
     iw: 'he'
   },
   unsupportedSites: [
-    'https://chrome.google.com/webstore',
-    'https://addons.mozilla.org',
     'moz-extension://',
+    'about:',
   ],
   wavenetPerms: {
     permissions: ["webRequest"],
