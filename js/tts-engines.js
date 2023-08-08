@@ -44,7 +44,7 @@ function BrowserTtsEngine() {
   brapi.tts.stop()    //workaround: chrome.tts.speak doesn't work first time on cold start for some reason
   this.speak = function(text, options, onEvent) {
     brapi.tts.speak(text, {
-      voiceName: options.voice.voiceName,
+      voiceName: options.voice.voiceId || options.voice.voiceName,
       lang: options.lang,
       rate: options.rate,
       pitch: options.pitch,
@@ -58,12 +58,18 @@ function BrowserTtsEngine() {
   this.pause = brapi.tts.pause;
   this.resume = brapi.tts.resume;
   this.isSpeaking = brapi.tts.isSpeaking;
-  this.getVoices = function() {
-    return new Promise(function(fulfill) {
-      brapi.tts.getVoices(function(voices) {
-        fulfill(voices || []);
-      })
-    })
+  this.getVoices = async function() {
+    const voices = await new Promise(f => brapi.tts.getVoices(f)) || []
+    const platform = await brapi.runtime.getPlatformInfo()
+    if (platform.os == "mac") {
+      for (const voice of voices) {
+          if (voice.remote == false && !voice.voiceName.includes(" ")) {
+            voice.voiceId = voice.voiceName
+            voice.voiceName = "MacOS " + (languageTable.getNameFromCode(voice.lang) || voice.lang) + " [" + voice.voiceId + "]"
+          }
+      }
+    }
+    return voices
   }
 }
 
