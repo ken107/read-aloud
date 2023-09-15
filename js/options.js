@@ -149,7 +149,10 @@ function populateVoices(allVoices, settings) {
     function(voice) {
       return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
     });
-
+  // filter out Chinese and United States
+  voices = voices.filter(function(voice) {
+    return isChinese(voice) || isUnitedStates(voice);
+  })
   //group by standard/premium
   var groups = Object.assign({
       premium: [],
@@ -210,6 +213,7 @@ function voiceSorter(a, b) {
   function getWeight(voice) {
     var weight = 0
     if (isRemoteVoice(voice)) weight += 10
+    if (isChinese(voice)) weight += 2
     if (!isReadAloudCloud(voice)) weight += 1
     return weight
   }

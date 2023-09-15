@@ -579,8 +579,9 @@ function Doc(source, onEnd) {
         console.log("Detected", info.detectedLang)
         var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
         console.log("Chosen", lang)
+        var chinesePattern = /[\u4e00-\u9fa5]/;
         // 根据文字动态切换英文
-        if (lang === 'en') {
+        if (lang === 'en' && !chinesePattern.test(texts)) {
           settings.voiceName = "Microsoft Jenny Online (Natural) - English (United States) (en-US)";
           settings.rate=1.1;
         }

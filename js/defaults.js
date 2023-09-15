@@ -318,6 +318,16 @@ function isAmazonCloud(voice) {
   return /^Amazon /.test(voice.voiceName);
 }
 
+function isChinese(voice) {
+  const regex = /chinese|hk|tw/i;
+  return regex.test(voice.voiceName);
+}
+
+function isUnitedStates(voice) {
+  const regex = /united states/i;
+  return regex.test(voice.voiceName);
+}
+
 function isMicrosoftCloud(voice) {
   return /^Microsoft /.test(voice.voiceName) && voice.voiceName.indexOf(' - ') == -1;
 }
