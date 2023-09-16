@@ -271,6 +271,22 @@ function TabSource(tabId) {
       extraScripts: ["js/content/libbyapp.js"]
     },
 
+    // Kindle -------------------------------------------------------------------
+    {
+      match: function(url) {
+        return url.startsWith("https://read.amazon.")
+      },
+      validate: function() {
+        var perms = {
+          origins: ["https://support.readaloud.app/"]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
+          })
+      }
+    },
+
     // Unsupported Sites --------------------------------------------------------
     {
       match: function(url) {
