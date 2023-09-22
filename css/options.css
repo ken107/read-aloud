@@ -8,11 +8,24 @@ body {
   font-weight: 400;
   line-height: 1.5;
   color: #212529;
+  background-color: #ccc;
 }
 
 .container-fluid {
-  padding-left: 15px;
-  padding-right: 15px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: white;
+}
+
+#expand-button {
+  font-size: .75em;
+  opacity: .25;
+  display: none;
+  cursor: pointer;
+}
+h2:hover #expand-button:not(.disabled) {
+  display: inline;
 }
 
 button.close {
@@ -45,8 +58,8 @@ button.close {
 }
 
 h2 {
-  margin-top: 1rem;
-  margin-bottom: .5rem;
+  margin-top: 0;
+  margin-bottom: 0;
   font-size: 2rem;
   font-weight: 500;
   line-height: 1.2;
@@ -57,8 +70,13 @@ small {
   font-weight: 400;
 }
 
+input[type=checkbox] + label {
+  margin-left: .5em;
+}
+
 .layout {
-  width: 500px;
+  margin-top: 1rem;
+  min-width: 500px;
   display: grid;
   grid-template-columns: auto auto;
   grid-template-rows: auto auto auto auto;
@@ -67,7 +85,7 @@ small {
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-top: .5rem;
 }
 
 .form-control {
@@ -302,4 +320,8 @@ input[type=checkbox], input[type=radio] {
 #account-info {
   display: none;
   font-size: smaller;
+}
+
+#advanced-options {
+  margin-top: 2em;
 }

@@ -17,7 +17,10 @@
     <button type="button" class="close" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
-    <h2 data-i18n="options_heading"></h2>
+    <h2>
+      <span data-i18n="options_heading"></span>
+      <i id="expand-button" class="material-icons">open_in_new</i>
+    </h2>
 
     <div class="form-group" id="account-info">
       <div class="alert alert-info">
@@ -110,6 +113,15 @@
 
     <div class="form-group">
       <small id="status" style="color: red"></small>
+    </div>
+
+    <div id="advanced-options">
+      <h2>Advanced</h2>
+
+      <div class="form-group">
+        <input type="checkbox" id="fix-bt-silence-gap"
+        ><label for="fix-bt-silence-gap">Fix missing first few words of each paragraph when using Bluetooth headphones</label>
+      </div>
     </div>
   </div>
 </body>

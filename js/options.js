@@ -3,11 +3,19 @@ Promise.all([getVoices(), getSettings(), domReady()])
   .then(spread(initialize));
 
 function initialize(allVoices, settings) {
+  var queryString = getQueryString();
   setI18nText();
   updateDependents(settings);
 
+  //expand button
+  $("#expand-button")
+    .toggleClass("disabled", queryString.mode == "expanded")
+    .click(function() {
+      brapi.tabs.create({url: brapi.runtime.getURL("options.html?mode=expanded")})
+        .catch(handleError)
+    })
+
   //close button
-  var queryString = getQueryString();
   if (queryString.referer) {
     $("button.close").show()
       .click(function() {
@@ -114,7 +122,7 @@ function initialize(allVoices, settings) {
     var voice = voiceName && findVoiceByName(allVoices, voiceName);
     var lang = (voice && voice.lang || "en-US").split("-")[0];
     $("#test-voice .spinner").show();
-    $("#status").hide();
+    $("#status").parent().hide();
     Promise.resolve(demoSpeech[lang])
       .then(function(speech) {
         if (speech) return speech;
@@ -142,11 +150,22 @@ function initialize(allVoices, settings) {
     })
   });
 
+  //status
+  $("#status").parent().hide()
 
   //hot key
   $("#hotkeys-link").click(function() {
     brapi.tabs.create({url: getHotkeySettingsUrl()});
   });
+
+  //advanced
+  $("#advanced-options").toggle(queryString.mode == "expanded")
+
+  $("#fix-bt-silence-gap")
+    .prop("checked", settings.fixBtSilenceGap)
+    .change(function() {
+      saveSettings({fixBtSilenceGap: this.checked})
+    })
 }
 
 
@@ -269,7 +288,7 @@ function updateDependents(settings) {
 function handleError(err) {
   if (/^{/.test(err.message)) {
     var errInfo = JSON.parse(err.message);
-    $("#status").html(formatError(errInfo)).show();
+    $("#status").html(formatError(errInfo)).parent().show();
     $("#status a").click(function() {
       switch ($(this).attr("href")) {
         case "#sign-in":
@@ -281,7 +300,7 @@ function handleError(err) {
               }
             })
             .catch(function(err) {
-              $("#status").text(err.message).show();
+              $("#status").text(err.message).parent().show();
             })
           break;
         case "#auth-wavenet":
@@ -297,7 +316,7 @@ function handleError(err) {
     })
   }
   else {
-    $("#status").text(err.message).show();
+    $("#status").text(err.message).parent().show();
   }
 }
 
