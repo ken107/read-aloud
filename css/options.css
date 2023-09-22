@@ -8,23 +8,20 @@ body {
   font-weight: 400;
   line-height: 1.5;
   color: #212529;
-  background-color: #ccc;
 }
 
 .container-fluid {
-  max-width: 800px;
-  margin: 0 auto;
   padding: 1rem;
-  background-color: white;
 }
 
 #expand-button {
+  text-decoration: none;
   font-size: .75em;
   opacity: .25;
-  display: none;
   cursor: pointer;
+  display: none;
 }
-h2:hover #expand-button:not(.disabled) {
+h2:hover #expand-button {
   display: inline;
 }
 
@@ -70,10 +67,6 @@ small {
   font-weight: 400;
 }
 
-input[type=checkbox] + label {
-  margin-left: .5em;
-}
-
 .layout {
   margin-top: 1rem;
   min-width: 500px;
@@ -116,8 +109,12 @@ input {
   font-size: inherit;
   line-height: inherit;
 }
-input[type=checkbox], input[type=radio] {
+input[type=checkbox] {
+  margin-top: .5rem;
   padding: 0;
+}
+input[type=checkbox] + label {
+  margin-left: .5em;
 }
 
 .btn {
@@ -323,5 +320,9 @@ input[type=checkbox], input[type=radio] {
 }
 
 #advanced-options {
-  margin-top: 2em;
+  min-width: 500px;
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: min-content auto;
+  align-items: start;
 }

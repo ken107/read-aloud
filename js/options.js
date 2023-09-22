@@ -3,19 +3,11 @@ Promise.all([getVoices(), getSettings(), domReady()])
   .then(spread(initialize));
 
 function initialize(allVoices, settings) {
-  var queryString = getQueryString();
   setI18nText();
   updateDependents(settings);
 
-  //expand button
-  $("#expand-button")
-    .toggleClass("disabled", queryString.mode == "expanded")
-    .click(function() {
-      brapi.tabs.create({url: brapi.runtime.getURL("options.html?mode=expanded")})
-        .catch(handleError)
-    })
-
   //close button
+  var queryString = getQueryString();
   if (queryString.referer) {
     $("button.close").show()
       .click(function() {
@@ -157,15 +149,6 @@ function initialize(allVoices, settings) {
   $("#hotkeys-link").click(function() {
     brapi.tabs.create({url: getHotkeySettingsUrl()});
   });
-
-  //advanced
-  $("#advanced-options").toggle(queryString.mode == "expanded")
-
-  $("#fix-bt-silence-gap")
-    .prop("checked", settings.fixBtSilenceGap)
-    .change(function() {
-      saveSettings({fixBtSilenceGap: this.checked})
-    })
 }
 
 
