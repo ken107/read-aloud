@@ -9,7 +9,8 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "{ddc62400-f22d-4dd3-8b4a-05837de53c2e}"
-    }
+    },
+    "gecko_android": {}
   },
 
   "browser_action": {
