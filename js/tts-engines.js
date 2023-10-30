@@ -1014,7 +1014,10 @@ function GoogleWavenetTtsEngine() {
     {"voiceName":"GoogleStandard French (Daniel)","lang":"fr-FR","gender":"male"},
     {"voiceName":"GoogleStandard Italian (Bianca)","lang":"it-IT","gender":"female"},
     {"voiceName":"GoogleStandard Italian (Christopher)","lang":"it-IT","gender":"male"},
-    {"voiceName":"GoogleStandard Italian (Daniel)","lang":"it-IT","gender":"male"}
+    {"voiceName":"GoogleStandard Italian (Daniel)","lang":"it-IT","gender":"male"},
+    {"voiceName":"GoogleStudio US English (M)","lang":"en-US","gender":"male"},
+    {"voiceName":"GoogleStudio US English (O)","lang":"en-US","gender":"female"},
+    {"voiceName":"GoogleStudio US English (Q)","lang":"en-US","gender":"male"}
   ]
 }
 
