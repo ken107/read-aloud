@@ -159,7 +159,7 @@ function populateVoices(allVoices, settings) {
   var allVoices = allVoices.filter(
     function(voice) {
       // include all voices or exclude only studio voices.
-      return (settings.gcpCreds.enableStudio || !isGoogleStudio(voice));
+      return ((settings.gcpCreds && settings.gcpCreds.enableStudio) || !isGoogleStudio(voice));
     });
   var voices = !selectedLangs ? allVoices : allVoices.filter(
     function(voice) {
