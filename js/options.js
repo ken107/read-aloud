@@ -156,6 +156,11 @@ function initialize(allVoices, settings) {
 function populateVoices(allVoices, settings) {
   //get voices filtered by selected languages
   var selectedLangs = settings.languages && settings.languages.split(',');
+  var allVoices = allVoices.filter(
+    function(voice) {
+      // include all voices or exclude only studio voices.
+      return (settings.gcpCreds.enableStudio || !isGoogleStudio(voice));
+    });
   var voices = !selectedLangs ? allVoices : allVoices.filter(
     function(voice) {
       return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
