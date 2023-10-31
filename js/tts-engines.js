@@ -763,11 +763,17 @@ function GoogleWavenetTtsEngine() {
   this.setNextStartTime = function() {
   };
   this.getVoices = function() {
-    return getSettings(["wavenetVoices"])
+    return getSettings(["wavenetVoices", "gcpCreds"])
       .then(function(items) {
         if (!items.wavenetVoices || Date.now()-items.wavenetVoices[0].ts > 24*3600*1000) updateVoices();
-        return items.wavenetVoices || voices;
-      })
+        var listvoices = items.wavenetVoices || voices;
+        var creds = items.gcpCreds;
+        return listvoices.filter(
+          function(voice) {
+            // include all voices or exclude only studio voices.
+            return ((creds && creds.enableStudio) || !isGoogleStudio(voice));
+          });
+      });
   }
   this.getFreeVoices = function() {
     return this.getVoices()
@@ -778,19 +784,11 @@ function GoogleWavenetTtsEngine() {
       })
   }
   function updateVoices() {
-    getSettings(["gcpCreds"]).then(function(settings) {
-      ajaxGet(config.serviceUrl + "/read-aloud/list-voices/google")
-        .then(JSON.parse)
-        .then(function(list) {
-          var creds = settings.gcpCreds;
-          var voicelist = list.filter(
-            function(voice) {
-              // include all voices or exclude only studio voices.
-              return ((creds && creds.enableStudio) || !isGoogleStudio(voice));
-          });
-          voicelist[0].ts = Date.now() - 24*3600*1000+10;
-          updateSettings({wavenetVoices: voicelist});
-        })
+    ajaxGet(config.serviceUrl + "/read-aloud/list-voices/google")
+      .then(JSON.parse)
+      .then(function(list) {
+        list[0].ts = Date.now();
+        updateSettings({wavenetVoices: list});
     });
   }
   function getAudioUrl(text, voice, pitch) {
