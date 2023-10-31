@@ -773,7 +773,7 @@ function GoogleWavenetTtsEngine() {
             // include all voices or exclude only studio voices.
             return ((creds && creds.enableStudio) || !isGoogleStudio(voice));
           });
-      });
+      })
   }
   this.getFreeVoices = function() {
     return this.getVoices()
@@ -789,7 +789,7 @@ function GoogleWavenetTtsEngine() {
       .then(function(list) {
         list[0].ts = Date.now();
         updateSettings({wavenetVoices: list});
-    });
+      })
   }
   function getAudioUrl(text, voice, pitch) {
     assert(text && voice);
