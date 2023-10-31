@@ -778,12 +778,20 @@ function GoogleWavenetTtsEngine() {
       })
   }
   function updateVoices() {
-    ajaxGet(config.serviceUrl + "/read-aloud/list-voices/google")
-      .then(JSON.parse)
-      .then(function(list) {
-        list[0].ts = Date.now();
-        updateSettings({wavenetVoices: list});
-      })
+    getSettings(["gcpCreds"]).then(function(settings) {
+      ajaxGet(config.serviceUrl + "/read-aloud/list-voices/google")
+        .then(JSON.parse)
+        .then(function(list) {
+          var creds = settings.gcpCreds;
+          var voicelist = voices.filter(
+            function(voice) {
+              // include all voices or exclude only studio voices.
+              return ((creds && creds.enableStudio) || !isGoogleStudio(voice));
+          });
+          voicelist[0].ts = Date.now() - 24*3600*1000+10;
+          updateSettings({wavenetVoices: voicelist});
+        })
+    });
   }
   function getAudioUrl(text, voice, pitch) {
     assert(text && voice);
