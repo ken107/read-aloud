@@ -783,7 +783,7 @@ function GoogleWavenetTtsEngine() {
         .then(JSON.parse)
         .then(function(list) {
           var creds = settings.gcpCreds;
-          var voicelist = voices.filter(
+          var voicelist = list.filter(
             function(voice) {
               // include all voices or exclude only studio voices.
               return ((creds && creds.enableStudio) || !isGoogleStudio(voice));
