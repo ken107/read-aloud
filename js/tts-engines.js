@@ -763,10 +763,16 @@ function GoogleWavenetTtsEngine() {
   this.setNextStartTime = function() {
   };
   this.getVoices = function() {
-    return getSettings(["wavenetVoices"])
+    return getSettings(["wavenetVoices", "gcpCreds"])
       .then(function(items) {
         if (!items.wavenetVoices || Date.now()-items.wavenetVoices[0].ts > 24*3600*1000) updateVoices();
-        return items.wavenetVoices || voices;
+        var listvoices = items.wavenetVoices || voices;
+        var creds = items.gcpCreds;
+        return listvoices.filter(
+          function(voice) {
+            // include all voices or exclude only studio voices.
+            return ((creds && creds.enableStudio) || !isGoogleStudio(voice));
+          });
       })
   }
   this.getFreeVoices = function() {
@@ -1014,7 +1020,10 @@ function GoogleWavenetTtsEngine() {
     {"voiceName":"GoogleStandard French (Daniel)","lang":"fr-FR","gender":"male"},
     {"voiceName":"GoogleStandard Italian (Bianca)","lang":"it-IT","gender":"female"},
     {"voiceName":"GoogleStandard Italian (Christopher)","lang":"it-IT","gender":"male"},
-    {"voiceName":"GoogleStandard Italian (Daniel)","lang":"it-IT","gender":"male"}
+    {"voiceName":"GoogleStandard Italian (Daniel)","lang":"it-IT","gender":"male"},
+    {"voiceName":"GoogleStudio US English (M)","lang":"en-US","gender":"male"},
+    {"voiceName":"GoogleStudio US English (O)","lang":"en-US","gender":"female"},
+    {"voiceName":"GoogleStudio US English (Q)","lang":"en-US","gender":"male"}
   ]
 }
 

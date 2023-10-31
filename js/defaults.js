@@ -178,7 +178,11 @@ function isAmazonPolly(voice) {
 }
 
 function isGoogleWavenet(voice) {
-  return /^Google(Standard|Wavenet|Neural2) /.test(voice.voiceName);
+  return /^Google(Standard|Wavenet|Neural2|Studio) /.test(voice.voiceName);
+}
+
+function isGoogleStudio(voice) {
+  return /^Google(Studio) /.test(voice.voiceName);
 }
 
 function isIbmWatson(voice) {

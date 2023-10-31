@@ -8,6 +8,7 @@ $(function() {
       }
       if (items.gcpCreds) {
         $("#gcp-api-key").val(obfuscate(items.gcpCreds.apiKey));
+        $("#gcp-enable-studio").prop('checked', items.gcpCreds.enableStudio);
       }
       if (items.ibmCreds) {
         $("#ibm-api-key").val(obfuscate(items.ibmCreds.apiKey));
@@ -74,13 +75,18 @@ function testAws(accessKeyId, secretAccessKey) {
 function gcpSave() {
   $(".status").hide();
   var apiKey = $("#gcp-api-key").val().trim();
+  var enableStudio = $("#gcp-enable-studio").is(':checked');
   if (apiKey) {
     $("#gcp-progress").show();
     testGcp(apiKey)
       .then(function() {
         $("#gcp-progress").hide();
-        updateSettings({gcpCreds: {apiKey: apiKey}});
-        $("#gcp-success").text("Google Wavenet voices are enabled.").show();
+        updateSettings({gcpCreds: {apiKey: apiKey, enableStudio: enableStudio}});
+        if (enableStudio) {
+          $("#gcp-success").text("Google Wavenet & Studio voices are enabled.").show();
+        } else {
+          $("#gcp-success").text("Google Wavenet voices are enabled.").show();
+        }
         $("#gcp-api-key").val(obfuscate(apiKey));
       },
       function(err) {
