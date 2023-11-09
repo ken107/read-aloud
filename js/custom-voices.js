@@ -1,6 +1,6 @@
 
 $(function() {
-  getSettings(["awsCreds", "gcpCreds", "ibmCreds", "rivaCreds"])
+  getSettings(["awsCreds", "gcpCreds", "ibmCreds", "rivaCreds", "openaiCreds"])
     .then(function(items) {
       if (items.awsCreds) {
         $("#aws-access-key-id").val(obfuscate(items.awsCreds.accessKeyId));
@@ -17,12 +17,16 @@ $(function() {
       if (items.rivaCreds) {
         $("#riva-url").val(obfuscate(items.rivaCreds.url));
       }
+      if (items.openaiCreds) {
+        $("#openai-api-key").val(obfuscate(items.openaiCreds.apiKey))
+      }
     })
   $(".status").hide();
   $("#aws-save-button").click(awsSave);
   $("#gcp-save-button").click(gcpSave);
   $("#ibm-save-button").click(ibmSave);
   $("#riva-save-button").click(rivaSave);
+  $("#openai-save-button").click(openaiSave)
 })
 
 function obfuscate(key) {
@@ -183,4 +187,34 @@ function testRiva(url) {
   .then(function() {
     return nvidiaRivaTtsEngine.fetchVoices(url);
   })
+}
+
+
+async function openaiSave() {
+  $(".status").hide()
+  const apiKey = $("#openai-api-key").val().trim()
+  if (apiKey) {
+    $("#openai-progress").show()
+    try {
+      await testOpenai(apiKey)
+      await updateSettings({openaiCreds: {apiKey: apiKey}})
+      $("#openai-success").text("ChatGPT voices are enabled.").show()
+      $("#openai-api-key").val(obfuscate(apiKey))
+    }
+    catch (err) {
+      $("#openai-error").text("Test failed: " + err.message).show()
+    }
+    finally {
+      $("#openai-progress").hide()
+    }
+  }
+  else {
+    await clearSettings(["openaiCreds"])
+    $("#openai-success").text("ChatGPT voices are disabled.").show()
+  }
+}
+
+async function testOpenai(apiKey) {
+  const res = await fetch("https://api.openai.com/v1/models", {headers: {"Authorization": "Bearer " + apiKey}})
+  if (!res.ok) throw await res.json().then(x => x.error)
 }

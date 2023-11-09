@@ -123,7 +123,7 @@ function clearState(key) {
  * VOICES
  */
 function getVoices() {
-  return getSettings(["awsCreds", "gcpCreds"])
+  return getSettings(["awsCreds", "gcpCreds", "openaiCreds"])
     .then(function(settings) {
       return Promise.all([
         browserTtsEngine.getVoices(),
@@ -134,6 +134,7 @@ function getVoices() {
         ibmWatsonTtsEngine.getVoices(),
         nvidiaRivaTtsEngine.getVoices(),
         phoneTtsEngine.getVoices(),
+        settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
       ])
     })
     .then(function(arr) {
@@ -191,6 +192,10 @@ function isIbmWatson(voice) {
 
 function isNvidiaRiva(voice) {
   return /^Nvidia-Riva /.test(voice.voiceName);
+}
+
+function isOpenai(voice) {
+  return /^ChatGPT /.test(voice.voiceName);
 }
 
 function isUseMyPhone(voice) {

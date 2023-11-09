@@ -7,6 +7,7 @@ var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
 var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
 var nvidiaRivaTtsEngine = new NvidiaRivaTtsEngine();
 var phoneTtsEngine = new PhoneTtsEngine();
+var openaiTtsEngine = new OpenaiTtsEngine();
 
 
 /*
@@ -1325,4 +1326,83 @@ function PhoneTtsEngine() {
       {voiceName: "Use My Phone", remote: false, isUseMyPhone: true},
     ]
   }
+}
+
+
+function OpenaiTtsEngine() {
+  var audio, prefetchAudio
+  var isSpeaking = false
+  this.speak = function(utterance, options, onEvent) {
+    const urlPromise = Promise.resolve()
+      .then(() => {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
+        else return getAudioUrl(utterance, options.voice, options.pitch)
+      })
+    audio = playAudio(urlPromise, options)
+    audio.startPromise
+      .then(() => {
+        onEvent({type: "start", charIndex: 0})
+        isSpeaking = true
+      })
+      .catch(err => {
+        onEvent({type: "error", error: err})
+      })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
+  }
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking)
+  }
+  this.pause =
+  this.stop = function() {
+    audio.pause()
+  }
+  this.resume = function() {
+    return audio.resume()
+  }
+  this.prefetch = async function(utterance, options) {
+    try {
+      const url = await getAudioUrl(utterance, options.voice, options.pitch)
+      prefetchAudio = [utterance, options, url]
+    }
+    catch (err) {
+      console.error(err)
+    }
+  }
+  this.setNextStartTime = function() {
+  }
+  this.getVoices = function() {
+    return voices
+  }
+  async function getAudioUrl(text, voice, pitch) {
+    assert(text && voice)
+    const matches = voice.voiceName.match(/^ChatGPT .* \((\w+)\)$/)
+    const voiceName = matches[1]
+    const {openaiCreds} = await getSettings(["openaiCreds"])
+    const res = await fetch("https://api.openai.com/v1/audio/speech", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + openaiCreds.apiKey
+      },
+      body: JSON.stringify({
+        model: "tts-1",
+        input: text,
+        voice: voiceName,
+        response_format: "opus",
+      })
+    })
+    if (!res.ok) throw await res.json().then(x => x.error)
+    return URL.createObjectURL(await res.blob())
+  }
+  const voices = [
+    {"voiceName":"ChatGPT English (alloy)","lang":"en-US","gender":"female"},
+    {"voiceName":"ChatGPT English (echo)","lang":"en-US","gender":"male"},
+    {"voiceName":"ChatGPT English (fable)","lang":"en-US","gender":"female"},
+    {"voiceName":"ChatGPT English (onyx)","lang":"en-US","gender":"male"},
+    {"voiceName":"ChatGPT English (nova)","lang":"en-US","gender":"female"},
+    {"voiceName":"ChatGPT English (shimmer)","lang":"en-US","gender":"female"},
+  ]
 }
