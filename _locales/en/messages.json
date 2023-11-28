@@ -149,6 +149,9 @@
   "error_phone_disconnected": {
     "message": "Phone disconnected ({reason}). [Reconnect](connect-phone)"
   },
+  "error_chatgpt": {
+    "message": "Click the speaker icon next to each answer to read it aloud"
+  },
   "languages_heading": {
     "message": "Language Options"
   },
