@@ -337,7 +337,6 @@ function LegacyReadAloudDoc() {
 
 function SvgReadAloudDoc() {
   var currentPageMarker, currentPageNumber
-  const $pagelessInstructionPopup = createPagelessInstructionPopup()
 
   this.getCurrentIndex = function() {
     currentPageMarker = markPage(getCurrentlyVisiblePage(getPages()))
@@ -401,12 +400,20 @@ function SvgReadAloudDoc() {
       .join(" ")
   }
 
-  function getPages() {
-    if (!$(".kix-page-paginated").length) {
-      $pagelessInstructionPopup.show(); $(document.body).one("click", () => $pagelessInstructionPopup.hide())
-      throw new Error("Cannot read aloud Google Docs in 'Pageless' mode")
+  function getDocContainer() {
+    if($(".kix-page-paginated").length) {
+      console.log("Paginated google doc detected.");
+      return $(".kix-page-paginated").get();
+    } else if($(".kix-rotatingtilemanager-content").length) {
+      console.log("Pageless google doc detected.");
+      return $(".kix-rotatingtilemanager-content").get();
+    } else {
+      console.log("Could not detect paginated or pageless google doc.");
     }
-    return $(".kix-page-paginated").get()
+  }
+
+  function getPages() {
+      return getDocContainer()
       .map(page => ({page: page, top: page.getBoundingClientRect().top}))
       .sort((a,b) => a.top-b.top)
       .map(item => item.page)
@@ -436,47 +443,5 @@ function SvgReadAloudDoc() {
       prev = text
       return true
     }
-  }
-
-  function createPagelessInstructionPopup() {
-    const $anchor = $("#docs-file-menu")
-    const anchorOffset = $anchor.offset()
-    const anchorDimension = {
-      width: $anchor.outerWidth(),
-      height: $anchor.outerHeight()
-    }
-    const $popup = $("<div>")
-      .appendTo(document.body)
-      .css({
-        position: "absolute",
-        left: anchorOffset.left + anchorDimension.width/2 - 300,
-        top: anchorOffset.top + anchorDimension.height,
-        width: 600,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        zIndex: 999000,
-        fontSize: "larger",
-      })
-    $("<div>")
-      .appendTo($popup)
-      .css({
-        width: 0,
-        height: 0,
-        borderLeft: ".5em solid transparent",
-        borderRight: ".5em solid transparent",
-        borderBottom: ".5em solid #333",
-      })
-    $("<div>")
-      .appendTo($popup)
-      .html("Read Aloud doesn't work in 'Pageless' mode. Please go to Page Setup and change to 'Pages' mode and try again.")
-      .css({
-        marginLeft: 10 - Math.min(0, anchorOffset.left + anchorDimension.width/2 - 300),
-        backgroundColor: "#333",
-        color: "#fff",
-        padding: "1em",
-        borderRadius: ".5em",
-      })
-    return $popup.hide()
   }
 }
