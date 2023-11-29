@@ -351,6 +351,11 @@ function SvgReadAloudDoc() {
     if (currentIndex == -1) return null
     var nextIndex = currentIndex + (nextPageNumber - currentPageNumber)
 
+    // function to remove overlap between pages (in Pageless mode)
+    const overlapRemover = nextPageNumber == currentPageNumber +1
+      ? makeOverlapRemover(pages[currentIndex])
+      : () => true;
+
     // if the next page is not loaded and is an earlier page
     if (nextIndex < head) {
       pages[head].scrollIntoView(); await waitMillis(500)
@@ -379,11 +384,12 @@ function SvgReadAloudDoc() {
     // scroll into view and return text
     if (!quietly) currentPage.scrollIntoView()
     return $("svg > g[role=paragraph]", currentPage).get()
-      .map(para => {
+      .flatMap(para => {
         return $(para).children("rect").get()
           .map(el => el.getAttribute("aria-label"))
+          .filter(overlapRemover)
           .filter(makeDeduper())
-          .join(" ")
+          .join(" ") || []
       })
   }
 
@@ -406,7 +412,7 @@ function SvgReadAloudDoc() {
       return $(".kix-page-paginated").get();
     } else if($(".kix-rotatingtilemanager-content").length) {
       console.log("Pageless google doc detected.");
-      return $(".kix-rotatingtilemanager-content").get();
+      return $(".kix-rotatingtilemanager-content").children().get();
     } else {
       console.log("Could not detect paginated or pageless google doc.");
     }
@@ -442,6 +448,26 @@ function SvgReadAloudDoc() {
       if (text == prev) return false
       prev = text
       return true
+    }
+  }
+
+  function makeOverlapRemover(prevPage) {
+    const prevPageTexts = Array.from(prevPage.querySelectorAll("svg > g[role=paragraph] > rect"))
+      .map(rect => rect.getAttribute("aria-label"))
+    var indexOfLastMatch = null
+    return function(text) {
+      if (indexOfLastMatch == null) {
+        //find index of the start of the overlapping section
+        indexOfLastMatch = prevPageTexts.lastIndexOf(text)
+        if (indexOfLastMatch != -1) console.debug("Overlap detected", prevPageTexts.length-indexOfLastMatch)
+      }
+      else if (indexOfLastMatch > 0) {
+        //if subsequent lines match, keep incrementing index
+        if (prevPageTexts[indexOfLastMatch +1] == text) indexOfLastMatch += 1
+        else indexOfLastMatch = -1
+      }
+      //return false to filter out matches
+      return indexOfLastMatch > 0 ? false : true
     }
   }
 }
