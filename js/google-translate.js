@@ -121,11 +121,20 @@
         return batchExecute("jQ1olc", [], {validateOnly: true});
     }
 
-    window.googleTranslateSynthesizeSpeech = function(text, lang) {
-        return batchExecute("jQ1olc", [text, lang, null])
-            .then(function(payload) {
-                if (!payload) throw new Error("Failed to synthesize text '" + text.slice(0,25) + "…' in language " + lang)
-                return "data:audio/mpeg;base64," + payload[0];
-            })
+    window.googleTranslateSynthesizeSpeech = async function(text, lang) {
+        const throttle = await getState("gtThrottle") || {last: 0}
+        const now = Date.now()
+        if (throttle.suspendUntil) {
+            if (throttle.suspendUntil > now) throw new Error("Server returns 429")
+            throttle.suspendUntil = null
+        }
+        if (now-throttle.last > 5*60*1000) throttle.start = now
+        else if (now-throttle.start > 60*60*1000) throttle.suspendUntil = now + 15*60*1000
+        throttle.last = now
+        await setState("gtThrottle", throttle)
+
+        const payload = await batchExecute("jQ1olc", [text, lang, null])
+        if (!payload) throw new Error("Failed to synthesize text '" + text.slice(0,25) + "…' in language " + lang)
+        return "data:audio/mpeg;base64," + payload[0];
     }
 })();
