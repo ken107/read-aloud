@@ -103,6 +103,26 @@ brapi.commands.onCommand.addListener(function(command) {
   }
 })
 
+/**
+ * Listener for external calls
+ */
+chrome.runtime.onMessageExternal.addListener(
+	(request, sender) => {
+		const myTask = request.message.substring(0, request.message.indexOf(" ")).toLowerCase();
+		const myText = request.message.substring(request.message.indexOf(" ")+1);
+		if (myTask == "play") {
+			playText(myText);
+		}
+		if (myTask == "pause") {
+			pause();
+		}
+		if (myTask == "stop") {
+			stop();
+		}
+		if (myTask == "resume") {
+			resume();
+		}
+	}); 
 
 
 /**
