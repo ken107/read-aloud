@@ -103,26 +103,33 @@ brapi.commands.onCommand.addListener(function(command) {
   }
 })
 
+
 /**
  * Listener for external calls
  */
-chrome.runtime.onMessageExternal.addListener(
-	(request, sender) => {
-		const myTask = request.message.substring(0, request.message.indexOf(" ")).toLowerCase();
-		const myText = request.message.substring(request.message.indexOf(" ")+1);
-		if (myTask == "play") {
-			playText(myText);
-		}
-		if (myTask == "pause") {
-			pause();
-		}
-		if (myTask == "stop") {
-			stop();
-		}
-		if (myTask == "resume") {
-			resume();
-		}
-	}); 
+brapi.runtime.onMessageExternal.addListener(
+  (request, sender) => {
+    if (request.method == "play" && typeof request.text == "string") {
+      playText(request.text)
+        .catch(handleHeadlessError)
+    }
+    else if (request.method == "pause") {
+      pause()
+        .catch(handleHeadlessError)
+    }
+    else if (request.method == "stop") {
+      stop()
+        .catch(handleHeadlessError)
+    }
+    else if (request.method == "resume") {
+      resume()
+        .catch(handleHeadlessError)
+    }
+    else {
+      handleHeadlessError(new Error("Bad method call"))
+    }
+  })
+
 
 
 /**
@@ -248,6 +255,7 @@ function seek(n) {
 
 
 function handleHeadlessError(err) {
+  console.error(err)
   //TODO: let user knows somehow
 }
 
