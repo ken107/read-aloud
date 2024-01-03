@@ -4,8 +4,7 @@ var playbackError = null;
 var silenceLoop = new Audio("sound/silence.mp3");
 silenceLoop.loop = true;
 
-brapi.runtime.onInstalled.addListener(installContextMenus);
-if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
+installContextMenus()
 
 hasPermissions(config.gtranslatePerms)
   .then(function(granted) {
