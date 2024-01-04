@@ -8,6 +8,7 @@
   "default_locale": "en",
 
   "action": {
+    "default_area": "navbar",
     "default_icon": "img/icon.png",
     "default_popup": "popup.html?isPopup=1"
   },
