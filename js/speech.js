@@ -34,14 +34,7 @@ function Speech(texts, options) {
     if (isUseMyPhone(options.voice)) return phoneTtsEngine;
     if (isNvidiaRiva(options.voice)) return nvidiaRivaTtsEngine;
     if (isGoogleTranslate(options.voice) && !/\s(Hebrew|Telugu)$/.test(options.voice.voiceName)) {
-      return googleTranslateTtsEngine.ready()
-        .then(function() {return googleTranslateTtsEngine})
-        .catch(function(err) {
-          console.warn("GoogleTranslate unavailable,", err);
-          options.voice.autoSelect = true;
-          options.voice.voiceName = "Microsoft US English (Zira)";
-          return remoteTtsEngine;
-        })
+      return googleTranslateTtsEngine
     }
     if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;
     if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;

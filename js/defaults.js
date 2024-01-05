@@ -122,12 +122,18 @@ function clearState(key) {
 /**
  * VOICES
  */
-function getVoices() {
+function getVoices(opts) {
+  if (!opts) opts = {}
   return getSettings(["awsCreds", "gcpCreds", "openaiCreds"])
     .then(function(settings) {
       return Promise.all([
         browserTtsEngine.getVoices(),
-        googleTranslateTtsEngine.getVoices(),
+        Promise.resolve(!opts.excludeUnavailable || googleTranslateTtsEngine.ready())
+          .then(() => googleTranslateTtsEngine.getVoices())
+          .catch(err => {
+            console.error(err)
+            return []
+          }),
         remoteTtsEngine.getVoices(),
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
@@ -211,7 +217,7 @@ function isPremiumVoice(voice) {
 }
 
 function getSpeechVoice(voiceName, lang) {
-  return Promise.all([getVoices(), getSettings(["preferredVoices"])])
+  return Promise.all([getVoices({excludeUnavailable: true}), getSettings(["preferredVoices"])])
     .then(function(res) {
       var voices = res[0];
       var preferredVoiceByLang = res[1].preferredVoices || {};
