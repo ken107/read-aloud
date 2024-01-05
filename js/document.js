@@ -582,8 +582,8 @@ function Doc(source, onEnd) {
         var chinesePattern = /[\u4e00-\u9fa5]/;
         // 根据文字动态切换英文
         if (lang === 'en' && !chinesePattern.test(texts)) {
-          settings.voiceName = "Microsoft Jenny Online (Natural) - English (United States) (en-US)";
-          settings.rate=1.1;
+          settings.voiceName = "Microsoft Jenny Online (Natural) - English (United States)";
+          settings.rate=0.9;
         }
         console.log("声音设置: ", settings)
         var options = {
