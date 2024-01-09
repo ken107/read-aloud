@@ -68,16 +68,18 @@ brapi.runtime.onMessage.addListener(
  * Context menu installer & handlers
  */
 function installContextMenus() {
-  brapi.menus.create({
-    id: "read-selection",
-    title: brapi.i18n.getMessage("context_read_selection"),
-    contexts: ["selection"]
-  });
-  brapi.menus.create({
-    id: "options",
-    title: brapi.i18n.getMessage("options_heading"),
-    contexts: ["browser_action"]
-  })
+  if (brapi.menus && brapi.menus.create) {
+    brapi.menus.create({
+      id: "read-selection",
+      title: brapi.i18n.getMessage("context_read_selection"),
+      contexts: ["selection"]
+    });
+    brapi.menus.create({
+      id: "options",
+      title: brapi.i18n.getMessage("options_heading"),
+      contexts: ["browser_action"]
+    })
+  }
 }
 
 brapi.menus.onClicked.addListener(function(info, tab) {
