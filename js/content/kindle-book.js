@@ -7,8 +7,8 @@ var readAloudDoc = new function() {
   }
 
   this.getTexts = function(index) {
-    for (; currentIndex<index; currentIndex++) $("#kr-chevron-right").click();
-    for (; currentIndex>index; currentIndex--) $("#kr-chevron-left").click();
+    for (; currentIndex<index; currentIndex++) simulateClick(document.getElementById("kr-chevron-right"))
+    for (; currentIndex>index; currentIndex--) simulateClick(document.getElementById("kr-chevron-left"))
     return waitMillis(250).then(getTexts)
   }
 
