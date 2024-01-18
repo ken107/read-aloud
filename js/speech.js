@@ -30,6 +30,7 @@ function Speech(texts, options) {
   this.gotoEnd = gotoEnd;
 
   function pickEngine() {
+    if (isAzure(options.voice)) return azureTtsEngine;
     if (isOpenai(options.voice)) return openaiTtsEngine;
     if (isUseMyPhone(options.voice)) return phoneTtsEngine;
     if (isNvidiaRiva(options.voice)) return nvidiaRivaTtsEngine;

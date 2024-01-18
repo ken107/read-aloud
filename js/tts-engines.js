@@ -8,6 +8,7 @@ var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
 var nvidiaRivaTtsEngine = new NvidiaRivaTtsEngine();
 var phoneTtsEngine = new PhoneTtsEngine();
 var openaiTtsEngine = new OpenaiTtsEngine();
+var azureTtsEngine = new AzureTtsEngine();
 
 
 /*
@@ -604,17 +605,6 @@ function AmazonPollyTtsEngine() {
         }
     }
   }
-  function escapeXml(unsafe) {
-    return unsafe.replace(/[<>&'"]/g, function (c) {
-      switch (c) {
-          case '<': return '&lt;';
-          case '>': return '&gt;';
-          case '&': return '&amp;';
-          case '\'': return '&apos;';
-          case '"': return '&quot;';
-      }
-    })
-  }
   var voices = [
     {"voiceName":"AmazonPolly Turkish (Filiz)","lang":"tr-TR","gender":"female"},
     {"voiceName":"AmazonPolly Swedish (Astrid)","lang":"sv-SE","gender":"female"},
@@ -1031,9 +1021,13 @@ function GoogleWavenetTtsEngine() {
 
 function IbmWatsonTtsEngine() {
   var isSpeaking = false;
-  var audio;
+  var audio, prefetchAudio;
   this.speak = function(utterance, options, onEvent) {
-    const urlPromise = getAudioUrl(utterance, options.voice)
+    const urlPromise = Promise.resolve()
+      .then(() => {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
+        else return getAudioUrl(utterance, options.voice)
+      })
     audio = playAudio(urlPromise, options)
     audio.startPromise
       .then(() => {
@@ -1058,7 +1052,14 @@ function IbmWatsonTtsEngine() {
   this.resume = function() {
     return audio.resume()
   };
-  this.prefetch = function(utterance, options) {
+  this.prefetch = async function(utterance, options) {
+    try {
+      const url = await getAudioUrl(utterance, options.voice)
+      prefetchAudio = [utterance, options, url]
+    }
+    catch (err) {
+      console.error(err)
+    }
   };
   this.setNextStartTime = function() {
   };
@@ -1405,4 +1406,101 @@ function OpenaiTtsEngine() {
     {"voiceName":"ChatGPT English (nova)","lang":"en-US","gender":"female"},
     {"voiceName":"ChatGPT English (shimmer)","lang":"en-US","gender":"female"},
   ]
+}
+
+
+function AzureTtsEngine() {
+  var isSpeaking = false;
+  var audio, prefetchAudio;
+  this.speak = function(utterance, options, onEvent) {
+    const urlPromise = Promise.resolve()
+      .then(() => {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
+        else return getAudioUrl(utterance, options.lang, options.voice)
+      })
+    audio = playAudio(urlPromise, options)
+    audio.startPromise
+      .then(() => {
+        onEvent({type: "start", charIndex: 0})
+        isSpeaking = true;
+      })
+      .catch(function(err) {
+        onEvent({type: "error", error: err})
+      })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
+  };
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking);
+  };
+  this.pause =
+  this.stop = function() {
+    audio.pause()
+  };
+  this.resume = function() {
+    return audio.resume()
+  };
+  this.prefetch = async function(utterance, options) {
+    try {
+      const url = await getAudioUrl(utterance, options.lang, options.voice)
+      prefetchAudio = [utterance, options, url]
+    }
+    catch (err) {
+      console.error(err)
+    }
+  };
+  this.setNextStartTime = function() {
+  };
+  this.getVoices = async function() {
+    try {
+      const {azureCreds, azureVoices} = await getSettings(["azureCreds", "azureVoices"])
+      if (!azureCreds) return []
+      if (azureVoices && azureVoices.expire > Date.now()) return azureVoices.list
+      const list = await this.fetchVoices(azureCreds.region, azureCreds.key)
+      await updateSettings({azureVoices: {list, expire: Date.now() + 24*3600*1000}})
+      return list
+    }
+    catch (err) {
+      console.error(err)
+      return []
+    }
+  }
+  this.fetchVoices = async function(region, key) {
+    const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/voices/list`, {
+      method: "GET",
+      headers: {
+        "Ocp-Apim-Subscription-Key": key,
+      }
+    })
+    if (!res.ok) throw new Error("Server return " + res.status)
+    const voices = await res.json()
+    return voices.map(item => {
+      const name = item.ShortName.split("-")[2]
+      return {
+        voiceName: "Azure " + item.LocaleName + " - " + name,
+        lang: item.Locale,
+        gender: item.Gender == "Male" ? "male" : "female",
+      }
+    })
+  }
+  async function getAudioUrl(text, lang, voice) {
+    const matches = voice.voiceName.match(/^Azure .* - (\w+)$/)
+    const voiceName = voice.lang + "-" + matches[1]
+    const {azureCreds} = await getSettings(["azureCreds"])
+    const {region, key} = azureCreds
+    const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+      method: "POST",
+      headers: {
+        "Ocp-Apim-Subscription-Key": key,
+        "Content-Type": "application/ssml+xml",
+        "X-Microsoft-OutputFormat": "ogg-48khz-16bit-mono-opus",
+      },
+      body: `<speak version='1.0' xml:lang='${lang}'><voice name='${voiceName}'>${escapeXml(text)}</voice></speak>`
+    })
+    if (!res.ok) throw new Error("Server return " + res.status)
+    const blob = await res.blob()
+    return URL.createObjectURL(blob)
+  }
 }

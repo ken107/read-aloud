@@ -124,7 +124,7 @@ function clearState(key) {
  */
 function getVoices(opts) {
   if (!opts) opts = {}
-  return getSettings(["awsCreds", "gcpCreds", "openaiCreds"])
+  return getSettings(["awsCreds", "gcpCreds", "openaiCreds", "azureCreds"])
     .then(function(settings) {
       return Promise.all([
         browserTtsEngine.getVoices(),
@@ -141,6 +141,7 @@ function getVoices(opts) {
         nvidiaRivaTtsEngine.getVoices(),
         phoneTtsEngine.getVoices(),
         settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
+        settings.azureCreds ? azureTtsEngine.getVoices() : [],
       ])
     })
     .then(function(arr) {
@@ -204,12 +205,16 @@ function isOpenai(voice) {
   return /^ChatGPT /.test(voice.voiceName);
 }
 
+function isAzure(voice) {
+  return /^Azure /.test(voice.voiceName);
+}
+
 function isUseMyPhone(voice) {
   return voice.isUseMyPhone == true
 }
 
 function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isNvidiaRiva(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isNvidiaRiva(voice) || isOpenai(voice) || isAzure(voice);
 }
 
 function isPremiumVoice(voice) {
@@ -921,6 +926,18 @@ function when(pred, val) {
 function removeAllAttrs(el, recursive) {
   while (el.attributes.length > 0) el.removeAttribute(el.attributes[0].name)
   if (recursive) for (const child of el.children) removeAllAttrs(child, true)
+}
+
+function escapeXml(unsafe) {
+  return unsafe.replace(/[<>&'"]/g, function (c) {
+    switch (c) {
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '&': return '&amp;';
+        case '\'': return '&apos;';
+        case '"': return '&quot;';
+    }
+  })
 }
 
 var languageTable = (function() {

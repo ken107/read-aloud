@@ -157,6 +157,30 @@
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-header">
+        Enter SpeechRegion and SpeechKey to enable Azure voices.
+      </div>
+      <div class="card-body">
+        <form>
+          <div class="form-group">
+            <div class="input-group">
+              <input type="text" class="form-control" id="azure-region" placeholder="SPEECH_REGION">
+              <input type="text" class="form-control" id="azure-key" placeholder="SPEECH_KEY">
+              <div class="input-group-append">
+                <button type="button" class="btn btn-primary" id="azure-save-button">Save</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <img id="azure-progress" class="status progress" src="img/loading.gif">
+            <div id="azure-success" class="status alert alert-success"></div>
+            <div id="azure-error" class="status alert alert-danger"></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div class="mt-4 mb-3">
       <a href="options.html" class="btn btn-secondary">Back to Options</a>
     </div>
