@@ -43,13 +43,26 @@ var defaults = {
 var getSingletonAudio = lazy(() => new Audio());
 var getSilenceTrack = lazy(() => makeSilenceTrack())
 
-//if extension page but not service worker
-if (typeof brapi.commands != "undefined" && typeof window != "undefined") {
-  //setup dark mode
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.addEventListener("DOMContentLoaded", function() {
-      document.body.classList.add("dark-mode")
-    })
+setupDarkMode()
+
+
+
+
+async function setupDarkMode() {
+  //if extension page but not service worker
+  if (typeof brapi.commands != "undefined" && typeof window != "undefined") {
+    const [{darkMode}] = await Promise.all([
+      getSettings(["darkMode"]),
+      new Promise(f => document.addEventListener("DOMContentLoaded", f))
+    ])
+    if (typeof darkMode == "boolean") {
+      document.body.classList.toggle("dark-mode", darkMode)
+    }
+    else {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add("dark-mode")
+      }
+    }
   }
 }
 
@@ -82,7 +95,7 @@ function parseQueryString(search) {
  */
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap"], fulfill);
+    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "darkMode"], fulfill);
   });
 }
 
@@ -94,7 +107,7 @@ function updateSettings(items) {
 
 function clearSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap"], fulfill);
+    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "darkMode"], fulfill);
   });
 }
 

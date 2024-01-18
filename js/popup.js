@@ -25,6 +25,7 @@ $(function() {
   $("#increase-font-size").click(changeFontSize.bind(null, +1));
   $("#decrease-window-size").click(changeWindowSize.bind(null, -1));
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
+  $("#toggle-dark-mode").click(toggleDarkMode);
 
   updateButtons()
     .then(getSettings.bind(null, ["showHighlighting", "readAloudTab"]))
@@ -305,4 +306,9 @@ function showAnnouncement(ann) {
       ann.disabled = true;
       updateSettings({announcement: ann});
     })
+}
+
+function toggleDarkMode() {
+  const darkMode = document.body.classList.toggle("dark-mode")
+  updateSettings({darkMode})
 }
