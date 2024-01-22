@@ -78,7 +78,8 @@
 
   const voicesPopulatedObservable = rxjs.combineLatest([settingsObservable.of("languages"), voicesPromise, domReadyPromise])
     .pipe(
-      rxjs.tap(([languages, voices]) => populateVoices(voices, {languages}))
+      rxjs.tap(([languages, voices]) => populateVoices(voices, {languages})),
+      rxjs.share()
     )
 
   rxjs.combineLatest([settingsObservable.of("voiceName"), voicesPopulatedObservable])
@@ -95,7 +96,7 @@
       const slider = createSlider($("#rate").get(0), {
           onChange(value) {
             const rate = Math.pow($("#rate").data("pow"), value)
-            updateSettings({rate: Number(rate.toFixed(3))})
+            updateSetting("rate" + $("#voices").val(), Number(rate.toFixed(3)))
           }
         })
       $("#rate-edit-button")
@@ -109,18 +110,24 @@
           else if (val < .1) $(this).val(.1);
           else if (val > 10) $(this).val(10);
           else $("#rate-edit-button").hide();
-          updateSettings({rate: Number($("#rate-input").val())})
+          updateSetting("rate" + $("#voices").val(), Number($(this).val()))
         });
       return slider
     })
 
-  rxjs.combineLatest([settingsObservable.of("rate"), rateSliderPromise])
+  const rateObservable = settingsObservable.of("voiceName")
+    .pipe(
+      rxjs.switchMap(voiceName => settingsObservable.of("rate" + (voiceName || ""))),
+      rxjs.share()
+    )
+
+  rxjs.combineLatest([rateObservable, rateSliderPromise])
     .subscribe(([rate, slider]) => {
       slider.setValue(Math.log(rate || defaults.rate) / Math.log($("#rate").data("pow")))
       $("#rate-input").val(rate || defaults.rate)
     })
 
-  rxjs.combineLatest([settingsObservable.of("voiceName"), settingsObservable.of("rate"), domReadyPromise])
+  rxjs.combineLatest([settingsObservable.of("voiceName"), rateObservable, domReadyPromise])
     .subscribe(([voiceName, rate]) => {
       $("#rate-warning").toggle((!voiceName || !isRemoteVoice({voiceName})) && rate > 2)
     })
@@ -243,14 +250,12 @@
 
 
   function makeSettingsObservable() {
-    const initial = rxjs.from(brapi.storage.local.get())
-      .pipe(rxjs.share())
     const changes = new rxjs.Observable(observer => brapi.storage.local.onChanged.addListener(changes => observer.next(changes)))
       .pipe(rxjs.share())
     return {
       changes,
       of(name) {
-        return initial
+        return rxjs.from(brapi.storage.local.get([name]))
           .pipe(
             rxjs.map(settings => settings[name]),
             rxjs.concatWith(changes.pipe(rxjs.filter(settings => name in settings), rxjs.map(settings => settings[name].newValue))),

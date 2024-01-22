@@ -111,6 +111,17 @@ function clearSettings(names) {
   });
 }
 
+async function getSetting(name) {
+  const items = await brapi.storage.local.get([name])
+  return items[name]
+}
+
+async function updateSetting(name, value) {
+  const items = {}
+  items[name] = value
+  await brapi.storage.local.set(items)
+}
+
 function getState(key) {
   return new Promise(function(fulfill) {
     brapi.storage.local.get(key, function(items) {
