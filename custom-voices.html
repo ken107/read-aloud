@@ -71,6 +71,12 @@
                 <button type="button" class="btn btn-primary" id="gcp-save-button">Save</button>
               </div>
             </div>
+            <br/>
+            <div class="input-group">
+              <label for="gcp-enable-studio">
+              <input type="checkbox" id="gcp-enable-studio" name="gcp-enable-studio" value="enabled">
+              Include Google Studio voices. (WARNING: 10x cost)</label>
+            </div>
           </div>
           <div class="form-group">
             <img id="gcp-progress" class="status progress" src="img/loading.gif" />
@@ -123,6 +129,53 @@
             <img id="riva-progress" class="status progress" src="img/loading.gif" />
             <div id="riva-success" class="status alert alert-success"></div>
             <div id="riva-error" class="status alert alert-danger"></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header card-header-dark">
+        Enter OpenAI API key to enable ChatGPT voices.
+      </div>
+      <div class="card-body">
+        <form>
+          <div class="form-group">
+            <div class="input-group">
+              <input type="text" class="form-control" id="openai-api-key" placeholder="API Key">
+              <div class="input-group-append">
+                <button type="button" class="btn btn-primary" id="openai-save-button">Save</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <img id="openai-progress" class="status progress" src="img/loading.gif">
+            <div id="openai-success" class="status alert alert-success"></div>
+            <div id="openai-error" class="status alert alert-danger"></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        Enter Azure credentials to enable Azure voices.
+      </div>
+      <div class="card-body">
+        <form>
+          <div class="form-group">
+            <div class="input-group">
+              <input type="text" class="form-control" id="azure-region" placeholder="SPEECH_REGION">
+              <input type="text" class="form-control" id="azure-key" placeholder="SPEECH_KEY">
+              <div class="input-group-append">
+                <button type="button" class="btn btn-primary" id="azure-save-button">Save</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <img id="azure-progress" class="status progress" src="img/loading.gif">
+            <div id="azure-success" class="status alert alert-success"></div>
+            <div id="azure-error" class="status alert alert-danger"></div>
           </div>
         </form>
       </div>

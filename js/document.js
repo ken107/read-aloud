@@ -292,24 +292,21 @@ function Doc(source, onEnd) {
         })
   }
 
-  function getSpeech(texts) {
-    return getSettings()
-      .then(function(settings) {
-        var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
-        console.log("Declared", info.lang, "- Detected", info.detectedLang, "- Chosen", lang)
-        var options = {
-          rate: settings.rate || defaults.rate,
-          pitch: settings.pitch || defaults.pitch,
-          volume: settings.volume || defaults.volume,
-          lang: config.langMap[lang] || lang || 'en-US',
-        }
-        return getSpeechVoice(settings.voiceName, options.lang)
-          .then(function(voice) {
-            if (!voice) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang}));
-            options.voice = voice;
-            return new Speech(texts, options);
-          })
-      })
+  async function getSpeech(texts) {
+    const settings = await getSettings()
+    settings.rate = await getSetting("rate" + (settings.voiceName || ""))
+    var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
+    console.log("Declared", info.lang, "- Detected", info.detectedLang, "- Chosen", lang)
+    var options = {
+      rate: settings.rate || defaults.rate,
+      pitch: settings.pitch || defaults.pitch,
+      volume: settings.volume || defaults.volume,
+      lang: config.langMap[lang] || lang || 'en-US',
+    }
+    const voice = await getSpeechVoice(settings.voiceName, options.lang)
+    if (!voice) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang}));
+    options.voice = voice;
+    return new Speech(texts, options);
   }
 
   //method stop

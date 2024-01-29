@@ -30,17 +30,12 @@ function Speech(texts, options) {
   this.gotoEnd = gotoEnd;
 
   function pickEngine() {
+    if (isAzure(options.voice)) return azureTtsEngine;
+    if (isOpenai(options.voice)) return openaiTtsEngine;
     if (isUseMyPhone(options.voice)) return phoneTtsEngine;
     if (isNvidiaRiva(options.voice)) return nvidiaRivaTtsEngine;
     if (isGoogleTranslate(options.voice) && !/\s(Hebrew|Telugu)$/.test(options.voice.voiceName)) {
-      return googleTranslateTtsEngine.ready()
-        .then(function() {return googleTranslateTtsEngine})
-        .catch(function(err) {
-          console.warn("GoogleTranslate unavailable,", err);
-          options.voice.autoSelect = true;
-          options.voice.voiceName = "Microsoft US English (Zira)";
-          return remoteTtsEngine;
-        })
+      return googleTranslateTtsEngine
     }
     if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;
     if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
@@ -54,7 +49,7 @@ function Speech(texts, options) {
     var isEA = /^zh|ko|ja/.test(options.lang);
     var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
     if (isGoogleNative(options.voice)) {
-      var wordLimit = (/^(de|ru|es|id)/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
+      var wordLimit = (/^(de|ru|es|pt|id)/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
       return new WordBreaker(wordLimit, punctuator).breakText(text);
     }
     else {

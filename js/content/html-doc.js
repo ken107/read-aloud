@@ -116,7 +116,7 @@ var readAloudDoc = new function() {
       else {
         if (hasTextNodes(this)) addBlock(this);
         else if (hasParagraphs(this)) addBlock(this, true);
-        else $(this).children(":not(" + skipTags + ")").each(walk);
+        else $(this).add(this.shadowRoot).children(":not(" + skipTags + ")").each(walk);
       }
     };
     var textBlocks = [];
@@ -199,7 +199,8 @@ var readAloudDoc = new function() {
     if ($(node).is('body')) return null;
     if (node.nodeType == 1 && !skipChildren && node.lastChild) return node.lastChild;
     if (node.previousSibling) return node.previousSibling;
-    return previousNode(node.parentNode, true);
+    if (node.parentNode) return previousNode(node.parentNode, true);
+    return null;
   }
 
   function someChildNodes(elem, test) {

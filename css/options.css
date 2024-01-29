@@ -11,8 +11,18 @@ body {
 }
 
 .container-fluid {
-  padding-left: 15px;
-  padding-right: 15px;
+  padding: 1rem;
+}
+
+#expand-button {
+  text-decoration: none;
+  font-size: .75em;
+  opacity: .25;
+  cursor: pointer;
+  display: none;
+}
+h2:hover #expand-button {
+  display: inline;
 }
 
 button.close {
@@ -45,8 +55,8 @@ button.close {
 }
 
 h2 {
-  margin-top: 1rem;
-  margin-bottom: .5rem;
+  margin-top: 0;
+  margin-bottom: 0;
   font-size: 2rem;
   font-weight: 500;
   line-height: 1.2;
@@ -58,7 +68,8 @@ small {
 }
 
 .layout {
-  width: 500px;
+  margin-top: 1rem;
+  min-width: 500px;
   display: grid;
   grid-template-columns: auto auto;
   grid-template-rows: auto auto auto auto;
@@ -67,7 +78,7 @@ small {
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-top: .5rem;
 }
 
 .form-control {
@@ -98,8 +109,12 @@ input {
   font-size: inherit;
   line-height: inherit;
 }
-input[type=checkbox], input[type=radio] {
+input[type=checkbox] {
+  margin-top: .5rem;
   padding: 0;
+}
+input[type=checkbox] + label {
+  margin-left: .5em;
 }
 
 .btn {
@@ -302,4 +317,12 @@ input[type=checkbox], input[type=radio] {
 #account-info {
   display: none;
   font-size: smaller;
+}
+
+#advanced-options {
+  min-width: 500px;
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: min-content auto;
+  align-items: start;
 }

@@ -30,15 +30,31 @@ registerMessageListener("serviceWorker", handlers)
 /**
  * Installers
  */
-function installContentScripts() {
-  brapi.scripting.registerContentScripts([{
-    matches: ["https://docs.google.com/document/*"],
-    id: "google-docs",
-    js: ["js/page/google-doc.js"],
-    runAt: "document_start",
-    world: "MAIN"
-  }])
-  .then(() => console.info("Installed content scripts"), console.error)
+async function installContentScripts() {
+  const scripts = [
+    {
+      matches: ["https://docs.google.com/document/*"],
+      id: "google-docs",
+      js: ["js/page/google-doc.js"],
+      runAt: "document_start",
+      world: "MAIN"
+    },
+  ]
+  const registeredIds = await brapi.scripting.getRegisteredContentScripts({ids: scripts.map(x => x.id)})
+    .then(scripts => scripts.map(x => x.id))
+    .catch(err => {
+      console.error(err)
+      return []
+    })
+  if (registeredIds.length) {
+    console.info("Already registered content scripts", registeredIds)
+  }
+  const scriptsToRegister = scripts.filter(script => !registeredIds.includes(script.id))
+  for (const script of scriptsToRegister) {
+    await brapi.scripting.registerContentScripts([script])
+      .then(() => console.info("Successfully registered content script", script.id))
+      .catch(err => console.error("Failed to register content script", script.id, err))
+  }
 }
 
 function installContextMenus() {
@@ -102,6 +118,33 @@ brapi.commands.onCommand.addListener(function(command) {
       .catch(handleHeadlessError)
   }
 })
+
+
+/**
+ * Listener for external calls
+ */
+brapi.runtime.onMessageExternal.addListener(
+  (request, sender) => {
+    if (request.method == "play" && typeof request.text == "string") {
+      playText(request.text)
+        .catch(handleHeadlessError)
+    }
+    else if (request.method == "pause") {
+      pause()
+        .catch(handleHeadlessError)
+    }
+    else if (request.method == "stop") {
+      stop()
+        .catch(handleHeadlessError)
+    }
+    else if (request.method == "resume") {
+      resume()
+        .catch(handleHeadlessError)
+    }
+    else {
+      handleHeadlessError(new Error("Bad method call"))
+    }
+  })
 
 
 
@@ -228,6 +271,7 @@ function seek(n) {
 
 
 function handleHeadlessError(err) {
+  console.error(err)
   //TODO: let user knows somehow
 }
 
