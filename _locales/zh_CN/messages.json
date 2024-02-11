@@ -53,6 +53,15 @@
   "options_highlighting_window": {
     "message": "在单独的窗口中显示"
   },
+  "options_merge_or_split_texts": {
+    "message": "合併或分割文字"
+  },
+  "options_split_texts": {
+    "message": "將文字分割成多個部分"
+  },
+  "options_merge_texts_into_one": {
+    "message": "將文字合併成一個部分"
+  },
   "options_audio_playback": {
     "message": "音频播放"
   },

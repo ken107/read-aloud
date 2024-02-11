@@ -53,6 +53,15 @@
   "options_highlighting_window": {
     "message": "Hiển thị trong cửa sổ riêng"
   },
+  "options_merge_or_split_texts": {
+    "message": "Kết hợp hoặc chia cắt văn bản"
+  },
+  "options_split_texts": {
+    "message": "Chia văn bản thành nhiều phần nhỏ"
+  },
+  "options_merge_texts_into_one": {
+    "message": "Hợp nhất văn bản thành một phần"
+  },
   "options_audio_playback": {
     "message": "Phát thanh"
   },

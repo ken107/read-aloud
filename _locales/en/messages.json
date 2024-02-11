@@ -53,6 +53,15 @@
   "options_highlighting_window": {
     "message": "Show in a separate window"
   },
+  "options_merge_or_split_texts": {
+    "message": "Merge or split text"
+  },
+  "options_split_texts": {
+    "message": "Split text into multiple chunks"
+  },
+  "options_merge_texts_into_one": {
+    "message": "Merge text into one chunk"
+  },
   "options_audio_playback": {
     "message": "Audio Playback"
   },

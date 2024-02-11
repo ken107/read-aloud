@@ -178,6 +178,30 @@
 
 
 
+  //textSplitting
+  domReadyPromise
+    .then(() => {
+      $("#text-splitting")
+        .change(function() {
+          console.log('Setting', "textSplitting" + $("#voices").val(), $(this).val())
+          updateSetting("textSplitting" + $("#voices").val(), $(this).val())
+        })
+    })
+
+      
+  const textSplittingObservable = settingsObservable.of("voiceName")
+    .pipe(
+      rxjs.switchMap(voiceName => settingsObservable.of("textSplitting" + (voiceName || ""))),
+      rxjs.share()
+    )
+
+  rxjs.combineLatest([textSplittingObservable, domReadyPromise])
+    .subscribe(([textSplitting]) => {
+      $("#text-splitting").val(textSplitting || defaults.textSplitting)
+    })
+
+
+
   //audioPlayback
   Promise.all([brapi.storage.local.get(["useEmbeddedPlayer"]), domReadyPromise])
     .then(([settings]) => {

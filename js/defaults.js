@@ -38,6 +38,7 @@ var defaults = {
   showHighlighting: 1,
   highlightFontSize: 3,
   highlightWindowSize: 2,
+  textSplitting: 0,
 };
 
 var getSingletonAudio = lazy(() => new Audio());
