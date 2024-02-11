@@ -190,7 +190,6 @@ function Speech(texts, options) {
 
   function speak(text, onEnd, onError) {
     var state = "IDLE";
-    console.log(text);
     return new Promise(function(fulfill, reject) {
       engine.speak(text, options, function(event) {
         if (event.type == "start") {
