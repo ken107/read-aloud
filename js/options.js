@@ -68,6 +68,7 @@
           var voiceName = $(this).val();
           if (voiceName == "@custom") location.href = "custom-voices.html";
           else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
+          else if (voiceName == "@piper") bgPageInvoke("managePiperVoices").catch(console.error)
           else updateSettings({voiceName})
         });
       $("#languages-edit-button")
@@ -282,14 +283,16 @@
 
     //group by standard/premium
     var groups = Object.assign({
+        piper: [],
         offline: [],
         premium: [],
         standard: [],
       },
       voices.groupBy(function(voice) {
+        if (isPiperVoice(voice)) return "piper"
         if (isOfflineVoice(voice)) return "offline"
         if (isPremiumVoice(voice)) return "premium";
-        else return "standard";
+        return "standard"
       }))
     for (var name in groups) groups[name].sort(voiceSorter);
 
@@ -303,6 +306,22 @@
         .text(voice.voiceName)
         .appendTo(offline)
     }
+
+    //create piper group
+    $("<optgroup>").appendTo("#voices")
+    const piper = $("<optgroup>")
+      .attr("label", brapi.i18n.getMessage("options_voicegroup_piper"))
+      .appendTo("#voices")
+    for (const voice of groups.piper) {
+      $("<option>")
+        .val(voice.voiceName)
+        .text(voice.voiceName)
+        .appendTo(piper)
+    }
+    $("<option>")
+      .val("@piper")
+      .text(brapi.i18n.getMessage("options_enable_piper_voices"))
+      .appendTo(piper)
 
     //create the standard optgroup
     $("<optgroup>").appendTo($("#voices"))

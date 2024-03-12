@@ -8,7 +8,39 @@ function Speech(texts, options) {
   var engine;
   var pauseDuration = 650/options.rate;
   var state = "IDLE";
-  var index = 0;
+  const position = immediate(() => {
+    let index = 0
+    let paragraph, sentence, word
+    return {
+      getIndex() {
+        return index
+      },
+      setIndex(value) {
+        index = value
+        paragraph = sentence = word = null
+      },
+      getParagraph() {
+        return paragraph
+      },
+      setParagraph(value) {
+        paragraph = value
+        sentence = word = null
+      },
+      getSentence() {
+        return sentence
+      },
+      setSentence(value) {
+        sentence = value
+        word = null
+      },
+      getWord() {
+        return word
+      },
+      setWord(value) {
+        word = value
+      }
+    }
+  })
   var delayedPlayTimer;
   var ready = Promise.resolve(pickEngine())
     .then(function(x) {
@@ -30,6 +62,7 @@ function Speech(texts, options) {
   this.gotoEnd = gotoEnd;
 
   function pickEngine() {
+    if (isPiperVoice(options.voice)) return piperTtsEngine;
     if (isAzure(options.voice)) return azureTtsEngine;
     if (isOpenai(options.voice)) return openaiTtsEngine;
     if (isUseMyPhone(options.voice)) return phoneTtsEngine;
@@ -54,6 +87,7 @@ function Speech(texts, options) {
     }
     else {
       if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
+      else if (isPiperVoice(options.voice)) return [text];
       else return new CharBreaker(750, punctuator, 200).breakText(text);
     }
   }
@@ -70,14 +104,17 @@ function Speech(texts, options) {
 
   function getPosition() {
     return {
-      index: index,
       texts: texts,
+      index: position.getIndex(),
+      paragraph: position.getParagraph(),
+      sentence: position.getSentence(),
+      word: position.getWord(),
       isRTL: /^(ar|az|dv|he|iw|ku|fa|ur)\b/.test(options.lang),
     }
   }
 
   function play() {
-    if (index >= texts.length) {
+    if (position.getIndex() >= texts.length) {
       state = "IDLE";
       if (self.onEnd) self.onEnd();
       return Promise.resolve();
@@ -97,11 +134,11 @@ function Speech(texts, options) {
       state.startTime = new Date().getTime();
       return ready
         .then(function() {
-          return speak(texts[index],
+          return speak(texts[position.getIndex()],
             function() {
               state = "IDLE";
               if (engine.setNextStartTime) engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
-              index++;
+              position.setIndex(position.getIndex() + 1)
               play()
                 .catch(function(err) {
                   if (self.onEnd) self.onEnd(err)
@@ -110,10 +147,16 @@ function Speech(texts, options) {
             function(err) {
               state = "IDLE";
               if (self.onEnd) self.onEnd(err);
+            },
+            function(event) {
+              if (event.type == "paragraph") position.setParagraph(event)
+              else if (event.type == "sentence") position.setSentence(event)
+              else if (event.type == "word") position.setWord(event)
             })
         })
         .then(function() {
-          if (texts[index+1] && engine.prefetch) engine.prefetch(texts[index+1], options);
+          const nextText = texts[position.getIndex() + 1]
+          if (nextText && engine.prefetch) engine.prefetch(nextText, options)
         })
     }
   }
@@ -153,8 +196,8 @@ function Speech(texts, options) {
   }
 
   function forward() {
-    if (index+1 < texts.length) {
-      index++;
+    if (position.getIndex() + 1 < texts.length) {
+      position.setIndex(position.getIndex() + 1)
       if (state == "PLAYING") return delayedPlay()
       else return stop()
     }
@@ -165,8 +208,8 @@ function Speech(texts, options) {
     if (state == "PLAYING" && new Date().getTime()-state.startTime > 3*1000) {
       return stop().then(play);
     }
-    else if (index > 0) {
-      index--;
+    else if (position.getIndex() > 0) {
+      position.setIndex(position.getIndex() - 1)
       if (state == "PLAYING") return stop().then(play)
       else return stop()
     }
@@ -174,16 +217,16 @@ function Speech(texts, options) {
   }
 
   function seek(n) {
-    index = n;
+    position.setIndex(n)
     return stop().then(play)
   }
 
   async function gotoEnd() {
     await ready
-    index = texts.length && texts.length-1;
+    position.setIndex(texts.length && texts.length-1)
   }
 
-  function speak(text, onEnd, onError) {
+  function speak(text, onEnd, onError, onMiscEvent) {
     var state = "IDLE";
     return new Promise(function(fulfill, reject) {
       engine.speak(text, options, function(event) {
@@ -214,6 +257,9 @@ function Speech(texts, options) {
             onError(event.error);
             state = "ERROR";
           }
+        }
+        else {
+          onMiscEvent(event)
         }
       })
     })

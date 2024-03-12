@@ -75,6 +75,10 @@ function lazy(get) {
   return () => value || (value = get())
 }
 
+function immediate(get) {
+  return get()
+}
+
 function getQueryString() {
   return location.search ? parseQueryString(location.search) : {};
 }
@@ -148,7 +152,7 @@ function clearState(key) {
  */
 function getVoices(opts) {
   if (!opts) opts = {}
-  return getSettings(["awsCreds", "gcpCreds", "openaiCreds", "azureCreds"])
+  return getSettings(["awsCreds", "gcpCreds", "openaiCreds", "azureCreds", "piperVoices"])
     .then(function(settings) {
       return Promise.all([
         browserTtsEngine.getVoices(),
@@ -166,6 +170,7 @@ function getVoices(opts) {
         phoneTtsEngine.getVoices(),
         settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
         settings.azureCreds ? azureTtsEngine.getVoices() : [],
+        settings.piperVoices || [],
       ])
     })
     .then(function(arr) {
@@ -231,6 +236,10 @@ function isOpenai(voice) {
 
 function isAzure(voice) {
   return /^Azure /.test(voice.voiceName);
+}
+
+function isPiperVoice(voice) {
+  return /^Piper /.test(voice.voiceName)
 }
 
 function isUseMyPhone(voice) {
@@ -962,6 +971,21 @@ function escapeXml(unsafe) {
         case '"': return '&quot;';
     }
   })
+}
+
+function makePlaybackControl(initialState) {
+  const subject = new rxjs.BehaviorSubject(initialState)
+  return {
+    getState() {
+      return subject.getValue()
+    },
+    setState(state) {
+      subject.next(state)
+    },
+    wait(condition) {
+      return rxjs.firstValueFrom(subject.pipe(rxjs.filter(condition)))
+    }
+  }
 }
 
 var languageTable = (function() {

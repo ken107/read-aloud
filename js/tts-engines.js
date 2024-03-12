@@ -9,6 +9,7 @@ var nvidiaRivaTtsEngine = new NvidiaRivaTtsEngine();
 var phoneTtsEngine = new PhoneTtsEngine();
 var openaiTtsEngine = new OpenaiTtsEngine();
 var azureTtsEngine = new AzureTtsEngine();
+const piperTtsEngine = new PiperTtsEngine()
 
 
 /*
@@ -1310,5 +1311,75 @@ function AzureTtsEngine() {
     if (!res.ok) throw new Error("Server return " + res.status)
     const blob = await res.blob()
     return URL.createObjectURL(blob)
+  }
+}
+
+
+function PiperTtsEngine() {
+  let control
+  function ready() {
+    return rxjs.firstValueFrom(piperObservable)
+  }
+  this.speak = async function(utterance, options, onEvent) {
+    if (control) control.setState("stop")
+    control = makePlaybackControl("play")
+
+    try {
+      const piper = await ready()
+      if (await control.wait(x => x == "play" || x == "stop") == "stop") throw {name: "cancelled"}
+
+      const speechId = await piper.sendRequest("speak", {
+        utterance,
+        voiceName: options.voice.voiceName,
+        pitch: options.pitch,
+        rate: options.rate,
+        volume: options.volume,
+      })
+      immediate(async () => {
+        let command = "play"
+        while (command != "stop") {
+          command = await control.wait(x => x != command)
+          await piper.sendRequest(command)
+        }
+      })
+      onEvent({type: "start"})
+
+      let sub
+      try {
+        await new Promise((fulfill, reject) => {
+          sub = piperCallbacks
+            .pipe(
+              rxjs.filter(event => event.speechId == speechId)
+            )
+            .subscribe(event => {
+              if (event.type == "end") fulfill()
+              else if (event.type == "error") reject(event.error)
+              else onEvent(event)
+            })
+        })
+      }
+      finally {
+        sub.unsubscribe()
+      }
+      onEvent({type: "end"})
+    }
+    catch (err) {
+      onEvent({type: "error", error: err})
+    }
+    finally {
+      control = null
+    }
+  }
+  this.isSpeaking = function(callback) {
+    callback(control != null)
+  }
+  this.pause = async function() {
+    if (control) control.setState("pause")
+  }
+  this.resume = async function() {
+    if (control) control.setState("resume")
+  }
+  this.stop = async function() {
+    if (control) control.setState("stop")
   }
 }

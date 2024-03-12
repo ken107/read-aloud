@@ -1,8 +1,41 @@
 
+const isEmbedded = top != self
 var queryString = new URLSearchParams(location.search)
 var activeDoc;
 var playbackError = null;
 var closeTabTimer = queryString.has("autoclose") && startTimer(5*60*1000, closePlayer)
+
+
+const piperSubject = new rxjs.Subject()
+const piperObservable = rxjs.defer(() => {
+    createPiperFrame()
+    return piperSubject
+  })
+  .pipe(
+    rxjs.shareReplay({bufferSize: 1, refCount: false})
+  )
+const piperCallbacks = new rxjs.Subject()
+const domDispatcher = makeDispatcher("piper-host", {
+  advertiseVoices({voices}, sender) {
+    updateSettings({piperVoices: voices})
+    piperSubject.next(sender)
+  },
+  onSentence: args => piperCallbacks.next({type: "sentence", ...args}),
+  onParagraph: args => piperCallbacks.next({type: "paragraph", ...args}),
+  onEnd: args => piperCallbacks.next({type: "end", ...args}),
+  onError: args => piperCallbacks.next({type: "error", ...args}),
+})
+window.addEventListener("message", event => {
+  const send = message => event.source.postMessage(message, {targetOrigin: event.origin})
+  const sender = {
+    sendRequest(method, args) {
+      const id = String(Math.random())
+      send({to: "piper-service", type: "request", id, method, args})
+      return domDispatcher.waitForResponse(id)
+    }
+  }
+  domDispatcher.dispatch(event.data, sender, send)
+})
 
 
 var messageHandlers = {
@@ -19,6 +52,7 @@ var messageHandlers = {
   shouldPlaySilence: shouldPlaySilence.bind({}),
   startPairing: () => phoneTtsEngine.startPairing(),
   isPaired: () => phoneTtsEngine.isPaired(),
+  managePiperVoices,
 }
 
 registerMessageListener("player", messageHandlers)
@@ -279,4 +313,35 @@ async function shouldPlaySilence(providerId) {
       return should
     }
   }
+}
+
+function managePiperVoices() {
+  if (isEmbedded) {
+    return "POPOUT"
+  }
+  else {
+    rxjs.firstValueFrom(piperObservable)
+      .catch(console.error)
+    brapi.tabs.getCurrent()
+      .then(tab => Promise.all([
+        brapi.windows.update(tab.windowId, {focused: true}),
+        brapi.tabs.update(tab.id, {active: true})
+      ]))
+      .catch(console.error)
+    return "OK"
+  }
+}
+
+function createPiperFrame() {
+  const f = document.createElement("iframe")
+  f.id = "piper-frame"
+  f.src = "http://localhost:8080/"
+  f.allow = "cross-origin-isolated"
+  f.style.position = "absolute"
+  f.style.left =
+  f.style.top = "0"
+  f.style.width =
+  f.style.height = "100%"
+  f.style.borderWidth = "0"
+  document.body.appendChild(f)
 }

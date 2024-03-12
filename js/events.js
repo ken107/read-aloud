@@ -22,6 +22,7 @@ var handlers = {
   seek: seek,
   reportIssue: reportIssue,
   authWavenet: authWavenet,
+  managePiperVoices,
 }
 
 registerMessageListener("serviceWorker", handlers)
@@ -360,6 +361,15 @@ async function openPdfViewer(tabId, pdfUrl) {
   await new Promise(f => handlers.pdfViewerCheckIn = f)
 }
 
+async function managePiperVoices() {
+  const result = await sendToPlayer({method: "managePiperVoices"}).catch(err => false)
+  if (result != "OK") {
+    if (result == "POPOUT") await sendToPlayer({method: "close"})
+    await injectPlayer()
+    await sendToPlayer({method: "managePiperVoices"})
+  }
+}
+
 
 
 async function contentScriptAlreadyInjected(tab, frameId) {
@@ -400,8 +410,9 @@ async function injectContentScript(tab, frameId, extraScripts) {
 }
 
 async function injectPlayer(tab) {
+  const settings = await getSettings(["useEmbeddedPlayer", "piperVoices"])
   const promise = new Promise(f => handlers.playerCheckIn = f)
-  if ((await getSettings()).useEmbeddedPlayer) {
+  if (tab && settings.useEmbeddedPlayer && (settings.piperVoices || []).length == 0) {
     try {
       if (tab.incognito) {
         //https://developer.chrome.com/docs/extensions/mv3/manifest/incognito/

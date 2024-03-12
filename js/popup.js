@@ -119,7 +119,7 @@ function updateButtons() {
     ])
   .then(spread(function(settings, stateInfo) {
     var state = stateInfo.state
-    var speechPos = stateInfo.speechPosition
+    var pos = stateInfo.speechPosition
     var playbackErr = stateInfo.playbackError
 
     if (playbackErr) playbackErrorProcessor.next(playbackErr)
@@ -132,30 +132,73 @@ function updateButtons() {
     $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
     $("#highlight, #toolbar").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
 
-    if ((settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && speechPos) {
-      var pos = speechPos;
+    if ((settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && pos) {
       var elem = $("#highlight");
       if (!elem.data("texts") || elem.data("texts").length != pos.texts.length || elem.data("texts").some(function(text,i) {return text != pos.texts[i]})) {
         elem.css("direction", pos.isRTL ? "rtl" : "");
-        elem.data({texts: pos.texts, index: -1});
+        elem.data({texts: pos.texts, position: null});
         elem.empty();
         for (var i=0; i<pos.texts.length; i++) {
-          var html = escapeHtml(pos.texts[i]).replace(/\r?\n/g, "<br/>");
-          $("<span>").html(html).appendTo(elem).css("cursor", "pointer").click(onSeek.bind(null, i));
+          makeSpan(pos.texts[i])
+            .css("cursor", "pointer")
+            .click(onSeek.bind(null, i))
+            .appendTo(elem)
         }
       }
-      if (elem.data("index") != pos.index) {
-        elem.data("index", pos.index);
-        elem.children(".active").removeClass("active");
-        var child = elem.children().eq(pos.index).addClass("active");
-        if (child.length) {
-        var childTop = child.position().top;
-        var childBottom = childTop + child.outerHeight();
-        if (childTop < 0 || childBottom >= elem.height()) elem.animate({scrollTop: elem[0].scrollTop + childTop - 10});
+      if (!elem.data("position") || positionDiffers(elem.data("position"), pos)) {
+        elem.data("position", pos);
+        elem.find(".active").removeClass("active");
+        const child = elem.children().eq(pos.index)
+        const section = pos.word || pos.sentence || pos.paragraph
+        if (section) {
+          child.empty()
+          const text = pos.texts[pos.index]
+          if (section.startIndex > 0) {
+            makeSpan(text.slice(0, section.startIndex))
+              .appendTo(child)
+          }
+          if (section.endIndex > section.startIndex) {
+            const span = makeSpan(text.slice(section.startIndex, section.endIndex))
+              .addClass("active")
+              .appendTo(child)
+            scrollIntoView(span, elem)
+          }
+          if (text.length > section.endIndex) {
+            makeSpan(text.slice(section.endIndex))
+              .appendTo(child)
+          }
+        }
+        else {
+          child.addClass("active")
+          scrollIntoView(child, elem)
         }
       }
     }
   }));
+
+  function makeSpan(text) {
+    const html = escapeHtml(text).replace(/\r?\n/g, "<br/>")
+    return $("<span>").html(html)
+  }
+
+  function positionDiffers(left, right) {
+    function rangeDiffers(a, b) {
+      if (a == null && b == null) return false
+      if (a != null && b != null) return a.startIndex != b.startIndex || a.endIndex != b.endIndex
+      return true
+    }
+    return left.index != right.index ||
+      rangeDiffers(left.paragraph, right.paragraph) ||
+      rangeDiffers(left.sentence, right.sentence) ||
+      rangeDiffers(left.word, right.word)
+  }
+
+  function scrollIntoView(child, scrollParent) {
+    const childTop = child.offset().top - scrollParent.offset().top
+    const childBottom = childTop + child.outerHeight()
+    if (childTop < 0 || childBottom >= scrollParent.height())
+      scrollParent.animate({scrollTop: scrollParent[0].scrollTop + childTop - 10})
+  }
 }
 
 var currentPlayRequestId
