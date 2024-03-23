@@ -11,6 +11,18 @@ var playbackErrorProcessor = {
   }
 }
 
+const piperInitializingSubject = new rxjs.Subject()
+piperInitializingSubject
+  .pipe(
+    rxjs.distinctUntilChanged()
+  )
+  .subscribe(isInitializing => {
+    if (isInitializing) $("#status").text("Piper engine initializing...").show()
+    else $("#status").hide()
+  })
+
+
+
 $(function() {
   if (queryString.isPopup) $("body").addClass("is-popup")
   else getCurrentTab().then(function(currentTab) {return updateSettings({readAloudTab: currentTab.id})})
@@ -62,6 +74,8 @@ $(function() {
   checkAnnouncements();
 });
 
+
+
 function handleError(err) {
   if (!err) return;
 
@@ -112,17 +126,21 @@ function handleError(err) {
   }
 }
 
+
+
 function updateButtons() {
-    return Promise.all([
-      getSettings(),
-      bgPageInvoke("getPlaybackState"),
-    ])
+  return Promise.all([
+    getSettings(),
+    bgPageInvoke("getPlaybackState"),
+  ])
   .then(spread(function(settings, stateInfo) {
+    const showHighlighting = settings.showHighlighting != null ? Number(settings.showHighlighting) : defaults.showHighlighting
     var state = stateInfo.state
-    var pos = stateInfo.speechPosition
+    const speech = stateInfo.speechInfo
     var playbackErr = stateInfo.playbackError
 
     if (playbackErr) playbackErrorProcessor.next(playbackErr)
+    piperInitializingSubject.next(!!speech?.isPiper && state == "LOADING")
 
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
@@ -130,76 +148,86 @@ function updateButtons() {
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
-    $("#highlight, #toolbar").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
+    $("#highlight, #toolbar").toggle(showHighlighting != 0 && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
 
-    if ((settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && pos) {
-      var elem = $("#highlight");
-      if (!elem.data("texts") || elem.data("texts").length != pos.texts.length || elem.data("texts").some(function(text,i) {return text != pos.texts[i]})) {
-        elem.css("direction", pos.isRTL ? "rtl" : "");
-        elem.data({texts: pos.texts, position: null});
-        elem.empty();
-        for (var i=0; i<pos.texts.length; i++) {
-          makeSpan(pos.texts[i])
-            .css("cursor", "pointer")
-            .click(onSeek.bind(null, i))
-            .appendTo(elem)
-        }
-      }
-      if (!elem.data("position") || positionDiffers(elem.data("position"), pos)) {
-        elem.data("position", pos);
-        elem.find(".active").removeClass("active");
-        const child = elem.children().eq(pos.index)
-        const section = pos.word || pos.sentence || pos.paragraph
-        if (section) {
-          child.empty()
-          const text = pos.texts[pos.index]
-          if (section.startIndex > 0) {
-            makeSpan(text.slice(0, section.startIndex))
-              .appendTo(child)
-          }
-          if (section.endIndex > section.startIndex) {
-            const span = makeSpan(text.slice(section.startIndex, section.endIndex))
-              .addClass("active")
-              .appendTo(child)
-            scrollIntoView(span, elem)
-          }
-          if (text.length > section.endIndex) {
-            makeSpan(text.slice(section.endIndex))
-              .appendTo(child)
-          }
-        }
-        else {
-          child.addClass("active")
-          scrollIntoView(child, elem)
-        }
-      }
+    if (showHighlighting && speech) updateHighlighting(speech)
+  }))
+}
+
+function updateHighlighting(speech) {
+  var elem = $("#highlight");
+  if (!elem.data("texts")
+    || elem.data("texts").length != speech.texts.length
+    || elem.data("texts").some((text,i) => text != speech.texts[i])
+  ) {
+    elem.css("direction", speech.isRTL ? "rtl" : "")
+      .data({texts: speech.texts, position: null})
+      .empty()
+    for (let i=0; i<speech.texts.length; i++) {
+      makeSpan(speech.texts[i])
+        .css("cursor", "pointer")
+        .click(onSeek.bind(null, i))
+        .appendTo(elem)
     }
-  }));
-
-  function makeSpan(text) {
-    const html = escapeHtml(text).replace(/\r?\n/g, "<br/>")
-    return $("<span>").html(html)
   }
 
-  function positionDiffers(left, right) {
-    function rangeDiffers(a, b) {
-      if (a == null && b == null) return false
-      if (a != null && b != null) return a.startIndex != b.startIndex || a.endIndex != b.endIndex
-      return true
+  const pos = speech.position
+  if (!elem.data("position") || positionDiffers(elem.data("position"), pos)) {
+    elem.data("position", pos);
+    elem.find(".active").removeClass("active");
+    const child = elem.children().eq(pos.index)
+    const section = pos.word || pos.sentence || pos.paragraph
+    if (section) {
+      child.empty()
+      const text = speech.texts[pos.index]
+      let span
+      if (section.startIndex > 0) {
+        makeSpan(text.slice(0, section.startIndex))
+          .appendTo(child)
+      }
+      if (section.endIndex > section.startIndex) {
+        span = makeSpan(text.slice(section.startIndex, section.endIndex))
+          .addClass("active")
+          .appendTo(child)
+      }
+      if (text.length > section.endIndex) {
+        makeSpan(text.slice(section.endIndex))
+          .appendTo(child)
+      }
+      if (span) scrollIntoView(span, elem)
     }
-    return left.index != right.index ||
-      rangeDiffers(left.paragraph, right.paragraph) ||
-      rangeDiffers(left.sentence, right.sentence) ||
-      rangeDiffers(left.word, right.word)
-  }
-
-  function scrollIntoView(child, scrollParent) {
-    const childTop = child.offset().top - scrollParent.offset().top
-    const childBottom = childTop + child.outerHeight()
-    if (childTop < 0 || childBottom >= scrollParent.height())
-      scrollParent.animate({scrollTop: scrollParent[0].scrollTop + childTop - 10})
+    else {
+      child.addClass("active")
+      scrollIntoView(child, elem)
+    }
   }
 }
+
+function makeSpan(text) {
+  const html = escapeHtml(text).replace(/\r?\n/g, "<br/>")
+  return $("<span>").html(html)
+}
+
+function positionDiffers(left, right) {
+  function rangeDiffers(a, b) {
+    if (a == null && b == null) return false
+    if (a != null && b != null) return a.startIndex != b.startIndex || a.endIndex != b.endIndex
+    return true
+  }
+  return left.index != right.index ||
+    rangeDiffers(left.paragraph, right.paragraph) ||
+    rangeDiffers(left.sentence, right.sentence) ||
+    rangeDiffers(left.word, right.word)
+}
+
+function scrollIntoView(child, scrollParent) {
+  const childTop = child.offset().top - scrollParent.offset().top
+  const childBottom = childTop + child.outerHeight()
+  if (childTop < 0 || childBottom >= scrollParent.height())
+    scrollParent.animate({scrollTop: scrollParent[0].scrollTop + childTop - 10})
+}
+
+
 
 var currentPlayRequestId
 

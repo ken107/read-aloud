@@ -73,6 +73,7 @@ function BrowserTtsEngine() {
       }
     }
     return voices
+      .filter(voice => !isPiperVoice(voice))
   }
 }
 
@@ -1316,70 +1317,79 @@ function AzureTtsEngine() {
 
 
 function PiperTtsEngine() {
-  let control
-  function ready() {
-    return rxjs.firstValueFrom(piperObservable)
-  }
-  this.speak = async function(utterance, options, onEvent) {
-    if (control) control.setState("stop")
-    control = makePlaybackControl("play")
-
-    try {
-      const piper = await ready()
-      if (await control.wait(x => x == "play" || x == "stop") == "stop") throw {name: "cancelled"}
-
-      const speechId = await piper.sendRequest("speak", {
-        utterance,
-        voiceName: options.voice.voiceName,
-        pitch: options.pitch,
-        rate: options.rate,
-        volume: options.volume,
-      })
-      immediate(async () => {
-        let command = "play"
-        while (command != "stop") {
-          command = await control.wait(x => x != command)
-          await piper.sendRequest(command)
+  let control = null
+  let isSpeaking = false
+  this.speak = function(utterance, options, onEvent) {
+    const piperPromise = rxjs.firstValueFrom(piperObservable)
+    control = new rxjs.Subject()
+    control
+      .pipe(
+        rxjs.startWith("speak"),
+        rxjs.concatMap(async cmd => {
+          const piper = await piperPromise
+          switch (cmd) {
+            case "speak":
+              return piper.sendRequest("speak", {
+                utterance,
+                voiceName: options.voice.voiceName,
+                pitch: options.pitch,
+                rate: options.rate,
+                volume: options.volume,
+              })
+            case "pause":
+              return piper.sendRequest("pause")
+            case "resume":
+              return piper.sendRequest("resume")
+            case "stop":
+              return piper.sendRequest("stop")
+                .then(() => Promise.reject({name: "interrupted", message: "Playback interrupted"}))
+            case "forward":
+              return piper.sendRequest("forward")
+            case "rewind":
+              return piper.sendRequest("rewind")
+          }
+        }),
+        rxjs.ignoreElements(),
+        rxjs.mergeWith(piperCallbacks),
+        rxjs.map(event => {
+          if (event.type == "error") throw event.error
+          return event
+        }),
+        rxjs.takeWhile(event => event.type != "end")
+      )
+      .subscribe({
+        next(event) {
+          if (event.type == "start") isSpeaking = true
+          onEvent(event)
+        },
+        complete() {
+          onEvent({type: "end"})
+        },
+        error(err) {
+          if (err.name != "interrupted") onEvent({type: "error", error: err})
         }
       })
-      onEvent({type: "start"})
-
-      let sub
-      try {
-        await new Promise((fulfill, reject) => {
-          sub = piperCallbacks
-            .pipe(
-              rxjs.filter(event => event.speechId == speechId)
-            )
-            .subscribe(event => {
-              if (event.type == "end") fulfill()
-              else if (event.type == "error") reject(event.error)
-              else onEvent(event)
-            })
-        })
-      }
-      finally {
-        sub.unsubscribe()
-      }
-      onEvent({type: "end"})
-    }
-    catch (err) {
-      onEvent({type: "error", error: err})
-    }
-    finally {
-      control = null
-    }
+      .add(() => {
+        isSpeaking = false
+        control = null
+      })
   }
   this.isSpeaking = function(callback) {
-    callback(control != null)
+    callback(isSpeaking)
   }
-  this.pause = async function() {
-    if (control) control.setState("pause")
+  this.pause = function() {
+    control?.next("pause")
   }
-  this.resume = async function() {
-    if (control) control.setState("resume")
+  this.resume = function() {
+    control?.next("resume")
   }
-  this.stop = async function() {
-    if (control) control.setState("stop")
+  this.stop = function() {
+    control?.next("stop")
+  }
+  this.forward = function() {
+    control?.next("forward")
+  }
+  this.rewind = function() {
+    control?.next("rewind")
   }
 }

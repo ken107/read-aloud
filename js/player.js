@@ -3,7 +3,6 @@ const isEmbedded = top != self
 var queryString = new URLSearchParams(location.search)
 var activeDoc;
 var playbackError = null;
-var closeTabTimer = queryString.has("autoclose") && startTimer(5*60*1000, closePlayer)
 
 
 const piperSubject = new rxjs.Subject()
@@ -20,6 +19,7 @@ const domDispatcher = makeDispatcher("piper-host", {
     updateSettings({piperVoices: voices})
     piperSubject.next(sender)
   },
+  onStart: args => piperCallbacks.next({type: "start", ...args}),
   onSentence: args => piperCallbacks.next({type: "sentence", ...args}),
   onParagraph: args => piperCallbacks.next({type: "paragraph", ...args}),
   onEnd: args => piperCallbacks.next({type: "end", ...args}),
@@ -36,6 +36,21 @@ window.addEventListener("message", event => {
   }
   domDispatcher.dispatch(event.data, sender, send)
 })
+
+
+
+const idleSubject = new rxjs.BehaviorSubject(true)
+
+if (queryString.has("autoclose"))
+  rxjs.combineLatest(idleSubject, piperSubject.pipe(rxjs.startWith(null)))
+    .pipe(
+      rxjs.switchMap(([isIdle, piper]) => {
+        if (isIdle) return rxjs.timer(piper ? 30*60*1000 : 5*60*1000)
+        else return rxjs.EMPTY
+      })
+    )
+    .subscribe(closePlayer)
+
 
 
 var messageHandlers = {
@@ -145,7 +160,7 @@ function getPlaybackState() {
       .then(function(results) {
         return {
           state: results[0],
-          speechPosition: results[1] && results[1].getPosition(),
+          speechInfo: results[1] && results[1].getInfo(),
           playbackError: errorToJson(playbackError),
         }
       })
@@ -164,14 +179,14 @@ function openDoc(source, onEnd) {
     closeDoc();
     if (typeof onEnd == "function") onEnd(err);
   })
-  if (closeTabTimer) closeTabTimer.stop();
+  idleSubject.next(false)
 }
 
 function closeDoc() {
   if (activeDoc) {
     activeDoc.close();
     activeDoc = null;
-    if (closeTabTimer) closeTabTimer.restart();
+    idleSubject.next(true)
   }
 }
 
@@ -232,20 +247,6 @@ var requestAudioPlaybackPermission = lazy(async function() {
   $("#dialog-backdrop, #audio-playback-permission-dialog").hide()
   await brapi.tabs.update(prevTab.id, {active: true})
 })
-
-function startTimer(timeout, callback) {
-  var timer = setTimeout(callback, timeout)
-  return {
-    stop: function() {
-      clearTimeout(timer)
-      timer = null
-    },
-    restart: function() {
-      clearTimeout(timer)
-      timer = setTimeout(callback, timeout)
-    }
-  }
-}
 
 async function createOffscreenIfNotExist() {
   const hasOffscreen = await sendToOffscreen({method: "pause"}).then(res => res == true, err => false)
@@ -335,7 +336,7 @@ function managePiperVoices() {
 function createPiperFrame() {
   const f = document.createElement("iframe")
   f.id = "piper-frame"
-  f.src = "http://localhost:8080/"
+  f.src = "https://piper.ttstool.com/"
   f.allow = "cross-origin-isolated"
   f.style.position = "absolute"
   f.style.left =

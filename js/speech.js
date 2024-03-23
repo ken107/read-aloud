@@ -55,7 +55,7 @@ function Speech(texts, options) {
   this.pause = pause;
   this.stop = stop;
   this.getState = getState;
-  this.getPosition = getPosition;
+  this.getInfo = getInfo;
   this.forward = forward;
   this.rewind = rewind;
   this.seek = seek;
@@ -102,14 +102,17 @@ function Speech(texts, options) {
     })
   }
 
-  function getPosition() {
+  function getInfo() {
     return {
       texts: texts,
-      index: position.getIndex(),
-      paragraph: position.getParagraph(),
-      sentence: position.getSentence(),
-      word: position.getWord(),
+      position: {
+        index: position.getIndex(),
+        paragraph: position.getParagraph(),
+        sentence: position.getSentence(),
+        word: position.getWord(),  
+      },
       isRTL: /^(ar|az|dv|he|iw|ku|fa|ur)\b/.test(options.lang),
+      isPiper: engine == piperTtsEngine,
     }
   }
 
@@ -196,6 +199,9 @@ function Speech(texts, options) {
   }
 
   function forward() {
+    if (engine.forward) {
+      return Promise.resolve(engine.forward())
+    }
     if (position.getIndex() + 1 < texts.length) {
       position.setIndex(position.getIndex() + 1)
       if (state == "PLAYING") return delayedPlay()
@@ -205,6 +211,9 @@ function Speech(texts, options) {
   }
 
   function rewind() {
+    if (engine.rewind) {
+      return Promise.resolve(engine.rewind())
+    }
     if (state == "PLAYING" && new Date().getTime()-state.startTime > 3*1000) {
       return stop().then(play);
     }

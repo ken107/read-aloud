@@ -973,21 +973,6 @@ function escapeXml(unsafe) {
   })
 }
 
-function makePlaybackControl(initialState) {
-  const subject = new rxjs.BehaviorSubject(initialState)
-  return {
-    getState() {
-      return subject.getValue()
-    },
-    setState(state) {
-      subject.next(state)
-    },
-    wait(condition) {
-      return rxjs.firstValueFrom(subject.pipe(rxjs.filter(condition)))
-    }
-  }
-}
-
 var languageTable = (function() {
   const nameFromCode = new Map([
     ['af', 'Afrikaans'],
