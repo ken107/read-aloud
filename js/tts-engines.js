@@ -9,6 +9,7 @@ var nvidiaRivaTtsEngine = new NvidiaRivaTtsEngine();
 var phoneTtsEngine = new PhoneTtsEngine();
 var openaiTtsEngine = new OpenaiTtsEngine();
 var azureTtsEngine = new AzureTtsEngine();
+const piperTtsEngine = new PiperTtsEngine()
 
 
 /*
@@ -72,6 +73,7 @@ function BrowserTtsEngine() {
       }
     }
     return voices
+      .filter(voice => !isPiperVoice(voice))
   }
 }
 
@@ -1310,5 +1312,84 @@ function AzureTtsEngine() {
     if (!res.ok) throw new Error("Server return " + res.status)
     const blob = await res.blob()
     return URL.createObjectURL(blob)
+  }
+}
+
+
+function PiperTtsEngine() {
+  let control = null
+  let isSpeaking = false
+  this.speak = function(utterance, options, onEvent) {
+    const piperPromise = rxjs.firstValueFrom(piperObservable)
+    control = new rxjs.Subject()
+    control
+      .pipe(
+        rxjs.startWith("speak"),
+        rxjs.concatMap(async cmd => {
+          const piper = await piperPromise
+          switch (cmd) {
+            case "speak":
+              return piper.sendRequest("speak", {
+                utterance,
+                voiceName: options.voice.voiceName,
+                pitch: options.pitch,
+                rate: options.rate,
+                volume: options.volume,
+              })
+            case "pause":
+              return piper.sendRequest("pause")
+            case "resume":
+              return piper.sendRequest("resume")
+            case "stop":
+              return piper.sendRequest("stop")
+                .then(() => Promise.reject({name: "interrupted", message: "Playback interrupted"}))
+            case "forward":
+              return piper.sendRequest("forward")
+            case "rewind":
+              return piper.sendRequest("rewind")
+          }
+        }),
+        rxjs.ignoreElements(),
+        rxjs.mergeWith(piperCallbacks),
+        rxjs.map(event => {
+          if (event.type == "error") throw event.error
+          return event
+        }),
+        rxjs.takeWhile(event => event.type != "end")
+      )
+      .subscribe({
+        next(event) {
+          if (event.type == "start") isSpeaking = true
+          onEvent(event)
+        },
+        complete() {
+          onEvent({type: "end"})
+        },
+        error(err) {
+          if (err.name != "interrupted") onEvent({type: "error", error: err})
+        }
+      })
+      .add(() => {
+        isSpeaking = false
+        control = null
+      })
+  }
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking)
+  }
+  this.pause = function() {
+    control?.next("pause")
+  }
+  this.resume = function() {
+    control?.next("resume")
+  }
+  this.stop = function() {
+    control?.next("stop")
+  }
+  this.forward = function() {
+    control?.next("forward")
+  }
+  this.rewind = function() {
+    control?.next("rewind")
   }
 }

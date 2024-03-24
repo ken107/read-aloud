@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "default_locale": "en",
   "minimum_chrome_version": "99",
 
@@ -38,6 +38,12 @@
     "https://*/",
     "file://*/*"
   ],
+  "cross_origin_opener_policy": {
+    "value": "same-origin"
+  },
+  "cross_origin_embedder_policy": {
+    "value": "require-corp"
+  },
   "web_accessible_resources": [
     {
       "resources": [ "player.html", "sound/silence.mp3", "img/*" ],
