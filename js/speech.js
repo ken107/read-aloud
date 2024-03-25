@@ -3,6 +3,11 @@ function Speech(texts, options) {
   options.rate = (options.rate || 1) * (isGoogleNative(options.voice) ? 0.9 : 1);
 
   for (var i=0; i<texts.length; i++) if (/[\w)]$/.test(texts[i])) texts[i] += '.';
+  
+  // No text splitting
+  if (options.textSplitting === "1") {
+    texts = [texts.join("\n")];
+  }
 
   var self = this;
   var engine;
@@ -47,7 +52,7 @@ function Speech(texts, options) {
       engine = x;
     })
     .then(function() {
-      if (texts.length) texts = getChunks(texts.join("\n\n"));
+      if (texts.length && options.textSplitting !== "1") texts = getChunks(texts.join("\n\n"));
     })
 
   this.options = options;

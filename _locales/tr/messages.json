@@ -53,6 +53,15 @@
   "options_highlighting_window": {
     "message": "Ayrı bir pencerede göster"
   },
+  "options_merge_or_split_texts": {
+    "message": "Metni birleştir veya bölebilirsin"
+  },
+  "options_split_texts": {
+    "message": "Metni birden fazla parçaya böl"
+  },
+  "options_merge_texts_into_one": {
+    "message": "Metni tek bir parçaya birleştir"
+  },
   "options_audio_playback": {
     "message": "Ses Çalma"
   },

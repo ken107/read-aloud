@@ -53,6 +53,15 @@
   "options_highlighting_window": {
     "message": "Показать в отдельном окне"
   },
+  "options_merge_or_split_texts": {
+    "message": "Совместить или разделить текст"
+  },
+  "options_split_texts": {
+    "message": "Разделить текст на несколько частей"
+  },
+  "options_merge_texts_into_one": {
+    "message": "Совместить текст воедино"
+  },
   "options_audio_playback": {
     "message": "Воспроизведение аудио"
   },

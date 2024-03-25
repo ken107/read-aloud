@@ -53,6 +53,15 @@
   "options_highlighting_window": {
     "message": "別ウィンドウで表示"
   },
+  "options_merge_or_split_texts": {
+    "message": "テキストを結合または分割する"
+  },
+  "options_split_texts": {
+    "message": "テキストを複数のチャンクに分割する"
+  },
+  "options_merge_texts_into_one": {
+    "message": "テキストを1つのチャンクに統合する"
+  },
   "options_audio_playback": {
     "message": "オーディオ再生"
   },
