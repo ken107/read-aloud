@@ -40,7 +40,11 @@ var defaults = {
   highlightWindowSize: 2,
 };
 
-var getSingletonAudio = lazy(() => new Audio());
+var getSingletonAudio = lazy(() => {
+  const audio = new Audio()
+  audio.crossOrigin = "anonymous"
+  return audio
+})
 var getSilenceTrack = lazy(() => makeSilenceTrack())
 
 setupDarkMode()
