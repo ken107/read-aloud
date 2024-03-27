@@ -13,6 +13,51 @@ hasPermissions(config.gtranslatePerms)
 
 
 /**
+ * Piper
+ */
+const piperHost = immediate(() => {
+  let tabPromise
+  return {
+    setTab(tab) {
+      tabPromise.fulfill(tab)
+    },
+    async ready({requestFocus}) {
+      try {
+        if (!tabPromise || !await this.sendRequest("areYouThere")) throw "Absent"
+        if (requestFocus) {
+          const tab = await tabPromise
+          await Promise.all([
+            chrome.windows.update(tab.windowId, {focused: true}),
+            chrome.tabs.update(tab.id, {active: true})
+          ])
+        }
+      }
+      catch (err) {
+        tabPromise = makeExposedPromise()
+        await brapi.tabs.create({
+          url: "https://piper.ttstool.com/",
+          pinned: true,
+          active: requestFocus
+        })
+        await tabPromise.promise
+      }
+    },
+    async sendRequest(method, args) {
+      const tab = await tabPromise.promise
+      const {error, result} = await brapi.tabs.sendMessage(tab.id, {
+        to: "piper-host",
+        type: "request",
+        id: String(Math.random()),
+        method,
+        args
+      })
+      return error ? Promise.reject(error) : result
+    }
+  }
+})
+
+
+/**
  * IPC handlers
  */
 var handlers = {
@@ -44,13 +89,19 @@ var handlers = {
   isPaired: function() {
     return phoneTtsEngine.isPaired()
   },
+  managePiperVoices() {
+    return piperHost.ready({requestFocus: true})
+  },
+  piperServiceReady: function() {
+    piperHost.setTab(this.sender.tab)
+  },
 }
 
 brapi.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     var handler = handlers[request.method];
     if (handler) {
-      Promise.resolve(handler.apply(null, request.args))
+      Promise.resolve(handler.apply({sender}, request.args))
         .then(sendResponse)
         .catch(function(err) {
           sendResponse({error: err.message});

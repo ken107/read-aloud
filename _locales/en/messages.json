@@ -17,6 +17,9 @@
   "options_voicegroup_offline": {
     "message": "Offline Voices"
   },
+  "options_voicegroup_piper": {
+    "message": "Piper Voices (experimental)"
+  },
   "options_voicegroup_standard": {
     "message": "Standard Voices"
   },
@@ -34,6 +37,9 @@
   },
   "options_enable_custom_voices": {
     "message": "Enable Custom Voices"
+  },
+  "options_enable_piper_voices": {
+    "message": "Manage Piper Voices"
   },
   "options_rate_label": {
     "message": "Speed"

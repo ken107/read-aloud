@@ -232,6 +232,19 @@ function lazy(get) {
   return () => value || (value = get())
 }
 
+function immediate(get) {
+  return get()
+}
+
+function makeExposedPromise() {
+  const exposed = {}
+  exposed.promise = new Promise((fulfill, reject) => {
+    exposed.fulfill = fulfill
+    exposed.reject = reject
+  })
+  return exposed
+}
+
 function getQueryString() {
   return location.search ? parseQueryString(location.search) : {};
 }
@@ -295,7 +308,7 @@ function setState(key, value) {
  * VOICES
  */
 function getVoices() {
-  return getSettings(["awsCreds", "gcpCreds"])
+  return getSettings(["awsCreds", "gcpCreds", "piperVoices"])
     .then(function(settings) {
       return Promise.all([
         browserTtsEngine.getVoices(),
@@ -305,6 +318,7 @@ function getVoices() {
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : [],
         ibmWatsonTtsEngine.getVoices(),
         phoneTtsEngine.getVoices(),
+        settings.piperVoices || [],
       ])
     })
     .then(function(arr) {
@@ -350,6 +364,10 @@ function isGoogleWavenet(voice) {
 
 function isIbmWatson(voice) {
   return /^IBM-Watson /.test(voice.voiceName);
+}
+
+function isPiperVoice(voice) {
+  return /^Piper /.test(voice.voiceName)
 }
 
 function isUseMyPhone(voice) {
