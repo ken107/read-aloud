@@ -236,15 +236,6 @@ function immediate(get) {
   return get()
 }
 
-function makeExposedPromise() {
-  const exposed = {}
-  exposed.promise = new Promise((fulfill, reject) => {
-    exposed.fulfill = fulfill
-    exposed.reject = reject
-  })
-  return exposed
-}
-
 function getQueryString() {
   return location.search ? parseQueryString(location.search) : {};
 }

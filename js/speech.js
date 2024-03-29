@@ -28,6 +28,7 @@ function Speech(texts, options) {
   this.gotoEnd = gotoEnd;
 
   function pickEngine() {
+    if (isPiperVoice(options.voice)) return piperTtsEngine;
     if (isUseMyPhone(options.voice)) return phoneTtsEngine;
     if (isGoogleTranslate(options.voice) && !/\s(Hebrew|Telugu)$/.test(options.voice.voiceName)) {
       return googleTranslateTtsEngine.ready()
@@ -57,6 +58,7 @@ function Speech(texts, options) {
     }
     else {
       if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
+      else if (isPiperVoice(options.voice)) return [text];
       else return new CharBreaker(750, punctuator, 200).breakText(text);
     }
   }
@@ -151,6 +153,9 @@ function Speech(texts, options) {
   }
 
   function forward() {
+    if (engine.forward) {
+      return Promise.resolve(engine.forward())
+    }
     if (index+1 < texts.length) {
       index++;
       if (state == "PLAYING") return delayedPlay()
@@ -160,6 +165,9 @@ function Speech(texts, options) {
   }
 
   function rewind() {
+    if (engine.rewind) {
+      return Promise.resolve(engine.rewind())
+    }
     if (state == "PLAYING" && new Date().getTime()-state.startTime > 3*1000) {
       return stop().then(play);
     }

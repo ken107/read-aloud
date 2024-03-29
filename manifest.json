@@ -44,12 +44,18 @@
   "content_security_policy": "script-src 'self'; object-src 'self'",
   "content_scripts": [
     {
-      "matches": ["https://piper.ttstool.com/*"],
-      "js": ["js/messaging.js", "js/piper.js"]
+      "matches": [
+        "https://piper.ttstool.com/"
+      ],
+      "js": [
+        "js/messaging.js",
+        "js/piper.js"
+      ]
     }
   ],
   "background": {
     "scripts": [
+      "js/rxjs.umd.min.js",
       "js/peerjs-1.4.7.min.js",
       "js/defaults.js",
       "js/messaging.js",

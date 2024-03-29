@@ -16,16 +16,16 @@ hasPermissions(config.gtranslatePerms)
  * Piper
  */
 const piperHost = immediate(() => {
-  let tabPromise
+  const tabSubject = new rxjs.BehaviorSubject(null)
   return {
     setTab(tab) {
-      tabPromise.fulfill(tab)
+      tabSubject.next(tab)
     },
     async ready({requestFocus}) {
       try {
-        if (!tabPromise || !await this.sendRequest("areYouThere")) throw "Absent"
+        const tab = tabSubject.getValue()
+        if (!tab || !await this.sendRequest("areYouThere")) throw "Absent"
         if (requestFocus) {
-          const tab = await tabPromise
           await Promise.all([
             chrome.windows.update(tab.windowId, {focused: true}),
             chrome.tabs.update(tab.id, {active: true})
@@ -33,17 +33,13 @@ const piperHost = immediate(() => {
         }
       }
       catch (err) {
-        tabPromise = makeExposedPromise()
-        await brapi.tabs.create({
-          url: "https://piper.ttstool.com/",
-          pinned: true,
-          active: requestFocus
-        })
-        await tabPromise.promise
+        tabSubject.next(null)
+        await brapi.tabs.create({url: "https://piper.ttstool.com/", pinned: true})
+        await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
       }
     },
     async sendRequest(method, args) {
-      const tab = await tabPromise.promise
+      const tab = tabSubject.getValue()
       const {error, result} = await brapi.tabs.sendMessage(tab.id, {
         to: "piper-host",
         type: "request",
@@ -52,7 +48,8 @@ const piperHost = immediate(() => {
         args
       })
       return error ? Promise.reject(error) : result
-    }
+    },
+    eventSubject: new rxjs.Subject()
   }
 })
 
@@ -95,6 +92,9 @@ var handlers = {
   piperServiceReady: function() {
     piperHost.setTab(this.sender.tab)
   },
+  onPiperEvent(event) {
+    piperHost.eventSubject.next(event)
+  }
 }
 
 brapi.runtime.onMessage.addListener(

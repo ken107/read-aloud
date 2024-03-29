@@ -6,6 +6,7 @@ var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
 var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
 var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
 var phoneTtsEngine = new PhoneTtsEngine();
+const piperTtsEngine = new PiperTtsEngine()
 
 
 /*
@@ -1314,16 +1315,15 @@ function PiperTtsEngine() {
   let control = null
   let isSpeaking = false
   this.speak = function(utterance, options, onEvent) {
-    const piperPromise = rxjs.firstValueFrom(piperObservable)
     control = new rxjs.Subject()
     control
       .pipe(
         rxjs.startWith("speak"),
         rxjs.concatMap(async cmd => {
-          const piper = await piperPromise
           switch (cmd) {
             case "speak":
-              return piper.sendRequest("speak", {
+              await piperHost.ready({requestFocus: false})
+              return piperHost.sendRequest("speak", {
                 utterance,
                 voiceName: options.voice.voiceName,
                 pitch: options.pitch,
@@ -1331,20 +1331,20 @@ function PiperTtsEngine() {
                 volume: options.volume,
               })
             case "pause":
-              return piper.sendRequest("pause")
+              return piperHost.sendRequest("pause")
             case "resume":
-              return piper.sendRequest("resume")
+              return piperHost.sendRequest("resume")
             case "stop":
-              return piper.sendRequest("stop")
+              return piperHost.sendRequest("stop")
                 .then(() => Promise.reject({name: "interrupted", message: "Playback interrupted"}))
             case "forward":
-              return piper.sendRequest("forward")
+              return piperHost.sendRequest("forward")
             case "rewind":
-              return piper.sendRequest("rewind")
+              return piperHost.sendRequest("rewind")
           }
         }),
         rxjs.ignoreElements(),
-        rxjs.mergeWith(piperCallbacks),
+        rxjs.mergeWith(piperHost.eventSubject),
         rxjs.map(event => {
           if (event.type == "error") throw event.error
           return event
