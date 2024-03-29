@@ -11,6 +11,25 @@ var playbackErrorProcessor = {
   }
 }
 
+const piperInitializingSubject = new rxjs.Subject()
+piperInitializingSubject
+  .pipe(
+    rxjs.distinctUntilChanged()
+  )
+  .subscribe(isInitializing => {
+    if (isInitializing) $("#status").text("Piper engine initializing...").show()
+    else $("#status").hide()
+  })
+
+const dispatcher = makeDispatcher("popup", {
+  close() {
+    window.close()
+  }
+})
+brapi.runtime.onMessage.addListener(dispatcher.dispatch)
+
+
+
 $(function() {
   if (queryString.isPopup) $("body").addClass("is-popup")
   else getCurrentTab().then(function(currentTab) {return updateSettings({readAloudTab: currentTab.id})})
@@ -54,13 +73,17 @@ $(function() {
       }
       else {
         return bgPageInvoke("getPlaybackState")
-          .then(function(state) {if (state != "PLAYING") $("#btnPlay").click()})
+          .then(function(state) {
+            if (state == "PAUSED" || state == "STOPPED") $("#btnPlay").click()
+          })
       }
     })
   setInterval(updateButtons, 500);
 
   refreshSize();
 });
+
+
 
 function handleError(err) {
   if (!err) return;
@@ -140,15 +163,20 @@ function handleError(err) {
   }
 }
 
+
+
 function updateButtons() {
     return Promise.all([
       getSettings(),
       bgPageInvoke("getPlaybackState"),
-      bgPageInvoke("getSpeechPosition"),
+      bgPageInvoke("getSpeechInfo"),
       bgPageInvoke("getPlaybackError")
     ])
-  .then(spread(function(settings, state, speechPos, playbackErr) {
+  .then(spread(function(settings, state, speech, playbackErr) {
+    const showHighlighting = settings.showHighlighting != null ? Number(settings.showHighlighting) : defaults.showHighlighting
+
     if (playbackErr) playbackErrorProcessor.next(playbackErr)
+    piperInitializingSubject.next(!!speech?.isPiper && state == "LOADING")
 
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
@@ -156,33 +184,86 @@ function updateButtons() {
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
-    $("#highlight, #toolbar").toggle(Boolean(settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
+    $("#highlight, #toolbar").toggle(showHighlighting != 0 && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
 
-    if ((settings.showHighlighting != null ? settings.showHighlighting : defaults.showHighlighting) && speechPos) {
-      var pos = speechPos;
-      var elem = $("#highlight");
-      if (!elem.data("texts") || elem.data("texts").length != pos.texts.length || elem.data("texts").some(function(text,i) {return text != pos.texts[i]})) {
-        elem.css("direction", pos.isRTL ? "rtl" : "");
-        elem.data({texts: pos.texts, index: -1});
-        elem.empty();
-        for (var i=0; i<pos.texts.length; i++) {
-          var html = escapeHtml(pos.texts[i]).replace(/\r?\n/g, "<br/>");
-          $("<span>").html(html).appendTo(elem).css("cursor", "pointer").click(onSeek.bind(null, i));
-        }
-      }
-      if (elem.data("index") != pos.index) {
-        elem.data("index", pos.index);
-        elem.children(".active").removeClass("active");
-        var child = elem.children().eq(pos.index).addClass("active");
-        if (child.length) {
-        var childTop = child.position().top;
-        var childBottom = childTop + child.outerHeight();
-        if (childTop < 0 || childBottom >= elem.height()) elem.animate({scrollTop: elem[0].scrollTop + childTop - 10});
-        }
-      }
-    }
-  }));
+    if (showHighlighting && speech) updateHighlighting(speech)
+  }))
 }
+
+function updateHighlighting(speech) {
+  var elem = $("#highlight");
+  if (!elem.data("texts")
+    || elem.data("texts").length != speech.texts.length
+    || elem.data("texts").some((text,i) => text != speech.texts[i])
+  ) {
+    elem.css("direction", speech.isRTL ? "rtl" : "")
+      .data({texts: speech.texts, position: null})
+      .empty()
+    for (let i=0; i<speech.texts.length; i++) {
+      makeSpan(speech.texts[i])
+        .css("cursor", "pointer")
+        .click(onSeek.bind(null, i))
+        .appendTo(elem)
+     }
+  }
+
+  const pos = speech.position
+  if (!elem.data("position") || positionDiffers(elem.data("position"), pos)) {
+    elem.data("position", pos);
+    elem.find(".active").removeClass("active");
+    const child = elem.children().eq(pos.index)
+    const section = pos.word || pos.sentence || pos.paragraph
+    if (section) {
+      child.empty()
+      const text = speech.texts[pos.index]
+      let span
+      if (section.startIndex > 0) {
+        makeSpan(text.slice(0, section.startIndex))
+          .appendTo(child)
+      }
+      if (section.endIndex > section.startIndex) {
+        span = makeSpan(text.slice(section.startIndex, section.endIndex))
+          .addClass("active")
+          .appendTo(child)
+      }
+      if (text.length > section.endIndex) {
+        makeSpan(text.slice(section.endIndex))
+          .appendTo(child)
+      }
+      if (span) scrollIntoView(span, elem)
+    }
+    else {
+      child.addClass("active")
+      scrollIntoView(child, elem)
+    }
+  }
+}
+
+function makeSpan(text) {
+  const html = escapeHtml(text).replace(/\r?\n/g, "<br/>")
+  return $("<span>").html(html)
+}
+
+function positionDiffers(left, right) {
+  function rangeDiffers(a, b) {
+    if (a == null && b == null) return false
+    if (a != null && b != null) return a.startIndex != b.startIndex || a.endIndex != b.endIndex
+    return true
+  }
+  return left.index != right.index ||
+    rangeDiffers(left.paragraph, right.paragraph) ||
+    rangeDiffers(left.sentence, right.sentence) ||
+    rangeDiffers(left.word, right.word)
+}
+
+function scrollIntoView(child, scrollParent) {
+  const childTop = child.offset().top - scrollParent.offset().top
+  const childBottom = childTop + child.outerHeight()
+  if (childTop < 0 || childBottom >= scrollParent.height())
+    scrollParent.animate({scrollTop: scrollParent[0].scrollTop + childTop - 10})
+}
+
+
 
 function onPlay() {
   $("#status").hide();

@@ -1,7 +1,36 @@
 
-let piperService
-
 document.querySelector("form").parentElement.style.display = "none"
+
+const ugaPromise = new Promise(fulfill => {
+  const ugaDialog = document.createElement("DIV")
+  ugaDialog.innerHTML = `
+    <div class="modal d-block" style="background-color: rgba(0,0,0,.5)" tabIndex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Permission Required</h5>
+            <button type="button" class="btn-close" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            This tab synthesizes Piper voices. Please allow audio playback and keep it open.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary">Allow</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+  document.body.appendChild(ugaDialog)
+  document.addEventListener("click", () => {
+    document.body.removeChild(ugaDialog)
+    fulfill()
+  }, {
+    once: true
+  })
+})
+
+let piperService
 
 
 //handle messages from piper-service
@@ -53,14 +82,20 @@ const extDispatcher = makeDispatcher("piper-host", {
     return piperService.sendRequest("speak", args)
   },
   pause(args) {
-    return piperService.sendRequest("pause", args)
+    return piperService?.sendRequest("pause", args)
   },
   resume(args) {
-    return piperService.sendRequest("resume", args)
+    return piperService?.sendRequest("resume", args)
   },
   stop(args) {
-    return piperService.sendRequest("stop", args)
-  }
+    return piperService?.sendRequest("stop", args)
+  },
+  forward(args) {
+    return piperService?.sendRequest("forward", args)
+  },
+  rewind(args) {
+    return piperService?.sendRequest("rewind", args)
+  },
 })
 
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {

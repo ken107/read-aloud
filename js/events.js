@@ -33,6 +33,8 @@ const piperHost = immediate(() => {
         }
       }
       catch (err) {
+        brapi.runtime.sendMessage({to: "popup", type: "notification", method: "close"})
+          .catch(console.error)
         tabSubject.next(null)
         await brapi.tabs.create({url: "https://piper.ttstool.com/", pinned: true})
         await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
@@ -71,10 +73,10 @@ var handlers = {
   ibmFetchVoices: function(apiKey, url) {
     return ibmWatsonTtsEngine.fetchVoices(apiKey, url);
   },
-  getSpeechPosition: function() {
+  getSpeechInfo: function() {
     return getActiveSpeech()
       .then(function(speech) {
-        return speech && speech.getPosition();
+        return speech && speech.getInfo();
       })
   },
   getPlaybackError: function() {
