@@ -148,9 +148,14 @@ function updateButtons() {
     $("#btnPause").toggle(state == "PLAYING");
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
-    $("#highlight, #toolbar").toggle(showHighlighting != 0 && (state == "LOADING" || state == "PAUSED" || state == "PLAYING"));
 
-    if (showHighlighting && speech) updateHighlighting(speech)
+    if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
+      $("#highlight, #toolbar").show()
+      updateHighlighting(speech)
+    }
+    else {
+      $("#highlight, #toolbar").hide()
+    }
   }))
 }
 
