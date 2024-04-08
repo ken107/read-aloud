@@ -78,6 +78,7 @@ $(function() {
 
 function handleError(err) {
   if (!err) return;
+  if (err.name == "CancellationException") return;
 
   if (/^{/.test(err.message)) {
     var errInfo = JSON.parse(err.message);

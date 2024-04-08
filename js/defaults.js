@@ -431,6 +431,10 @@ function waitMillis(millis) {
   });
 }
 
+function wait(observable, value) {
+  return rxjs.firstValueFrom(observable.pipe(rxjs.filter(x => x == value)))
+}
+
 function parseLang(lang) {
   var tokens = lang.toLowerCase().replace(/_/g, '-').split(/-/, 2);
   return {
