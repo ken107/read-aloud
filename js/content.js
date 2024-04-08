@@ -197,3 +197,7 @@ function repeat(opt) {
       })
   }
 }
+
+function immediate(get) {
+  return get()
+}

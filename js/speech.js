@@ -225,7 +225,7 @@ function Speech(texts, options) {
 
   function seek(n) {
     position.setIndex(n)
-    return play();
+    return stop().then(play)
   }
 
   function gotoEnd() {

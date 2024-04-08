@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.68.0",
+  "version": "1.69.0",
   "default_locale": "en",
   "browser_specific_settings": {
     "gecko": {
@@ -39,7 +39,7 @@
     "file://*/*"
   ],
   "web_accessible_resources": [
-    "js/page/*", "img/*"
+    "js/page/*", "img/*", "css/*"
   ],
   "content_security_policy": "script-src 'self'; object-src 'self'",
   "content_scripts": [
