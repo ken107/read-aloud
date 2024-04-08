@@ -136,6 +136,7 @@ function Doc(source, onEnd) {
     .then(function() {return source.ready})
     .then(function(result) {info = result})
   var foundText;
+  const playbackState = new rxjs.BehaviorSubject("resumed")
 
   this.close = close;
   this.play = play;
@@ -149,6 +150,7 @@ function Doc(source, onEnd) {
 
   //method close
   function close() {
+    playbackState.error({name: "CancellationException", message: "Playback cancelled"})
     return ready
       .catch(function() {})
       .then(function() {
@@ -161,12 +163,15 @@ function Doc(source, onEnd) {
   async function play() {
     if (activeSpeech) return activeSpeech.play();
     await ready
+    await wait(playbackState, "resumed")
     currentIndex = await source.getCurrentIndex()
+    await wait(playbackState, "resumed")
     return readCurrent()
   }
 
   async function readCurrent(rewinded) {
     const texts = await source.getTexts(currentIndex).catch(err => null)
+    await wait(playbackState, "resumed")
     if (texts) {
       if (texts.length) {
         foundText = true;
@@ -187,10 +192,12 @@ function Doc(source, onEnd) {
     texts = texts.map(preprocess)
     if (info.detectedLang == null) {
       const lang = await detectLanguage(texts)
+      await wait(playbackState, "resumed")
       info.detectedLang = lang || "";
     }
     if (activeSpeech) return;
     activeSpeech = await getSpeech(texts);
+    await wait(playbackState, "resumed")
     activeSpeech.onEnd = function(err) {
       if (err) {
         if (onEnd) onEnd(err);

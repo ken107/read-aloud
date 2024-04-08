@@ -40,7 +40,11 @@ var defaults = {
   highlightWindowSize: 2,
 };
 
-var getSingletonAudio = lazy(() => new Audio());
+var getSingletonAudio = lazy(() => {
+  const audio = new Audio()
+  audio.crossOrigin = "anonymous"
+  return audio
+})
 var getSilenceTrack = lazy(() => makeSilenceTrack())
 
 setupDarkMode()
@@ -425,6 +429,10 @@ function waitMillis(millis) {
   return new Promise(function(fulfill) {
     setTimeout(fulfill, millis);
   });
+}
+
+function wait(observable, value) {
+  return rxjs.firstValueFrom(observable.pipe(rxjs.filter(x => x == value)))
 }
 
 function parseLang(lang) {

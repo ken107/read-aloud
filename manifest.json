@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "default_locale": "en",
   "minimum_chrome_version": "99",
 
@@ -46,7 +46,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": [ "player.html", "sound/silence.mp3", "img/*" ],
+      "resources": [ "player.html", "sound/*", "img/*", "css/*" ],
       "matches": [ "<all_urls>" ],
       "use_dynamic_url": true
     }
