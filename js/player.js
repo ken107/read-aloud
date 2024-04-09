@@ -14,7 +14,7 @@ const piperObservable = rxjs.defer(() => {
     rxjs.shareReplay({bufferSize: 1, refCount: false})
   )
 const piperCallbacks = new rxjs.Subject()
-const domDispatcher = makeDispatcher("piper-host", {
+const piperDispatcher = makeDispatcher("piper-host", {
   advertiseVoices({voices}, sender) {
     updateSettings({piperVoices: voices})
     piperSubject.next(sender)
@@ -25,16 +25,42 @@ const domDispatcher = makeDispatcher("piper-host", {
   onEnd: args => piperCallbacks.next({type: "end", ...args}),
   onError: args => piperCallbacks.next({type: "error", ...args}),
 })
+
+
+const fasttextSubject = new rxjs.Subject()
+const fasttextObservable = rxjs.defer(() => {
+    createFasttextFrame()
+    return fasttextSubject
+  })
+  .pipe(
+    rxjs.startWith(null),
+    rxjs.shareReplay({bufferSize: 1, refCount: false})
+  )
+const fasttextDispatcher = makeDispatcher("fasttext-host", {
+  onServiceReady(args, sender) {
+    fasttextSubject.next(sender)
+  }
+})
+
+
 window.addEventListener("message", event => {
   const send = message => event.source.postMessage(message, {targetOrigin: event.origin})
-  const sender = {
+
+  piperDispatcher.dispatch(event.data, {
     sendRequest(method, args) {
       const id = String(Math.random())
-      send({to: "piper-service", type: "request", id, method, args})
-      return domDispatcher.waitForResponse(id)
+      send({from: "piper-host", to: "piper-service", type: "request", id, method, args})
+      return piperDispatcher.waitForResponse(id)
     }
-  }
-  domDispatcher.dispatch(event.data, sender, send)
+  }, send)
+
+  fasttextDispatcher.dispatch(event.data, {
+    sendRequest(method, args) {
+      const id = String(Math.random())
+      send({from: "fasttext-host", to: "fasttext-service", type: "request", id, method, args})
+      return fasttextDispatcher.waitForResponse(id)
+    }
+  }, send)
 })
 
 
@@ -344,5 +370,14 @@ function createPiperFrame() {
   f.style.width =
   f.style.height = "100%"
   f.style.borderWidth = "0"
+  document.body.appendChild(f)
+}
+
+function createFasttextFrame() {
+  const f = document.createElement("iframe")
+  f.id = "fasttext-frame"
+  f.src = "https://ttstool.com/fasttext/index.html"
+  f.allow = "cross-origin-isolated"
+  f.style.display = "none"
   document.body.appendChild(f)
 }

@@ -285,7 +285,16 @@ function Doc(source, onEnd) {
     })
   }
 
-  function serverDetectLanguage(text) {
+  async function serverDetectLanguage(text) {
+    try {
+      const service = await rxjs.firstValueFrom(fasttextObservable)
+      if (!service) throw new Error("FastText service unavailable")
+      const [prediction] = await service.sendRequest("detectLanguage", {text})
+      return prediction?.language
+    }
+    catch (err) {
+      console.error(err)
+
       return ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
         .then(JSON.parse)
         .then(function(res) {
@@ -297,6 +306,7 @@ function Doc(source, onEnd) {
           console.error(err)
           return null
         })
+    }
   }
 
   async function getSpeech(texts) {
@@ -335,7 +345,7 @@ function Doc(source, onEnd) {
   //method getState
   function getState() {
     if (activeSpeech) return activeSpeech.getState();
-    else return Promise.resolve(source.isWaiting() ? "LOADING" : "STOPPED");
+    else return "LOADING"
   }
 
   //method getActiveSpeech
