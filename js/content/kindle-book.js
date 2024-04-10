@@ -98,7 +98,7 @@ function makeOcr() {
       domDispatcher.dispatch(event.data, sender, send)
     })
     const frame = document.createElement("IFRAME")
-    frame.src = "https://ttstool.com/ocr.html"
+    frame.src = "https://ttstool.com/tesseract/index.html"
     frame.style.display = "none"
     document.body.appendChild(frame)
   })
