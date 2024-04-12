@@ -3,34 +3,22 @@ function Speech(texts, options) {
   options.rate = (options.rate || 1) * (isGoogleNative(options.voice) ? 0.9 : 1);
 
   for (var i=0; i<texts.length; i++) if (/[\w)]$/.test(texts[i])) texts[i] += '.';
+  if (texts.length) texts = getChunks(texts.join("\n\n"));
 
   var self = this;
-  var engine;
+  const engine = pickEngine()
   var pauseDuration = 650/options.rate;
   var state = "IDLE";
+  let sentenceStartIndicies
   const position = immediate(() => {
     let index = 0
-    let paragraph, sentence, word
+    let word
     return {
       getIndex() {
         return index
       },
       setIndex(value) {
         index = value
-        paragraph = sentence = word = null
-      },
-      getParagraph() {
-        return paragraph
-      },
-      setParagraph(value) {
-        paragraph = value
-        sentence = word = null
-      },
-      getSentence() {
-        return sentence
-      },
-      setSentence(value) {
-        sentence = value
         word = null
       },
       getWord() {
@@ -42,13 +30,6 @@ function Speech(texts, options) {
     }
   })
   var delayedPlayTimer;
-  var ready = Promise.resolve(pickEngine())
-    .then(function(x) {
-      engine = x;
-    })
-    .then(function() {
-      if (texts.length) texts = getChunks(texts.join("\n\n"));
-    })
 
   this.options = options;
   this.play = play;
@@ -107,9 +88,7 @@ function Speech(texts, options) {
       texts: texts,
       position: {
         index: position.getIndex(),
-        paragraph: position.getParagraph(),
-        sentence: position.getSentence(),
-        word: position.getWord(),  
+        word: position.getWord(),
       },
       isRTL: /^(ar|az|dv|he|iw|ku|fa|ur)\b/.test(options.lang),
       isPiper: engine == piperTtsEngine,
@@ -135,32 +114,41 @@ function Speech(texts, options) {
     else {
       state = new String("PLAYING");
       state.startTime = new Date().getTime();
-      return ready
-        .then(function() {
-          return speak(texts[position.getIndex()],
-            function() {
-              state = "IDLE";
-              if (engine.setNextStartTime) engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
-              position.setIndex(position.getIndex() + 1)
-              play()
-                .catch(function(err) {
-                  if (self.onEnd) self.onEnd(err)
-                })
-            },
-            function(err) {
-              state = "IDLE";
-              if (self.onEnd) self.onEnd(err);
-            },
-            function(event) {
-              if (event.type == "paragraph") position.setParagraph(event)
-              else if (event.type == "sentence") position.setSentence(event)
-              else if (event.type == "word") position.setWord(event)
+      return speak(texts[position.getIndex()], {
+        onEnd() {
+          state = "IDLE";
+          if (engine.setNextStartTime) engine.setNextStartTime(new Date().getTime() + pauseDuration, options);
+          position.setIndex(position.getIndex() + 1)
+          play()
+            .catch(function(err) {
+              if (self.onEnd) self.onEnd(err)
             })
-        })
-        .then(function() {
+        },
+        onError(err) {
+          state = "IDLE";
+          if (self.onEnd) self.onEnd(err);
+        },
+        onSentence({startIndex}) {
+          if (engine == piperTtsEngine) {
+            position.setIndex(sentenceStartIndicies.indexOf(startIndex))
+          }
+        }
+      })
+      .then(startEvent => {
+        if (engine == piperTtsEngine) {
+          const text = texts[0]
+          sentenceStartIndicies = startEvent.sentenceStartIndicies
+          texts = sentenceStartIndicies.map((startIndex, i) => {
+            return i+1 < sentenceStartIndicies.length
+              ? text.slice(startIndex, sentenceStartIndicies[i+1])
+              : text.slice(startIndex)
+          })
+        }
+        else {
           const nextText = texts[position.getIndex() + 1]
           if (nextText && engine.prefetch) engine.prefetch(nextText, options)
-        })
+        }
+      })
     }
   }
 
@@ -177,25 +165,19 @@ function Speech(texts, options) {
     )
   }
 
-  function pause() {
-    return ready
-      .then(function() {
-        if (canPause()) {
-          clearTimeout(delayedPlayTimer);
-          engine.pause();
-          state = "PAUSED";
-        }
-        else return stop();
-      })
+  async function pause() {
+    if (canPause()) {
+      clearTimeout(delayedPlayTimer);
+      engine.pause();
+      state = "PAUSED";
+    }
+    else return stop();
   }
 
-  function stop() {
-    return ready
-      .then(function() {
-        clearTimeout(delayedPlayTimer);
-        engine.stop();
-        state = "IDLE";
-      })
+  async function stop() {
+    clearTimeout(delayedPlayTimer);
+    engine.stop();
+    state = "IDLE";
   }
 
   function forward() {
@@ -226,22 +208,27 @@ function Speech(texts, options) {
   }
 
   function seek(n) {
+    if (engine.seek) {
+      return Promise.resolve(engine.seek(n))
+    }
     position.setIndex(n)
     return stop().then(play)
   }
 
   async function gotoEnd() {
-    await ready
+    if (engine.seek) {
+      return Promise.resolve(engine.seek(texts.length-1))
+    }
     position.setIndex(texts.length && texts.length-1)
   }
 
-  function speak(text, onEnd, onError, onMiscEvent) {
+  function speak(text, {onEnd, onError, onSentence}) {
     var state = "IDLE";
     return new Promise(function(fulfill, reject) {
       engine.speak(text, options, function(event) {
         if (event.type == "start") {
           if (state == "IDLE") {
-            fulfill();
+            fulfill(event);
             state = "STARTED";
           }
         }
@@ -267,8 +254,8 @@ function Speech(texts, options) {
             state = "ERROR";
           }
         }
-        else {
-          onMiscEvent(event)
+        else if (event.type == "sentence") {
+          onSentence(event)
         }
       })
     })

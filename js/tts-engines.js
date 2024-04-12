@@ -1327,7 +1327,7 @@ function PiperTtsEngine() {
         rxjs.startWith("speak"),
         rxjs.concatMap(async cmd => {
           const piper = await piperPromise
-          switch (cmd) {
+          switch (typeof cmd == "string" ? cmd : cmd.type) {
             case "speak":
               return piper.sendRequest("speak", {
                 utterance,
@@ -1347,6 +1347,8 @@ function PiperTtsEngine() {
               return piper.sendRequest("forward")
             case "rewind":
               return piper.sendRequest("rewind")
+            case "seek":
+              return piper.sendRequest("seek", {index: cmd.index})
           }
         }),
         rxjs.ignoreElements(),
@@ -1391,5 +1393,8 @@ function PiperTtsEngine() {
   }
   this.rewind = function() {
     control?.next("rewind")
+  }
+  this.seek = function(index) {
+    control?.next({type: "seek", index})
   }
 }

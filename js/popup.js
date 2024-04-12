@@ -182,7 +182,7 @@ function updateHighlighting(speech) {
     elem.data("position", pos);
     elem.find(".active").removeClass("active");
     const child = elem.children().eq(pos.index)
-    const section = pos.word || pos.sentence || pos.paragraph
+    const section = pos.word
     if (section) {
       child.empty()
       const text = speech.texts[pos.index]
