@@ -24,8 +24,10 @@ const piperHost = immediate(() => {
     async ready({requestFocus}) {
       try {
         const tab = tabSubject.getValue()
-        if (!tab || !await this.sendRequest("areYouThere")) throw "Absent"
-        if (requestFocus) {
+        if (!tab) throw "Absent"
+        const status = await this.sendRequest("areYouThere")
+        if (!status) throw "Absent"
+        if (requestFocus || status.requestFocus) {
           await Promise.all([
             chrome.windows.update(tab.windowId, {focused: true}),
             chrome.tabs.update(tab.id, {active: true})

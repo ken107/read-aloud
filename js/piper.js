@@ -30,6 +30,9 @@ const ugaPromise = new Promise(fulfill => {
   })
 })
 
+let isUserActivated = false
+ugaPromise.then(() => isUserActivated = true)
+
 let piperService
 
 
@@ -75,7 +78,7 @@ window.addEventListener("message", event => {
 
 const extDispatcher = makeDispatcher("piper-host", {
   areYouThere() {
-    return true
+    return {requestFocus: !isUserActivated}
   },
   speak(args) {
     if (!piperService) throw new Error("No service")
