@@ -5,7 +5,10 @@ var googleTranslateTtsEngine = new GoogleTranslateTtsEngine();
 var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
 var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
 var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
+var nvidiaRivaTtsEngine = new NvidiaRivaTtsEngine();
 var phoneTtsEngine = new PhoneTtsEngine();
+var openaiTtsEngine = new OpenaiTtsEngine();
+var azureTtsEngine = new AzureTtsEngine();
 const piperTtsEngine = new PiperTtsEngine()
 
 
@@ -1194,6 +1197,97 @@ function IbmWatsonTtsEngine() {
 }
 
 
+function NvidiaRivaTtsEngine() {
+  const RIVA_VOICE_PREFIX = "Nvidia-Riva "
+  var prefetchAudio;
+  var isSpeaking = false;
+  var audio;
+  this.speak = function(utterance, options, onEvent) {
+    const urlPromise = Promise.resolve()
+      .then(function() {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
+        else return getAudioUrl(utterance, options.voice, options.pitch, options.rate);
+      })
+    // Rate supplied to player is always 1 because it is already represented in the generated audio
+    audio = playAudio(urlPromise, {...options, rate: 1})
+    audio.startPromise
+      .then(() => {
+        onEvent({type: "start", charIndex: 0})
+        isSpeaking = true;
+      })
+      .catch(function(err) {
+        onEvent({type: "error", error: err})
+      })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
+  };
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking);
+  };
+  this.pause =
+  this.stop = function() {
+    if (audio) audio.pause()
+  };
+  this.resume = function() {
+    return audio.resume()
+  };
+  this.prefetch = function(utterance, options) {
+    getAudioUrl(utterance, options.voice, options.pitch, options.rate)
+      .then(function(url) {
+        prefetchAudio = [utterance, options, url];
+      })
+      .catch(console.error)
+  };
+  this.setNextStartTime = function() {
+  };
+  this.getVoices = function() {
+    return getSettings(["rivaVoices", "rivaCreds"])
+      .then(function(items) {
+        if (!items.rivaCreds) return [];
+        if (items.rivaVoices && Date.now()-items.rivaVoices[0].ts < 24*3600*1000) return items.rivaVoices;
+        return fetchVoices(items.rivaCreds.url)
+          .then(function(list) {
+            list[0].ts = Date.now();
+            updateSettings({rivaVoices: list}).catch(console.error);
+            return list;
+          })
+          .catch(function(err) {
+            console.error(err);
+            return [];
+          })
+      })
+  }
+  async function getAudioUrl(text, voice, pitch, rate) {
+    assert(text && voice);
+    const settings = await getSettings(["rivaCreds"])
+    const res = await fetch(settings.rivaCreds.url + "/tts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "audio/ogg;codecs=opus"
+      },
+      body: JSON.stringify({
+        voice: voice.voiceName.replace(RIVA_VOICE_PREFIX,''),
+        text: escapeHtml(text),
+        pitch,
+        rate
+      })
+    })
+    if (!res.ok) throw new Error("Server returns " + res.status)
+    const blob = await res.blob()
+    return URL.createObjectURL(blob);
+  }
+  this.fetchVoices = fetchVoices;
+  function fetchVoices(url) {
+    return ajaxGet({ url: url + "/voices" }).then(JSON.parse).then((voices)=>{
+      return voices.map((v)=>({...v, voiceName:RIVA_VOICE_PREFIX+v.voiceName}))
+    })
+  }
+}
+
+
 function PhoneTtsEngine() {
   var isSpeaking = false
   var conn
@@ -1307,6 +1401,182 @@ function PhoneTtsEngine() {
     return [
       {voiceName: "Use My Phone", localService: true, isUseMyPhone: true},
     ]
+  }
+}
+
+
+function OpenaiTtsEngine() {
+  var audio, prefetchAudio
+  var isSpeaking = false
+  this.speak = function(utterance, options, onEvent) {
+    const urlPromise = Promise.resolve()
+      .then(() => {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
+        else return getAudioUrl(utterance, options.voice, options.pitch)
+      })
+    audio = playAudio(urlPromise, options)
+    audio.startPromise
+      .then(() => {
+        onEvent({type: "start", charIndex: 0})
+        isSpeaking = true
+      })
+      .catch(err => {
+        onEvent({type: "error", error: err})
+      })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
+  }
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking)
+  }
+  this.pause =
+  this.stop = function() {
+    if (audio) audio.pause()
+  }
+  this.resume = function() {
+    return audio.resume()
+  }
+  this.prefetch = async function(utterance, options) {
+    try {
+      const url = await getAudioUrl(utterance, options.voice, options.pitch)
+      prefetchAudio = [utterance, options, url]
+    }
+    catch (err) {
+      console.error(err)
+    }
+  }
+  this.setNextStartTime = function() {
+  }
+  this.getVoices = function() {
+    return voices
+  }
+  async function getAudioUrl(text, voice, pitch) {
+    assert(text && voice)
+    const matches = voice.voiceName.match(/^ChatGPT .* \((\w+)\)$/)
+    const voiceName = matches[1]
+    const {openaiCreds} = await getSettings(["openaiCreds"])
+    const res = await fetch("https://api.openai.com/v1/audio/speech", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + openaiCreds.apiKey
+      },
+      body: JSON.stringify({
+        model: "tts-1",
+        input: text,
+        voice: voiceName,
+        response_format: "opus",
+      })
+    })
+    if (!res.ok) throw await res.json().then(x => x.error)
+    return URL.createObjectURL(await res.blob())
+  }
+  const voices = [
+    {"voiceName":"ChatGPT English (alloy)","lang":"en-US","gender":"female"},
+    {"voiceName":"ChatGPT English (echo)","lang":"en-US","gender":"male"},
+    {"voiceName":"ChatGPT English (fable)","lang":"en-US","gender":"female"},
+    {"voiceName":"ChatGPT English (onyx)","lang":"en-US","gender":"male"},
+    {"voiceName":"ChatGPT English (nova)","lang":"en-US","gender":"female"},
+    {"voiceName":"ChatGPT English (shimmer)","lang":"en-US","gender":"female"},
+  ]
+}
+
+
+function AzureTtsEngine() {
+  var isSpeaking = false;
+  var audio, prefetchAudio;
+  this.speak = function(utterance, options, onEvent) {
+    const urlPromise = Promise.resolve()
+      .then(() => {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
+        else return getAudioUrl(utterance, options.lang, options.voice)
+      })
+    audio = playAudio(urlPromise, options)
+    audio.startPromise
+      .then(() => {
+        onEvent({type: "start", charIndex: 0})
+        isSpeaking = true;
+      })
+      .catch(function(err) {
+        onEvent({type: "error", error: err})
+      })
+    audio.endPromise
+      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+        err => onEvent({type: "error", error: err}))
+      .finally(() => isSpeaking = false)
+  };
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking);
+  };
+  this.pause =
+  this.stop = function() {
+    if (audio) audio.pause()
+  };
+  this.resume = function() {
+    return audio.resume()
+  };
+  this.prefetch = async function(utterance, options) {
+    try {
+      const url = await getAudioUrl(utterance, options.lang, options.voice)
+      prefetchAudio = [utterance, options, url]
+    }
+    catch (err) {
+      console.error(err)
+    }
+  };
+  this.setNextStartTime = function() {
+  };
+  this.getVoices = async function() {
+    try {
+      const {azureCreds, azureVoices} = await getSettings(["azureCreds", "azureVoices"])
+      if (!azureCreds) return []
+      if (azureVoices && azureVoices.expire > Date.now()) return azureVoices.list
+      const list = await this.fetchVoices(azureCreds.region, azureCreds.key)
+      await updateSettings({azureVoices: {list, expire: Date.now() + 24*3600*1000}})
+      return list
+    }
+    catch (err) {
+      console.error(err)
+      return []
+    }
+  }
+  this.fetchVoices = async function(region, key) {
+    const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/voices/list`, {
+      method: "GET",
+      headers: {
+        "Ocp-Apim-Subscription-Key": key,
+      }
+    })
+    if (!res.ok) throw new Error("Server return " + res.status)
+    const voices = await res.json()
+    return voices.map(item => {
+      const name = item.ShortName.split("-")[2]
+      return {
+        voiceName: "Azure " + item.LocaleName + " - " + name,
+        lang: item.Locale,
+        gender: item.Gender == "Male" ? "male" : "female",
+      }
+    })
+  }
+  async function getAudioUrl(text, lang, voice) {
+    const matches = voice.voiceName.match(/^Azure .* - (\w+)$/)
+    const voiceName = voice.lang + "-" + matches[1]
+    const {azureCreds} = await getSettings(["azureCreds"])
+    const {region, key} = azureCreds
+    const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+      method: "POST",
+      headers: {
+        "Ocp-Apim-Subscription-Key": key,
+        "Content-Type": "application/ssml+xml",
+        "X-Microsoft-OutputFormat": "ogg-48khz-16bit-mono-opus",
+      },
+      body: `<speak version='1.0' xml:lang='${lang}'><voice name='${voiceName}'>${escapeXml(text)}</voice></speak>`
+    })
+    if (!res.ok) throw new Error("Server return " + res.status)
+    const blob = await res.blob()
+    return URL.createObjectURL(blob)
   }
 }
 
