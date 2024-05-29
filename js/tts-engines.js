@@ -1590,7 +1590,7 @@ function PiperTtsEngine() {
       .pipe(
         rxjs.startWith("speak"),
         rxjs.concatMap(async cmd => {
-          switch (cmd) {
+          switch (typeof cmd == "string" ? cmd : cmd.type) {
             case "speak":
               await piperHost.ready({requestFocus: false})
               return piperHost.sendRequest("speak", {
@@ -1611,6 +1611,8 @@ function PiperTtsEngine() {
               return piperHost.sendRequest("forward")
             case "rewind":
               return piperHost.sendRequest("rewind")
+            case "seek":
+              return piperHost.sendRequest("seek", {index: cmd.index})
           }
         }),
         rxjs.ignoreElements(),
@@ -1655,5 +1657,8 @@ function PiperTtsEngine() {
   }
   this.rewind = function() {
     control?.next("rewind")
+  }
+  this.seek = function(index) {
+    control?.next({type: "seek", index})
   }
 }

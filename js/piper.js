@@ -99,6 +99,9 @@ const extDispatcher = makeDispatcher("piper-host", {
   rewind(args) {
     return piperService?.sendRequest("rewind", args)
   },
+  seek(args) {
+    return piperService?.sendRequest("seek", args)
+  }
 })
 
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
