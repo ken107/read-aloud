@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.63.2",
+  "version": "1.71.0",
   "default_locale": "en",
   "browser_specific_settings": {
     "gecko": {
@@ -13,6 +13,7 @@
   },
 
   "browser_action": {
+    "default_area": "navbar",
     "default_icon": "img/icon.png",
     "default_popup": "popup.html?isPopup=1"
   },
@@ -44,11 +45,24 @@
     "file://*/*"
   ],
   "web_accessible_resources": [
-    "js/page/*"
+    "js/page/*", "img/*", "css/*"
   ],
   "content_security_policy": "script-src 'self'; object-src 'self'",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://piper.ttstool.com/"
+      ],
+      "js": [
+        "js/messaging.js",
+        "js/piper.js"
+      ]
+    }
+  ],
   "background": {
     "scripts": [
+      "js/rxjs.umd.min.js",
+      "js/peerjs-1.4.7.min.js",
       "js/defaults.js",
       "js/messaging.js",
       "js/google-translate.js",

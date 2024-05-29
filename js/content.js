@@ -54,6 +54,7 @@ var brapi = browser;
     else if (location.hostname == "www.ixl.com") return ["js/content/ixl.js"];
     else if (location.hostname == "www.webnovel.com" && location.pathname.startsWith("/book/")) return ["js/content/webnovel.js"];
     else if (location.hostname == "archiveofourown.org") return ["js/content/archiveofourown.js"];
+    else if (location.hostname == "chat.openai.com") return ["js/content/chatgpt.js"];
     else if (location.pathname.match(/pdf-upload\.html$/)
       || location.pathname.match(/\.pdf$/)
       || $("embed[type='application/pdf']").length
@@ -195,4 +196,8 @@ function repeat(opt) {
         return new Promise(function(f) {setTimeout(f, opt.delay)}).then(iter.bind(null, n+1))
       })
   }
+}
+
+function immediate(get) {
+  return get()
 }

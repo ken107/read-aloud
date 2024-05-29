@@ -64,6 +64,7 @@ function initialize(allVoices, settings) {
       var voiceName = $(this).val();
       if (voiceName == "@custom") location.href = "custom-voices.html";
       else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
+      else if (voiceName == "@piper") bgPageInvoke("managePiperVoices")
       else saveSettings({voiceName: voiceName});
     });
   $("#languages-edit-button").click(function() {
@@ -152,16 +153,48 @@ function populateVoices(allVoices, settings) {
 
   //group by standard/premium
   var groups = Object.assign({
+      piper: [],
+      offline: [],
       premium: [],
       standard: [],
     },
     voices.groupBy(function(voice) {
+      if (isPiperVoice(voice)) return "piper"
+      if (isOfflineVoice(voice)) return "offline"
       if (isPremiumVoice(voice)) return "premium";
       else return "standard";
     }))
   for (var name in groups) groups[name].sort(voiceSorter);
 
+  //create the offline optgroup
+  const offline = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_offline"))
+    .appendTo($("#voices"))
+  for (const voice of groups.offline) {
+    $("<option>")
+      .val(voice.voiceName)
+      .text(voice.voiceName)
+      .appendTo(offline)
+  }
+
+  //create piper group
+  $("<optgroup>").appendTo("#voices")
+  const piper = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_piper"))
+    .appendTo("#voices")
+  for (const voice of groups.piper) {
+    $("<option>")
+      .val(voice.voiceName)
+      .text(voice.voiceName)
+      .appendTo(piper)
+  }
+  $("<option>")
+    .val("@piper")
+    .text(brapi.i18n.getMessage("options_enable_piper_voices"))
+    .appendTo(piper)
+
   //create the standard optgroup
+  $("<optgroup>").appendTo($("#voices"))
   var standard = $("<optgroup>")
     .attr("label", brapi.i18n.getMessage("options_voicegroup_standard"))
     .appendTo($("#voices"));
@@ -213,6 +246,7 @@ function voiceSorter(a, b) {
     var weight = 0
     if (isRemoteVoice(voice)) weight += 10
     if (!isReadAloudCloud(voice)) weight += 1
+    if (isUseMyPhone(voice)) weight += 1
     return weight
   }
   return getWeight(a)-getWeight(b) || a.voiceName.localeCompare(b.voiceName)
@@ -288,6 +322,9 @@ function handleError(err) {
               $("#test-voice").click();
             })
           break;
+        case "#connect-phone":
+          location.href = "connect-phone.html"
+          break
       }
     })
   }
@@ -314,7 +351,8 @@ function createSlider(elem, defaultValue, onChange, onSlideChange) {
   var step = 1 / ($(elem).data("steps") || 20);
   var $bg = $(elem).empty().toggleClass("slider", true);
   var $bar = $("<div class='bar'>").appendTo(elem);
-  var $knob = $("<div class='knob'>").appendTo(elem);
+  var $track = $("<div class='track'>").appendTo(elem);
+  var $knob = $("<div class='knob'>").appendTo($track);
   setPosition((defaultValue-min) / (max-min));
 
   $bg.click(function(e) {
@@ -345,7 +383,7 @@ function createSlider(elem, defaultValue, onChange, onSlideChange) {
     $bar.css("width", percent);
   }
   function calcPosition(e) {
-    var rect = $bg.get(0).getBoundingClientRect();
+    var rect = $track.get(0).getBoundingClientRect();
     var position = (e.clientX - rect.left) / rect.width;
     position = Math.min(1, Math.max(position, 0));
     return step * Math.round(position / step);

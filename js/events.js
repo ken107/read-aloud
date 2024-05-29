@@ -4,13 +4,58 @@ var silenceLoop = new Audio("sound/silence.ogg");
 var playbackError = null;
 silenceLoop.loop = true;
 
-brapi.runtime.onInstalled.addListener(installContextMenus);
-if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
+installContextMenus()
 
 hasPermissions(config.gtranslatePerms)
   .then(function(granted) {
     if (granted) authGoogleTranslate()
   })
+
+
+/**
+ * Piper
+ */
+const piperHost = immediate(() => {
+  const tabSubject = new rxjs.BehaviorSubject(null)
+  return {
+    setTab(tab) {
+      tabSubject.next(tab)
+    },
+    async ready({requestFocus}) {
+      try {
+        const tab = tabSubject.getValue()
+        if (!tab) throw "Absent"
+        const status = await this.sendRequest("areYouThere")
+        if (!status) throw "Absent"
+        if (requestFocus || status.requestFocus) {
+          await Promise.all([
+            chrome.windows.update(tab.windowId, {focused: true}),
+            chrome.tabs.update(tab.id, {active: true})
+          ])
+        }
+      }
+      catch (err) {
+        brapi.runtime.sendMessage({to: "popup", type: "notification", method: "close"})
+          .catch(console.error)
+        tabSubject.next(null)
+        await brapi.tabs.create({url: "https://piper.ttstool.com/", pinned: true})
+        await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
+      }
+    },
+    async sendRequest(method, args) {
+      const tab = tabSubject.getValue()
+      const {error, result} = await brapi.tabs.sendMessage(tab.id, {
+        to: "piper-host",
+        type: "request",
+        id: String(Math.random()),
+        method,
+        args
+      })
+      return error ? Promise.reject(error) : result
+    },
+    eventSubject: new rxjs.Subject()
+  }
+})
 
 
 /**
@@ -30,22 +75,37 @@ var handlers = {
   ibmFetchVoices: function(apiKey, url) {
     return ibmWatsonTtsEngine.fetchVoices(apiKey, url);
   },
-  getSpeechPosition: function() {
+  getSpeechInfo: function() {
     return getActiveSpeech()
       .then(function(speech) {
-        return speech && speech.getPosition();
+        return speech && speech.getInfo();
       })
   },
   getPlaybackError: function() {
     if (playbackError) return {message: playbackError.message}
   },
+  startPairing: function() {
+    return phoneTtsEngine.startPairing()
+  },
+  isPaired: function() {
+    return phoneTtsEngine.isPaired()
+  },
+  managePiperVoices() {
+    return piperHost.ready({requestFocus: true})
+  },
+  piperServiceReady: function() {
+    piperHost.setTab(this.sender.tab)
+  },
+  onPiperEvent(event) {
+    piperHost.eventSubject.next(event)
+  }
 }
 
 brapi.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     var handler = handlers[request.method];
     if (handler) {
-      Promise.resolve(handler.apply(null, request.args))
+      Promise.resolve(handler.apply({sender}, request.args))
         .then(sendResponse)
         .catch(function(err) {
           sendResponse({error: err.message});

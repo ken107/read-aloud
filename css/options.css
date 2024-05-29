@@ -234,10 +234,6 @@ input[type=checkbox], input[type=radio] {
   margin-top: 1.5em;
 }
 
-#rate-edit-button > i, #languages-edit-button > i {
-  font-size: 12px;
-}
-
 #rate-input-div {
   display: none;
 }
@@ -285,7 +281,14 @@ input[type=checkbox], input[type=radio] {
   border-radius: 1em;
   background: linear-gradient(#59928b, #84d1c9, #3e8790);
 }
-.slider > .knob {
+.slider .track {
+  position: absolute;
+  left: .5em;
+  right: .5em;
+  top: 0;
+  bottom: 0;
+}
+.slider .knob {
   position: absolute;
   cursor: ew-resize;
   margin: -.4em 0 0 -.5em;

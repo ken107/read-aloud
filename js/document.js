@@ -102,18 +102,6 @@ function MessageListSource(messageList) {
 
 function TabSource(tabId) {
   var handlers = [
-    // Unsupported Sites --------------------------------------------------------
-    {
-      match: function(url) {
-        return config.unsupportedSites.some(function(site) {
-          return (typeof site == "string" && url.startsWith(site)) || (site instanceof RegExp && site.test(url));
-        })
-      },
-      validate: function() {
-        throw new Error(JSON.stringify({code: "error_page_unreadable"}));
-      }
-    },
-
     // Reader mode --------------------------------------------------------------
     {
       match: function(url) {
@@ -358,6 +346,34 @@ function TabSource(tabId) {
         return frame && frame.frameId
       },
       extraScripts: ["js/content/libbyapp.js"]
+    },
+
+    // Kindle -------------------------------------------------------------------
+    {
+      match: function(url) {
+        return url.startsWith("https://read.amazon.")
+      },
+      validate: function() {
+        var perms = {
+          origins: ["https://support.readaloud.app/"]
+        }
+        return hasPermissions(perms)
+          .then(function(has) {
+            if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
+          })
+      }
+    },
+
+    // Unsupported Sites --------------------------------------------------------
+    {
+      match: function(url) {
+        return config.unsupportedSites.some(function(site) {
+          return (typeof site == "string" && url.startsWith(site)) || (site instanceof RegExp && site.test(url));
+        })
+      },
+      validate: function() {
+        throw new Error(JSON.stringify({code: "error_page_unreadable"}));
+      }
     },
 
     // default -------------------------------------------------------------------

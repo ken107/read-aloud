@@ -20,8 +20,8 @@ var config = {
     iw: 'he'
   },
   unsupportedSites: [
-    'https://chrome.google.com/webstore',
-    'https://addons.mozilla.org',
+    'moz-extension://',
+    'about:',
   ],
   wavenetPerms: {
     permissions: ["webRequest"],
@@ -217,6 +217,14 @@ var defaults = {
   highlightWindowSize: 2,
 };
 
+var getSingletonAudio = lazy(() => {
+  const audio = new Audio()
+  audio.crossOrigin = "anonymous"
+  return audio
+})
+
+var getSilenceTrack = lazy(() => makeSilenceTrack())
+
 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
   document.addEventListener("DOMContentLoaded", function() {
     document.body.classList.add("dark-mode")
@@ -227,6 +235,15 @@ if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').match
 /**
  * HELPERS
  */
+function lazy(get) {
+  var value
+  return () => value || (value = get())
+}
+
+function immediate(get) {
+  return get()
+}
+
 function getQueryString() {
   return location.search ? parseQueryString(location.search) : {};
 }
@@ -292,21 +309,36 @@ function setState(key, value) {
 /**
  * VOICES
  */
-function getVoices() {
-  return getSettings(["awsCreds", "gcpCreds"])
+function getVoices(opts) {
+  if (!opts) opts = {}
+  return getSettings(["awsCreds", "gcpCreds", "openaiCreds", "azureCreds", "piperVoices"])
     .then(function(settings) {
       return Promise.all([
         browserTtsEngine.getVoices(),
-        googleTranslateTtsEngine.getVoices(),
+        Promise.resolve(!opts.excludeUnavailable || googleTranslateTtsEngine.ready())
+          .then(() => googleTranslateTtsEngine.getVoices())
+          .catch(err => {
+            console.error(err)
+            return []
+          }),
         remoteTtsEngine.getVoices(),
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
-        settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : [],
+        settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
         ibmWatsonTtsEngine.getVoices(),
+        nvidiaRivaTtsEngine.getVoices(),
+        phoneTtsEngine.getVoices(),
+        settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
+        settings.azureCreds ? azureTtsEngine.getVoices() : [],
+        settings.piperVoices || [],
       ])
     })
     .then(function(arr) {
       return Array.prototype.concat.apply([], arr);
     })
+}
+
+function isOfflineVoice(voice) {
+  return voice.localService == true
 }
 
 function isGoogleNative(voice) {
@@ -345,6 +377,26 @@ function isIbmWatson(voice) {
   return /^IBM-Watson /.test(voice.voiceName);
 }
 
+function isNvidiaRiva(voice) {
+  return /^Nvidia-Riva /.test(voice.voiceName);
+}
+
+function isOpenai(voice) {
+  return /^ChatGPT /.test(voice.voiceName);
+}
+
+function isAzure(voice) {
+  return /^Azure /.test(voice.voiceName);
+}
+
+function isPiperVoice(voice) {
+  return /^Piper /.test(voice.voiceName)
+}
+
+function isUseMyPhone(voice) {
+  return voice.isUseMyPhone == true
+}
+
 function isRemoteVoice(voice) {
   return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice);
 }
@@ -354,18 +406,23 @@ function isPremiumVoice(voice) {
 }
 
 function getSpeechVoice(voiceName, lang) {
-  return Promise.all([getVoices(), getSettings(["preferredVoices"])])
+  return Promise.all([getVoices({excludeUnavailable: true}), getSettings(["preferredVoices"])])
     .then(function(res) {
       var voices = res[0];
       var preferredVoiceByLang = res[1].preferredVoices || {};
       var voice;
+      //if a specific voice is indicated
       if (voiceName) voice = findVoiceByName(voices, voiceName);
+      //if no specific voice indicated, but a preferred voice was configured for the language
       if (!voice && lang) {
         voiceName = preferredVoiceByLang[lang.split("-")[0]];
         if (voiceName) voice = findVoiceByName(voices, voiceName);
       }
+      //otherwise, auto-select
+      voices = voices.filter(negate(isUseMyPhone))    //do not auto-select "Use My Phone"
       if (!voice && lang) {
-        voice = findVoiceByLang(voices.filter(isGoogleNative), lang)
+        voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
+          || findVoiceByLang(voices.filter(isGoogleNative), lang)
           || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
           || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
           || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
@@ -862,6 +919,10 @@ function getBrowser() {
   if (/firefox/i.test(navigator.userAgent)) return 'firefox';
   if (/Thunderbird/.test(navigator.userAgent)) return 'thunderbird';
   return 'chrome';
+}
+
+function isIOS() {
+  return !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
 }
 
 function getHotkeySettingsUrl() {
@@ -1429,4 +1490,137 @@ function truncateRepeatedChars(text, max) {
   }
   if (count < max) result += text.slice(startIndex)
   return result
+}
+
+/**
+ * Repeat an action
+ * @param {Object} opt - options
+ * @param {Function} opt.action - action to repeat
+ * @param {Function} opt.until - termination condition
+ * @param {Number} opt.delay - delay between actions
+ * @param {Number} opt.max - maximum number of repetitions
+ * @returns {Promise}
+ */
+function repeat(opt) {
+  if (!opt || !opt.action) throw new Error("Missing action")
+  return iter(1)
+  function iter(n) {
+    return Promise.resolve()
+      .then(opt.action)
+      .then(function(result) {
+        if (opt.until && opt.until(result)) return result
+        if (opt.max && n >= opt.max) return result
+        if (!opt.delay) return iter(n+1)
+        return new Promise(function(f) {setTimeout(f, opt.delay)}).then(iter.bind(null, n+1))
+      })
+  }
+}
+
+function playAudio(urlPromise, options, startTime) {
+  const audio = getSingletonAudio()
+  audio.pause()
+  if (!isIOS()) {
+    audio.defaultPlaybackRate = (options.rate || 1) * (options.rateAdjust || 1)
+    audio.volume = options.volume || 1
+  }
+  const silenceTrack = getSilenceTrack()
+
+  const timeoutPromise = waitMillis(10*1000)
+    .then(() => Promise.reject(new Error("Timeout, TTS never started, try picking another voice?")))
+  const {abortPromise, abort} = makeAbortable()
+  const readyPromise = Promise.resolve(urlPromise)
+    .then(async url => {
+      const canPlayPromise = new Promise((fulfill, reject) => {
+        audio.oncanplay = fulfill
+        audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
+      })
+      audio.src = url
+      await canPlayPromise
+
+      if (startTime) {
+        const waitTime = startTime - Date.now()
+        if (waitTime > 0) await waitMillis(waitTime)
+      }
+    })
+
+  const startPromise = Promise.race([readyPromise, abortPromise, timeoutPromise])
+    .then(async () => {
+      await audio.play()
+        .catch(err => {
+          if (err instanceof DOMException) throw new Error(err.name || err.message)
+          else throw err
+        })
+      silenceTrack.start()
+    })
+
+  const endPromise = new Promise((fulfill, reject) => {
+    audio.onended = fulfill
+    audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
+  })
+  .finally(() => silenceTrack.stop())
+
+  return {
+    startPromise,
+    endPromise: endPromise,
+    pause() {
+      abort(new Error("Aborted"))
+      audio.pause()
+      silenceTrack.stop()
+    },
+    async resume() {
+      await audio.play()
+      silenceTrack.start()
+      return true
+    }
+  }
+}
+
+function makeSilenceTrack() {
+  const audio = new Audio(brapi.runtime.getURL("sound/silence.mp3"))
+  audio.loop = true
+  const stateMachine = new StateMachine({
+    IDLE: {
+      start() {
+        audio.play().catch(console.error)
+        return "PLAYING"
+      },
+      stop() {}
+    },
+    PLAYING: {
+      start() {},
+      stop() {
+        return "STOPPING"
+      }
+    },
+    STOPPING: {
+      onTransitionIn() {
+        this.timer = setTimeout(() => stateMachine.trigger("onStop"), 15*1000)
+      },
+      onStop() {
+        audio.pause()
+        return "IDLE"
+      },
+      start() {
+        clearTimeout(this.timer)
+        return "PLAYING"
+      },
+      stop() {}
+    }
+  })
+  return {
+    start() {
+      stateMachine.trigger("start")
+    },
+    stop() {
+      stateMachine.trigger("stop")
+    }
+  }
+}
+
+function makeAbortable() {
+  let abort
+  return {
+    abortPromise: new Promise((f,r) => abort = r),
+    abort
+  }
 }
