@@ -315,12 +315,14 @@ function getVoices(opts) {
     .then(function(settings) {
       return Promise.all([
         browserTtsEngine.getVoices(),
+        /*
         Promise.resolve(!opts.excludeUnavailable || googleTranslateTtsEngine.ready())
           .then(() => googleTranslateTtsEngine.getVoices())
           .catch(err => {
             console.error(err)
             return []
           }),
+          */
         remoteTtsEngine.getVoices(),
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
@@ -405,33 +407,31 @@ function isPremiumVoice(voice) {
   return isAmazonCloud(voice) || isMicrosoftCloud(voice);
 }
 
-function getSpeechVoice(voiceName, lang) {
-  return Promise.all([getVoices({excludeUnavailable: true}), getSettings(["preferredVoices"])])
-    .then(function(res) {
-      var voices = res[0];
-      var preferredVoiceByLang = res[1].preferredVoices || {};
-      var voice;
-      //if a specific voice is indicated
-      if (voiceName) voice = findVoiceByName(voices, voiceName);
-      //if no specific voice indicated, but a preferred voice was configured for the language
-      if (!voice && lang) {
-        voiceName = preferredVoiceByLang[lang.split("-")[0]];
-        if (voiceName) voice = findVoiceByName(voices, voiceName);
-      }
-      //otherwise, auto-select
-      voices = voices.filter(negate(isUseMyPhone))    //do not auto-select "Use My Phone"
-      if (!voice && lang) {
-        voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
-          || findVoiceByLang(voices.filter(isGoogleNative), lang)
-          || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
-          || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
-          || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
-          || findVoiceByLang(voices.filter(negate(isPremiumVoice)), lang)
-          || findVoiceByLang(voices, lang);
-        if (voice && isRemoteVoice(voice)) voice = Object.assign({autoSelect: true}, voice);
-      }
-      return voice;
-    })
+async function getSpeechVoice(voiceName, lang) {
+  let voices = await getVoices({excludeUnavailable: true})
+  const settings = await getSettings(["preferredVoices"])
+  const preferredVoiceByLang = settings.preferredVoices || {}
+  var voice;
+  //if a specific voice is indicated
+  if (voiceName) voice = findVoiceByName(voices, voiceName);
+  //if no specific voice indicated, but a preferred voice was configured for the language
+  if (!voice && lang) {
+    voiceName = preferredVoiceByLang[lang.split("-")[0]];
+    if (voiceName) voice = findVoiceByName(voices, voiceName);
+  }
+  //otherwise, auto-select
+  voices = voices.filter(negate(isUseMyPhone))    //do not auto-select "Use My Phone"
+  if (!voice && lang) {
+    voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
+      || findVoiceByLang(voices.filter(isGoogleNative), lang)
+      || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
+      || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
+      || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
+      || findVoiceByLang(voices.filter(negate(isPremiumVoice)), lang)
+      || findVoiceByLang(voices, lang);
+    if (voice && isRemoteVoice(voice)) voice = Object.assign({autoSelect: true}, voice);
+  }
+  return voice;
 }
 
 function findVoiceByName(voices, name) {

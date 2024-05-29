@@ -38,7 +38,7 @@ const piperHost = immediate(() => {
         brapi.runtime.sendMessage({to: "popup", type: "notification", method: "close"})
           .catch(console.error)
         tabSubject.next(null)
-        await brapi.tabs.create({url: "https://piper.ttstool.com/", pinned: true})
+        await brapi.tabs.create({url: "https://piper.ttstool.com/"})
         await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
       }
     },
