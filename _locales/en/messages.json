@@ -128,9 +128,6 @@
   "error_wavenet_auth_required": {
     "message": "You need to grant additional [permissions](auth-wavenet) to enable Google Wavenet voices"
   },
-  "error_gtranslate_auth_required": {
-    "message": "You need to grant additional [permissions](auth-gtranslate) to enable Google Translate voices"
-  },
   "error_user_gesture_required": {
     "message": "Click [here](user-gesture) to start"
   },

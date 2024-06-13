@@ -27,10 +27,6 @@ var config = {
     permissions: ["webRequest"],
     origins: ["https://*/"]
   },
-  gtranslatePerms: {
-    permissions: ["webRequest", "webRequestBlocking"],
-    origins: ["https://translate.google.com/*"]
-  },
   langList: [
     {code: "ab", name: "аҧсуа бызшәа, аҧсшәа"},
     {code: "aa", name: "Afaraf"},

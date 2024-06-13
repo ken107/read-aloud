@@ -10,7 +10,6 @@ $(function() {
       if (granted) {
         $("#success").show();
         if (query.then == "auth-wavenet") getBackgroundPage().then(callMethod("authWavenet")).then(closeThisTab);
-        else if (query.then == "auth-gtranslate") getBackgroundPage().then(callMethod("authGoogleTranslate"))
       }
       else $("#error").show();
     })

@@ -387,11 +387,7 @@ function GoogleTranslateTtsEngine() {
   var isSpeaking = false;
   var speakPromise;
   this.ready = function() {
-    return hasPermissions(config.gtranslatePerms)
-      .then(function(granted) {
-        if (!granted) throw new Error(JSON.stringify({code: "error_gtranslate_auth_required"}))
-      })
-      .then(googleTranslateReady)
+    return googleTranslateReady();
   };
   this.speak = function(utterance, options, onEvent) {
     if (!options.volume) options.volume = 1;

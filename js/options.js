@@ -207,16 +207,16 @@ function populateVoices(allVoices, settings) {
 
   //create the premium optgroup
   if (brapi.identity && brapi.identity.launchWebAuthFlow) {
-  $("<optgroup>").appendTo($("#voices"));
-  var premium = $("<optgroup>")
-    .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
-    .appendTo($("#voices"));
-  groups.premium.forEach(function(voice) {
-    $("<option>")
-      .val(voice.voiceName)
-      .text(voice.voiceName)
-      .appendTo(premium);
-  });
+    $("<optgroup>").appendTo($("#voices"));
+    var premium = $("<optgroup>")
+      .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))
+      .appendTo($("#voices"));
+    groups.premium.forEach(function(voice) {
+      $("<option>")
+        .val(voice.voiceName)
+        .text(voice.voiceName)
+        .appendTo(premium);
+    });
   }
   getAuthToken()
     .then(function(token) {
@@ -306,14 +306,6 @@ function handleError(err) {
             .then(function(granted) {
               if (granted) bgPageInvoke("authWavenet");
             })
-          break;
-        case "#auth-gtranslate":
-          if (getBrowser() == "firefox") {
-            createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.gtranslatePerms)) + "&then=auth-gtranslate")
-              .then(function() {
-                window.close()
-              })
-          }
           break;
         case "#user-gesture":
           getBackgroundPage()
