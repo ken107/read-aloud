@@ -902,6 +902,10 @@ function isIOS() {
   return !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
 }
 
+function isFirefoxAndroid() {
+  return getBrowser() == "firefox" && /android/i.test(navigator.userAgent)
+}
+
 function getHotkeySettingsUrl() {
   switch (getBrowser()) {
     case 'opera': return 'opera://settings/configureCommands';

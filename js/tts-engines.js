@@ -91,11 +91,13 @@ function WebSpeechEngine() {
     if (utter) utter.onend = null;
     speechSynthesis.cancel();
   }
-  this.pause = function() {
-    speechSynthesis.pause();
-  }
-  this.resume = function() {
-    speechSynthesis.resume();
+  if (!isFirefoxAndroid()) {
+    this.pause = function() {
+      speechSynthesis.pause();
+    }
+    this.resume = function() {
+      speechSynthesis.resume();
+    }
   }
   this.isSpeaking = function(callback) {
     callback(speechSynthesis.speaking);
