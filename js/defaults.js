@@ -316,7 +316,9 @@ function getVoices(opts) {
           }),
         remoteTtsEngine.getVoices(),
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
-        settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
+        settings.gcpCreds
+          ? googleWavenetTtsEngine.getVoices()
+          : (!isMobileOS() ? googleWavenetTtsEngine.getFreeVoices() : []),
         ibmWatsonTtsEngine.getVoices(),
         nvidiaRivaTtsEngine.getVoices(),
         !isMobileOS() ? phoneTtsEngine.getVoices() : [],
