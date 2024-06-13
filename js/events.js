@@ -352,6 +352,7 @@ function authWavenet() {
             "elem.style.textAlign = 'center'",
             "elem.innerHTML = 'Please click the blue SPEAK-IT button, then check the I-AM-NOT-A-ROBOT checkbox.'",
             "document.body.appendChild(elem)",
+            "1"
           ]
           .join(";\n")
         })

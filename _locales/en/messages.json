@@ -20,11 +20,14 @@
   "options_voicegroup_piper": {
     "message": "Piper Voices (experimental)"
   },
+  "options_voicegroup_googlecloud": {
+    "message": "Google Cloud Voices"
+  },
   "options_voicegroup_standard": {
     "message": "Standard Voices"
   },
   "options_voicegroup_premium": {
-    "message": "Premium Voices"
+    "message": "Premium Voices (require purchase)"
   },
   "options_voicegroup_additional": {
     "message": "Additional Voices"

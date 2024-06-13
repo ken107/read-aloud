@@ -157,8 +157,10 @@ function populateVoices(allVoices, settings) {
       offline: [],
       premium: [],
       standard: [],
+      googlecloud: [],
     },
     voices.groupBy(function(voice) {
+      if (isGoogleWavenet(voice)) return "googlecloud"
       if (isPiperVoice(voice)) return "piper"
       if (isOfflineVoice(voice)) return "offline"
       if (isPremiumVoice(voice)) return "premium";
@@ -204,6 +206,16 @@ function populateVoices(allVoices, settings) {
       .text(voice.voiceName)
       .appendTo(standard);
   });
+
+  //create the googlecloud optgroup
+  if (groups.googlecloud.length) {
+    $("<optgroup>").appendTo("#voices")
+    const googlecloud = $("<optgroup>")
+      .attr("label", brapi.i18n.getMessage("options_voicegroup_googlecloud"))
+      .appendTo("#voices")
+    for (const {voiceName} of groups.googlecloud)
+      $("<option>").val(voiceName).text(voiceName).appendTo(googlecloud)
+  }
 
   //create the premium optgroup
   if (brapi.identity && brapi.identity.launchWebAuthFlow) {
