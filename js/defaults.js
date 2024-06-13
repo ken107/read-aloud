@@ -319,7 +319,7 @@ function getVoices(opts) {
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
         ibmWatsonTtsEngine.getVoices(),
         nvidiaRivaTtsEngine.getVoices(),
-        phoneTtsEngine.getVoices(),
+        !isMobileOS() ? phoneTtsEngine.getVoices() : [],
         settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
         settings.azureCreds ? azureTtsEngine.getVoices() : [],
         settings.piperVoices || [],
