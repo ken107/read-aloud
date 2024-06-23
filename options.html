@@ -42,13 +42,12 @@
     <div class="layout">
       <div>
         <span data-i18n="options_voice_label"></span>
-        <button id="languages-edit-button" type="button" class="btn btn-sm btn-light">
-          <i class="material-icons">filter_alt</i>
-        </button>
       </div>
       <div>
-        <select id="voices" class="form-control">
-        </select>
+        <div class="input-group" style="display: flex">
+          <select id="languages" class="form-control" style="flex: 0; width: 5em"></select>
+          <select id="voices" class="form-control" style="flex: 1"></select>
+        </div>
         <small id="voice-info" class="form-text text-muted">
           Note: This voice may become unavailable at any time.
           <a href='http://blog.readaloud.app/2018/10/the-state-of-text-to-speech-technology.html' target='_blank'>Read more</a> about it on our blog.

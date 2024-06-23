@@ -5,6 +5,15 @@
   const domReadyPromise = domReady()
   const voicesPromise = getVoices()
 
+  const languageSubject = new rxjs.Subject()
+  const languageObservable = rxjs.merge(
+      settingsObservable.of("language").pipe(rxjs.map(language => language ?? 'en')),
+      languageSubject
+    )
+    .pipe(
+      rxjs.shareReplay({bufferSize: 1, refCount: false})
+    )
+
 
   //i18n
   domReadyPromise
@@ -60,6 +69,28 @@
 
 
 
+  //language
+  domReadyPromise
+    .then(() => {
+      $("#languages")
+        .change(function() {
+          languageSubject.next($(this).val())
+        })
+    })
+
+  const languagesPopulatedObservable = rxjs.combineLatest([voicesPromise, domReadyPromise])
+    .pipe(
+      rxjs.tap(([voices]) => populateLanguages(voices)),
+      rxjs.share()
+    )
+
+  rxjs.combineLatest([languageObservable, languagesPopulatedObservable])
+    .subscribe(([language]) => {
+      $("#languages").val(language)
+    })
+
+
+
   //voice
   domReadyPromise
     .then(() => {
@@ -69,24 +100,37 @@
           if (voiceName == "@custom") location.href = "custom-voices.html";
           else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
           else if (voiceName == "@piper") bgPageInvoke("managePiperVoices").catch(console.error)
-          else updateSettings({voiceName})
+          else immediate(async () => {
+            const language = await rxjs.firstValueFrom(languageObservable)
+            const preferredVoices = (await getSetting("preferredVoices")) ?? {}
+            preferredVoices[language] = voiceName
+            await updateSettings({preferredVoices})
+          })
         });
-      $("#languages-edit-button")
-        .click(function() {
-          location.href = "languages.html";
-        })
     })
 
-  const voicesPopulatedObservable = rxjs.combineLatest([settingsObservable.of("languages"), voicesPromise, domReadyPromise])
+  const voicesPopulatedObservable = rxjs.combineLatest([voicesPromise, languageObservable, domReadyPromise])
     .pipe(
-      rxjs.tap(([languages, voices]) => populateVoices(voices, {languages})),
+      rxjs.tap(([voices, language]) => populateVoices(voices.filter(voice => {
+        if (!voice.lang) return true
+        const voiceLang = voice.lang.toLowerCase()
+        return voiceLang == language || voiceLang.startsWith(language + '-')
+      }))),
       rxjs.share()
     )
 
-  rxjs.combineLatest([settingsObservable.of("voiceName"), voicesPopulatedObservable])
-    .subscribe(([voiceName]) => {
-      $("#voices").val(voiceName || "")
-      $("#voice-info").toggle(!!voiceName && isGoogleWavenet({voiceName}))
+  rxjs.combineLatest([languageObservable, settingsObservable.of("preferredVoices"), voicesPromise, voicesPopulatedObservable])
+    .subscribe(([language, preferredVoices, voices]) => {
+      const voiceName = preferredVoices[language]
+      const voice = voices.find(voice => voice.voiceName == voiceName)
+      if (voice) {
+        $("#voices").val(voice.voiceName)
+        $("#voice-info").toggle(isGoogleWavenet(voice))
+      }
+      else {
+        $("#voices").val("")
+        $("#voice-info").hide()
+      }
     })
 
 
@@ -266,20 +310,29 @@
   }
 
 
+  function populateLanguages(allVoices) {
+    const languageSet = allVoices.reduce((acc, voice) => acc.add(getLanguageOfVoice(voice)), new Set())
+    const languages = Array.from(languageSet).sort()
 
-  function populateVoices(allVoices, settings) {
+    $("#languages").empty()
+    $("<option>")
+      .val("")
+      .appendTo("#languages")
+
+    for (const language of languages) {
+      $("<option>")
+        .val(language)
+        .text(language.toUpperCase().padEnd(4,"\u00a0") + (languageTable.getLanguageName(language) || ""))
+        .appendTo("#languages")
+    }
+  }
+
+  function populateVoices(voices) {
     $("#voices").empty()
     $("<option>")
       .val("")
       .text("Auto select")
       .appendTo("#voices")
-
-    //get voices filtered by selected languages
-    var selectedLangs = settings.languages && settings.languages.split(',');
-    var voices = !selectedLangs ? allVoices : allVoices.filter(
-      function(voice) {
-        return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
-      });
 
     //group by standard/premium
     var groups = Object.assign({
@@ -367,6 +420,10 @@
       return weight
     }
     return getWeight(a)-getWeight(b) || a.voiceName.localeCompare(b.voiceName)
+  }
+
+  function getLanguageOfVoice(voice) {
+    return voice.lang?.toLowerCase().split('-',1)[0] || 'en'
   }
 
 
