@@ -19,6 +19,7 @@ $(function() {
       }
       if (items.openaiCreds) {
         $("#openai-api-key").val(obfuscate(items.openaiCreds.apiKey))
+        $("#openai-url").val(items.openaiCreds.url || "")
       }
       if (items.azureCreds) {
         $("#azure-region").val(items.azureCreds.region)
@@ -198,11 +199,12 @@ function testRiva(url) {
 async function openaiSave() {
   $(".status").hide()
   const apiKey = $("#openai-api-key").val().trim()
+  const url = $("#openai-url").val().trim()
   if (apiKey) {
     $("#openai-progress").show()
     try {
-      await testOpenai(apiKey)
-      await updateSettings({openaiCreds: {apiKey: apiKey}})
+      await openaiTtsEngine.test(apiKey, url)
+      await updateSettings({openaiCreds: {apiKey, url}})
       $("#openai-success").text("ChatGPT voices are enabled.").show()
       $("#openai-api-key").val(obfuscate(apiKey))
     }
@@ -217,11 +219,6 @@ async function openaiSave() {
     await clearSettings(["openaiCreds"])
     $("#openai-success").text("ChatGPT voices are disabled.").show()
   }
-}
-
-async function testOpenai(apiKey) {
-  const res = await fetch("https://api.openai.com/v1/models", {headers: {"Authorization": "Bearer " + apiKey}})
-  if (!res.ok) throw await res.json().then(x => x.error)
 }
 
 
