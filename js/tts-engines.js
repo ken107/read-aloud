@@ -1404,8 +1404,18 @@ function PhoneTtsEngine() {
 
 
 function OpenaiTtsEngine() {
+  const defaultApiUrl = "https://api.openai.com/v1"
   var audio, prefetchAudio
   var isSpeaking = false
+  this.test = async function(apiKey, url) {
+    const res = await fetch((url || defaultApiUrl) + "/models", {
+      headers: {"Authorization": "Bearer " + apiKey}
+    })
+    if (!res.ok) {
+      const {error} = await res.json()
+      throw error
+    }
+  }
   this.speak = function(utterance, options, onEvent) {
     const urlPromise = Promise.resolve()
       .then(() => {
@@ -1455,7 +1465,7 @@ function OpenaiTtsEngine() {
     const matches = voice.voiceName.match(/^ChatGPT .* \((\w+)\)$/)
     const voiceName = matches[1]
     const {openaiCreds} = await getSettings(["openaiCreds"])
-    const res = await fetch("https://api.openai.com/v1/audio/speech", {
+    const res = await fetch((openaiCreds.url || defaultApiUrl) + "/audio/speech", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
