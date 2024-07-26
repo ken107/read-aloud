@@ -278,9 +278,30 @@ function seek(n) {
 
 function handleError(err) {
   if (err) {
-    var code = /^{/.test(err.message) ? JSON.parse(err.message).code : err.message;
-    if (code == "error_payment_required") clearSettings(["voiceName"]);
-    reportError(err);
+    if (/^{/.test(err.message)) {
+      const errInfo = JSON.parse(err.message)
+      switch (errInfo.code) {
+        case "error_payment_required":
+          clearSettings(["voiceName"])
+          break
+        case "error_upload_pdf":
+          setTabUrl(errInfo.tabId, config.pdfViewerUrl)
+          break
+        case "error_file_access":
+        case "error_add_permissions":
+        case "error_page_unreadable":
+        case "error_login_required":
+        case "error_wavenet_auth_required":
+        case "error_chatgpt":
+          //dont report
+          break
+        default:
+          reportError(err)
+      }
+    }
+    else {
+      reportError(err);
+    }
   }
 }
 
