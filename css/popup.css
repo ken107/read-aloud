@@ -85,19 +85,14 @@ body:not(.is-popup) #highlight {
 #toolbar .btn-group {
   display: flex;
 }
-#toolbar .btn-group:first-child {
-  margin-right: auto;
-}
-#toolbar .btn-group:nth-child(2) {
-  margin-right: .25rem;
+#toolbar .btn-group:last-child {
+  margin-left: auto;
 }
 #toolbar .btn-group .btn:first-child {
-  border-top-left-radius: .5rem;
-  border-bottom-left-radius: .5rem;
+  border-radius: .5rem 0 0 .5rem;
 }
 #toolbar .btn-group .btn:last-child {
-  border-top-right-radius: .5rem;
-  border-bottom-right-radius: .5rem;
+  border-radius: 0 .5rem .5rem 0;
 }
 #toolbar .btn {
   position: relative;

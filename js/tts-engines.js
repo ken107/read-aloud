@@ -7,9 +7,6 @@ var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
 var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
 var nvidiaRivaTtsEngine = new NvidiaRivaTtsEngine();
 var phoneTtsEngine = new PhoneTtsEngine();
-var openaiTtsEngine = new OpenaiTtsEngine();
-var azureTtsEngine = new AzureTtsEngine();
-const piperTtsEngine = new PiperTtsEngine()
 
 
 /*
@@ -73,7 +70,6 @@ function BrowserTtsEngine() {
       }
     }
     return voices
-      .filter(voice => !isPiperVoice(voice))
   }
 }
 
@@ -487,7 +483,7 @@ function GoogleTranslateTtsEngine() {
 
 
 function AmazonPollyTtsEngine() {
-  var getPolly = lazy(createPolly)
+  var pollyPromise;
   var prefetchAudio;
   var isSpeaking = false;
   var audio;
@@ -530,50 +526,38 @@ function AmazonPollyTtsEngine() {
   };
   this.setNextStartTime = function() {
   };
-  this.getVoices = async function() {
-    try {
-      const {awsCreds, pollyVoices} = await getSettings(["awsCreds", "pollyVoices"])
-      if (!awsCreds) return []
-      if (pollyVoices && pollyVoices.expire > Date.now()) return pollyVoices.list
-      const list = await fetchVoices()
-      await updateSettings({pollyVoices: {list, expire: Date.now() + 24*3600*1000}})
-      return list
-    }
-    catch (err) {
-      console.error(err)
-      return []
-    }
+  this.getVoices = function() {
+    return getSettings(["pollyVoices"])
+      .then(function(items) {
+        if (!items.pollyVoices || Date.now()-items.pollyVoices[0].ts > 24*3600*1000) updateVoices();
+        return items.pollyVoices || voices;
+      })
   }
-  async function fetchVoices() {
-    const polly = await getPolly()
-    const data = await polly.describeVoices().promise()
-    const voices = []
-    for (const voice of data.Voices) {
-      assert(voice.SupportedEngines && voice.Id)
-      if (voice.SupportedEngines.includes("standard")) voices.push(voice);
-      if (voice.SupportedEngines.includes("neural")) voices.push({...voice, Style: "neural"})
-      if (polly.newscasterVoices.includes(voice.Id)) voices.push({...voice, Style: "newscaster"})
-      if (polly.conversationalVoices.includes(voice.Id)) voices.push({...voice, Style: "conversational"})
-    }
-    return voices.map(voice => {
-      assert(voice.Gender)
-      let voiceName = `AmazonPolly ${voice.LanguageName} (${voice.Id})`;
-      if (voice.Style) voiceName += ` +${voice.Style}`;
-      return {
-        voiceName,
-        lang: voice.LanguageCode,
-        gender: voice.Gender.toLowerCase(),
-      }
-    })
+  function updateVoices() {
+    ajaxGet(config.serviceUrl + "/read-aloud/list-voices/amazon")
+      .then(JSON.parse)
+      .then(function(list) {
+        list[0].ts = Date.now();
+        updateSettings({pollyVoices: list});
+      })
   }
-  async function getAudioUrl(text, lang, voice, pitch) {
+  function getAudioUrl(text, lang, voice, pitch) {
     assert(text && lang && voice);
     var matches = voice.voiceName.match(/^AmazonPolly .* \((\w+)\)( \+\w+)?$/);
     var voiceId = matches[1];
     var style = matches[2] && matches[2].substr(2);
-    const polly = await getPolly()
-    const blob = await polly.synthesizeSpeech(getOpts(text, voiceId, style)).promise()
-    return URL.createObjectURL(blob);
+    return getPolly()
+      .then(function(polly) {
+        return polly.synthesizeSpeech(getOpts(text, voiceId, style))
+        .promise()
+      })
+      .then(function(data) {
+        var blob = new Blob([data.AudioStream], {type: data.ContentType});
+        return URL.createObjectURL(blob);
+      })
+  }
+  function getPolly() {
+    return pollyPromise || (pollyPromise = createPolly());
   }
   function createPolly() {
     return getSettings(["awsCreds"])
@@ -619,6 +603,119 @@ function AmazonPollyTtsEngine() {
         }
     }
   }
+  function escapeXml(unsafe) {
+    return unsafe.replace(/[<>&'"]/g, function (c) {
+      switch (c) {
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '&': return '&amp;';
+          case '\'': return '&apos;';
+          case '"': return '&quot;';
+      }
+    })
+  }
+  var voices = [
+    {"voiceName":"AmazonPolly Turkish (Filiz)","lang":"tr-TR","gender":"female"},
+    {"voiceName":"AmazonPolly Swedish (Astrid)","lang":"sv-SE","gender":"female"},
+    {"voiceName":"AmazonPolly Russian (Tatyana)","lang":"ru-RU","gender":"female"},
+    {"voiceName":"AmazonPolly Russian (Maxim)","lang":"ru-RU","gender":"male"},
+    {"voiceName":"AmazonPolly Romanian (Carmen)","lang":"ro-RO","gender":"female"},
+    {"voiceName":"AmazonPolly Portuguese (Ines)","lang":"pt-PT","gender":"female"},
+    {"voiceName":"AmazonPolly Portuguese (Cristiano)","lang":"pt-PT","gender":"male"},
+    {"voiceName":"AmazonPolly Brazilian Portuguese (Vitoria)","lang":"pt-BR","gender":"female"},
+    {"voiceName":"AmazonPolly Brazilian Portuguese (Ricardo)","lang":"pt-BR","gender":"male"},
+    {"voiceName":"AmazonPolly Brazilian Portuguese (Camila) +neural","lang":"pt-BR","gender":"female"},
+    {"voiceName":"AmazonPolly Brazilian Portuguese (Camila)","lang":"pt-BR","gender":"female"},
+    {"voiceName":"AmazonPolly Polish (Maja)","lang":"pl-PL","gender":"female"},
+    {"voiceName":"AmazonPolly Polish (Jan)","lang":"pl-PL","gender":"male"},
+    {"voiceName":"AmazonPolly Polish (Jacek)","lang":"pl-PL","gender":"male"},
+    {"voiceName":"AmazonPolly Polish (Ewa)","lang":"pl-PL","gender":"female"},
+    {"voiceName":"AmazonPolly Dutch (Ruben)","lang":"nl-NL","gender":"male"},
+    {"voiceName":"AmazonPolly Dutch (Lotte)","lang":"nl-NL","gender":"female"},
+    {"voiceName":"AmazonPolly Norwegian (Liv)","lang":"nb-NO","gender":"female"},
+    {"voiceName":"AmazonPolly Korean (Seoyeon) +neural","lang":"ko-KR","gender":"female"},
+    {"voiceName":"AmazonPolly Korean (Seoyeon)","lang":"ko-KR","gender":"female"},
+    {"voiceName":"AmazonPolly Japanese (Takumi) +neural","lang":"ja-JP","gender":"male"},
+    {"voiceName":"AmazonPolly Japanese (Takumi)","lang":"ja-JP","gender":"male"},
+    {"voiceName":"AmazonPolly Japanese (Mizuki)","lang":"ja-JP","gender":"female"},
+    {"voiceName":"AmazonPolly Italian (Giorgio)","lang":"it-IT","gender":"male"},
+    {"voiceName":"AmazonPolly Italian (Carla)","lang":"it-IT","gender":"female"},
+    {"voiceName":"AmazonPolly Italian (Bianca) +neural","lang":"it-IT","gender":"female"},
+    {"voiceName":"AmazonPolly Italian (Bianca)","lang":"it-IT","gender":"female"},
+    {"voiceName":"AmazonPolly Icelandic (Karl)","lang":"is-IS","gender":"male"},
+    {"voiceName":"AmazonPolly Icelandic (Dora)","lang":"is-IS","gender":"female"},
+    {"voiceName":"AmazonPolly French (Mathieu)","lang":"fr-FR","gender":"male"},
+    {"voiceName":"AmazonPolly French (Lea) +neural","lang":"fr-FR","gender":"female"},
+    {"voiceName":"AmazonPolly French (Lea)","lang":"fr-FR","gender":"female"},
+    {"voiceName":"AmazonPolly French (Celine)","lang":"fr-FR","gender":"female"},
+    {"voiceName":"AmazonPolly Canadian French (Gabrielle) +neural","lang":"fr-CA","gender":"female"},
+    {"voiceName":"AmazonPolly Canadian French (Gabrielle)","lang":"fr-CA","gender":"female"},
+    {"voiceName":"AmazonPolly Canadian French (Chantal)","lang":"fr-CA","gender":"female"},
+    {"voiceName":"AmazonPolly US Spanish (Penelope)","lang":"es-US","gender":"female"},
+    {"voiceName":"AmazonPolly US Spanish (Miguel)","lang":"es-US","gender":"male"},
+    {"voiceName":"AmazonPolly US Spanish (Lupe) +newscaster","lang":"es-US","gender":"female"},
+    {"voiceName":"AmazonPolly US Spanish (Lupe) +neural","lang":"es-US","gender":"female"},
+    {"voiceName":"AmazonPolly US Spanish (Lupe)","lang":"es-US","gender":"female"},
+    {"voiceName":"AmazonPolly Mexican Spanish (Mia) +neural","lang":"es-MX","gender":"female"},
+    {"voiceName":"AmazonPolly Mexican Spanish (Mia)","lang":"es-MX","gender":"female"},
+    {"voiceName":"AmazonPolly Castilian Spanish (Lucia) +neural","lang":"es-ES","gender":"female"},
+    {"voiceName":"AmazonPolly Castilian Spanish (Lucia)","lang":"es-ES","gender":"female"},
+    {"voiceName":"AmazonPolly Castilian Spanish (Enrique)","lang":"es-ES","gender":"male"},
+    {"voiceName":"AmazonPolly Castilian Spanish (Conchita)","lang":"es-ES","gender":"female"},
+    {"voiceName":"AmazonPolly South African English (Ayanda) +neural","lang":"en-ZA","gender":"female"},
+    {"voiceName":"AmazonPolly South African English (Ayanda)","lang":"en-ZA","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Salli) +neural","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Salli)","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Matthew) +newscaster","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Matthew) +neural","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Matthew) +conversational","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Matthew)","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Kimberly) +neural","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Kimberly)","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Kevin) +neural","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Kevin)","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Kendra) +neural","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Kendra)","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Justin) +neural","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Justin)","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Joey) +neural","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Joey)","lang":"en-US","gender":"male"},
+    {"voiceName":"AmazonPolly US English (Joanna) +newscaster","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Joanna) +neural","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Joanna) +conversational","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Joanna)","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Ivy) +neural","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly US English (Ivy)","lang":"en-US","gender":"female"},
+    {"voiceName":"AmazonPolly New Zealand English (Aria) +neural","lang":"en-NZ","gender":"female"},
+    {"voiceName":"AmazonPolly New Zealand English (Aria)","lang":"en-NZ","gender":"female"},
+    {"voiceName":"AmazonPolly Indian English (Raveena)","lang":"en-IN","gender":"female"},
+    {"voiceName":"AmazonPolly Indian English (Aditi)","lang":"en-IN","gender":"female"},
+    {"voiceName":"AmazonPolly Welsh English (Geraint)","lang":"en-GB-WLS","gender":"male"},
+    {"voiceName":"AmazonPolly British English (Emma) +neural","lang":"en-GB","gender":"female"},
+    {"voiceName":"AmazonPolly British English (Emma)","lang":"en-GB","gender":"female"},
+    {"voiceName":"AmazonPolly British English (Brian) +neural","lang":"en-GB","gender":"male"},
+    {"voiceName":"AmazonPolly British English (Brian)","lang":"en-GB","gender":"male"},
+    {"voiceName":"AmazonPolly British English (Amy) +newscaster","lang":"en-GB","gender":"female"},
+    {"voiceName":"AmazonPolly British English (Amy) +neural","lang":"en-GB","gender":"female"},
+    {"voiceName":"AmazonPolly British English (Amy)","lang":"en-GB","gender":"female"},
+    {"voiceName":"AmazonPolly Australian English (Russell)","lang":"en-AU","gender":"male"},
+    {"voiceName":"AmazonPolly Australian English (Olivia) +neural","lang":"en-AU","gender":"female"},
+    {"voiceName":"AmazonPolly Australian English (Olivia)","lang":"en-AU","gender":"female"},
+    {"voiceName":"AmazonPolly Australian English (Nicole)","lang":"en-AU","gender":"female"},
+    {"voiceName":"AmazonPolly German (Vicki) +neural","lang":"de-DE","gender":"female"},
+    {"voiceName":"AmazonPolly German (Vicki)","lang":"de-DE","gender":"female"},
+    {"voiceName":"AmazonPolly German (Marlene)","lang":"de-DE","gender":"female"},
+    {"voiceName":"AmazonPolly German (Hans)","lang":"de-DE","gender":"male"},
+    {"voiceName":"AmazonPolly German (Hannah) +neural","lang":"de-AT","gender":"female"},
+    {"voiceName":"AmazonPolly German (Hannah)","lang":"de-AT","gender":"female"},
+    {"voiceName":"AmazonPolly Danish (Naja)","lang":"da-DK","gender":"female"},
+    {"voiceName":"AmazonPolly Danish (Mads)","lang":"da-DK","gender":"male"},
+    {"voiceName":"AmazonPolly Welsh (Gwyneth)","lang":"cy-GB","gender":"female"},
+    {"voiceName":"AmazonPolly Chinese Mandarin (Zhiyu)","lang":"cmn-CN","gender":"female"},
+    {"voiceName":"AmazonPolly Catalan (Arlet) +neural","lang":"ca-ES","gender":"female"},
+    {"voiceName":"AmazonPolly Catalan (Arlet)","lang":"ca-ES","gender":"female"},
+    {"voiceName":"AmazonPolly Arabic (Zeina)","lang":"arb","gender":"female"}
+  ]
 }
 
 
@@ -666,16 +763,10 @@ function GoogleWavenetTtsEngine() {
   this.setNextStartTime = function() {
   };
   this.getVoices = function() {
-    return getSettings(["wavenetVoices", "gcpCreds"])
+    return getSettings(["wavenetVoices"])
       .then(function(items) {
         if (!items.wavenetVoices || Date.now()-items.wavenetVoices[0].ts > 24*3600*1000) updateVoices();
-        var listvoices = items.wavenetVoices || voices;
-        var creds = items.gcpCreds;
-        return listvoices.filter(
-          function(voice) {
-            // include all voices or exclude only studio voices.
-            return ((creds && creds.enableStudio) || !isGoogleStudio(voice));
-          });
+        return items.wavenetVoices || voices;
       })
   }
   this.getFreeVoices = function() {
@@ -687,12 +778,20 @@ function GoogleWavenetTtsEngine() {
       })
   }
   function updateVoices() {
-    ajaxGet(config.serviceUrl + "/read-aloud/list-voices/google")
-      .then(JSON.parse)
-      .then(function(list) {
-        list[0].ts = Date.now();
-        updateSettings({wavenetVoices: list});
-      })
+    getSettings(["gcpCreds"]).then(function(settings) {
+      ajaxGet(config.serviceUrl + "/read-aloud/list-voices/google")
+        .then(JSON.parse)
+        .then(function(list) {
+          var creds = settings.gcpCreds;
+          var voicelist = list.filter(
+            function(voice) {
+              // include all voices or exclude only studio voices.
+              return ((creds && creds.enableStudio) || !isGoogleStudio(voice));
+          });
+          voicelist[0].ts = Date.now() - 24*3600*1000+10;
+          updateSettings({wavenetVoices: voicelist});
+        })
+    });
   }
   function getAudioUrl(text, voice, pitch) {
     assert(text && voice);
@@ -728,6 +827,105 @@ function GoogleWavenetTtsEngine() {
       })
   }
   var voices = [
+    {"voiceName":"GoogleWavenet Arabic (Anna)","lang":"ar-XA","gender":"female"},
+    {"voiceName":"GoogleWavenet Arabic (Benjamin)","lang":"ar-XA","gender":"male"},
+    {"voiceName":"GoogleWavenet Arabic (Christopher)","lang":"ar-XA","gender":"male"},
+    {"voiceName":"GoogleWavenet Mandarin (Anna)","lang":"cmn-CN","gender":"female"},
+    {"voiceName":"GoogleWavenet Mandarin (Benjamin)","lang":"cmn-CN","gender":"male"},
+    {"voiceName":"GoogleWavenet Mandarin (Christopher)","lang":"cmn-CN","gender":"male"},
+    {"voiceName":"GoogleWavenet Mandarin (Diane)","lang":"cmn-CN","gender":"female"},
+    {"voiceName":"GoogleWavenet Czech (Anna)","lang":"cs-CZ","gender":"female"},
+    {"voiceName":"GoogleWavenet Danish (Anna)","lang":"da-DK","gender":"female"},
+    {"voiceName":"GoogleWavenet German (Anna)","lang":"de-DE","gender":"female"},
+    {"voiceName":"GoogleWavenet German (Benjamin)","lang":"de-DE","gender":"male"},
+    {"voiceName":"GoogleWavenet German (Caroline)","lang":"de-DE","gender":"female"},
+    {"voiceName":"GoogleWavenet German (Daniel)","lang":"de-DE","gender":"male"},
+    {"voiceName":"GoogleWavenet German (Ethan)","lang":"de-DE","gender":"male"},
+    {"voiceName":"GoogleWavenet Greek, Modern (Anna)","lang":"el-GR","gender":"female"},
+    {"voiceName":"GoogleWavenet Australian English (Anna)","lang":"en-AU","gender":"female"},
+    {"voiceName":"GoogleWavenet Australian English (Benjamin)","lang":"en-AU","gender":"male"},
+    {"voiceName":"GoogleWavenet Australian English (Caroline)","lang":"en-AU","gender":"female"},
+    {"voiceName":"GoogleWavenet Australian English (Daniel)","lang":"en-AU","gender":"male"},
+    {"voiceName":"GoogleWavenet British English (Anna)","lang":"en-GB","gender":"female"},
+    {"voiceName":"GoogleWavenet British English (Benjamin)","lang":"en-GB","gender":"male"},
+    {"voiceName":"GoogleWavenet British English (Caroline)","lang":"en-GB","gender":"female"},
+    {"voiceName":"GoogleWavenet British English (Daniel)","lang":"en-GB","gender":"male"},
+    {"voiceName":"GoogleWavenet Indian English (Anna)","lang":"en-IN","gender":"female"},
+    {"voiceName":"GoogleWavenet Indian English (Benjamin)","lang":"en-IN","gender":"male"},
+    {"voiceName":"GoogleWavenet Indian English (Christopher)","lang":"en-IN","gender":"male"},
+    {"voiceName":"GoogleWavenet US English (Adam)","lang":"en-US","gender":"male"},
+    {"voiceName":"GoogleWavenet US English (Benjamin)","lang":"en-US","gender":"male"},
+    {"voiceName":"GoogleWavenet US English (Caroline)","lang":"en-US","gender":"female"},
+    {"voiceName":"GoogleWavenet US English (Daniel)","lang":"en-US","gender":"male"},
+    {"voiceName":"GoogleWavenet US English (Elizabeth)","lang":"en-US","gender":"female"},
+    {"voiceName":"GoogleWavenet US English (Francesca)","lang":"en-US","gender":"female"},
+    {"voiceName":"GoogleWavenet Finnish (Anna)","lang":"fi-FI","gender":"female"},
+    {"voiceName":"GoogleWavenet Filipino (Anna)","lang":"fil-PH","gender":"female"},
+    {"voiceName":"GoogleWavenet Canadian French (Anna)","lang":"fr-CA","gender":"female"},
+    {"voiceName":"GoogleWavenet Canadian French (Benjamin)","lang":"fr-CA","gender":"male"},
+    {"voiceName":"GoogleWavenet Canadian French (Caroline)","lang":"fr-CA","gender":"female"},
+    {"voiceName":"GoogleWavenet Canadian French (Daniel)","lang":"fr-CA","gender":"male"},
+    {"voiceName":"GoogleWavenet French (Anna)","lang":"fr-FR","gender":"female"},
+    {"voiceName":"GoogleWavenet French (Benjamin)","lang":"fr-FR","gender":"male"},
+    {"voiceName":"GoogleWavenet French (Caroline)","lang":"fr-FR","gender":"female"},
+    {"voiceName":"GoogleWavenet French (Daniel)","lang":"fr-FR","gender":"male"},
+    {"voiceName":"GoogleWavenet French (Elizabeth)","lang":"fr-FR","gender":"female"},
+    {"voiceName":"GoogleWavenet Hindi (Anna)","lang":"hi-IN","gender":"female"},
+    {"voiceName":"GoogleWavenet Hindi (Benjamin)","lang":"hi-IN","gender":"male"},
+    {"voiceName":"GoogleWavenet Hindi (Christopher)","lang":"hi-IN","gender":"male"},
+    {"voiceName":"GoogleWavenet Hungarian (Anna)","lang":"hu-HU","gender":"female"},
+    {"voiceName":"GoogleWavenet Indonesian (Anna)","lang":"id-ID","gender":"female"},
+    {"voiceName":"GoogleWavenet Indonesian (Benjamin)","lang":"id-ID","gender":"male"},
+    {"voiceName":"GoogleWavenet Indonesian (Christopher)","lang":"id-ID","gender":"male"},
+    {"voiceName":"GoogleWavenet Italian (Anna)","lang":"it-IT","gender":"female"},
+    {"voiceName":"GoogleWavenet Italian (Bianca)","lang":"it-IT","gender":"female"},
+    {"voiceName":"GoogleWavenet Italian (Christopher)","lang":"it-IT","gender":"male"},
+    {"voiceName":"GoogleWavenet Italian (Daniel)","lang":"it-IT","gender":"male"},
+    {"voiceName":"GoogleWavenet Japanese (Anna)","lang":"ja-JP","gender":"female"},
+    {"voiceName":"GoogleWavenet Japanese (Bianca)","lang":"ja-JP","gender":"female"},
+    {"voiceName":"GoogleWavenet Japanese (Christopher)","lang":"ja-JP","gender":"male"},
+    {"voiceName":"GoogleWavenet Japanese (Daniel)","lang":"ja-JP","gender":"male"},
+    {"voiceName":"GoogleWavenet Korean (Bianca)","lang":"ko-KR","gender":"female"},
+    {"voiceName":"GoogleWavenet Korean (Christopher)","lang":"ko-KR","gender":"male"},
+    {"voiceName":"GoogleWavenet Korean (Daniel)","lang":"ko-KR","gender":"male"},
+    {"voiceName":"GoogleWavenet Korean (Anna)","lang":"ko-KR","gender":"female"},
+    {"voiceName":"GoogleWavenet Norwegian Bokmål (Elizabeth)","lang":"nb-NO","gender":"female"},
+    {"voiceName":"GoogleWavenet Norwegian Bokmål (Anna)","lang":"nb-NO","gender":"female"},
+    {"voiceName":"GoogleWavenet Norwegian Bokmål (Benjamin)","lang":"nb-NO","gender":"male"},
+    {"voiceName":"GoogleWavenet Norwegian Bokmål (Caroline)","lang":"nb-NO","gender":"female"},
+    {"voiceName":"GoogleWavenet Norwegian Bokmål (Daniel)","lang":"nb-NO","gender":"male"},
+    {"voiceName":"GoogleWavenet Dutch (Benjamin)","lang":"nl-NL","gender":"male"},
+    {"voiceName":"GoogleWavenet Dutch (Christopher)","lang":"nl-NL","gender":"male"},
+    {"voiceName":"GoogleWavenet Dutch (Diane)","lang":"nl-NL","gender":"female"},
+    {"voiceName":"GoogleWavenet Dutch (Elizabeth)","lang":"nl-NL","gender":"female"},
+    {"voiceName":"GoogleWavenet Dutch (Anna)","lang":"nl-NL","gender":"female"},
+    {"voiceName":"GoogleWavenet Polish (Anna)","lang":"pl-PL","gender":"female"},
+    {"voiceName":"GoogleWavenet Polish (Benjamin)","lang":"pl-PL","gender":"male"},
+    {"voiceName":"GoogleWavenet Polish (Christopher)","lang":"pl-PL","gender":"male"},
+    {"voiceName":"GoogleWavenet Polish (Diane)","lang":"pl-PL","gender":"female"},
+    {"voiceName":"GoogleWavenet Polish (Elizabeth)","lang":"pl-PL","gender":"female"},
+    {"voiceName":"GoogleWavenet Brazilian Portuguese (Anna)","lang":"pt-BR","gender":"female"},
+    {"voiceName":"GoogleWavenet Portuguese (Anna)","lang":"pt-PT","gender":"female"},
+    {"voiceName":"GoogleWavenet Portuguese (Benjamin)","lang":"pt-PT","gender":"male"},
+    {"voiceName":"GoogleWavenet Portuguese (Christopher)","lang":"pt-PT","gender":"male"},
+    {"voiceName":"GoogleWavenet Portuguese (Diane)","lang":"pt-PT","gender":"female"},
+    {"voiceName":"GoogleWavenet Russian (Elizabeth)","lang":"ru-RU","gender":"female"},
+    {"voiceName":"GoogleWavenet Russian (Anna)","lang":"ru-RU","gender":"female"},
+    {"voiceName":"GoogleWavenet Russian (Benjamin)","lang":"ru-RU","gender":"male"},
+    {"voiceName":"GoogleWavenet Russian (Caroline)","lang":"ru-RU","gender":"female"},
+    {"voiceName":"GoogleWavenet Russian (Daniel)","lang":"ru-RU","gender":"male"},
+    {"voiceName":"GoogleWavenet Slovak (Anna)","lang":"sk-SK","gender":"female"},
+    {"voiceName":"GoogleWavenet Swedish (Anna)","lang":"sv-SE","gender":"female"},
+    {"voiceName":"GoogleWavenet Turkish (Anna)","lang":"tr-TR","gender":"female"},
+    {"voiceName":"GoogleWavenet Turkish (Benjamin)","lang":"tr-TR","gender":"male"},
+    {"voiceName":"GoogleWavenet Turkish (Caroline)","lang":"tr-TR","gender":"female"},
+    {"voiceName":"GoogleWavenet Turkish (Diane)","lang":"tr-TR","gender":"female"},
+    {"voiceName":"GoogleWavenet Turkish (Ethan)","lang":"tr-TR","gender":"male"},
+    {"voiceName":"GoogleWavenet Ukrainian (Anna)","lang":"uk-UA","gender":"female"},
+    {"voiceName":"GoogleWavenet Vietnamese (Anna)","lang":"vi-VN","gender":"female"},
+    {"voiceName":"GoogleWavenet Vietnamese (Benjamin)","lang":"vi-VN","gender":"male"},
+    {"voiceName":"GoogleWavenet Vietnamese (Caroline)","lang":"vi-VN","gender":"female"},
+    {"voiceName":"GoogleWavenet Vietnamese (Daniel)","lang":"vi-VN","gender":"male"},
     {"voiceName":"GoogleStandard Spanish; Castilian (Anna)","lang":"es-ES","gender":"female"},
     {"voiceName":"GoogleStandard Arabic (Anna)","lang":"ar-XA","gender":"female"},
     {"voiceName":"GoogleStandard Arabic (Benjamin)","lang":"ar-XA","gender":"male"},
@@ -825,19 +1023,18 @@ function GoogleWavenetTtsEngine() {
     {"voiceName":"GoogleStandard Italian (Bianca)","lang":"it-IT","gender":"female"},
     {"voiceName":"GoogleStandard Italian (Christopher)","lang":"it-IT","gender":"male"},
     {"voiceName":"GoogleStandard Italian (Daniel)","lang":"it-IT","gender":"male"},
+    {"voiceName":"GoogleStudio US English (M)","lang":"en-US","gender":"male"},
+    {"voiceName":"GoogleStudio US English (O)","lang":"en-US","gender":"female"},
+    {"voiceName":"GoogleStudio US English (Q)","lang":"en-US","gender":"male"}
   ]
 }
 
 
 function IbmWatsonTtsEngine() {
   var isSpeaking = false;
-  var audio, prefetchAudio;
+  var audio;
   this.speak = function(utterance, options, onEvent) {
-    const urlPromise = Promise.resolve()
-      .then(() => {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
-        else return getAudioUrl(utterance, options.voice)
-      })
+    const urlPromise = getAudioUrl(utterance, options.voice)
     audio = playAudio(urlPromise, options)
     audio.startPromise
       .then(() => {
@@ -862,14 +1059,7 @@ function IbmWatsonTtsEngine() {
   this.resume = function() {
     return audio.resume()
   };
-  this.prefetch = async function(utterance, options) {
-    try {
-      const url = await getAudioUrl(utterance, options.voice)
-      prefetchAudio = [utterance, options, url]
-    }
-    catch (err) {
-      console.error(err)
-    }
+  this.prefetch = function(utterance, options) {
   };
   this.setNextStartTime = function() {
   };
@@ -1136,275 +1326,5 @@ function PhoneTtsEngine() {
     return [
       {voiceName: "Use My Phone", remote: false, isUseMyPhone: true},
     ]
-  }
-}
-
-
-function OpenaiTtsEngine() {
-  const defaultApiUrl = "https://api.openai.com/v1"
-  var audio, prefetchAudio
-  var isSpeaking = false
-  this.test = async function(apiKey, url) {
-    const res = await fetch((url || defaultApiUrl) + "/models", {
-      headers: {"Authorization": "Bearer " + apiKey}
-    })
-    if (!res.ok) {
-      const {error} = await res.json()
-      throw error
-    }
-  }
-  this.speak = function(utterance, options, onEvent) {
-    const urlPromise = Promise.resolve()
-      .then(() => {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
-        else return getAudioUrl(utterance, options.voice, options.pitch)
-      })
-    audio = playAudio(urlPromise, options)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true
-      })
-      .catch(err => {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  }
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking)
-  }
-  this.pause =
-  this.stop = function() {
-    audio.pause()
-  }
-  this.resume = function() {
-    return audio.resume()
-  }
-  this.prefetch = async function(utterance, options) {
-    try {
-      const url = await getAudioUrl(utterance, options.voice, options.pitch)
-      prefetchAudio = [utterance, options, url]
-    }
-    catch (err) {
-      console.error(err)
-    }
-  }
-  this.setNextStartTime = function() {
-  }
-  this.getVoices = function() {
-    return voices
-  }
-  async function getAudioUrl(text, voice, pitch) {
-    assert(text && voice)
-    const matches = voice.voiceName.match(/^ChatGPT .* \((\w+)\)$/)
-    const voiceName = matches[1]
-    const {openaiCreds} = await getSettings(["openaiCreds"])
-    const res = await fetch((openaiCreds.url || defaultApiUrl) + "/audio/speech", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + openaiCreds.apiKey
-      },
-      body: JSON.stringify({
-        model: "tts-1",
-        input: text,
-        voice: voiceName,
-        response_format: "opus",
-      })
-    })
-    if (!res.ok) throw await res.json().then(x => x.error)
-    return URL.createObjectURL(await res.blob())
-  }
-  const voices = [
-    {"voiceName":"ChatGPT English (alloy)","lang":"en-US","gender":"female"},
-    {"voiceName":"ChatGPT English (echo)","lang":"en-US","gender":"male"},
-    {"voiceName":"ChatGPT English (fable)","lang":"en-US","gender":"female"},
-    {"voiceName":"ChatGPT English (onyx)","lang":"en-US","gender":"male"},
-    {"voiceName":"ChatGPT English (nova)","lang":"en-US","gender":"female"},
-    {"voiceName":"ChatGPT English (shimmer)","lang":"en-US","gender":"female"},
-  ]
-}
-
-
-function AzureTtsEngine() {
-  var isSpeaking = false;
-  var audio, prefetchAudio;
-  this.speak = function(utterance, options, onEvent) {
-    const urlPromise = Promise.resolve()
-      .then(() => {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
-        else return getAudioUrl(utterance, options.lang, options.voice)
-      })
-    audio = playAudio(urlPromise, options)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true;
-      })
-      .catch(function(err) {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    audio.pause()
-  };
-  this.resume = function() {
-    return audio.resume()
-  };
-  this.prefetch = async function(utterance, options) {
-    try {
-      const url = await getAudioUrl(utterance, options.lang, options.voice)
-      prefetchAudio = [utterance, options, url]
-    }
-    catch (err) {
-      console.error(err)
-    }
-  };
-  this.setNextStartTime = function() {
-  };
-  this.getVoices = async function() {
-    try {
-      const {azureCreds, azureVoices} = await getSettings(["azureCreds", "azureVoices"])
-      if (!azureCreds) return []
-      if (azureVoices && azureVoices.expire > Date.now()) return azureVoices.list
-      const list = await this.fetchVoices(azureCreds.region, azureCreds.key)
-      await updateSettings({azureVoices: {list, expire: Date.now() + 24*3600*1000}})
-      return list
-    }
-    catch (err) {
-      console.error(err)
-      return []
-    }
-  }
-  this.fetchVoices = async function(region, key) {
-    const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/voices/list`, {
-      method: "GET",
-      headers: {
-        "Ocp-Apim-Subscription-Key": key,
-      }
-    })
-    if (!res.ok) throw new Error("Server return " + res.status)
-    const voices = await res.json()
-    return voices.map(item => {
-      const name = item.ShortName.split("-")[2]
-      return {
-        voiceName: "Azure " + item.LocaleName + " - " + name,
-        lang: item.Locale,
-        gender: item.Gender == "Male" ? "male" : "female",
-      }
-    })
-  }
-  async function getAudioUrl(text, lang, voice) {
-    const matches = voice.voiceName.match(/^Azure .* - (\w+)$/)
-    const voiceName = voice.lang + "-" + matches[1]
-    const {azureCreds} = await getSettings(["azureCreds"])
-    const {region, key} = azureCreds
-    const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
-      method: "POST",
-      headers: {
-        "Ocp-Apim-Subscription-Key": key,
-        "Content-Type": "application/ssml+xml",
-        "X-Microsoft-OutputFormat": "ogg-48khz-16bit-mono-opus",
-      },
-      body: `<speak version='1.0' xml:lang='${lang}'><voice name='${voiceName}'>${escapeXml(text)}</voice></speak>`
-    })
-    if (!res.ok) throw new Error("Server return " + res.status)
-    const blob = await res.blob()
-    return URL.createObjectURL(blob)
-  }
-}
-
-
-function PiperTtsEngine() {
-  let control = null
-  let isSpeaking = false
-  this.speak = function(utterance, options, onEvent) {
-    const piperPromise = rxjs.firstValueFrom(piperObservable)
-    control = new rxjs.Subject()
-    control
-      .pipe(
-        rxjs.startWith("speak"),
-        rxjs.concatMap(async cmd => {
-          const piper = await piperPromise
-          switch (typeof cmd == "string" ? cmd : cmd.type) {
-            case "speak":
-              return piper.sendRequest("speak", {
-                utterance,
-                voiceName: options.voice.voiceName,
-                pitch: options.pitch,
-                rate: options.rate,
-                volume: options.volume,
-              })
-            case "pause":
-              return piper.sendRequest("pause")
-            case "resume":
-              return piper.sendRequest("resume")
-            case "stop":
-              return piper.sendRequest("stop")
-                .then(() => Promise.reject({name: "interrupted", message: "Playback interrupted"}))
-            case "forward":
-              return piper.sendRequest("forward")
-            case "rewind":
-              return piper.sendRequest("rewind")
-            case "seek":
-              return piper.sendRequest("seek", {index: cmd.index})
-          }
-        }),
-        rxjs.ignoreElements(),
-        rxjs.mergeWith(piperCallbacks),
-        rxjs.map(event => {
-          if (event.type == "error") throw event.error
-          return event
-        }),
-        rxjs.takeWhile(event => event.type != "end")
-      )
-      .subscribe({
-        next(event) {
-          if (event.type == "start") isSpeaking = true
-          onEvent(event)
-        },
-        complete() {
-          onEvent({type: "end"})
-        },
-        error(err) {
-          if (err.name != "interrupted") onEvent({type: "error", error: err})
-        }
-      })
-      .add(() => {
-        isSpeaking = false
-        control = null
-      })
-  }
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking)
-  }
-  this.pause = function() {
-    control?.next("pause")
-  }
-  this.resume = function() {
-    control?.next("resume")
-  }
-  this.stop = function() {
-    control?.next("stop")
-  }
-  this.forward = function() {
-    control?.next("forward")
-  }
-  this.rewind = function() {
-    control?.next("rewind")
-  }
-  this.seek = function(index) {
-    control?.next({type: "seek", index})
   }
 }

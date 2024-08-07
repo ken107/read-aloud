@@ -117,48 +117,15 @@
     }
 
 
-    window.googleTranslateReady = async function() {
-        const access = await getAccess()
-        if (access.isDenied()) {
-            access.renewDenial()
-            throw new Error("Service unavailable")
-        }
+    window.googleTranslateReady = function() {
         return batchExecute("jQ1olc", [], {validateOnly: true});
     }
 
-    window.googleTranslateSynthesizeSpeech = async function(text, lang) {
-        const access = await getAccess()
-        if (access.isDenied()) throw new Error("Server returns 429")
-        access.use()
-
-        const payload = await batchExecute("jQ1olc", [text, lang, null])
-        if (!payload) throw new Error("Failed to synthesize text '" + text.slice(0,25) + "…' in language " + lang)
-        return "data:audio/mpeg;base64," + payload[0];
-    }
-
-    async function getAccess() {
-        const config = {
-            continuousUseInterval: 60*60*1000,
-            voluntaryGap: 5*60*1000,
-            involuntaryGap: 15*60*1000
-        }
-        const state = await getState("gtAccess") || {lastUsed: 0, denyUntil: 0}
-        const save = () => setState("gtAccess", state).catch(console.error)
-        return {
-            isDenied() {
-                return state.denyUntil > Date.now()
-            },
-            renewDenial() {
-                state.denyUntil = Date.now() + config.involuntaryGap
-                save()
-            },
-            use() {
-                const now = Date.now()
-                if (now - state.lastUsed > config.voluntaryGap) state.intervalBegin = now
-                else if (now - state.intervalBegin > config.continuousUseInterval) state.denyUntil = now + config.involuntaryGap
-                state.lastUsed = now
-                save()
-            }
-        }
+    window.googleTranslateSynthesizeSpeech = function(text, lang) {
+        return batchExecute("jQ1olc", [text, lang, null])
+            .then(function(payload) {
+                if (!payload) throw new Error("Failed to synthesize text '" + text.slice(0,25) + "…' in language " + lang)
+                return "data:audio/mpeg;base64," + payload[0];
+            })
     }
 })();

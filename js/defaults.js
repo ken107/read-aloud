@@ -40,33 +40,16 @@ var defaults = {
   highlightWindowSize: 2,
 };
 
-var getSingletonAudio = lazy(() => {
-  const audio = new Audio()
-  audio.crossOrigin = "anonymous"
-  return audio
-})
+var getSingletonAudio = lazy(() => new Audio());
 var getSilenceTrack = lazy(() => makeSilenceTrack())
 
-setupDarkMode()
-
-
-
-
-async function setupDarkMode() {
-  //if extension page but not service worker
-  if (typeof brapi.commands != "undefined" && typeof window != "undefined") {
-    const [{darkMode}] = await Promise.all([
-      getSettings(["darkMode"]),
-      new Promise(f => document.addEventListener("DOMContentLoaded", f))
-    ])
-    if (typeof darkMode == "boolean") {
-      document.body.classList.toggle("dark-mode", darkMode)
-    }
-    else {
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.body.classList.add("dark-mode")
-      }
-    }
+//if extension page but not service worker
+if (typeof brapi.commands != "undefined" && typeof window != "undefined") {
+  //setup dark mode
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.addEventListener("DOMContentLoaded", function() {
+      document.body.classList.add("dark-mode")
+    })
   }
 }
 
@@ -77,10 +60,6 @@ async function setupDarkMode() {
 function lazy(get) {
   var value
   return () => value || (value = get())
-}
-
-function immediate(get) {
-  return get()
 }
 
 function getQueryString() {
@@ -103,7 +82,7 @@ function parseQueryString(search) {
  */
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "darkMode"], fulfill);
+    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap"], fulfill);
   });
 }
 
@@ -115,19 +94,8 @@ function updateSettings(items) {
 
 function clearSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "darkMode"], fulfill);
+    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap"], fulfill);
   });
-}
-
-async function getSetting(name) {
-  const items = await brapi.storage.local.get([name])
-  return items[name]
-}
-
-async function updateSetting(name, value) {
-  const items = {}
-  items[name] = value
-  await brapi.storage.local.set(items)
 }
 
 function getState(key) {
@@ -154,27 +122,18 @@ function clearState(key) {
 /**
  * VOICES
  */
-function getVoices(opts) {
-  if (!opts) opts = {}
-  return getSettings(["awsCreds", "gcpCreds", "openaiCreds", "azureCreds", "piperVoices"])
+function getVoices() {
+  return getSettings(["awsCreds", "gcpCreds"])
     .then(function(settings) {
       return Promise.all([
         browserTtsEngine.getVoices(),
-        Promise.resolve(!opts.excludeUnavailable || googleTranslateTtsEngine.ready())
-          .then(() => googleTranslateTtsEngine.getVoices())
-          .catch(err => {
-            console.error(err)
-            return []
-          }),
+        googleTranslateTtsEngine.getVoices(),
         remoteTtsEngine.getVoices(),
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
         ibmWatsonTtsEngine.getVoices(),
         nvidiaRivaTtsEngine.getVoices(),
         phoneTtsEngine.getVoices(),
-        settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
-        settings.azureCreds ? azureTtsEngine.getVoices() : [],
-        settings.piperVoices || [],
       ])
     })
     .then(function(arr) {
@@ -234,24 +193,12 @@ function isNvidiaRiva(voice) {
   return /^Nvidia-Riva /.test(voice.voiceName);
 }
 
-function isOpenai(voice) {
-  return /^ChatGPT /.test(voice.voiceName);
-}
-
-function isAzure(voice) {
-  return /^Azure /.test(voice.voiceName);
-}
-
-function isPiperVoice(voice) {
-  return /^Piper /.test(voice.voiceName)
-}
-
 function isUseMyPhone(voice) {
   return voice.isUseMyPhone == true
 }
 
 function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isNvidiaRiva(voice) || isOpenai(voice) || isAzure(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isNvidiaRiva(voice);
 }
 
 function isPremiumVoice(voice) {
@@ -259,7 +206,7 @@ function isPremiumVoice(voice) {
 }
 
 function getSpeechVoice(voiceName, lang) {
-  return Promise.all([getVoices({excludeUnavailable: true}), getSettings(["preferredVoices"])])
+  return Promise.all([getVoices(), getSettings(["preferredVoices"])])
     .then(function(res) {
       var voices = res[0];
       var preferredVoiceByLang = res[1].preferredVoices || {};
@@ -429,10 +376,6 @@ function waitMillis(millis) {
   return new Promise(function(fulfill) {
     setTimeout(fulfill, millis);
   });
-}
-
-function wait(observable, value) {
-  return rxjs.firstValueFrom(observable.pipe(rxjs.filter(x => x == value)))
 }
 
 function parseLang(lang) {
@@ -967,18 +910,6 @@ function when(pred, val) {
 function removeAllAttrs(el, recursive) {
   while (el.attributes.length > 0) el.removeAttribute(el.attributes[0].name)
   if (recursive) for (const child of el.children) removeAllAttrs(child, true)
-}
-
-function escapeXml(unsafe) {
-  return unsafe.replace(/[<>&'"]/g, function (c) {
-    switch (c) {
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '&': return '&amp;';
-        case '\'': return '&apos;';
-        case '"': return '&quot;';
-    }
-  })
 }
 
 var languageTable = (function() {

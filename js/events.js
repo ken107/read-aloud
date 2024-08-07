@@ -22,7 +22,6 @@ var handlers = {
   seek: seek,
   reportIssue: reportIssue,
   authWavenet: authWavenet,
-  managePiperVoices,
 }
 
 registerMessageListener("serviceWorker", handlers)
@@ -31,31 +30,15 @@ registerMessageListener("serviceWorker", handlers)
 /**
  * Installers
  */
-async function installContentScripts() {
-  const scripts = [
-    {
-      matches: ["https://docs.google.com/document/*"],
-      id: "google-docs",
-      js: ["js/page/google-doc.js"],
-      runAt: "document_start",
-      world: "MAIN"
-    },
-  ]
-  const registeredIds = await brapi.scripting.getRegisteredContentScripts({ids: scripts.map(x => x.id)})
-    .then(scripts => scripts.map(x => x.id))
-    .catch(err => {
-      console.error(err)
-      return []
-    })
-  if (registeredIds.length) {
-    console.info("Already registered content scripts", registeredIds)
-  }
-  const scriptsToRegister = scripts.filter(script => !registeredIds.includes(script.id))
-  for (const script of scriptsToRegister) {
-    await brapi.scripting.registerContentScripts([script])
-      .then(() => console.info("Successfully registered content script", script.id))
-      .catch(err => console.error("Failed to register content script", script.id, err))
-  }
+function installContentScripts() {
+  brapi.scripting.registerContentScripts([{
+    matches: ["https://docs.google.com/document/*"],
+    id: "google-docs",
+    js: ["js/page/google-doc.js"],
+    runAt: "document_start",
+    world: "MAIN"
+  }])
+  .then(() => console.info("Installed content scripts"), console.error)
 }
 
 function installContextMenus() {
@@ -119,33 +102,6 @@ brapi.commands.onCommand.addListener(function(command) {
       .catch(handleHeadlessError)
   }
 })
-
-
-/**
- * Listener for external calls
- */
-brapi.runtime.onMessageExternal.addListener(
-  (request, sender) => {
-    if (request.method == "play" && typeof request.text == "string") {
-      playText(request.text)
-        .catch(handleHeadlessError)
-    }
-    else if (request.method == "pause") {
-      pause()
-        .catch(handleHeadlessError)
-    }
-    else if (request.method == "stop") {
-      stop()
-        .catch(handleHeadlessError)
-    }
-    else if (request.method == "resume") {
-      resume()
-        .catch(handleHeadlessError)
-    }
-    else {
-      handleHeadlessError(new Error("Bad method call"))
-    }
-  })
 
 
 
@@ -272,7 +228,6 @@ function seek(n) {
 
 
 function handleHeadlessError(err) {
-  console.error(err)
   //TODO: let user knows somehow
 }
 
@@ -361,15 +316,6 @@ async function openPdfViewer(tabId, pdfUrl) {
   await new Promise(f => handlers.pdfViewerCheckIn = f)
 }
 
-async function managePiperVoices() {
-  const result = await sendToPlayer({method: "managePiperVoices"}).catch(err => false)
-  if (result != "OK") {
-    if (result == "POPOUT") await sendToPlayer({method: "close"})
-    await injectPlayer()
-    await sendToPlayer({method: "managePiperVoices"})
-  }
-}
-
 
 
 async function contentScriptAlreadyInjected(tab, frameId) {
@@ -410,9 +356,8 @@ async function injectContentScript(tab, frameId, extraScripts) {
 }
 
 async function injectPlayer(tab) {
-  const settings = await getSettings(["useEmbeddedPlayer", "piperVoices"])
   const promise = new Promise(f => handlers.playerCheckIn = f)
-  if (tab && settings.useEmbeddedPlayer && (settings.piperVoices || []).length == 0) {
+  if ((await getSettings()).useEmbeddedPlayer) {
     try {
       if (tab.incognito) {
         //https://developer.chrome.com/docs/extensions/mv3/manifest/incognito/

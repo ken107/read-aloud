@@ -1,82 +1,8 @@
 
-const isEmbedded = top != self
 var queryString = new URLSearchParams(location.search)
 var activeDoc;
 var playbackError = null;
-
-
-const piperSubject = new rxjs.Subject()
-const piperObservable = rxjs.defer(() => {
-    createPiperFrame()
-    return piperSubject
-  })
-  .pipe(
-    rxjs.shareReplay({bufferSize: 1, refCount: false})
-  )
-const piperCallbacks = new rxjs.Subject()
-const piperDispatcher = makeDispatcher("piper-host", {
-  advertiseVoices({voices}, sender) {
-    updateSettings({piperVoices: voices})
-    piperSubject.next(sender)
-  },
-  onStart: args => piperCallbacks.next({type: "start", ...args}),
-  onSentence: args => piperCallbacks.next({type: "sentence", ...args}),
-  onParagraph: args => piperCallbacks.next({type: "paragraph", ...args}),
-  onEnd: args => piperCallbacks.next({type: "end", ...args}),
-  onError: args => piperCallbacks.next({type: "error", ...args}),
-})
-
-
-const fasttextSubject = new rxjs.Subject()
-const fasttextObservable = rxjs.defer(() => {
-    createFasttextFrame()
-    return fasttextSubject
-  })
-  .pipe(
-    rxjs.startWith(null),
-    rxjs.shareReplay({bufferSize: 1, refCount: false})
-  )
-const fasttextDispatcher = makeDispatcher("fasttext-host", {
-  onServiceReady(args, sender) {
-    fasttextSubject.next(sender)
-  }
-})
-
-
-window.addEventListener("message", event => {
-  const send = message => event.source.postMessage(message, {targetOrigin: event.origin})
-
-  piperDispatcher.dispatch(event.data, {
-    sendRequest(method, args) {
-      const id = String(Math.random())
-      send({from: "piper-host", to: "piper-service", type: "request", id, method, args})
-      return piperDispatcher.waitForResponse(id)
-    }
-  }, send)
-
-  fasttextDispatcher.dispatch(event.data, {
-    sendRequest(method, args) {
-      const id = String(Math.random())
-      send({from: "fasttext-host", to: "fasttext-service", type: "request", id, method, args})
-      return fasttextDispatcher.waitForResponse(id)
-    }
-  }, send)
-})
-
-
-
-const idleSubject = new rxjs.BehaviorSubject(true)
-
-if (queryString.has("autoclose"))
-  rxjs.combineLatest(idleSubject, piperSubject.pipe(rxjs.startWith(null)))
-    .pipe(
-      rxjs.switchMap(([isIdle, piper]) => {
-        if (isIdle) return rxjs.timer(piper ? 30*60*1000 : 5*60*1000)
-        else return rxjs.EMPTY
-      })
-    )
-    .subscribe(closePlayer)
-
+var closeTabTimer = queryString.has("autoclose") && startTimer(5*60*1000, closePlayer)
 
 
 var messageHandlers = {
@@ -93,7 +19,6 @@ var messageHandlers = {
   shouldPlaySilence: shouldPlaySilence.bind({}),
   startPairing: () => phoneTtsEngine.startPairing(),
   isPaired: () => phoneTtsEngine.isPaired(),
-  managePiperVoices,
 }
 
 registerMessageListener("player", messageHandlers)
@@ -186,7 +111,7 @@ function getPlaybackState() {
       .then(function(results) {
         return {
           state: results[0],
-          speechInfo: results[1] && results[1].getInfo(),
+          speechPosition: results[1] && results[1].getPosition(),
           playbackError: errorToJson(playbackError),
         }
       })
@@ -205,14 +130,14 @@ function openDoc(source, onEnd) {
     closeDoc();
     if (typeof onEnd == "function") onEnd(err);
   })
-  idleSubject.next(false)
+  if (closeTabTimer) closeTabTimer.stop();
 }
 
 function closeDoc() {
   if (activeDoc) {
     activeDoc.close();
     activeDoc = null;
-    idleSubject.next(true)
+    if (closeTabTimer) closeTabTimer.restart();
   }
 }
 
@@ -273,6 +198,20 @@ var requestAudioPlaybackPermission = lazy(async function() {
   $("#dialog-backdrop, #audio-playback-permission-dialog").hide()
   await brapi.tabs.update(prevTab.id, {active: true})
 })
+
+function startTimer(timeout, callback) {
+  var timer = setTimeout(callback, timeout)
+  return {
+    stop: function() {
+      clearTimeout(timer)
+      timer = null
+    },
+    restart: function() {
+      clearTimeout(timer)
+      timer = setTimeout(callback, timeout)
+    }
+  }
+}
 
 async function createOffscreenIfNotExist() {
   const hasOffscreen = await sendToOffscreen({method: "pause"}).then(res => res == true, err => false)
@@ -340,44 +279,4 @@ async function shouldPlaySilence(providerId) {
       return should
     }
   }
-}
-
-function managePiperVoices() {
-  if (isEmbedded) {
-    return "POPOUT"
-  }
-  else {
-    rxjs.firstValueFrom(piperObservable)
-      .catch(console.error)
-    brapi.tabs.getCurrent()
-      .then(tab => Promise.all([
-        brapi.windows.update(tab.windowId, {focused: true}),
-        brapi.tabs.update(tab.id, {active: true})
-      ]))
-      .catch(console.error)
-    return "OK"
-  }
-}
-
-function createPiperFrame() {
-  const f = document.createElement("iframe")
-  f.id = "piper-frame"
-  f.src = "https://piper.ttstool.com/"
-  f.allow = "cross-origin-isolated"
-  f.style.position = "absolute"
-  f.style.left =
-  f.style.top = "0"
-  f.style.width =
-  f.style.height = "100%"
-  f.style.borderWidth = "0"
-  document.body.appendChild(f)
-}
-
-function createFasttextFrame() {
-  const f = document.createElement("iframe")
-  f.id = "fasttext-frame"
-  f.src = "https://ttstool.com/fasttext/index.html"
-  f.allow = "cross-origin-isolated"
-  f.style.display = "none"
-  document.body.appendChild(f)
 }

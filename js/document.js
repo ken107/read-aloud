@@ -136,7 +136,6 @@ function Doc(source, onEnd) {
     .then(function() {return source.ready})
     .then(function(result) {info = result})
   var foundText;
-  const playbackState = new rxjs.BehaviorSubject("resumed")
 
   this.close = close;
   this.play = play;
@@ -150,7 +149,6 @@ function Doc(source, onEnd) {
 
   //method close
   function close() {
-    playbackState.error({name: "CancellationException", message: "Playback cancelled"})
     return ready
       .catch(function() {})
       .then(function() {
@@ -163,15 +161,12 @@ function Doc(source, onEnd) {
   async function play() {
     if (activeSpeech) return activeSpeech.play();
     await ready
-    await wait(playbackState, "resumed")
     currentIndex = await source.getCurrentIndex()
-    await wait(playbackState, "resumed")
     return readCurrent()
   }
 
   async function readCurrent(rewinded) {
     const texts = await source.getTexts(currentIndex).catch(err => null)
-    await wait(playbackState, "resumed")
     if (texts) {
       if (texts.length) {
         foundText = true;
@@ -192,12 +187,10 @@ function Doc(source, onEnd) {
     texts = texts.map(preprocess)
     if (info.detectedLang == null) {
       const lang = await detectLanguage(texts)
-      await wait(playbackState, "resumed")
       info.detectedLang = lang || "";
     }
     if (activeSpeech) return;
     activeSpeech = await getSpeech(texts);
-    await wait(playbackState, "resumed")
     activeSpeech.onEnd = function(err) {
       if (err) {
         if (onEnd) onEnd(err);
@@ -285,16 +278,7 @@ function Doc(source, onEnd) {
     })
   }
 
-  async function serverDetectLanguage(text) {
-    try {
-      const service = await rxjs.firstValueFrom(fasttextObservable)
-      if (!service) throw new Error("FastText service unavailable")
-      const [prediction] = await service.sendRequest("detectLanguage", {text})
-      return prediction?.language
-    }
-    catch (err) {
-      console.error(err)
-
+  function serverDetectLanguage(text) {
       return ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
         .then(JSON.parse)
         .then(function(res) {
@@ -306,24 +290,26 @@ function Doc(source, onEnd) {
           console.error(err)
           return null
         })
-    }
   }
 
-  async function getSpeech(texts) {
-    const settings = await getSettings()
-    settings.rate = await getSetting("rate" + (settings.voiceName || ""))
-    var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
-    console.log("Declared", info.lang, "- Detected", info.detectedLang, "- Chosen", lang)
-    var options = {
-      rate: settings.rate || defaults.rate,
-      pitch: settings.pitch || defaults.pitch,
-      volume: settings.volume || defaults.volume,
-      lang: config.langMap[lang] || lang || 'en-US',
-    }
-    const voice = await getSpeechVoice(settings.voiceName, options.lang)
-    if (!voice) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang}));
-    options.voice = voice;
-    return new Speech(texts, options);
+  function getSpeech(texts) {
+    return getSettings()
+      .then(function(settings) {
+        var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
+        console.log("Declared", info.lang, "- Detected", info.detectedLang, "- Chosen", lang)
+        var options = {
+          rate: settings.rate || defaults.rate,
+          pitch: settings.pitch || defaults.pitch,
+          volume: settings.volume || defaults.volume,
+          lang: config.langMap[lang] || lang || 'en-US',
+        }
+        return getSpeechVoice(settings.voiceName, options.lang)
+          .then(function(voice) {
+            if (!voice) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang}));
+            options.voice = voice;
+            return new Speech(texts, options);
+          })
+      })
   }
 
   //method stop
@@ -345,7 +331,7 @@ function Doc(source, onEnd) {
   //method getState
   function getState() {
     if (activeSpeech) return activeSpeech.getState();
-    else return "LOADING"
+    else return Promise.resolve(source.isWaiting() ? "LOADING" : "STOPPED");
   }
 
   //method getActiveSpeech
