@@ -377,7 +377,7 @@ function checkAnnouncements() {
 
 function showAnnouncement(ann) {
   var html = escapeHtml(ann.text).replace(/\[(.*?)\]/g, "<a target='_blank' href='" + ann.link + "'>$1</a>").replace(/\n/g, "<br/>");
-  $("#announcement").html(html);
+  $("#announcement").html(html).addClass("active");
   if (ann.disableIfClick)
     $("#announcement a").click(function() {
       ann.disabled = true;

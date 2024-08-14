@@ -1,6 +1,6 @@
 
 body {
-  margin: 20px 15px 10px 15px;
+  margin: 15px 15px 5px 15px;
 }
 .dark-mode a {
   color: yellowgreen;
@@ -17,11 +17,13 @@ body {
 #buttons {
   min-width: 85px;
   text-align: center;
-  margin: 15px;
   white-space: nowrap;
 }
 #buttons > img {
   vertical-align: top;
+}
+#btnSettings:not([style="display: none"]) {
+  margin-bottom: 10px;
 }
 
 .button-1 {
@@ -33,18 +35,24 @@ body {
   color: #757575;
   padding: 3px;
   text-shadow: 1px 1px white;
+  transition:
+    color .05s ease-in-out,
+    background-color .05s ease-in-out,
+    border-color .05s ease-in-out,
+    box-shadow .05s ease-in-out;
 }
 .button-1:active {
   border: 2px inset;
 }
 .button-1:hover {
   color: #606060;
+  box-shadow: inset 0px 0px 0px 1px rgb(0 0 0 / 15%);
 }
 
 #btnRewind, #btnForward {
   margin: 0 1px;
   font-size: small;
-  vertical-align: text-bottom;
+  vertical-align: text-top;
 }
 
 body.is-popup #highlight {
@@ -60,25 +68,25 @@ body.is-popup #highlight {
   word-wrap: break-word;
   position: relative;
   box-sizing: border-box;
+  border-radius: .65rem;
 }
 #highlight span.active {
   background-color: yellow;
 }
 .dark-mode #highlight {
   background-color: #333;
-  border: none;
+  border: 1px solid #434343;
   color: #d0d0d0;
 }
 .dark-mode #highlight span.active {
   background-color: #0c4e00;
 }
 body:not(.is-popup) #highlight {
-  height: calc(100vh - 150px);
+  height: calc(100vh - 130px);
 }
 
 
 .toolbar {
-  margin-top: .5em;
   text-align: right;
   display: flex;
 }
@@ -113,7 +121,12 @@ body:not(.is-popup) #highlight {
   font-weight: 400;
   user-select: none;
   cursor: pointer;
-  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  box-shadow: 0 0 0px 1px #d1d1d1;
+  transition: 
+    color .15s ease-in-out, 
+    background-color .15s ease-in-out, 
+    border-color .15s ease-in-out, 
+    box-shadow .15s ease-in-out;
 }
 .toolbar .btn:hover {
   background-color: #e2e6ea;
@@ -122,16 +135,27 @@ body:not(.is-popup) #highlight {
 .toolbar .material-icons {
   font-size: 1em;
 }
+.toolbar a {
+  text-decoration: none;
+  color: #212529;
+}
+.dark-mode .toolbar a {
+  color: #ddd !important;
+}
 .dark-mode .toolbar .btn {
   background-color: #3e3e3e;
   color: #ddd;
+  box-shadow: none;
 }
-body:not(.is-popup) .toolbar .btn-group.window-size {
-  display: none;
+body:not(.is-popup) #toolbar-window {
+  display: none !important;
 }
 
 
 #footer {
+  margin-top: .5em;
+  display: flex;
+  justify-content: space-between;
 }
 
 #announcement {
@@ -139,15 +163,19 @@ body:not(.is-popup) .toolbar .btn-group.window-size {
   font-size: small;
   line-height: 1.3em;
   color: #888;
-  margin: 15px 100px 15px 100px;
   border-style: solid;
   border-width: thin;
   border-radius: 5px;
-  border-color: #d1d1d1;
+  border-color: #00000000;
   padding: 3px 7px;
 }
 
-.dark-mode #announcement {
+#announcement.active {
+  margin: 15px 100px 15px 100px;
+  border-color: #d1d1d1;
+}
+
+.dark-mode #announcement.active {
   border-color: #3e3e3e;
 }
 
@@ -157,6 +185,7 @@ body:not(.is-popup) .toolbar .btn-group.window-size {
   color: red;
   text-align: center;
   display: none;
+  margin-bottom: 15px;
 }
 .dark-mode #status {
   color: #f88;
