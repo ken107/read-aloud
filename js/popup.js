@@ -38,6 +38,7 @@ $(function() {
   $("#decrease-window-size").click(changeWindowSize.bind(null, -1));
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
   $("#toggle-dark-mode").click(toggleDarkMode);
+  $("#news-close").click(closeAnnouncement);
 
   updateButtons()
     .then(getSettings.bind(null, ["showHighlighting", "readAloudTab"]))
@@ -379,9 +380,10 @@ function checkAnnouncements() {
 
 function showAnnouncement(ann) {
   var html = escapeHtml(ann.text).replace(/\[(.*?)\]/g, "<a target='_blank' href='" + ann.link + "'>$1</a>").replace(/\n/g, "<br/>");
-  $("#announcement").html(html).addClass("active");
+  $("#announcement").addClass("active");
+  $("#news-text").html(html);
   if (ann.disableIfClick)
-    $("#announcement a").click(function() {
+    $("#news-text a").click(function() {
       ann.disabled = true;
       updateSettings({announcement: ann});
     })
@@ -390,4 +392,8 @@ function showAnnouncement(ann) {
 function toggleDarkMode() {
   const darkMode = document.body.classList.toggle("dark-mode")
   updateSettings({darkMode})
+}
+
+function closeAnnouncement() {
+  $("#announcement").remove();
 }

@@ -173,6 +173,9 @@ body:not(.is-popup) #toolbar-window {
   border-width: thin;
   border-radius: 5px;
   border-color: #00000000;
+  display: grid;
+  grid-template-columns: auto 3px 12px;
+  align-items: center;
 }
 
 #announcement.active {
@@ -218,4 +221,8 @@ body:not(.is-popup) #toolbar-window {
 }
 .google-logo span:nth-child(5) {
   color: #3cba54;
+}
+
+.close {
+  cursor: pointer;
 }
