@@ -1,7 +1,23 @@
 
 body {
   margin: 15px 15px 5px 15px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto auto;
 }
+body.is-popup {
+  width: 550px;
+  height: 525px;
+}
+body.is-popup.menu {
+  width: 85px !important;
+  height: 65px !important;
+}
+body:not(.is-popup) {
+  min-width: 300px;
+  height: calc(100vh + -20px);
+}
+
 .dark-mode a {
   color: yellowgreen;
 }
@@ -21,9 +37,6 @@ body {
 }
 #buttons > img {
   vertical-align: top;
-}
-#btnSettings:not([style="display: none"]) {
-  margin-bottom: 10px;
 }
 
 .button-1 {
@@ -55,10 +68,6 @@ body {
   vertical-align: text-top;
 }
 
-body.is-popup #highlight {
-  width: 350px;
-  height: 300px;
-}
 #highlight {
   border: 1px solid lightgray;
   padding: 1rem;
@@ -80,9 +89,6 @@ body.is-popup #highlight {
 }
 .dark-mode #highlight span.active {
   background-color: #0c4e00;
-}
-body:not(.is-popup) #highlight {
-  height: calc(100vh - 130px);
 }
 
 
@@ -113,7 +119,7 @@ body:not(.is-popup) #highlight {
   display: flex;
   align-items: center;
   padding: .25rem .5rem;
-  font-size: .875rem;
+  font-size: 1rem;
   line-height: 1.5;
   color: #212529;
   background-color: #f8f9fa;
@@ -153,7 +159,7 @@ body:not(.is-popup) #toolbar-window {
 
 
 #footer {
-  margin-top: .5em;
+  margin: .5em 0;
   display: flex;
   justify-content: space-between;
 }
@@ -167,11 +173,11 @@ body:not(.is-popup) #toolbar-window {
   border-width: thin;
   border-radius: 5px;
   border-color: #00000000;
-  padding: 3px 7px;
 }
 
 #announcement.active {
-  margin: 15px 100px 15px 100px;
+  padding: 3px 7px;
+  margin: 5px 25% 15px 25%;
   border-color: #d1d1d1;
 }
 

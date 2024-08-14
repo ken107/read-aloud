@@ -153,9 +153,11 @@ function updateButtons() {
     if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
       $("#highlight, #toolbar-font, #toolbar-misc, #toolbar-window, #announcement").show()
       updateHighlighting(speech)
+      $("body").removeClass("menu")
     }
     else {
       $("#highlight, #toolbar-font, #toolbar-misc, #toolbar-window, #announcement").hide()
+      $("body").addClass("menu")
     }
   }))
 }
@@ -318,7 +320,7 @@ function refreshSize() {
       $("#highlight").css({
         "font-size": fontSize,
       })
-      if (queryString.isPopup) $("#highlight").css({
+      if (queryString.isPopup) $("body").css({
         width: isMobileOS() ? "100%" : windowSize[0],
         height: windowSize[1]
       })
@@ -337,9 +339,9 @@ function refreshSize() {
   }
   function getWindowSize(settings) {
     switch (settings.highlightWindowSize || defaults.highlightWindowSize) {
-      case 1: return [430, 330];
-      case 2: return [550, 420];
-      default: return [750, 450];
+      case 1: return [430, 435];
+      case 2: return [550, 525];
+      default: return [750, 555];
     }
   }
 }
