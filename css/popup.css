@@ -77,29 +77,29 @@ body:not(.is-popup) #highlight {
 }
 
 
-#toolbar {
+.toolbar {
   margin-top: .5em;
   text-align: right;
   display: flex;
 }
-#toolbar .btn-group {
+.toolbar .btn-group {
   display: flex;
 }
-#toolbar .btn-group:first-child {
+.toolbar .btn-group:first-child {
   margin-right: auto;
 }
-#toolbar .btn-group:nth-child(2) {
+.toolbar .btn-group:nth-child(2) {
   margin-right: .25rem;
 }
-#toolbar .btn-group .btn:first-child {
+.toolbar .btn-group .btn:first-child {
   border-top-left-radius: .5rem;
   border-bottom-left-radius: .5rem;
 }
-#toolbar .btn-group .btn:last-child {
+.toolbar .btn-group .btn:last-child {
   border-top-right-radius: .5rem;
   border-bottom-right-radius: .5rem;
 }
-#toolbar .btn {
+.toolbar .btn {
   position: relative;
   flex: 0 1 auto;
   display: flex;
@@ -115,18 +115,18 @@ body:not(.is-popup) #highlight {
   cursor: pointer;
   transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
-#toolbar .btn:hover {
+.toolbar .btn:hover {
   background-color: #e2e6ea;
   border-color: #dae0e5;
 }
-#toolbar .material-icons {
+.toolbar .material-icons {
   font-size: 1em;
 }
-.dark-mode #toolbar .btn {
+.dark-mode .toolbar .btn {
   background-color: #3e3e3e;
   color: #ddd;
 }
-body:not(.is-popup) #toolbar .btn-group.window-size {
+body:not(.is-popup) .toolbar .btn-group.window-size {
   display: none;
 }
 

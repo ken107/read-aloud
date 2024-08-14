@@ -151,11 +151,11 @@ function updateButtons() {
     $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
 
     if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
-      $("#highlight, #toolbar").show()
+      $("#highlight, #toolbar-font, #toolbar-misc, #toolbar-window").show()
       updateHighlighting(speech)
     }
     else {
-      $("#highlight, #toolbar").hide()
+      $("#highlight, #toolbar-font, #toolbar-misc, #toolbar-window").hide()
     }
   }))
 }
