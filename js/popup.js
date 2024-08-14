@@ -151,11 +151,11 @@ function updateButtons() {
     $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
 
     if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
-      $("#highlight, #toolbar-font, #toolbar-misc, #toolbar-window").show()
+      $("#highlight, #toolbar-font, #toolbar-misc, #toolbar-window, #announcement").show()
       updateHighlighting(speech)
     }
     else {
-      $("#highlight, #toolbar-font, #toolbar-misc, #toolbar-window").hide()
+      $("#highlight, #toolbar-font, #toolbar-misc, #toolbar-window, #announcement").hide()
     }
   }))
 }
@@ -377,9 +377,9 @@ function checkAnnouncements() {
 
 function showAnnouncement(ann) {
   var html = escapeHtml(ann.text).replace(/\[(.*?)\]/g, "<a target='_blank' href='" + ann.link + "'>$1</a>").replace(/\n/g, "<br/>");
-  $("#footer").html(html).addClass("announcement");
+  $("#announcement").html(html);
   if (ann.disableIfClick)
-    $("#footer a").click(function() {
+    $("#announcement a").click(function() {
       ann.disabled = true;
       updateSettings({announcement: ann});
     })

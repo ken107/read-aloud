@@ -132,14 +132,23 @@ body:not(.is-popup) .toolbar .btn-group.window-size {
 
 
 #footer {
+}
+
+#announcement {
   text-align: center;
   font-size: small;
   line-height: 1.3em;
   color: #888;
-  white-space: nowrap;
+  margin: 15px 100px 15px 100px;
+  border-style: solid;
+  border-width: thin;
+  border-radius: 5px;
+  border-color: #d1d1d1;
+  padding: 3px 7px;
 }
-#footer:not(.announcement) a {
-  color: #aaa;
+
+.dark-mode #announcement {
+  border-color: #3e3e3e;
 }
 
 #status {
