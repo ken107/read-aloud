@@ -162,7 +162,7 @@ function TabSource(tabId) {
         }
         return tryGetFrame(5000)
           .then(function(frame) {
-            if (frame) return getFrameTexts(tab.id, frame.frameId, ["js/jquery-3.1.1.min.js", "js/messaging.js", "js/content/vitalsource-book.js"]);
+            if (frame) return getFrameTexts(tab.id, frame.frameId, ["js/jquery-3.7.1.min.js", "js/messaging.js", "js/content/vitalsource-book.js"]);
             else return null;
           })
       },
@@ -401,7 +401,7 @@ function TabSource(tabId) {
     })
   }
   function injectScripts() {
-    return inject("js/jquery-3.1.1.min.js")
+    return inject("js/jquery-3.7.1.min.js")
       .then(inject.bind(null, "js/messaging.js"))
       .then(function() {
         if (handler.extraScripts) {
