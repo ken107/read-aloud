@@ -562,22 +562,12 @@ function getUniqueClientId() {
   }
 }
 
-function getBrowser() {
-  if (/Opera|OPR\//.test(navigator.userAgent)) return 'opera';
-  if (/firefox/i.test(navigator.userAgent)) return 'firefox';
-  return 'chrome';
-}
-
 function isIOS() {
   return !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
 }
 
 function getHotkeySettingsUrl() {
-  switch (getBrowser()) {
-    case 'opera': return 'opera://settings/configureCommands';
-    case 'chrome': return 'chrome://extensions/configureCommands';
-    default: return brapi.runtime.getURL("shortcuts.html");
-  }
+  return "edge://extensions/shortcuts"
 }
 
 function StateMachine(states) {
