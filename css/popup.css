@@ -11,7 +11,8 @@ body.is-popup {
 }
 body.is-popup.menu {
   width: 85px !important;
-  height: 65px !important;
+  height: 100% !important;
+  margin: 15px;
 }
 body:not(.is-popup) {
   min-width: 300px;
@@ -198,6 +199,9 @@ body:not(.is-popup) #toolbar-window {
 }
 .dark-mode #status {
   color: #f88;
+}
+body.menu #status {
+  min-width: 0;
 }
 
 #attribution {
