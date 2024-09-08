@@ -227,6 +227,11 @@ body.menu #status {
   color: #3cba54;
 }
 
-.close {
+#news-close {
   cursor: pointer;
+  display: none;
+}
+
+#news-close.active {
+  display: inline-block !important;
 }

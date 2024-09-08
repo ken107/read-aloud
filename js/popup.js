@@ -369,6 +369,7 @@ function checkAnnouncements() {
     })
     .then(function(ann) {
       if (ann.text && !ann.disabled) {
+        // if (true) { // comment out line below to force show announcements
         if (!ann.lastShown || now-ann.lastShown > ann.period*60*1000) {
           showAnnouncement(ann);
           ann.lastShown = now;
@@ -381,6 +382,7 @@ function checkAnnouncements() {
 function showAnnouncement(ann) {
   var html = escapeHtml(ann.text).replace(/\[(.*?)\]/g, "<a target='_blank' href='" + ann.link + "'>$1</a>").replace(/\n/g, "<br/>");
   $("#announcement").addClass("active");
+  $("#news-close").addClass("active");
   $("#news-text").html(html);
   if (ann.disableIfClick)
     $("#news-text a").click(function() {
