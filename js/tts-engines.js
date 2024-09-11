@@ -189,8 +189,16 @@ function RemoteTtsEngine(serviceUrl) {
       audio.defaultPlaybackRate = options.rate;
     }
     speakPromise = ready(options)
-      .then(function() {
-        audio.src = getAudioUrl(utterance, options.lang, options.voice);
+      .then(async function() {
+        const url = getAudioUrl(utterance, options.lang, options.voice)
+        const res = await fetch(url)
+        if (!res.ok) {
+          const msg = await res.text().catch(err => "")
+          throw new Error(msg || (res.status + " " + res.statusText))
+        }
+        const blob = await res.blob()
+        if (audio.src) URL.revokeObjectURL(audio.src)
+        audio.src = URL.createObjectURL(blob)
         return new Promise(function(fulfill) {audio.oncanplay = fulfill});
       })
       .then(function() {
@@ -235,7 +243,8 @@ function RemoteTtsEngine(serviceUrl) {
   }
   this.prefetch = function(utterance, options) {
     if (!iOS) {
-      ajaxGet(getAudioUrl(utterance, options.lang, options.voice, true));
+      fetch(getAudioUrl(utterance, options.lang, options.voice, true))
+        .catch(console.error)
     }
   }
   this.setNextStartTime = function(time, options) {
