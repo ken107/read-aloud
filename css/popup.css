@@ -163,6 +163,7 @@ body:not(.is-popup) #toolbar-window {
   margin: .5em 0;
   display: flex;
   justify-content: space-between;
+  height: fit-content;
 }
 
 #announcement {
