@@ -38,6 +38,7 @@ $(function() {
   $("#decrease-window-size").click(changeWindowSize.bind(null, -1));
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
   $("#toggle-dark-mode").click(toggleDarkMode);
+  $("#news-close").click(closeAnnouncement);
 
   updateButtons()
     .then(getSettings.bind(null, ["showHighlighting", "readAloudTab"]))
@@ -151,11 +152,13 @@ function updateButtons() {
     $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
 
     if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
-      $("#highlight, #toolbar").show()
+      $("#highlight, #toolbar-font, #toolbar-misc, #toolbar-window, #announcement").show()
       updateHighlighting(speech)
+      $("body").removeClass("menu")
     }
     else {
-      $("#highlight, #toolbar").hide()
+      $("#highlight, #toolbar-font, #toolbar-misc, #toolbar-window, #announcement").hide()
+      $("body").addClass("menu")
     }
   }))
 }
@@ -318,7 +321,7 @@ function refreshSize() {
       $("#highlight").css({
         "font-size": fontSize,
       })
-      if (queryString.isPopup) $("#highlight").css({
+      if (queryString.isPopup) $("body").css({
         width: isMobileOS() ? "100%" : windowSize[0],
         height: windowSize[1]
       })
@@ -337,9 +340,9 @@ function refreshSize() {
   }
   function getWindowSize(settings) {
     switch (settings.highlightWindowSize || defaults.highlightWindowSize) {
-      case 1: return [430, 330];
-      case 2: return [550, 420];
-      default: return [750, 450];
+      case 1: return [430, 435];
+      case 2: return [550, 525];
+      default: return [750, 555];
     }
   }
 }
@@ -366,6 +369,7 @@ function checkAnnouncements() {
     })
     .then(function(ann) {
       if (ann.text && !ann.disabled) {
+        // if (true) { // comment out line below to force show announcements
         if (!ann.lastShown || now-ann.lastShown > ann.period*60*1000) {
           showAnnouncement(ann);
           ann.lastShown = now;
@@ -377,9 +381,11 @@ function checkAnnouncements() {
 
 function showAnnouncement(ann) {
   var html = escapeHtml(ann.text).replace(/\[(.*?)\]/g, "<a target='_blank' href='" + ann.link + "'>$1</a>").replace(/\n/g, "<br/>");
-  $("#footer").html(html).addClass("announcement");
+  $("#announcement").addClass("active");
+  $("#news-close").addClass("active");
+  $("#news-text").html(html);
   if (ann.disableIfClick)
-    $("#footer a").click(function() {
+    $("#news-text a").click(function() {
       ann.disabled = true;
       updateSettings({announcement: ann});
     })
@@ -388,4 +394,8 @@ function showAnnouncement(ann) {
 function toggleDarkMode() {
   const darkMode = document.body.classList.toggle("dark-mode")
   updateSettings({darkMode})
+}
+
+function closeAnnouncement() {
+  $("#announcement").remove();
 }
