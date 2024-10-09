@@ -234,6 +234,22 @@ input[type=checkbox], input[type=radio] {
   margin-top: 1.5em;
 }
 
+#voice-custom-input-div {
+  display: none;
+}
+
+div.inline-div { display: table; }
+div.inline-input {
+    display: table-cell;
+    width: 100%;
+    margin: 1px;
+}
+#voice-custom-input {
+    display: table-cell;
+    width: 100%;
+    margin: 1px;
+}
+
 #rate-input-div {
   display: none;
 }
