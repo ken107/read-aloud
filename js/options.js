@@ -62,15 +62,31 @@ function initialize(allVoices, settings) {
     .val(settings.voiceName || "")
     .change(function() {
       var voiceName = $(this).val();
-      if (voiceName == "@custom") location.href = "custom-voices.html";
-      else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
-      else if (voiceName == "@piper") bgPageInvoke("managePiperVoices")
-      else saveSettings({voiceName: voiceName});
+      if (voiceName == "ChatGPT English (selfhosted)") {
+        $("#voice-custom-input-div").show();
+        saveSettings({voiceName: voiceName});
+      } else {
+        $("#voice-custom-input-div").hide();
+        if (voiceName == "@custom") location.href = "custom-voices.html";
+        else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
+        else if (voiceName == "@piper") bgPageInvoke("managePiperVoices")
+        else saveSettings({voiceName: voiceName});
+      }
     });
   $("#languages-edit-button").click(function() {
     location.href = "languages.html";
   })
 
+  //voice custom input
+  if(settings.voiceName == "ChatGPT English (selfhosted)") $("#voice-custom-input-div").show();
+  $("#voice-custom-input").val(settings.voiceCustom || "");
+
+  //voice custom save button
+  $("#save-custom-voice").click(function() {
+    var voiceCustom = $("#voice-custom-input").val().trim();
+    saveSettings({voiceCustom: voiceCustom});
+    showConfirmation();
+  });
 
   //rate input
   $("#rate-edit-button").click(function() {
