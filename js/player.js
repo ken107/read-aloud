@@ -3,6 +3,7 @@ const isEmbedded = top != self
 var queryString = new URLSearchParams(location.search)
 var activeDoc;
 var playbackError = null;
+var lastUrlPromise = Promise.resolve(null)
 
 
 const piperSubject = new rxjs.Subject()
@@ -94,6 +95,7 @@ var messageHandlers = {
   startPairing: () => phoneTtsEngine.startPairing(),
   isPaired: () => phoneTtsEngine.isPaired(),
   managePiperVoices,
+  getLastUrl: () => lastUrlPromise,
 }
 
 registerMessageListener("player", messageHandlers)
@@ -206,6 +208,7 @@ function openDoc(source, onEnd) {
     if (typeof onEnd == "function") onEnd(err);
   })
   idleSubject.next(false)
+  lastUrlPromise = Promise.resolve(source.getUri())
 }
 
 function closeDoc() {
@@ -249,7 +252,7 @@ function reportError(err) {
     var details = err.stack;
     if (!details.startsWith(err.name)) details = err.name + ": " + err.message + "\n" + details;
     console.error(details)
-    getState("lastUrl")
+    lastUrlPromise
       .then(url => bgPageInvoke("reportIssue", [url, details]))
       .catch(console.error)
   }

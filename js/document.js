@@ -131,9 +131,7 @@ function Doc(source, onEnd) {
   var info;
   var currentIndex;
   var activeSpeech;
-  var ready = Promise.resolve(source.getUri())
-    .then(function(uri) {return setState("lastUrl", uri)})
-    .then(function() {return source.ready})
+  var ready = source.ready
     .then(function(result) {info = result})
   var foundText;
   const playbackState = new rxjs.BehaviorSubject("resumed")
