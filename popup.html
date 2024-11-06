@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Read Aloud</title>
 
@@ -14,45 +15,60 @@
   <script src="js/defaults.js"></script>
   <script src="js/popup.js"></script>
 </head>
+
 <body>
   <div id="status">
   </div>
-  <div id="buttons">
-    <i class="material-icons button-1" id="btnRewind">&#xe020;</i>
-    <img src="img/loading.gif" id="imgLoading" />
-    <i class="material-icons button-1" id="btnPlay">&#xe037;</i>
-    <i class="material-icons button-1" id="btnPause">pause</i>
-    <i class="material-icons button-1" id="btnStop">stop</i>
-    <i class="material-icons button-1" id="btnSettings">settings</i>
-    <i class="material-icons button-1" id="btnForward">&#xe01f;</i>
-  </div>
   <div id="highlight">
   </div>
-  <div id="toolbar">
-    <div class="btn-group">
-      <button id="decrease-font-size" type="button" class="btn btn-sm btn-light">
-        A-
-      </button>
-      <button id="increase-font-size" type="button" class="btn btn-sm btn-light">
-        A+
-      </button>
+  <div id="footer">
+    <div id="toolbar-font" class="toolbar">
+      <div class="btn-group">
+        <button id="decrease-font-size" type="button" class="btn btn-sm btn-light">
+          <i class="material-icons">text_decrease</i>
+        </button>
+        <button id="increase-font-size" type="button" class="btn btn-sm btn-light">
+          <i class="material-icons">text_increase</i>
+        </button>
+      </div>
     </div>
-    <div class="btn-group">
-      <button id="toggle-dark-mode" type="button" class="btn btn-sm btn-light">
-        <i class="material-icons">dark_mode</i>
-      </button>
+    <div id="buttons">
+      <i class="material-icons button-1" id="btnRewind">&#xe020;</i>
+      <img src="img/loading.gif" id="imgLoading" />
+      <i class="material-icons button-1" id="btnPlay">&#xe037;</i>
+      <i class="material-icons button-1" id="btnPause">pause</i>
+      <i class="material-icons button-1" id="btnStop">stop</i>
+      <i class="material-icons button-1" id="btnSettings">settings</i>
+      <i class="material-icons button-1" id="btnForward">&#xe01f;</i>
     </div>
-    <div class="btn-group window-size">
-      <button id="decrease-window-size" type="button" class="btn btn-sm btn-light">
-        <i class="material-icons">remove</i>
-      </button>
-      <button id="increase-window-size" type="button" class="btn btn-sm btn-light">
-        <i class="material-icons">add</i>
-      </button>
+    <div id="toolbar-misc" class="toolbar">
+      <div class="btn-group">
+        <button id="toggle-dark-mode" type="button" class="btn btn-sm btn-light">
+          <i class="material-icons">dark_mode</i>
+        </button>
+        <button id="report-issue" type="button" class="btn btn-sm btn-light" title="Report an issue">
+          <a href="report.html?referer=popup.html" class="material-icons">bug_report</a>
+        </button>
+      </div>
+    </div>
+    <div id="toolbar-window" class="toolbar">
+      <div class="btn-group window-size">
+        <button id="decrease-window-size" type="button" class="btn btn-sm btn-light">
+          <i class="material-icons">remove</i>
+        </button>
+        <button id="increase-window-size" type="button" class="btn btn-sm btn-light">
+          <i class="material-icons">add</i>
+        </button>
+      </div>
     </div>
   </div>
-  <div id="footer">
-    <a href="report.html?referer=popup.html">report issues</a>
+  <div id="announcement">
+    <div id="news-text">
+      <a href=""></a>
+    </div>
+    <div></div>
+    <i id="news-close" class="material-icons close">close_small</i>
   </div>
 </body>
+
 </html>
