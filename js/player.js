@@ -36,21 +36,34 @@ const audioPlayer = immediate(() => {
     play(src, rate, volume) {
       if (current) current.dispose()
       const url = (src instanceof Blob) ? URL.createObjectURL(src) : src
-      const audio = playAudio(Promise.resolve(url), {rate, volume})
+      let audio = playAudio(Promise.resolve(url), {rate, volume})
+      const endPromise$ = new rxjs.BehaviorSubject(audio.endPromise)
       current = {
-        audio,
+        pause() {
+          audio.pause()
+        },
+        async resume() {
+          try {
+            await audio.resume()
+          } catch (err) {
+            console.error("Couldn't resume", err)
+            audio.pause()
+            audio = playAudio(Promise.resolve(url), {rate, volume})
+            endPromise$.next(audio.endPromise)
+          }
+        },
         dispose() {
           audio.pause()
           if (src instanceof Blob) URL.revokeObjectURL(url)
         }
       }
-      return audio.endPromise
+      return rxjs.firstValueFrom(endPromise$.pipe(rxjs.switchAll()))
     },
     pause() {
-      if (current) current.audio.pause()
+      if (current) current.pause()
     },
     resume() {
-      if (current) current.audio.resume()
+      if (current) current.resume()
     }
   }
 })
