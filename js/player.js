@@ -25,6 +25,34 @@ const piperDispatcher = makeDispatcher("piper-host", {
   onParagraph: args => piperCallbacks.next({type: "paragraph", ...args}),
   onEnd: args => piperCallbacks.next({type: "end", ...args}),
   onError: args => piperCallbacks.next({type: "error", ...args}),
+  audioPlay: args => audioPlayer.play(args.src, args.rate, args.volume),
+  audioPause: () => audioPlayer.pause(),
+  audioResume: () => audioPlayer.resume(),
+})
+
+const audioPlayer = immediate(() => {
+  let current
+  return {
+    play(src, rate, volume) {
+      if (current) current.dispose()
+      const url = (src instanceof Blob) ? URL.createObjectURL(src) : src
+      const audio = playAudio(Promise.resolve(url), {rate, volume})
+      current = {
+        audio,
+        dispose() {
+          audio.pause()
+          if (src instanceof Blob) URL.revokeObjectURL(url)
+        }
+      }
+      return audio.endPromise
+    },
+    pause() {
+      if (current) current.audio.pause()
+    },
+    resume() {
+      if (current) current.audio.resume()
+    }
+  }
 })
 
 
