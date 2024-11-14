@@ -817,23 +817,14 @@ function playAudioHere(urlPromise, options, startTime) {
           if (err instanceof DOMException) throw new Error(err.name || err.message)
           else throw err
         })
+      silenceTrack.start()
     })
 
-  const endPromise = startPromise
-    .then(async () => {
-      if (!audio.ended) {
-        silenceTrack.start()
-        try {
-          await new Promise((fulfill, reject) => {
-            audio.onended = fulfill
-            audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
-          })
-        }
-        finally {
-          silenceTrack.stop()
-        }
-      }
-    })
+  const endPromise = new Promise((fulfill, reject) => {
+    audio.onended = fulfill
+    audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
+  })
+  .finally(() => silenceTrack.stop())
 
   return {
     startPromise,
