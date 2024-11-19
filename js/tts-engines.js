@@ -138,24 +138,37 @@ function DummyTtsEngine() {
 
 
 function TimeoutTtsEngine(baseEngine, timeoutMillis) {
-  var timer;
+  let speakSub
   this.speak = function(text, options, onEvent) {
-    var started = false;
-    clearTimeout(timer);
-    timer = setTimeout(function() {
-      baseEngine.stop();
-      if (started) onEvent({type: "end", charIndex: text.length});
-      else onEvent({type: "error", error: new Error("Timeout, TTS never started, try picking another voice?")});
-    },
-    timeoutMillis);
-    baseEngine.speak(text, options, function(event) {
-        if (event.type == "start") started = true;
-        if (event.type == "end" || event.type == "error") clearTimeout(timer);
-        onEvent(event);
-    })
+    speakSub = new rxjs.Observable(observer => baseEngine.speak(text, options, event => observer.next(event))).pipe(
+      rxjs.timeout({
+        first: 3000,
+        with: () => {
+          console.warn("No 'start' event after 3s, will call stop() and retry once")
+          baseEngine.stop()
+          return rxjs.throwError(() => new Error("Timeout, TTS never started, try picking another voice?"))
+        }
+      }),
+      rxjs.retry(1),
+      rxjs.switchMap(event =>
+        rxjs.iif(
+          () => event.type == "start",
+          rxjs.timer(timeoutMillis).pipe(
+            rxjs.map(() => {
+              baseEngine.stop()
+              return {type: "end", charIndex: text.length}
+            }),
+            rxjs.startWith(event)
+          ),
+          rxjs.of(event)
+        )
+      ),
+      rxjs.catchError(error => rxjs.of({type: "error", error})),
+      rxjs.takeWhile(event => event.type != "end" && event.type != "error", true)
+    ).subscribe(onEvent)
   }
   this.stop = function() {
-    clearTimeout(timer);
+    speakSub.unsubscribe()
     baseEngine.stop();
   }
   this.isSpeaking = baseEngine.isSpeaking;
