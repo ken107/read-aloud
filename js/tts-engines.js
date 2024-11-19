@@ -137,38 +137,27 @@ function DummyTtsEngine() {
 }
 
 
-function TimeoutTtsEngine(baseEngine, timeoutMillis) {
+function TimeoutTtsEngine(baseEngine) {
   let speakSub
   this.speak = function(text, options, onEvent) {
-    speakSub = new rxjs.Observable(observer => baseEngine.speak(text, options, event => observer.next(event))).pipe(
+    speakSub = new rxjs.Observable(observer => {
+      baseEngine.speak(text, options, event => observer.next(event))
+    }).pipe(
       rxjs.timeout({
         first: 3000,
-        with: () => {
+        with() {
           console.warn("No 'start' event after 3s, will call stop() and retry once")
           baseEngine.stop()
           return rxjs.throwError(() => new Error("Timeout, TTS never started, try picking another voice?"))
         }
       }),
       rxjs.retry(1),
-      rxjs.switchMap(event =>
-        rxjs.iif(
-          () => event.type == "start",
-          rxjs.timer(timeoutMillis).pipe(
-            rxjs.map(() => {
-              baseEngine.stop()
-              return {type: "end", charIndex: text.length}
-            }),
-            rxjs.startWith(event)
-          ),
-          rxjs.of(event)
-        )
-      ),
       rxjs.catchError(error => rxjs.of({type: "error", error})),
       rxjs.takeWhile(event => event.type != "end" && event.type != "error", true)
     ).subscribe(onEvent)
   }
   this.stop = function() {
-    speakSub.unsubscribe()
+    if (speakSub) speakSub.unsubscribe()
     baseEngine.stop();
   }
   this.isSpeaking = baseEngine.isSpeaking;

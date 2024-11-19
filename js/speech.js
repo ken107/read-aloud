@@ -55,22 +55,15 @@ function Speech(texts, options) {
     if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
     if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
     if (isRemoteVoice(options.voice)) return remoteTtsEngine;
-    if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 16*1000);
-    return browserTtsEngine;
+    return new TimeoutTtsEngine(browserTtsEngine)
   }
 
   function getChunks(text) {
     var isEA = /^zh|ko|ja/.test(options.lang);
     var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
-    if (isGoogleNative(options.voice)) {
-      var wordLimit = (/^(de|ru|es|pt|id)/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
-      return new WordBreaker(wordLimit, punctuator).breakText(text);
-    }
-    else {
-      if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
-      else if (isPiperVoice(options.voice)) return [text];
-      else return new CharBreaker(750, punctuator, 200).breakText(text);
-    }
+    if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
+    else if (isPiperVoice(options.voice)) return [text];
+    else return new CharBreaker(750, punctuator, 200).breakText(text);
   }
 
   function getState() {
@@ -263,54 +256,6 @@ function Speech(texts, options) {
 
 
 //text breakers
-
-function WordBreaker(wordLimit, punctuator) {
-  this.breakText = breakText;
-  function breakText(text) {
-    return punctuator.getParagraphs(text).flatMap(breakParagraph)
-  }
-  function breakParagraph(text) {
-    return punctuator.getSentences(text).flatMap(breakSentence)
-  }
-  function breakSentence(sentence) {
-    return merge(punctuator.getPhrases(sentence), breakPhrase);
-  }
-  function breakPhrase(phrase) {
-    var words = punctuator.getWords(phrase);
-    var splitPoint = Math.min(Math.ceil(words.length/2), wordLimit);
-    var result = [];
-    while (words.length) {
-      result.push(words.slice(0, splitPoint).join(""));
-      words = words.slice(splitPoint);
-    }
-    return result;
-  }
-  function merge(parts, breakPart) {
-    var result = [];
-    var group = {parts: [], wordCount: 0};
-    var flush = function() {
-      if (group.parts.length) {
-        result.push(group.parts.join(""));
-        group = {parts: [], wordCount: 0};
-      }
-    };
-    parts.forEach(function(part) {
-      var wordCount = punctuator.getWords(part).length;
-      if (wordCount > wordLimit) {
-        flush();
-        var subParts = breakPart(part);
-        for (var i=0; i<subParts.length; i++) result.push(subParts[i]);
-      }
-      else {
-        if (group.wordCount + wordCount > wordLimit) flush();
-        group.parts.push(part);
-        group.wordCount += wordCount;
-      }
-    });
-    flush();
-    return result;
-  }
-}
 
 function CharBreaker(charLimit, punctuator, paragraphCombineThreshold) {
   this.breakText = breakText;
