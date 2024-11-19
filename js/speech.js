@@ -55,13 +55,15 @@ function Speech(texts, options) {
     if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
     if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
     if (isRemoteVoice(options.voice)) return remoteTtsEngine;
-    return new TimeoutTtsEngine(browserTtsEngine)
+    if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 3*1000, 30*1000);
+    return browserTtsEngine;
   }
 
   function getChunks(text) {
     var isEA = /^zh|ko|ja/.test(options.lang);
     var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
     if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
+    else if (isGoogleNative(options.voice)) return new CharBreaker(300 * options.rate, punctuator).breakText(text)
     else if (isPiperVoice(options.voice)) return [text];
     else return new CharBreaker(750, punctuator, 200).breakText(text);
   }

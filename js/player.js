@@ -113,7 +113,7 @@ if (queryString.has("autoclose"))
   rxjs.combineLatest(idleSubject, piperSubject.pipe(rxjs.startWith(null)))
     .pipe(
       rxjs.switchMap(([isIdle, piper]) => {
-        if (isIdle) return rxjs.timer(piper ? 30*60*1000 : 5*60*1000)
+        if (isIdle) return rxjs.timer(piper ? 15*60*1000 : 5*60*1000)
         else return rxjs.EMPTY
       })
     )
