@@ -181,7 +181,6 @@ function TimeoutTtsEngine(baseEngine, startTimeout, endTimeout) {
 function RemoteTtsEngine(serviceUrl) {
   var manifest = brapi.runtime.getManifest();
   var isSpeaking = false;
-  var nextStartTime = 0;
   var authToken;
   var clientId;
   var audio;
@@ -206,7 +205,7 @@ function RemoteTtsEngine(serviceUrl) {
       .then(function() {
         return getAudioUrl(utterance, options.lang, options.voice)
       })
-    audio = playAudio(urlPromise, options, nextStartTime)
+    audio = playAudio(urlPromise, options)
     audio.startPromise
       .then(() => {
         onEvent({type: "start", charIndex: 0})
@@ -234,10 +233,6 @@ function RemoteTtsEngine(serviceUrl) {
     if (!isIOS()) {
       ajaxGet(getAudioUrl(utterance, options.lang, options.voice, true));
     }
-  }
-  this.setNextStartTime = function(time, options) {
-    if (!isIOS())
-      nextStartTime = time || 0;
   }
   this.getVoices = function() {
     return voices;
@@ -423,8 +418,6 @@ function GoogleTranslateTtsEngine() {
       })
       .catch(console.error)
   };
-  this.setNextStartTime = function() {
-  };
   this.getVoices = function() {
     return voices;
   }
@@ -543,8 +536,6 @@ function AmazonPollyTtsEngine() {
         prefetchAudio = [utterance, options, url];
       })
       .catch(console.error)
-  };
-  this.setNextStartTime = function() {
   };
   this.getVoices = async function() {
     try {
@@ -678,8 +669,6 @@ function GoogleWavenetTtsEngine() {
         prefetchAudio = [utterance, options, url];
       })
       .catch(console.error)
-  };
-  this.setNextStartTime = function() {
   };
   this.getVoices = function() {
     return getSettings(["wavenetVoices", "gcpCreds"])
@@ -887,8 +876,6 @@ function IbmWatsonTtsEngine() {
       console.error(err)
     }
   };
-  this.setNextStartTime = function() {
-  };
   this.getVoices = function() {
     return getSettings(["watsonVoices", "ibmCreds"])
       .then(function(items) {
@@ -990,8 +977,6 @@ function NvidiaRivaTtsEngine() {
         prefetchAudio = [utterance, options, url];
       })
       .catch(console.error)
-  };
-  this.setNextStartTime = function() {
   };
   this.getVoices = function() {
     return getSettings(["rivaVoices", "rivaCreds"])
@@ -1208,8 +1193,6 @@ function OpenaiTtsEngine() {
       console.error(err)
     }
   }
-  this.setNextStartTime = function() {
-  }
   this.getVoices = function() {
     return voices
   }
@@ -1286,8 +1269,6 @@ function AzureTtsEngine() {
     catch (err) {
       console.error(err)
     }
-  };
-  this.setNextStartTime = function() {
   };
   this.getVoices = async function() {
     try {

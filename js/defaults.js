@@ -783,7 +783,7 @@ function truncateRepeatedChars(text, max) {
   return result
 }
 
-function playAudioHere(urlPromise, options, startTime) {
+function playAudioHere(urlPromise, options) {
   const audio = getSingletonAudio()
   audio.pause()
   if (!isIOS()) {
@@ -796,19 +796,11 @@ function playAudioHere(urlPromise, options, startTime) {
     .then(() => Promise.reject(new Error("Timeout, TTS never started, try picking another voice?")))
   const {abortPromise, abort} = makeAbortable()
   const readyPromise = Promise.resolve(urlPromise)
-    .then(async url => {
-      const canPlayPromise = new Promise((fulfill, reject) => {
-        audio.oncanplay = fulfill
-        audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
-      })
+    .then(url => new Promise((fulfill, reject) => {
+      audio.oncanplay = fulfill
+      audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
       audio.src = url
-      await canPlayPromise
-
-      if (startTime) {
-        const waitTime = startTime - Date.now()
-        if (waitTime > 0) await waitMillis(waitTime)
-      }
-    })
+    }))
 
   const startPromise = Promise.race([readyPromise, abortPromise, timeoutPromise])
     .then(async () => {

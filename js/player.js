@@ -299,12 +299,12 @@ function reportError(err) {
   }
 }
 
-function playAudio(urlPromise, options, startTime) {
+function playAudio(urlPromise, options) {
   if (brapi.offscreen) {
-    return playAudioOffscreen(urlPromise, options, startTime)
+    return playAudioOffscreen(urlPromise, options)
   }
   else {
-    return playAudioHere(requestAudioPlaybackPermission().then(() => urlPromise), options, startTime)
+    return playAudioHere(requestAudioPlaybackPermission().then(() => urlPromise), options)
   }
 }
 
@@ -331,9 +331,9 @@ async function createOffscreenIfNotExist() {
   }
 }
 
-function playAudioOffscreen(urlPromise, options, startTime) {
+function playAudioOffscreen(urlPromise, options) {
   const readyPromise = createOffscreenIfNotExist().then(() => urlPromise)
-  const startPromise = readyPromise.then(url => sendToOffscreen({method: "play", args: [url, options, startTime]}))
+  const startPromise = readyPromise.then(url => sendToOffscreen({method: "play", args: [url, options]}))
   const endPromise = new Promise((fulfill, reject) => {
     messageHandlers.offscreenPlaybackEnded = err => err ? reject(err) : fulfill()
   })

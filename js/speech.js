@@ -7,7 +7,7 @@ function Speech(texts, options) {
 
   var self = this;
   const engine = pickEngine()
-  var pauseDuration = 650/options.rate;
+  const pauseDuration = engine.prefetch != null ? 650/options.rate : 0;
   let piperState
 
   this.options = options;
@@ -16,10 +16,10 @@ function Speech(texts, options) {
   this.stop = () => cmd$.error({name: "CancellationException", message: "Playback cancelled"})
   this.getState = getState;
   this.getInfo = getInfo;
-  this.canForward = () => playlist.canForward()
-  this.canRewind = () => playlist.canRewind()
-  this.forward = () => cmd$.next({name: "forward"})
-  this.rewind = () => cmd$.next({name: "rewind"})
+  this.canForward = () => engine.forward != null || playlist.canForward()
+  this.canRewind = () => engine.rewind != null || playlist.canRewind()
+  this.forward = () => cmd$.next({name: "forward", delay: 750})
+  this.rewind = () => cmd$.next({name: "rewind", delay: 750})
   this.seek = index => cmd$.next({name: "seek", index})
   this.gotoEnd = () => cmd$.next({name: "gotoEnd"})
 
@@ -79,36 +79,48 @@ function Speech(texts, options) {
     rxjs.startWith({name: "seek", index: 0}),
     rxjs.scan((current, cmd) => {
       switch (cmd.name) {
-        case "pause":
+        case "pause": {
           playbackState$.next("paused")
           return current
-        case "resume":
+        }
+        case "resume": {
           playbackState$.next("resumed")
           return current
-        case "forward":
-          if (engine.forward) {
+        }
+        case "forward": {
+          if (engine.forward != null) {
             engine.forward()
             return current
           } else {
-            return playlist.forward(750) || current
+            const playback$ = playlist.forward()
+            return playback$ ? {playback$, ts: Date.now(), delay: cmd.delay} : current
           }
-        case "rewind":
-          if (engine.rewind) {
+        }
+        case "rewind": {
+          if (engine.rewind != null) {
             engine.rewind()
             return current
-          } else if (Date.now()-current.since > 3000) {
-            return playlist.seek(playlist.getIndex())
+          } else if (Date.now()-current.ts > 3000) {
+            const playback$ = playlist.seek(playlist.getIndex())
+            return playback$ ? {playback$, ts: Date.now()} : current
           } else {
-            return playlist.rewind(750) || current
+            const playback$ = playlist.rewind()
+            return playback$ ? {playback$, ts: Date.now(), delay: cmd.delay} : current
           }
-        case "seek":
-          return playlist.seek(cmd.index) || current
-        case "gotoEnd":
-          return playlist.gotoEnd() || current
+        }
+        case "seek": {
+          const playback$ = playlist.seek(cmd.index)
+          return playback$ ? {playback$, ts: Date.now()} : current
+        }
+        case "gotoEnd": {
+          const playback$ = playlist.gotoEnd()
+          return playback$ ? {playback$, ts: Date.now()} : current
+        }
       }
     }, null),
     rxjs.takeWhile(x => x),
     rxjs.distinctUntilChanged(),
+    rxjs.debounce(x => x.delay ? rxjs.timer(x.delay) : rxjs.of(0)),
     rxjs.switchMap(x => x.playback$)
   )
   .subscribe({
@@ -117,17 +129,13 @@ function Speech(texts, options) {
         case "start":
           if (event.sentenceStartIndicies) {
             piperState = {
-              texts: event.sentenceStartIndicies.map((startIndex, i) => {
-                return i+1 < event.sentenceStartIndicies.length
-                  ? text.slice(startIndex, event.sentenceStartIndicies[i+1])
-                  : text.slice(startIndex)
-              }),
+              texts: event.sentenceStartIndicies.map((startIndex, i, arr) => texts[0].slice(startIndex, arr[i+1])),
               sentenceStartIndicies: event.sentenceStartIndicies,
               index: 0
             }
           } else {
             const nextText = texts[playlist.getIndex() + 1]
-            if (nextText && engine.prefetch) engine.prefetch(nextText, options)
+            if (nextText && engine.prefetch != null) engine.prefetch(nextText, options)
           }
           break
         case "sentence":
@@ -136,10 +144,7 @@ function Speech(texts, options) {
           }
           break
         case "end":
-          if (engine.setNextStartTime) {
-            engine.setNextStartTime(Date.now() + pauseDuration, options)
-          }
-          cmd$.next({name: "forward"})
+          cmd$.next({name: "forward", delay: pauseDuration})
           break
       }
     },
@@ -167,29 +172,29 @@ function Speech(texts, options) {
       canRewind() {
         return index > 0
       },
-      forward(delay) {
+      forward() {
         if (index+1 < texts.length) {
           index++
-          return makePlaying(texts[index], delay)
+          return makePlayback(texts[index])
         }
       },
-      rewind(delay) {
+      rewind() {
         if (index > 0) {
           index--
-          return makePlaying(texts[index], delay)
+          return makePlayback(texts[index])
         }
       },
       seek(toIndex) {
         if (toIndex >= 0 && toIndex < texts.length) {
           index = toIndex
-          return makePlaying(texts[index])
+          return makePlayback(texts[index])
         }
       },
       gotoEnd() {
         const toIndex = texts.length - 1
         if (toIndex >= 0) {
           index = toIndex
-          return makePlaying(texts[index])
+          return makePlayback(texts[index])
         }
       }
     }
@@ -197,53 +202,49 @@ function Speech(texts, options) {
 
 
 
-  function makePlaying(text, delay) {
-    return {
-      since: Date.now(),
-      playback$: rxjs.iif(
-        () => delay,
-        rxjs.timer(delay),
-        rxjs.of(0)
-      ).pipe(
-        rxjs.exhaustMap(() => playbackState$),
-        rxjs.distinctUntilChanged(),
-        rxjs.scan((playing$, state) => {
-          if (state == "resumed") {
-            return playing$ || (
-              playing$ = new rxjs.Observable(observer => {
-                engine.speak(text, options, event => observer.next(event))
-              })
-            )
-          } else if (state == "paused") {
-            if (playing$) {
-              if (engine.pause && !isChromeOSNative(options.voice)) {
-                engine.pause()
-                return playing$
-              } else {
-                engine.stop()
-                return null
-              }
+  function makePlayback(text) {
+    return playbackState$.pipe(
+      rxjs.distinctUntilChanged(),
+      rxjs.scan((playing$, state) => {
+        if (state == "resumed") {
+          if (playing$) {
+            engine.resume()
+            return playing$
+          } else {
+            return new rxjs.Observable(observer => {
+              engine.speak(text, options, event => observer.next(event))
+            })
+          }
+        } else if (state == "paused") {
+          if (playing$) {
+            if (engine.pause != null && !isChromeOSNative(options.voice)) {
+              engine.pause()
+              return playing$
             } else {
+              engine.stop()
               return null
             }
-          }
-        }, null),
-        rxjs.switchMap(playing$ => {
-          if (playing$) {
-            return playing$.pipe(
-              rxjs.finalize(() => engine.stop())
-            )
           } else {
-            return rxjs.EMPTY
+            return null
           }
-        }),
-        rxjs.map(event => {
-          if (event.type == "error") throw event.error
-          return event
-        }),
-        rxjs.takeWhile(event => event.type != "end", true)
-      )
-    }
+        }
+      }, null),
+      rxjs.distinctUntilChanged(),
+      rxjs.switchMap(playing$ => {
+        if (playing$) {
+          return playing$.pipe(
+            rxjs.finalize(() => engine.stop())
+          )
+        } else {
+          return rxjs.EMPTY
+        }
+      }),
+      rxjs.map(event => {
+        if (event.type == "error") throw event.error
+        return event
+      }),
+      rxjs.takeWhile(event => event.type != "end", true)
+    )
   }
 
 
