@@ -152,7 +152,10 @@ function Doc(source, onEnd) {
     return ready
       .catch(function() {})
       .then(function() {
-        if (activeSpeech) activeSpeech.stop().then(function() {activeSpeech = null});
+        if (activeSpeech) {
+          activeSpeech.stop()
+          activeSpeech = null
+        }
         source.close();
       })
   }
@@ -328,7 +331,10 @@ function Doc(source, onEnd) {
   function stop() {
     return ready
       .then(function() {
-        if (activeSpeech) return activeSpeech.stop().then(function() {activeSpeech = null});
+        if (activeSpeech) {
+          activeSpeech.stop()
+          activeSpeech = null
+        }
       })
   }
 
@@ -353,7 +359,10 @@ function Doc(source, onEnd) {
 
   //method forward
   function forward() {
-    if (activeSpeech) return activeSpeech.forward().catch(forwardPage);
+    if (activeSpeech) {
+      if (activeSpeech.canForward()) activeSpeech.forward()
+      else forwardPage()
+    }
     else return Promise.reject(new Error("Can't forward, not active"));
   }
 
@@ -363,7 +372,10 @@ function Doc(source, onEnd) {
 
   //method rewind
   function rewind() {
-    if (activeSpeech) return activeSpeech.rewind().catch(rewindPage);
+    if (activeSpeech) {
+      if (activeSpeech.canRewind()) activeSpeech.rewind()
+      else rewindPage()
+    }
     else return Promise.reject(new Error("Can't rewind, not active"));
   }
 
