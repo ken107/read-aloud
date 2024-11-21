@@ -233,6 +233,9 @@ function getPlaybackState() {
           playbackError: errorToJson(playbackError),
         }
       })
+      .finally(() => {
+        playbackError = null
+      })
   }
   else {
     return {

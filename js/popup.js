@@ -1,16 +1,6 @@
 
 var queryString = getQueryString()
 
-var playbackErrorProcessor = {
-  lastError: {},
-  next: function(err) {
-    if (err.message != this.lastError.message) {
-      this.lastError = err
-      handleError(err)
-    }
-  }
-}
-
 const piperInitializingSubject = new rxjs.Subject()
 piperInitializingSubject
   .pipe(
@@ -146,7 +136,7 @@ async function updateButtons() {
   const speech = stateInfo.speechInfo
   var playbackErr = stateInfo.playbackError
 
-  if (playbackErr) playbackErrorProcessor.next(playbackErr)
+  if (playbackErr) handleError(playbackErr)
   piperInitializingSubject.next(!!speech?.isPiper && state == "LOADING")
 
   $("#imgLoading").toggle(state == "LOADING");
