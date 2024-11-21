@@ -81,9 +81,13 @@ function Speech(texts, options) {
   const cmd$ = new rxjs.Subject()
 
   cmd$.pipe(
-    rxjs.startWith({name: "seek", index: 0}),
+    rxjs.startWith({name: "first"}),
     rxjs.scan((current, cmd) => {
       switch (cmd.name) {
+        case "first": {
+          const playback$ = playlist.first()
+          return playback$ ? {playback$, ts: Date.now()} : null
+        }
         case "pause": {
           playbackState$.next("paused")
           return current
@@ -114,8 +118,13 @@ function Speech(texts, options) {
           }
         }
         case "seek": {
-          const playback$ = playlist.seek(cmd.index)
-          return playback$ ? {playback$, ts: Date.now()} : current
+          if (engine.seek != null) {
+            engine.seek(cmd.index)
+            return current
+          } else {
+            const playback$ = playlist.seek(cmd.index)
+            return playback$ ? {playback$, ts: Date.now()} : current
+          }
         }
         case "gotoEnd": {
           const playback$ = playlist.gotoEnd()
@@ -170,6 +179,12 @@ function Speech(texts, options) {
     return {
       getIndex() {
         return index
+      },
+      first() {
+        if (0 < texts.length) {
+          index = 0
+          return makePlayback(texts[index])
+        }
       },
       canForward() {
         return index+1 < texts.length
