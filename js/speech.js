@@ -102,7 +102,7 @@ function Speech(texts, options) {
             return current
           } else {
             const playback$ = playlist.forward()
-            return playback$ ? {playback$, ts: Date.now(), delay: cmd.delay} : current
+            return playback$ ? {playback$, ts: Date.now(), delay: cmd.delay} : null
           }
         }
         case "rewind": {
