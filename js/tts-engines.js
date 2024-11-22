@@ -204,8 +204,15 @@ function RemoteTtsEngine(serviceUrl) {
   }
   this.speak = function(utterance, options, onEvent) {
     const urlPromise = ready(options)
-      .then(function() {
-        return getAudioUrl(utterance, options.lang, options.voice)
+      .then(async function() {
+        const audioUrl = getAudioUrl(utterance, options.lang, options.voice)
+        const res = await fetch(audioUrl)
+        if (!res.ok) {
+          const msg = await res.text().catch(err => "")
+          throw new Error(msg || (res.status + " " + res.statusText))
+        }
+        const blob = await res.blob()
+        return URL.createObjectURL(blob)
       })
     audio = playAudio(urlPromise, options, nextStartTime)
     audio.startPromise
