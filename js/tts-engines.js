@@ -145,6 +145,7 @@ function TimeoutTtsEngine(baseEngine, startTimeout, endTimeout) {
     }).pipe(
       rxjs.timeout({
         first: startTimeout,
+        each: startTimeout*2,
         with() {
           console.debug(`No 'start' event after ${startTimeout}, will call stop() and retry once`)
           baseEngine.stop()
@@ -152,7 +153,7 @@ function TimeoutTtsEngine(baseEngine, startTimeout, endTimeout) {
         }
       }),
       rxjs.retry(1),
-      rxjs.switchMap(event =>
+      rxjs.mergeMap(event =>
         rxjs.iif(
           () => event.type == "start",
           rxjs.timer(endTimeout).pipe(
