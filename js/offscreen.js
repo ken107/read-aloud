@@ -14,9 +14,9 @@
 
 
 
-  async function play(url, options) {
+  async function play(url, options, startTime) {
     if (audio) audio.pause()
-    audio = playAudioHere(url, options)
+    audio = playAudioHere(url, options, startTime)
     audio.endPromise
       .then(() => sendToPlayer({method: "offscreenPlaybackEnded"}),
         err => sendToPlayer({method: "offscreenPlaybackEnded", args: [errorToJson(err)]}))

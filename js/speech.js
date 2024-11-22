@@ -7,7 +7,6 @@ function Speech(texts, options) {
 
   var self = this;
   const engine = pickEngine()
-  const pauseDuration = engine.prefetch != null ? 650/options.rate : 0;
   let piperState
 
   this.options = options;
@@ -158,7 +157,7 @@ function Speech(texts, options) {
           }
           break
         case "end":
-          cmd$.next({name: "forward", delay: pauseDuration})
+          cmd$.next({name: "forward"})
           break
       }
     },

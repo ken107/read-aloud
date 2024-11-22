@@ -568,10 +568,6 @@ function getBrowser() {
   return 'chrome';
 }
 
-function isIOS() {
-  return !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
-}
-
 function getHotkeySettingsUrl() {
   switch (getBrowser()) {
     case 'opera': return 'opera://settings/configureCommands';
@@ -783,24 +779,30 @@ function truncateRepeatedChars(text, max) {
   return result
 }
 
-function playAudioHere(urlPromise, options) {
+function playAudioHere(urlPromise, options, startTime) {
   const audio = getSingletonAudio()
   audio.pause()
-  if (!isIOS()) {
-    audio.defaultPlaybackRate = (options.rate || 1) * (options.rateAdjust || 1)
-    audio.volume = options.volume || 1
-  }
+  audio.defaultPlaybackRate = (options.rate || 1) * (options.rateAdjust || 1)
+  audio.volume = options.volume || 1
   const silenceTrack = getSilenceTrack()
 
   const timeoutPromise = waitMillis(10*1000)
     .then(() => Promise.reject(new Error("Timeout, TTS never started, try picking another voice?")))
   const {abortPromise, abort} = makeAbortable()
   const readyPromise = Promise.resolve(urlPromise)
-    .then(url => new Promise((fulfill, reject) => {
-      audio.oncanplay = fulfill
-      audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
+    .then(async url => {
+      const canPlayPromise = new Promise((fulfill, reject) => {
+        audio.oncanplay = fulfill
+        audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
+      })
       audio.src = url
-    }))
+      await canPlayPromise
+
+      if (startTime) {
+        const waitTime = startTime - Date.now()
+        if (waitTime > 0) await waitMillis(waitTime)
+      }
+    })
 
   const startPromise = Promise.race([readyPromise, abortPromise, timeoutPromise])
     .then(async () => {

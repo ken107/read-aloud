@@ -182,6 +182,7 @@ function TimeoutTtsEngine(baseEngine, startTimeout, endTimeout) {
 function RemoteTtsEngine(serviceUrl) {
   var manifest = brapi.runtime.getManifest();
   var isSpeaking = false;
+  var nextStartTime = 0;
   var authToken;
   var clientId;
   var audio;
@@ -206,7 +207,7 @@ function RemoteTtsEngine(serviceUrl) {
       .then(function() {
         return getAudioUrl(utterance, options.lang, options.voice)
       })
-    audio = playAudio(urlPromise, options)
+    audio = playAudio(urlPromise, options, nextStartTime)
     audio.startPromise
       .then(() => {
         onEvent({type: "start", charIndex: 0})
@@ -216,7 +217,10 @@ function RemoteTtsEngine(serviceUrl) {
         onEvent({type: "error", error: err})
       })
     audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
+      .then(() => {
+          nextStartTime = Date.now() + (650 / options.rate)
+          onEvent({type: "end", charIndex: utterance.length})
+        },
         err => onEvent({type: "error", error: err}))
       .finally(() => isSpeaking = false)
   }
@@ -231,9 +235,7 @@ function RemoteTtsEngine(serviceUrl) {
     return audio.resume()
   }
   this.prefetch = function(utterance, options) {
-    if (!isIOS()) {
-      ajaxGet(getAudioUrl(utterance, options.lang, options.voice, true));
-    }
+    ajaxGet(getAudioUrl(utterance, options.lang, options.voice, true));
   }
   this.getVoices = function() {
     return voices;
