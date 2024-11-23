@@ -77,9 +77,13 @@
         })
     })
 
-  const voicesPopulatedObservable = rxjs.combineLatest([settingsObservable.of("languages"), voicesPromise, domReadyPromise])
-    .pipe(
-      rxjs.tap(([languages, voices]) => populateVoices(voices, {languages})),
+  const voicesPopulatedObservable = rxjs.combineLatest([
+    voicesPromise,
+    settingsObservable.of("languages"),
+    brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
+    domReadyPromise
+  ]).pipe(
+      rxjs.tap(([voices, languages, acceptLangs]) => populateVoices(voices, {languages}, acceptLangs)),
       rxjs.share()
     )
 
@@ -267,7 +271,7 @@
 
 
 
-  function populateVoices(allVoices, settings) {
+  function populateVoices(allVoices, settings, acceptLangs) {
     $("#voices").empty()
     $("<option>")
       .val("")
@@ -275,7 +279,13 @@
       .appendTo("#voices")
 
     //get voices filtered by selected languages
-    var selectedLangs = settings.languages && settings.languages.split(',');
+    var selectedLangs = immediate(() => {
+      if (settings.languages) return settings.languages.split(',')
+      if (settings.languages == '') return null
+      const accept = new Set(acceptLangs.map(x => x.split('-',1)[0]))
+      const langs = Object.keys(groupVoicesByLang(allVoices)).filter(x => accept.has(x))
+      return langs.length ? langs : null
+    })
     var voices = !selectedLangs ? allVoices : allVoices.filter(
       function(voice) {
         return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);

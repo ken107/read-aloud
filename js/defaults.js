@@ -182,6 +182,22 @@ function getVoices(opts) {
     })
 }
 
+function groupVoicesByLang(voices) {
+  return voices.groupBy(function(voice) {
+    if (voice.lang) {
+      var code = voice.lang.split('-',1)[0]
+      var alias = {
+        yue: "zh",
+        cmn: "zh",
+      }
+      return alias[code] || code
+    }
+    else {
+      return "<any>"
+    }
+  })
+}
+
 function isOfflineVoice(voice) {
   return voice.remote == false
 }
