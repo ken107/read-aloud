@@ -145,7 +145,6 @@ function TimeoutTtsEngine(baseEngine, startTimeout, endTimeout) {
     }).pipe(
       rxjs.timeout({
         first: startTimeout,
-        each: startTimeout*2,
         with() {
           console.debug(`No 'start' event after ${startTimeout}, will call stop() and retry once`)
           baseEngine.stop()
