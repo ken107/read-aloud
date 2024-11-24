@@ -10,8 +10,8 @@ function Speech(texts, options) {
   let piperState
 
   this.options = options;
-  this.play = () => cmd$.next({name: "resume"})
-  this.pause = () => cmd$.next({name: "pause"})
+  this.play = () => playbackState$.next("resumed")
+  this.pause = () => playbackState$.next("paused")
   this.stop = () => cmd$.error({name: "CancellationException", message: "Playback cancelled"})
   this.getState = getState;
   this.getInfo = getInfo;
@@ -35,7 +35,7 @@ function Speech(texts, options) {
     if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
     if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
     if (isRemoteVoice(options.voice)) return remoteTtsEngine;
-    if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 2*1000, 16*1000);
+    if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 3*1000, 16*1000);
     return browserTtsEngine;
   }
 
@@ -53,9 +53,8 @@ function Speech(texts, options) {
     }
   }
 
-  async function getState() {
+  function getState() {
     if (playbackState$.value == "resumed") {
-      const isSpeaking = await new Promise(f => engine.isSpeaking(f))
       return isSpeaking ? "PLAYING" : "LOADING"
     } else {
       return "PAUSED"
@@ -78,6 +77,7 @@ function Speech(texts, options) {
   const playbackState$ = new rxjs.BehaviorSubject("paused")
   const playlist = makePlaylist()
   const cmd$ = new rxjs.Subject()
+  let isSpeaking = false
 
   cmd$.pipe(
     rxjs.startWith({name: "first"}),
@@ -86,14 +86,6 @@ function Speech(texts, options) {
         case "first": {
           const playback$ = playlist.first()
           return playback$ ? {playback$, ts: Date.now()} : null
-        }
-        case "pause": {
-          playbackState$.next("paused")
-          return current
-        }
-        case "resume": {
-          playbackState$.next("resumed")
-          return current
         }
         case "forward": {
           if (engine.forward != null) {
@@ -140,6 +132,7 @@ function Speech(texts, options) {
     next(event) {
       switch (event.type) {
         case "start":
+          isSpeaking = true
           if (event.sentenceStartIndicies) {
             piperState = {
               texts: event.sentenceStartIndicies.map((startIndex, i, arr) => texts[0].slice(startIndex, arr[i+1])),
@@ -157,6 +150,7 @@ function Speech(texts, options) {
           }
           break
         case "end":
+          isSpeaking = false
           cmd$.next({name: "forward"})
           break
       }
@@ -231,17 +225,20 @@ function Speech(texts, options) {
             return playing$
           } else {
             return new rxjs.Observable(observer => {
-              engine.speak(text, options, event => observer.next(event))
+              engine.speak(text, options, event => {
+                if (event.type == "error") observer.error(event.error)
+                else observer.next(event)
+              })
             })
           }
         } else if (state == "paused") {
           if (playing$) {
-            if (engine.pause != null && !isChromeOSNative(options.voice)) {
-              engine.pause()
-              return playing$
-            } else {
+            if (isGoogleNative(options.voice) || isChromeOSNative(options.voice)) {
               engine.stop()
               return null
+            } else {
+              engine.pause()
+              return playing$
             }
           } else {
             return null
@@ -257,10 +254,6 @@ function Speech(texts, options) {
         } else {
           return rxjs.EMPTY
         }
-      }),
-      rxjs.map(event => {
-        if (event.type == "error") throw event.error
-        return event
       }),
       rxjs.takeWhile(event => event.type != "end", true)
     )
