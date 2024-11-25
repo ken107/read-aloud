@@ -176,6 +176,7 @@ function TimeoutTtsEngine(baseEngine, startTimeout, endTimeout) {
 
 function RemoteTtsEngine(serviceUrl) {
   var manifest = brapi.runtime.getManifest();
+  var nextStartTime = 0;
   var authToken;
   var clientId;
   function ready(options) {
@@ -206,7 +207,11 @@ function RemoteTtsEngine(serviceUrl) {
         const blob = await res.blob()
         return URL.createObjectURL(blob)
       })
-    return playAudio(urlPromise, options, playbackState$)
+    return playAudio(urlPromise, {...options, startTime: nextStartTime}, playbackState$).pipe(
+      rxjs.tap(event => {
+        if (event.type == "end") nextStartTime = Date.now() + 650 / options.rate
+      })
+    )
   }
   this.prefetch = function(utterance, options) {
     ajaxGet(getAudioUrl(utterance, options.lang, options.voice, true));
