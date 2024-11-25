@@ -166,7 +166,11 @@ function Speech(texts, options) {
           }
           break
         case "end":
-          cmd$.next({name: "forward"})
+          if (piperState) {
+            cmd$.complete()
+          } else {
+            cmd$.next({name: "forward"})
+          }
           break
       }
     },
