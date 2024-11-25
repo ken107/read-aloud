@@ -353,7 +353,7 @@ function playAudioOffscreen(urlPromise, options, playbackState$) {
                 return rxjs.defer(createOffscreen).pipe(
                   rxjs.exhaustMap(async () => {
                     const result = await sendToOffscreen({method: "play", args: [url, options]})
-                    if (result != null) throw "Offscreen doc inaccessible"
+                    if (result != true) throw new Error("Offscreen doc inaccessible")
                   })
                 )
               }),
@@ -374,12 +374,12 @@ function playAudioOffscreen(urlPromise, options, playbackState$) {
       )
     ),
     rxjs.mergeWith(
-      new rxjs.Observable(observer =>
+      new rxjs.Observable(observer => {
         messageHandlers.offscreenPlaybackEvent = function(event) {
           if (event.type == "error") observer.error(event.error)
           else observer.next(event)
         }
-      )
+      })
     ),
     rxjs.takeWhile(event => event.type != "end", true)
   )

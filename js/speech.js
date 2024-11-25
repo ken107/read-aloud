@@ -53,9 +53,9 @@ function Speech(texts, options) {
     }
   }
 
-  function getState() {
+  async function getState() {
     if (playbackState$.value == "resumed") {
-      return isSpeaking ? "PLAYING" : "LOADING"
+      return await rxjs.firstValueFrom(isLoading$) ? "LOADING" : "PLAYING"
     } else {
       return "PAUSED"
     }
@@ -77,7 +77,16 @@ function Speech(texts, options) {
   const playbackState$ = new rxjs.BehaviorSubject("paused")
   const playlist = makePlaylist()
   const cmd$ = new rxjs.Subject()
-  let isSpeaking = false
+  const isLoadingSubject = new rxjs.BehaviorSubject(false)
+  const isLoading$ = isLoadingSubject.pipe(
+    rxjs.distinctUntilChanged(),
+    rxjs.switchMap(yes =>
+      rxjs.iif(() => yes, rxjs.timer(2000), rxjs.of(0)).pipe(
+        rxjs.map(() => yes)
+      )
+    ),
+    rxjs.shareReplay({bufferSize: 1, refCount: false})
+  )
 
   cmd$.pipe(
     rxjs.startWith({name: "first"}),
@@ -126,13 +135,18 @@ function Speech(texts, options) {
     rxjs.takeWhile(x => x),
     rxjs.distinctUntilChanged(),
     rxjs.debounce(x => x.delay ? rxjs.timer(x.delay) : rxjs.of(0)),
-    rxjs.switchMap(x => x.playback$)
+    rxjs.switchMap(x =>
+      rxjs.concat(
+        rxjs.of({type: "load"}),
+        x.playback$
+      )
+    )
   )
   .subscribe({
     next(event) {
+      isLoadingSubject.next(event.type == "load")
       switch (event.type) {
         case "start":
-          isSpeaking = true
           if (event.sentenceStartIndicies) {
             piperState = {
               texts: event.sentenceStartIndicies.map((startIndex, i, arr) => texts[0].slice(startIndex, arr[i+1])),
@@ -150,7 +164,6 @@ function Speech(texts, options) {
           }
           break
         case "end":
-          isSpeaking = false
           cmd$.next({name: "forward"})
           break
       }

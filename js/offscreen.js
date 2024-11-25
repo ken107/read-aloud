@@ -16,7 +16,7 @@
   current$.pipe(
     rxjs.switchMap(current => {
       if (current) {
-        return playAudioHere(current.url, current.options, current.playbackState$).pipe(
+        return playAudioHere(Promise.resolve(current.url), current.options, current.playbackState$).pipe(
           rxjs.catchError(err => rxjs.of({type: "error", error: errorToJson(err)})),
           rxjs.tap(event => {
             sendToPlayer({method: "offscreenPlaybackEvent", args: [event]})
