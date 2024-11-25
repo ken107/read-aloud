@@ -216,6 +216,11 @@ function Speech(texts, options) {
 
 
   function makePlayback(text) {
+    if (engine.stop != null) return makePlaybackLegacy(text)
+    else return engine.speak(text, options, playbackState$)
+  }
+
+  function makePlaybackLegacy(text) {
     return playbackState$.pipe(
       rxjs.distinctUntilChanged(),
       rxjs.scan((playing$, state) => {

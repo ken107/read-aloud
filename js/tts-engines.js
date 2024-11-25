@@ -34,11 +34,7 @@ interface Voice {
 }
 
 interface TtsEngine {
-  speak: function(text: string, opts: Options, onEvent: (e:Event) => void): void
-  stop: function(): void
-  pause: function(): void
-  resume: function(): void|Promise<void>
-  isSpeaking: function(callback): void
+  speak: function(text: string, opts: Options, playbackState$: Observable<"paused"|"resumed">): Observable<TtsEvent>
   getVoices: function(): Voice[]
 }
 */
@@ -180,11 +176,8 @@ function TimeoutTtsEngine(baseEngine, startTimeout, endTimeout) {
 
 function RemoteTtsEngine(serviceUrl) {
   var manifest = brapi.runtime.getManifest();
-  var isSpeaking = false;
-  var nextStartTime = 0;
   var authToken;
   var clientId;
-  var audio;
   function ready(options) {
     return getAuthToken()
       .then(function(token) {authToken = token})
@@ -201,7 +194,7 @@ function RemoteTtsEngine(serviceUrl) {
         }
       })
   }
-  this.speak = function(utterance, options, onEvent) {
+  this.speak = function(utterance, options, playbackState$) {
     const urlPromise = ready(options)
       .then(async function() {
         const audioUrl = getAudioUrl(utterance, options.lang, options.voice)
@@ -213,32 +206,7 @@ function RemoteTtsEngine(serviceUrl) {
         const blob = await res.blob()
         return URL.createObjectURL(blob)
       })
-    audio = playAudio(urlPromise, options, nextStartTime)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true;
-      })
-      .catch(function(err) {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => {
-          nextStartTime = Date.now() + (650 / options.rate)
-          onEvent({type: "end", charIndex: utterance.length})
-        },
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  }
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  }
-  this.pause =
-  this.stop = function() {
-    audio.pause()
-  }
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, options, playbackState$)
   }
   this.prefetch = function(utterance, options) {
     ajaxGet(getAudioUrl(utterance, options.lang, options.voice, true));
@@ -384,41 +352,17 @@ function RemoteTtsEngine(serviceUrl) {
 
 function GoogleTranslateTtsEngine() {
   var prefetchAudio;
-  var isSpeaking = false;
-  var audio;
   this.ready = function() {
     return googleTranslateReady();
   };
-  this.speak = function(utterance, options, onEvent) {
+  this.speak = function(utterance, options, playbackState$) {
     options.rateAdjust = 1.1
     const urlPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.voice.lang);
       })
-    audio = playAudio(urlPromise, options)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true;
-      })
-      .catch(function(err) {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    audio.pause()
-  };
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.voice.lang)
@@ -507,37 +451,13 @@ function GoogleTranslateTtsEngine() {
 function AmazonPollyTtsEngine() {
   var getPolly = lazy(createPolly)
   var prefetchAudio;
-  var isSpeaking = false;
-  var audio;
-  this.speak = function(utterance, options, onEvent) {
+  this.speak = function(utterance, options, playbackState$) {
     const urlPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.lang, options.voice, options.pitch);
       })
-    audio = playAudio(urlPromise, options)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true;
-      })
-      .catch(function(err) {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    audio.pause()
-  };
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.lang, options.voice, options.pitch)
@@ -640,37 +560,13 @@ function AmazonPollyTtsEngine() {
 
 function GoogleWavenetTtsEngine() {
   var prefetchAudio;
-  var isSpeaking = false;
-  var audio;
-  this.speak = function(utterance, options, onEvent) {
+  this.speak = function(utterance, options, playbackState$) {
     const urlPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.voice, options.pitch);
       })
-    audio = playAudio(urlPromise, options)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true;
-      })
-      .catch(function(err) {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    audio.pause()
-  };
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.voice, options.pitch)
@@ -844,37 +740,14 @@ function GoogleWavenetTtsEngine() {
 
 
 function IbmWatsonTtsEngine() {
-  var isSpeaking = false;
-  var audio, prefetchAudio;
-  this.speak = function(utterance, options, onEvent) {
+  var prefetchAudio;
+  this.speak = function(utterance, options, playbackState$) {
     const urlPromise = Promise.resolve()
       .then(() => {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
         else return getAudioUrl(utterance, options.voice)
       })
-    audio = playAudio(urlPromise, options)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true;
-      })
-      .catch(function(err) {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    audio.pause()
-  };
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = async function(utterance, options) {
     try {
@@ -947,38 +820,14 @@ function IbmWatsonTtsEngine() {
 function NvidiaRivaTtsEngine() {
   const RIVA_VOICE_PREFIX = "Nvidia-Riva "
   var prefetchAudio;
-  var isSpeaking = false;
-  var audio;
-  this.speak = function(utterance, options, onEvent) {
+  this.speak = function(utterance, options, playbackState$) {
     const urlPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.voice, options.pitch, options.rate);
       })
     // Rate supplied to player is always 1 because it is already represented in the generated audio
-    audio = playAudio(urlPromise, {...options, rate: 1})
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true;
-      })
-      .catch(function(err) {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    audio.pause()
-  };
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, {...options, rate: 1}, playbackState$)
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.voice, options.pitch, options.rate)
@@ -1152,8 +1001,7 @@ function PhoneTtsEngine() {
 
 function OpenaiTtsEngine() {
   const defaultApiUrl = "https://api.openai.com/v1"
-  var audio, prefetchAudio
-  var isSpeaking = false
+  var prefetchAudio
   this.test = async function(apiKey, url) {
     const res = await fetch((url || defaultApiUrl) + "/models", {
       headers: {"Authorization": "Bearer " + apiKey}
@@ -1163,35 +1011,13 @@ function OpenaiTtsEngine() {
       throw error
     }
   }
-  this.speak = function(utterance, options, onEvent) {
+  this.speak = function(utterance, options, playbackState$) {
     const urlPromise = Promise.resolve()
       .then(() => {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
         else return getAudioUrl(utterance, options.voice, options.pitch)
       })
-    audio = playAudio(urlPromise, options)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true
-      })
-      .catch(err => {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  }
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking)
-  }
-  this.pause =
-  this.stop = function() {
-    audio.pause()
-  }
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, options, playbackState$)
   }
   this.prefetch = async function(utterance, options) {
     try {
@@ -1238,37 +1064,14 @@ function OpenaiTtsEngine() {
 
 
 function AzureTtsEngine() {
-  var isSpeaking = false;
-  var audio, prefetchAudio;
-  this.speak = function(utterance, options, onEvent) {
+  var prefetchAudio;
+  this.speak = function(utterance, options, playbackState$) {
     const urlPromise = Promise.resolve()
       .then(() => {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
         else return getAudioUrl(utterance, options.lang, options.voice)
       })
-    audio = playAudio(urlPromise, options)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true;
-      })
-      .catch(function(err) {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    audio.pause()
-  };
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = async function(utterance, options) {
     try {
