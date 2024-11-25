@@ -80,11 +80,13 @@ function Speech(texts, options) {
   const isLoadingSubject = new rxjs.BehaviorSubject(false)
   const isLoading$ = isLoadingSubject.pipe(
     rxjs.distinctUntilChanged(),
-    rxjs.switchMap(yes =>
-      rxjs.iif(() => yes, rxjs.timer(2000), rxjs.of(0)).pipe(
-        rxjs.map(() => yes)
-      )
+    rxjs.scan((previous$, isLoading) =>
+      rxjs.iif(() => previous$ && isLoading, rxjs.timer(2000), rxjs.of(0)).pipe(
+        rxjs.map(() => isLoading)
+      ),
+      null
     ),
+    rxjs.switchAll(),
     rxjs.shareReplay({bufferSize: 1, refCount: false})
   )
 
