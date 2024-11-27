@@ -207,6 +207,18 @@
   domReadyPromise
     .then(() => {
       var demoSpeech = {};
+      const statusTracker$ = new rxjs.Subject()
+      statusTracker$.pipe(
+        rxjs.switchMap(() =>
+          rxjs.interval(500).pipe(
+            rxjs.exhaustMap(() => bgPageInvoke("getPlaybackState")),
+            rxjs.takeWhile(({state}) => state != "STOPPED", true)
+          )
+        )
+      ).subscribe(({playbackError}) => {
+        if (playbackError) handleError(playbackError)
+      })
+
       $("#test-voice")
         .click(async function() {
           try {
@@ -219,6 +231,7 @@
               demoSpeech[lang] = await ajaxGet(config.serviceUrl + "/read-aloud/get-demo-speech-text/" + lang).then(JSON.parse)
             }
             await bgPageInvoke("playText", [demoSpeech[lang].text, {lang: lang}])
+            statusTracker$.next()
           }
           catch (err) {
             handleError(err);
