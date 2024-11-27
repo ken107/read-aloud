@@ -67,6 +67,7 @@
         .change(function() {
           var voiceName = $(this).val();
           if (voiceName == "@custom") location.href = "custom-voices.html";
+          else if (voiceName == "@languages") location.href = "languages.html";
           else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
           else if (voiceName == "@piper") bgPageInvoke("managePiperVoices").catch(console.error)
           else updateSettings({voiceName})
@@ -362,6 +363,10 @@
     var additional = $("<optgroup>")
       .attr("label", brapi.i18n.getMessage("options_voicegroup_additional"))
       .appendTo($("#voices"));
+    $("<option>")
+      .val("@languages")
+      .text(brapi.i18n.getMessage("options_add_more_languages"))
+      .appendTo(additional)
     $("<option>")
       .val("@custom")
       .text(brapi.i18n.getMessage("options_enable_custom_voices"))

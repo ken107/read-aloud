@@ -26,6 +26,9 @@
   "options_voicegroup_additional": {
     "message": "Дополнительные голоса"
   },
+  "options_add_more_languages": {
+    "message": "Добавить больше языков"
+  },
   "options_enable_custom_voices": {
     "message": "Включить пользовательские голоса"
   },

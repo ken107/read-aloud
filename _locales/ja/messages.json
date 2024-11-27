@@ -26,6 +26,9 @@
   "options_voicegroup_additional": {
     "message": "追加の音声"
   },
+  "options_add_more_languages": {
+    "message": "言語を追加する"
+  },
   "options_enable_custom_voices": {
     "message": "カスタム音声を有効にする"
   },
