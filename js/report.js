@@ -7,7 +7,7 @@ $(function() {
       })
   }
 
-  getState("lastUrl").then(function(url) {$("#txt-url").val(url)});
+  sendToPlayer({method: "getLastUrl"}).then(url => $("#txt-url").val(url))
   $("#txt-comment").focus();
   $("#btn-submit").click(submit);
 });
@@ -24,4 +24,11 @@ function submit() {
       $("#img-spinner").hide();
       $("#lbl-error").text("Server could not be contacted, please email me directly at hai.phan@gmail.com. Thank you!").show();
     })
+}
+
+async function sendToPlayer(message) {
+  message.dest = "player"
+  const result = await brapi.runtime.sendMessage(message)
+  if (result && result.error) throw result.error
+  else return result
 }

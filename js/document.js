@@ -131,9 +131,7 @@ function Doc(source, onEnd) {
   var info;
   var currentIndex;
   var activeSpeech;
-  var ready = Promise.resolve(source.getUri())
-    .then(function(uri) {return setState("lastUrl", uri)})
-    .then(function() {return source.ready})
+  var ready = source.ready
     .then(function(result) {info = result})
   var foundText;
   const playbackState = new rxjs.BehaviorSubject("resumed")
@@ -154,7 +152,10 @@ function Doc(source, onEnd) {
     return ready
       .catch(function() {})
       .then(function() {
-        if (activeSpeech) activeSpeech.stop().then(function() {activeSpeech = null});
+        if (activeSpeech) {
+          activeSpeech.stop()
+          activeSpeech = null
+        }
         source.close();
       })
   }
@@ -285,7 +286,16 @@ function Doc(source, onEnd) {
     })
   }
 
-  function serverDetectLanguage(text) {
+  async function serverDetectLanguage(text) {
+    try {
+      const service = await rxjs.firstValueFrom(fasttextObservable)
+      if (!service) throw new Error("FastText service unavailable")
+      const [prediction] = await service.sendRequest("detectLanguage", {text})
+      return prediction?.language
+    }
+    catch (err) {
+      console.error(err)
+
       return ajaxPost(config.serviceUrl + "/read-aloud/detect-language", {text: text}, "json")
         .then(JSON.parse)
         .then(function(res) {
@@ -297,6 +307,7 @@ function Doc(source, onEnd) {
           console.error(err)
           return null
         })
+    }
   }
 
   async function getSpeech(texts) {
@@ -320,7 +331,10 @@ function Doc(source, onEnd) {
   function stop() {
     return ready
       .then(function() {
-        if (activeSpeech) return activeSpeech.stop().then(function() {activeSpeech = null});
+        if (activeSpeech) {
+          activeSpeech.stop()
+          activeSpeech = null
+        }
       })
   }
 
@@ -335,7 +349,7 @@ function Doc(source, onEnd) {
   //method getState
   function getState() {
     if (activeSpeech) return activeSpeech.getState();
-    else return Promise.resolve(source.isWaiting() ? "LOADING" : "STOPPED");
+    else return "LOADING"
   }
 
   //method getActiveSpeech
@@ -345,7 +359,10 @@ function Doc(source, onEnd) {
 
   //method forward
   function forward() {
-    if (activeSpeech) return activeSpeech.forward().catch(forwardPage);
+    if (activeSpeech) {
+      if (activeSpeech.canForward()) activeSpeech.forward()
+      else forwardPage()
+    }
     else return Promise.reject(new Error("Can't forward, not active"));
   }
 
@@ -355,7 +372,10 @@ function Doc(source, onEnd) {
 
   //method rewind
   function rewind() {
-    if (activeSpeech) return activeSpeech.rewind().catch(rewindPage);
+    if (activeSpeech) {
+      if (activeSpeech.canRewind()) activeSpeech.rewind()
+      else rewindPage()
+    }
     else return Promise.reject(new Error("Can't rewind, not active"));
   }
 

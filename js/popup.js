@@ -1,16 +1,6 @@
 
 var queryString = getQueryString()
 
-var playbackErrorProcessor = {
-  lastError: {},
-  next: function(err) {
-    if (err.message != this.lastError.message) {
-      this.lastError = err
-      handleError(err)
-    }
-  }
-}
-
 const piperInitializingSubject = new rxjs.Subject()
 piperInitializingSubject
   .pipe(
@@ -21,11 +11,44 @@ piperInitializingSubject
     else $("#status").hide()
   })
 
-
-
 $(function() {
   if (queryString.isPopup) $("body").addClass("is-popup")
   else getCurrentTab().then(function(currentTab) {return updateSettings({readAloudTab: currentTab.id})})
+})
+
+
+
+getSettings(["showHighlighting", "readAloudTab"]).then(async settings => {
+  if (settings.showHighlighting == 2 && queryString.isPopup) {
+    await popout(settings.readAloudTab)
+  } else {
+    await init()
+  }
+}).catch(handleError)
+
+async function popout(tabId) {
+  const activeTab = await getActiveTab()
+  const url = brapi.runtime.getURL("popup.html?tab=" + activeTab.id)
+  try {
+    if (!tabId) throw "Create"
+    const tab = await updateTab(tabId, {url, active: true})
+    await updateWindow(tab.windowId, {focused: true}).catch(console.error)
+    window.close()
+  }
+  catch (err) {
+    await createWindow({
+      url,
+      focused: true,
+      type: "popup",
+      width: 500,
+      height: 600,
+    })
+    window.close()
+  }
+}
+
+async function init() {
+  await domReady()
 
   $("#btnPlay").click(onPlay);
   $("#btnPause").click(onPause);
@@ -39,40 +62,12 @@ $(function() {
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
   $("#toggle-dark-mode").click(toggleDarkMode);
 
-  updateButtons()
-    .then(getSettings.bind(null, ["showHighlighting", "readAloudTab"]))
-    .then(function(settings) {
-      if (settings.showHighlighting == 2 && queryString.isPopup) {
-        return getActiveTab()
-          .then(function(activeTab) {
-            var url = brapi.runtime.getURL("popup.html?tab=" + activeTab.id)
-            return (settings.readAloudTab ? Promise.resolve() : Promise.reject("No readAloudTab"))
-              .then(function() {return updateTab(settings.readAloudTab, {url: url, active: true})})
-              .then(function(tab) {return updateWindow(tab.windowId, {focused: true})})
-              .catch(function() {
-                return createWindow({
-                  url: url,
-                  focused: true,
-                  type: "popup",
-                  width: 500,
-                  height: 600,
-                })
-              })
-          })
-          .then(window.close)
-      }
-      else {
-        return bgPageInvoke("getPlaybackState")
-          .then(function(stateInfo) {
-            if (stateInfo.state == "PAUSED" || stateInfo.state == "STOPPED") $("#btnPlay").click()
-          })
-      }
-    })
-  setInterval(updateButtons, 500);
-
   refreshSize();
   checkAnnouncements();
-});
+
+  const {state} = await bgPageInvoke("getPlaybackState")
+  if (state == "PAUSED" || state == "STOPPED") onPlay()
+}
 
 
 
@@ -129,35 +124,35 @@ function handleError(err) {
 
 
 
-function updateButtons() {
-  return Promise.all([
+rxjs.concat(domReady(), rxjs.interval(500)).subscribe(updateButtons)
+
+async function updateButtons() {
+  const [settings, stateInfo] = await Promise.all([
     getSettings(),
     bgPageInvoke("getPlaybackState"),
   ])
-  .then(spread(function(settings, stateInfo) {
-    const showHighlighting = settings.showHighlighting != null ? Number(settings.showHighlighting) : defaults.showHighlighting
-    var state = stateInfo.state
-    const speech = stateInfo.speechInfo
-    var playbackErr = stateInfo.playbackError
+  const showHighlighting = settings.showHighlighting != null ? Number(settings.showHighlighting) : defaults.showHighlighting
+  var state = stateInfo.state
+  const speech = stateInfo.speechInfo
+  var playbackErr = stateInfo.playbackError
 
-    if (playbackErr) playbackErrorProcessor.next(playbackErr)
-    piperInitializingSubject.next(!!speech?.isPiper && state == "LOADING")
+  if (playbackErr) handleError(playbackErr)
+  piperInitializingSubject.next(!!speech?.isPiper && state == "LOADING")
 
-    $("#imgLoading").toggle(state == "LOADING");
-    $("#btnSettings").toggle(state == "STOPPED");
-    $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
-    $("#btnPause").toggle(state == "PLAYING");
-    $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
-    $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
+  $("#imgLoading").toggle(state == "LOADING");
+  $("#btnSettings").toggle(state == "STOPPED");
+  $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
+  $("#btnPause").toggle(state == "PLAYING");
+  $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
+  $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
 
-    if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
-      $("#highlight, #toolbar").show()
-      updateHighlighting(speech)
-    }
-    else {
-      $("#highlight, #toolbar").hide()
-    }
-  }))
+  if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
+    $("#highlight, #toolbar").show()
+    updateHighlighting(speech)
+  }
+  else {
+    $("#highlight, #toolbar").hide()
+  }
 }
 
 function updateHighlighting(speech) {
@@ -182,7 +177,7 @@ function updateHighlighting(speech) {
     elem.data("position", pos);
     elem.find(".active").removeClass("active");
     const child = elem.children().eq(pos.index)
-    const section = pos.word || pos.sentence || pos.paragraph
+    const section = pos.word
     if (section) {
       child.empty()
       const text = speech.texts[pos.index]

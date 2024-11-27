@@ -1,7 +1,5 @@
 
 (function() {
-  var audio
-
   registerMessageListener("offscreen", {
     play: play,
     pause: pause,
@@ -13,22 +11,43 @@
 
 
 
+  const current$ = new rxjs.BehaviorSubject(null)
 
-  async function play(url, options, startTime) {
-    audio = playAudioHere(url, options, startTime)
-    audio.endPromise
-      .then(() => sendToPlayer({method: "offscreenPlaybackEnded"}),
-        err => sendToPlayer({method: "offscreenPlaybackEnded", args: [errorToJson(err)]}))
-    await audio.startPromise
+  current$.pipe(
+    rxjs.switchMap(current => {
+      if (current) {
+        return playAudioHere(Promise.resolve(current.url), current.options, current.playbackState$).pipe(
+          rxjs.catchError(err => rxjs.of({type: "error", error: errorToJson(err)})),
+          rxjs.tap(event => {
+            sendToPlayer({method: "offscreenPlaybackEvent", args: [event]})
+              .catch(console.error)
+          })
+        )
+      } else {
+        return rxjs.EMPTY
+      }
+    })
+  ).subscribe()
+
+
+
+  function play(url, options) {
+    current$.next({
+      url,
+      options,
+      playbackState$: new rxjs.BehaviorSubject("resumed")
+    })
+    return true
   }
 
   function pause() {
-    if (audio) audio.pause()
+    current$.value.playbackState$.next("paused")
     return true
   }
 
   function resume() {
-    return audio.resume()
+    current$.value.playbackState$.next("resumed")
+    return true
   }
 
 
