@@ -1,7 +1,7 @@
 
 var activeDoc;
 var playbackError = null;
-var silenceLoop = new Audio("sound/silence.mp3");
+var silenceLoop = new Audio("sound/silence.opus");
 silenceLoop.loop = true;
 
 installContextMenus()

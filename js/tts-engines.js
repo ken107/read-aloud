@@ -1,5 +1,5 @@
 
-var browserTtsEngine = brapi.tts ? new BrowserTtsEngine() : (typeof speechSynthesis != 'undefined' ? new WebSpeechEngine() : new DummyTtsEngine());
+var browserTtsEngine = typeof speechSynthesis != 'undefined' ? new WebSpeechEngine() : new DummyTtsEngine();
 var remoteTtsEngine = new RemoteTtsEngine(config.serviceUrl);
 var googleTranslateTtsEngine = new GoogleTranslateTtsEngine();
 var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
@@ -34,41 +34,10 @@ interface Voice {
 }
 
 interface TtsEngine {
-  speak: function(text: string, opts: Options, onEvent: (e:Event) => void): void
-  stop: function(): void
-  pause: function(): void
-  resume: function(): void
-  isSpeaking: function(callback): void
+  speak: function(text: string, opts: Options, playbackState$: Observable<"paused"|"resumed">): Observable<TtsEvent>
   getVoices: function(): Voice[]
 }
 */
-
-function BrowserTtsEngine() {
-  this.speak = function(text, options, onEvent) {
-    brapi.tts.speak(text, {
-      voiceName: options.voice.voiceName,
-      lang: options.lang,
-      rate: options.rate,
-      pitch: options.pitch,
-      volume: options.volume,
-      requiredEventTypes: ["start", "end"],
-      desiredEventTypes: ["start", "end", "error"],
-      onEvent: onEvent
-    })
-  }
-  this.stop = brapi.tts.stop;
-  this.pause = brapi.tts.pause;
-  this.resume = brapi.tts.resume;
-  this.isSpeaking = brapi.tts.isSpeaking;
-  this.getVoices = function() {
-    return new Promise(function(fulfill) {
-      brapi.tts.getVoices(function(voices) {
-        fulfill(voices || []);
-      })
-    })
-  }
-}
-
 
 function WebSpeechEngine() {
   var utter;
@@ -83,21 +52,21 @@ function WebSpeechEngine() {
     utter.onstart = onEvent.bind(null, {type: 'start', charIndex: 0});
     utter.onend = onEvent.bind(null, {type: 'end', charIndex: text.length});
     utter.onerror = function(event) {
-      onEvent({type: 'error', errorMessage: event.error});
+      if (event.error == "canceled" || event.error == "interrupted") return;
+      onEvent({type: 'error', error: new Error(event.error)});
     };
+    speechSynthesis.cancel()
     speechSynthesis.speak(utter);
   }
   this.stop = function() {
     if (utter) utter.onend = null;
     speechSynthesis.cancel();
   }
-  if (!isFirefoxAndroid()) {
-    this.pause = function() {
-      speechSynthesis.pause();
-    }
-    this.resume = function() {
-      speechSynthesis.resume();
-    }
+  this.pause = function() {
+    speechSynthesis.pause();
+  }
+  this.resume = function() {
+    speechSynthesis.resume();
   }
   this.isSpeaking = function(callback) {
     callback(speechSynthesis.speaking);
@@ -129,41 +98,11 @@ function DummyTtsEngine() {
 }
 
 
-function TimeoutTtsEngine(baseEngine, timeoutMillis) {
-  var timer;
-  this.speak = function(text, options, onEvent) {
-    var started = false;
-    clearTimeout(timer);
-    timer = setTimeout(function() {
-      baseEngine.stop();
-      if (started) onEvent({type: "end", charIndex: text.length});
-      else onEvent({type: "error", errorMessage: "Timeout, TTS never started, try picking another voice?"});
-    },
-    timeoutMillis);
-    baseEngine.speak(text, options, function(event) {
-        if (event.type == "start") started = true;
-        if (event.type == "end" || event.type == "error") clearTimeout(timer);
-        onEvent(event);
-    })
-  }
-  this.stop = function() {
-    clearTimeout(timer);
-    baseEngine.stop();
-  }
-  this.isSpeaking = baseEngine.isSpeaking;
-}
-
-
 function RemoteTtsEngine(serviceUrl) {
   var manifest = brapi.runtime.getManifest();
-  var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
-  var audio = document.createElement("AUDIO");
-  var isSpeaking = false;
   var nextStartTime = 0;
-  var waitTimer;
   var authToken;
   var clientId;
-  var speakPromise;
   function ready(options) {
     return getAuthToken()
       .then(function(token) {authToken = token})
@@ -180,76 +119,27 @@ function RemoteTtsEngine(serviceUrl) {
         }
       })
   }
-  this.speak = function(utterance, options, onEvent) {
-    if (!options.volume) options.volume = 1;
-    if (!options.rate) options.rate = 1;
-    audio.pause();
-    if (!iOS) {
-      audio.volume = options.volume;
-      audio.defaultPlaybackRate = options.rate;
-    }
-    speakPromise = ready(options)
+  this.speak = function(utterance, options, playbackState$) {
+    const urlPromise = ready(options)
       .then(async function() {
-        const url = getAudioUrl(utterance, options.lang, options.voice)
-        const res = await fetch(url)
+        const audioUrl = getAudioUrl(utterance, options.lang, options.voice)
+        const res = await fetch(audioUrl)
         if (!res.ok) {
           const msg = await res.text().catch(err => "")
           throw new Error(msg || (res.status + " " + res.statusText))
         }
         const blob = await res.blob()
-        if (audio.src) URL.revokeObjectURL(audio.src)
-        audio.src = URL.createObjectURL(blob)
-        return new Promise(function(fulfill) {audio.oncanplay = fulfill});
+        return URL.createObjectURL(blob)
       })
-      .then(function() {
-        var waitTime = nextStartTime - Date.now();
-        if (waitTime > 0) return new Promise(function(f) {waitTimer = setTimeout(f, waitTime)});
+    return playAudio(urlPromise, {...options, startTime: nextStartTime}, playbackState$).pipe(
+      rxjs.tap(event => {
+        if (event.type == "end") nextStartTime = Date.now() + 650 / options.rate
       })
-      .then(function() {
-        isSpeaking = true;
-        return audio.play();
-      })
-      .catch(function(err) {
-        onEvent({
-          type: "error",
-          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
-        })
-      })
-    audio.onplay = onEvent.bind(null, {type: 'start', charIndex: 0});
-    audio.onended = function() {
-      onEvent({type: 'end', charIndex: utterance.length});
-      isSpeaking = false;
-    };
-    audio.onerror = function() {
-      var message = audio.error.message
-      if (/^Failed to (open|decode) media/.test(message)) message += " " + audio.src
-      onEvent({type: "error", errorMessage: message});
-      isSpeaking = false;
-    };
-    audio.load();
-  }
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  }
-  this.pause =
-  this.stop = function() {
-    speakPromise.then(function() {
-    clearTimeout(waitTimer);
-    audio.pause();
-    })
-  }
-  this.resume = function() {
-    audio.play();
+    )
   }
   this.prefetch = function(utterance, options) {
-    if (!iOS) {
-      fetch(getAudioUrl(utterance, options.lang, options.voice, true))
-        .catch(console.error)
-    }
-  }
-  this.setNextStartTime = function(time, options) {
-    if (!iOS)
-      nextStartTime = time || 0;
+    fetch(getAudioUrl(utterance, options.lang, options.voice, true))
+      .catch(console.error)
   }
   this.getVoices = function() {
     return voices;
@@ -391,56 +281,18 @@ function RemoteTtsEngine(serviceUrl) {
 
 
 function GoogleTranslateTtsEngine() {
-  var audio = document.createElement("AUDIO");
   var prefetchAudio;
-  var isSpeaking = false;
-  var speakPromise;
   this.ready = function() {
     return googleTranslateReady();
   };
-  this.speak = function(utterance, options, onEvent) {
-    if (!options.volume) options.volume = 1;
-    if (!options.rate) options.rate = 1;
-    audio.pause();
-    audio.volume = options.volume;
-    audio.defaultPlaybackRate = options.rate * 1.1;
-    audio.onplay = function() {
-      onEvent({type: 'start', charIndex: 0});
-      isSpeaking = true;
-    };
-    audio.onended = function() {
-      onEvent({type: 'end', charIndex: utterance.length});
-      isSpeaking = false;
-    };
-    audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
-      isSpeaking = false;
-    };
-    speakPromise = Promise.resolve()
+  this.speak = function(utterance, options, playbackState$) {
+    options.rateAdjust = 1.1
+    const urlPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.voice.lang);
       })
-      .then(function(url) {
-        audio.src = url;
-        return audio.play();
-      })
-      .catch(function(err) {
-        onEvent({
-          type: "error",
-          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
-        })
-      })
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    speakPromise.then(function() {audio.pause()});
-  };
-  this.resume = function() {
-    audio.play();
+    return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.voice.lang)
@@ -448,8 +300,6 @@ function GoogleTranslateTtsEngine() {
         prefetchAudio = [utterance, options, url];
       })
       .catch(console.error)
-  };
-  this.setNextStartTime = function() {
   };
   this.getVoices = function() {
     return voices;
@@ -530,54 +380,14 @@ function GoogleTranslateTtsEngine() {
 
 function AmazonPollyTtsEngine() {
   var pollyPromise;
-  var audio = document.createElement("AUDIO");
   var prefetchAudio;
-  var isSpeaking = false;
-  var speakPromise;
-  this.speak = function(utterance, options, onEvent) {
-    if (!options.volume) options.volume = 1;
-    if (!options.rate) options.rate = 1;
-    if (!options.pitch) options.pitch = 1;
-    audio.pause();
-    audio.volume = options.volume;
-    audio.defaultPlaybackRate = options.rate;
-    audio.onplay = function() {
-      onEvent({type: 'start', charIndex: 0});
-      isSpeaking = true;
-    };
-    audio.onended = function() {
-      onEvent({type: 'end', charIndex: utterance.length});
-      isSpeaking = false;
-    };
-    audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
-      isSpeaking = false;
-    };
-    speakPromise = Promise.resolve()
+  this.speak = function(utterance, options, playbackState$) {
+    const urlPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.lang, options.voice, options.pitch);
       })
-      .then(function(url) {
-        audio.src = url;
-        return audio.play();
-      })
-      .catch(function(err) {
-        onEvent({
-          type: "error",
-          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
-        })
-      })
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    speakPromise.then(function() {audio.pause()});
-  };
-  this.resume = function() {
-    audio.play();
+    return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.lang, options.voice, options.pitch)
@@ -585,8 +395,6 @@ function AmazonPollyTtsEngine() {
         prefetchAudio = [utterance, options, url];
       })
       .catch(console.error)
-  };
-  this.setNextStartTime = function() {
   };
   this.getVoices = function() {
     return getSettings(["pollyVoices"])
@@ -781,54 +589,14 @@ function AmazonPollyTtsEngine() {
 
 
 function GoogleWavenetTtsEngine() {
-  var audio = document.createElement("AUDIO");
   var prefetchAudio;
-  var isSpeaking = false;
-  var speakPromise;
-  this.speak = function(utterance, options, onEvent) {
-    if (!options.volume) options.volume = 1;
-    if (!options.rate) options.rate = 1;
-    if (!options.pitch) options.pitch = 1;
-    audio.pause();
-    audio.volume = options.volume;
-    audio.defaultPlaybackRate = options.rate;
-    audio.onplay = function() {
-      onEvent({type: 'start', charIndex: 0});
-      isSpeaking = true;
-    };
-    audio.onended = function() {
-      onEvent({type: 'end', charIndex: utterance.length});
-      isSpeaking = false;
-    };
-    audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
-      isSpeaking = false;
-    };
-    speakPromise = Promise.resolve()
+  this.speak = function(utterance, options, playbackState$) {
+    const urlPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.voice, options.pitch);
       })
-      .then(function(url) {
-        audio.src = url;
-        return audio.play();
-      })
-      .catch(function(err) {
-        onEvent({
-          type: "error",
-          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
-        })
-      })
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    speakPromise.then(function() {audio.pause()});
-  };
-  this.resume = function() {
-    audio.play();
+    return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.voice, options.pitch)
@@ -836,8 +604,6 @@ function GoogleWavenetTtsEngine() {
         prefetchAudio = [utterance, options, url];
       })
       .catch(console.error)
-  };
-  this.setNextStartTime = function() {
   };
   this.getVoices = function() {
     return getSettings(["wavenetVoices"])
@@ -1097,53 +863,23 @@ function GoogleWavenetTtsEngine() {
 
 
 function IbmWatsonTtsEngine() {
-  var audio = document.createElement("AUDIO");
-  var isSpeaking = false;
-  var speakPromise;
-  this.speak = function(utterance, options, onEvent) {
-    if (!options.volume) options.volume = 1;
-    if (!options.rate) options.rate = 1;
-    if (!options.pitch) options.pitch = 1;
-    audio.pause();
-    audio.volume = options.volume;
-    audio.defaultPlaybackRate = options.rate * 1.1;
-    audio.onplay = function() {
-      onEvent({type: 'start', charIndex: 0});
-      isSpeaking = true;
-    };
-    audio.onended = function() {
-      onEvent({type: 'end', charIndex: utterance.length});
-      isSpeaking = false;
-    };
-    audio.onerror = function() {
-      onEvent({type: "error", errorMessage: audio.error.message});
-      isSpeaking = false;
-    };
-    speakPromise = getAudioUrl(utterance, options.voice)
-      .then(function(url) {
-        audio.src = url;
-        return audio.play();
+  var prefetchAudio;
+  this.speak = function(utterance, options, playbackState$) {
+    const urlPromise = Promise.resolve()
+      .then(() => {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
+        else return getAudioUrl(utterance, options.voice)
       })
-      .catch(function(err) {
-        onEvent({
-          type: "error",
-          errorMessage: err.name == "NotAllowedError" ? JSON.stringify({code: "error_user_gesture_required"}) : err.message
-        })
-      })
+    return playAudio(urlPromise, options, playbackState$)
   };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    speakPromise.then(function() {audio.pause()});
-  };
-  this.resume = function() {
-    audio.play();
-  };
-  this.prefetch = function(utterance, options) {
-  };
-  this.setNextStartTime = function() {
+  this.prefetch = async function(utterance, options) {
+    try {
+      const url = await getAudioUrl(utterance, options.voice)
+      prefetchAudio = [utterance, options, url]
+    }
+    catch (err) {
+      console.error(err)
+    }
   };
   this.getVoices = function() {
     return getSettings(["watsonVoices", "ibmCreds"])
@@ -1207,38 +943,14 @@ function IbmWatsonTtsEngine() {
 function NvidiaRivaTtsEngine() {
   const RIVA_VOICE_PREFIX = "Nvidia-Riva "
   var prefetchAudio;
-  var isSpeaking = false;
-  var audio;
-  this.speak = function(utterance, options, onEvent) {
+  this.speak = function(utterance, options, playbackState$) {
     const urlPromise = Promise.resolve()
       .then(function() {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
         else return getAudioUrl(utterance, options.voice, options.pitch, options.rate);
       })
     // Rate supplied to player is always 1 because it is already represented in the generated audio
-    audio = playAudio(urlPromise, {...options, rate: 1})
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true;
-      })
-      .catch(function(err) {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    if (audio) audio.pause()
-  };
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, {...options, rate: 1}, playbackState$)
   };
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options.voice, options.pitch, options.rate)
@@ -1246,8 +958,6 @@ function NvidiaRivaTtsEngine() {
         prefetchAudio = [utterance, options, url];
       })
       .catch(console.error)
-  };
-  this.setNextStartTime = function() {
   };
   this.getVoices = function() {
     return getSettings(["rivaVoices", "rivaCreds"])
@@ -1364,7 +1074,7 @@ function PhoneTtsEngine() {
   }
   this.speak = function(text, options, onEvent) {
     if (!conn) {
-      onEvent({type: "error", errorMessage: JSON.stringify({code: "error_phone_not_connected"})})
+      onEvent({type: "error", error: new Error(JSON.stringify({code: "error_phone_not_connected"}))})
       return
     }
     sendRequest({
@@ -1383,12 +1093,12 @@ function PhoneTtsEngine() {
         sendRequest({method: "waitFinish", speechId}, 3*60*1000)
           .then(() => onEvent({type: "end", charIndex: text.length}),
             err => {
-              if (err.message != "interrupted") onEvent({type: "error", errorMessage: err.message})
+              if (err.message != "interrupted") onEvent({type: "error", error: err})
             })
           .finally(() => isSpeaking = false)
       })
       .catch(err => {
-        if (err.message != "canceled") onEvent({type: "error", errorMessage: err.message})
+        if (err.message != "canceled") onEvent({type: "error", error: err})
       })
   }
   this.stop = function() {
@@ -1414,8 +1124,7 @@ function PhoneTtsEngine() {
 
 function OpenaiTtsEngine() {
   const defaultApiUrl = "https://api.openai.com/v1"
-  var audio, prefetchAudio
-  var isSpeaking = false
+  var prefetchAudio
   this.test = async function(apiKey, url) {
     const res = await fetch((url || defaultApiUrl) + "/models", {
       headers: {"Authorization": "Bearer " + apiKey}
@@ -1425,35 +1134,13 @@ function OpenaiTtsEngine() {
       throw error
     }
   }
-  this.speak = function(utterance, options, onEvent) {
+  this.speak = function(utterance, options, playbackState$) {
     const urlPromise = Promise.resolve()
       .then(() => {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
         else return getAudioUrl(utterance, options.voice, options.pitch)
       })
-    audio = playAudio(urlPromise, options)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true
-      })
-      .catch(err => {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  }
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking)
-  }
-  this.pause =
-  this.stop = function() {
-    if (audio) audio.pause()
-  }
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, options, playbackState$)
   }
   this.prefetch = async function(utterance, options) {
     try {
@@ -1463,8 +1150,6 @@ function OpenaiTtsEngine() {
     catch (err) {
       console.error(err)
     }
-  }
-  this.setNextStartTime = function() {
   }
   this.getVoices = function() {
     return voices
@@ -1502,37 +1187,14 @@ function OpenaiTtsEngine() {
 
 
 function AzureTtsEngine() {
-  var isSpeaking = false;
-  var audio, prefetchAudio;
-  this.speak = function(utterance, options, onEvent) {
+  var prefetchAudio;
+  this.speak = function(utterance, options, playbackState$) {
     const urlPromise = Promise.resolve()
       .then(() => {
         if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
         else return getAudioUrl(utterance, options.lang, options.voice)
       })
-    audio = playAudio(urlPromise, options)
-    audio.startPromise
-      .then(() => {
-        onEvent({type: "start", charIndex: 0})
-        isSpeaking = true;
-      })
-      .catch(function(err) {
-        onEvent({type: "error", error: err})
-      })
-    audio.endPromise
-      .then(() => onEvent({type: "end", charIndex: utterance.length}),
-        err => onEvent({type: "error", error: err}))
-      .finally(() => isSpeaking = false)
-  };
-  this.isSpeaking = function(callback) {
-    callback(isSpeaking);
-  };
-  this.pause =
-  this.stop = function() {
-    if (audio) audio.pause()
-  };
-  this.resume = function() {
-    return audio.resume()
+    return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = async function(utterance, options) {
     try {
@@ -1542,8 +1204,6 @@ function AzureTtsEngine() {
     catch (err) {
       console.error(err)
     }
-  };
-  this.setNextStartTime = function() {
   };
   this.getVoices = async function() {
     try {

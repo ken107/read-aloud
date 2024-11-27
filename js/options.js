@@ -1,8 +1,13 @@
 
-Promise.all([getVoices(), getSettings(), domReady()])
+Promise.all([
+  getVoices(),
+  getSettings(),
+  brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
+  domReady()
+])
   .then(spread(initialize));
 
-function initialize(allVoices, settings) {
+function initialize(allVoices, settings, acceptLangs) {
   setI18nText();
   updateDependents(settings);
 
@@ -57,7 +62,7 @@ function initialize(allVoices, settings) {
 
 
   //voices
-  populateVoices(allVoices, settings);
+  populateVoices(allVoices, settings, acceptLangs);
   $("#voices")
     .val(settings.voiceName || "")
     .change(function() {
@@ -143,9 +148,15 @@ function initialize(allVoices, settings) {
 
 
 
-function populateVoices(allVoices, settings) {
+function populateVoices(allVoices, settings, acceptLangs) {
   //get voices filtered by selected languages
-  var selectedLangs = settings.languages && settings.languages.split(',');
+  var selectedLangs = immediate(() => {
+    if (settings.languages) return settings.languages.split(',')
+    if (settings.languages == '') return null
+    const accept = new Set(acceptLangs.map(x => x.split('-',1)[0]))
+    const langs = Object.keys(groupVoicesByLang(allVoices)).filter(x => accept.has(x))
+    return langs.length ? langs : null
+  })
   var voices = !selectedLangs ? allVoices : allVoices.filter(
     function(voice) {
       return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
@@ -309,15 +320,8 @@ function handleError(err) {
             })
           break;
         case "#auth-wavenet":
-          if (getBrowser() == "firefox") {
-            createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet");
-            window.close();
-            break;
-          }
-          requestPermissions(config.wavenetPerms)
-            .then(function(granted) {
-              if (granted) bgPageInvoke("authWavenet");
-            })
+          createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet");
+          window.close();
           break;
         case "#user-gesture":
           getBackgroundPage()

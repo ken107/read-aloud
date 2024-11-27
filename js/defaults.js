@@ -332,12 +332,24 @@ function getVoices(opts) {
     })
 }
 
-function isOfflineVoice(voice) {
-  return voice.localService == true
+function groupVoicesByLang(voices) {
+  return voices.groupBy(function(voice) {
+    if (voice.lang) {
+      var code = voice.lang.split('-',1)[0]
+      var alias = {
+        yue: "zh",
+        cmn: "zh",
+      }
+      return alias[code] || code
+    }
+    else {
+      return "<any>"
+    }
+  })
 }
 
-function isGoogleNative(voice) {
-  return /^Google\s/.test(voice.voiceName);
+function isOfflineVoice(voice) {
+  return voice.localService == true
 }
 
 function isChromeOSNative(voice) {
@@ -417,7 +429,6 @@ function getSpeechVoice(voiceName, lang) {
       voices = voices.filter(negate(isUseMyPhone))    //do not auto-select "Use My Phone"
       if (!voice && lang) {
         voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
-          || findVoiceByLang(voices.filter(isGoogleNative), lang)
           || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
           || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
           || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
@@ -890,26 +901,12 @@ function getUniqueClientId() {
   }
 }
 
-function getBrowser() {
-  if (/Opera|OPR\//.test(navigator.userAgent)) return 'opera';
-  if (/firefox/i.test(navigator.userAgent)) return 'firefox';
-  return 'chrome';
-}
-
-function isIOS() {
-  return !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
-}
-
-function isFirefoxAndroid() {
-  return getBrowser() == "firefox" && /android/i.test(navigator.userAgent)
+function isAndroid() {
+  return /android/i.test(navigator.userAgent)
 }
 
 function getHotkeySettingsUrl() {
-  switch (getBrowser()) {
-    case 'opera': return 'opera://settings/configureCommands';
-    case 'chrome': return 'chrome://extensions/configureCommands';
-    default: return brapi.runtime.getURL("shortcuts.html");
-  }
+  return brapi.runtime.getURL("shortcuts.html")
 }
 
 function StateMachine(states) {
@@ -1494,63 +1491,59 @@ function repeat(opt) {
   }
 }
 
-function playAudio(urlPromise, options, startTime) {
+function playAudio(urlPromise, options, playbackState$) {
   const audio = getSingletonAudio()
-  audio.pause()
-  if (!isIOS()) {
-    audio.defaultPlaybackRate = (options.rate || 1) * (options.rateAdjust || 1)
-    audio.volume = options.volume || 1
-  }
   const silenceTrack = getSilenceTrack()
-
-  const timeoutPromise = waitMillis(10*1000)
-    .then(() => Promise.reject(new Error("Timeout, TTS never started, try picking another voice?")))
-  const {abortPromise, abort} = makeAbortable()
-  const readyPromise = Promise.resolve(urlPromise)
-    .then(async url => {
-      const canPlayPromise = new Promise((fulfill, reject) => {
-        audio.oncanplay = fulfill
-        audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
+  return rxjs.from(urlPromise).pipe(
+    rxjs.exhaustMap(url =>
+      new rxjs.Observable(observer => {
+        audio.defaultPlaybackRate = (options.rate || 1) * (options.rateAdjust || 1)
+        audio.volume = options.volume || 1
+        audio.oncanplay = () => observer.next()
+        audio.onerror = () => observer.error(new Error(audio.error.message || audio.error.code))
+        audio.src = url
       })
-      audio.src = url
-      await canPlayPromise
-
-      if (startTime) {
-        const waitTime = startTime - Date.now()
-        if (waitTime > 0) await waitMillis(waitTime)
-      }
-    })
-
-  const startPromise = Promise.race([readyPromise, abortPromise, timeoutPromise])
-    .then(async () => {
-      await audio.play()
-        .catch(err => {
-          if (err instanceof DOMException) throw new Error(err.name || err.message)
-          else throw err
-        })
-      silenceTrack.start()
-    })
-
-  const endPromise = new Promise((fulfill, reject) => {
-    audio.onended = fulfill
-    audio.onerror = () => reject(new Error(audio.error.message || audio.error.code))
-  })
-  .finally(() => silenceTrack.stop())
-
-  return {
-    startPromise,
-    endPromise: endPromise,
-    pause() {
-      abort(new Error("Aborted"))
-      audio.pause()
-      silenceTrack.stop()
-    },
-    async resume() {
-      await audio.play()
-      silenceTrack.start()
-      return true
-    }
-  }
+    ),
+    rxjs.exhaustMap(() =>
+      options.startTime > Date.now() ? rxjs.timer(options.startTime - Date.now()) : rxjs.of(0)
+    ),
+    rxjs.exhaustMap(() =>
+      rxjs.merge(
+        rxjs.concat(
+          rxjs.of({type: "start"}),
+          new rxjs.Observable(observer => {
+            audio.onended = () => observer.next({type: "end"})
+            audio.onerror = () => observer.error(new Error(audio.error.message || audio.error.code))
+          })
+        ),
+        playbackState$.pipe(
+          rxjs.distinctUntilChanged(),
+          rxjs.switchMap(state =>
+            rxjs.iif(
+              () => state == "resumed",
+              rxjs.defer(async () => {
+                try {
+                  await audio.play()
+                  silenceTrack.start()
+                } catch (err) {
+                  if (err instanceof DOMException) throw new Error(err.name || err.message)
+                  else throw err
+                }
+              }).pipe(
+                rxjs.exhaustMap(() => rxjs.NEVER),
+                rxjs.finalize(() => {
+                  audio.pause()
+                  silenceTrack.stop()
+                })
+              ),
+              rxjs.EMPTY
+            )
+          )
+        )
+      )
+    ),
+    rxjs.takeWhile(event => event.type != "end", true)
+  )
 }
 
 function makeSilenceTrack() {
@@ -1592,13 +1585,5 @@ function makeSilenceTrack() {
     stop() {
       stateMachine.trigger("stop")
     }
-  }
-}
-
-function makeAbortable() {
-  let abort
-  return {
-    abortPromise: new Promise((f,r) => abort = r),
-    abort
   }
 }

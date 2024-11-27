@@ -97,15 +97,8 @@ function handleError(err) {
           brapi.tabs.create({url: "chrome://extensions/?id=" + brapi.runtime.id});
           break;
         case "#request-permissions":
-          if (getBrowser() == "firefox") {
-            createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(errInfo.perms)));
-            window.close();
-            break;
-          }
-          requestPermissions(errInfo.perms)
-            .then(function(granted) {
-              if (granted) $("#btnPlay").click();
-            })
+          createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(errInfo.perms)));
+          window.close();
           break;
         case "#sign-in":
           getBackgroundPage()
@@ -118,16 +111,9 @@ function handleError(err) {
             })
           break;
         case "#auth-wavenet":
-          if (getBrowser() == "firefox") {
-            createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet")
-              .then(function() {
-                window.close()
-              })
-            break;
-          }
-          requestPermissions(config.wavenetPerms)
-            .then(function(granted) {
-              if (granted) bgPageInvoke("authWavenet");
+          createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet")
+            .then(function() {
+              window.close()
             })
           break;
         case "#user-gesture":

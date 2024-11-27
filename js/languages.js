@@ -7,20 +7,7 @@ function initialize(voices, settings) {
   setI18nText();
 
   //create checkboxes
-  var langs = voices.groupBy(function(voice) {
-    if (voice.lang) {
-      var code = voice.lang.split('-',1)[0]
-      var alias = {
-        yue: "zh",
-        cmn: "zh",
-      }
-      return alias[code] || code
-    }
-    else {
-      return "<any>"
-    }
-  })
-  createCheckboxes(langs);
+  createCheckboxes(voices);
 
   //toggle check state
   var selectedLangs = settings.languages ? settings.languages.split(',') : [];
@@ -49,7 +36,8 @@ function initialize(voices, settings) {
   })
 }
 
-function createCheckboxes(voicesForLang) {
+function createCheckboxes(voices) {
+  const voicesForLang = groupVoicesByLang(voices)
   for (var item of langList) {
     if (!voicesForLang[item.code]) continue;
 
