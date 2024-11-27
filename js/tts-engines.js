@@ -1157,7 +1157,7 @@ function OpenaiTtsEngine() {
   async function getAudioUrl(text, voice, pitch) {
     assert(text && voice)
     const matches = voice.voiceName.match(/^ChatGPT .* \((\w+)\)$/)
-    const voiceName = matches[1]
+    const voiceName = matches[1] != "selfhosted" ? matches[1] : (await getSettings(["voiceCustom"])).voiceCustom;
     const {openaiCreds} = await getSettings(["openaiCreds"])
     const res = await fetch((openaiCreds.url || defaultApiUrl) + "/audio/speech", {
       method: "POST",
@@ -1182,6 +1182,7 @@ function OpenaiTtsEngine() {
     {"voiceName":"ChatGPT English (onyx)","lang":"en-US","gender":"male"},
     {"voiceName":"ChatGPT English (nova)","lang":"en-US","gender":"female"},
     {"voiceName":"ChatGPT English (shimmer)","lang":"en-US","gender":"female"},
+    {"voiceName":"ChatGPT English (selfhosted)","lang":"en-US","gender":"male"},
   ]
 }
 
