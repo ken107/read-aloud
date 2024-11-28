@@ -104,6 +104,21 @@ function initialize(allVoices, settings, acceptLangs) {
 
   //buttons
   var demoSpeech = {};
+  const statusTracker$ = new rxjs.Subject()
+  statusTracker$.pipe(
+    rxjs.switchMap(() =>
+      rxjs.interval(500).pipe(
+        rxjs.exhaustMap(() => Promise.all([
+          bgPageInvoke("getPlaybackState"),
+          bgPageInvoke("getPlaybackError")
+        ])),
+        rxjs.takeWhile(([state]) => state != "STOPPED", true)
+      )
+    )
+  ).subscribe(([state, err]) => {
+    if (err) handleError(err)
+  })
+
   $("#test-voice").click(function() {
     var voiceName = $("#voices").val();
     var voice = voiceName && findVoiceByName(allVoices, voiceName);
@@ -123,6 +138,9 @@ function initialize(allVoices, settings, acceptLangs) {
         return bgPageInvoke("stop")
           .then(function() {
             return bgPageInvoke("playText", [result.text, {lang: lang}]);
+          })
+          .then(() => {
+            statusTracker$.next()
           })
       })
       .catch(function(err) {

@@ -77,7 +77,11 @@ var handlers = {
       })
   },
   getPlaybackError: function() {
-    if (playbackError) return {message: playbackError.message}
+    try {
+      if (playbackError) return {message: playbackError.message}
+    } finally {
+      playbackError = null
+    }
   },
   startPairing: function() {
     return phoneTtsEngine.startPairing()

@@ -1,16 +1,6 @@
 
 var queryString = getQueryString()
 
-var playbackErrorProcessor = {
-  lastError: {},
-  next: function(err) {
-    if (err.message != this.lastError.message) {
-      this.lastError = err
-      handleError(err)
-    }
-  }
-}
-
 const piperInitializingSubject = new rxjs.Subject()
 piperInitializingSubject
   .pipe(
@@ -149,7 +139,7 @@ function updateButtons() {
   .then(spread(function(settings, state, speech, playbackErr) {
     const showHighlighting = settings.showHighlighting != null ? Number(settings.showHighlighting) : defaults.showHighlighting
 
-    if (playbackErr) playbackErrorProcessor.next(playbackErr)
+    if (playbackErr) handleError(playbackErr)
     piperInitializingSubject.next(!!speech?.isPiper && state == "LOADING")
 
     $("#imgLoading").toggle(state == "LOADING");
