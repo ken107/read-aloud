@@ -26,6 +26,9 @@
   "options_premium_voices_enabled": {
     "message": "Các giọng chất lượng cao đã được bật"
   },
+  "options_add_more_languages": {
+    "message": "Thêm nhiều ngôn ngữ hơn"
+  },
   "options_rate_label": {
     "message": "Tốc độ đọc"
   },

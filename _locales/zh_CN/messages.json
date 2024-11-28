@@ -26,6 +26,9 @@
   "options_premium_voices_enabled": {
     "message": "高级语音已启用"
   },
+  "options_add_more_languages": {
+    "message": "添加更多语言"
+  },
   "options_rate_label": {
     "message": "朗读速度"
   },

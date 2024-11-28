@@ -38,6 +38,9 @@
   "options_premium_voices_enabled": {
     "message": "Premium voices are enabled"
   },
+  "options_add_more_languages": {
+    "message": "Add More Languages"
+  },
   "options_enable_custom_voices": {
     "message": "Enable Custom Voices"
   },

@@ -29,6 +29,9 @@
   "options_premium_voices_enabled": {
     "message": "高級語音已啟用"
   },
+  "options_add_more_languages": {
+    "message": "增加更多語言"
+  },
   "options_enable_custom_voices": {
     "message": "啟用客製化語音"
   },

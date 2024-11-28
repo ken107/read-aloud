@@ -29,6 +29,9 @@
   "options_premium_voices_enabled": {
     "message": "Premium sesler etkinleştirildi"
   },
+  "options_add_more_languages": {
+    "message": "Daha fazla dil ekle"
+  },
   "options_enable_custom_voices": {
     "message": "Özel Sesleri Etkinleştirme"
   },

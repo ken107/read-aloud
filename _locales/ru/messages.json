@@ -29,6 +29,9 @@
   "options_premium_voices_enabled": {
     "message": "Премиум-голоса включены"
   },
+  "options_add_more_languages": {
+    "message": "Добавить больше языков"
+  },
   "options_enable_custom_voices": {
     "message": "Включить пользовательские голоса"
   },

@@ -1,16 +1,27 @@
 
 var langList = config.langList
 
-Promise.all([getVoices(), getSettings(["languages", "preferredVoices"]), domReady()]).then(spread(initialize));
+Promise.all([
+  getVoices(),
+  getSettings(["languages", "preferredVoices"]),
+  brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
+  domReady()
+]).then(spread(initialize));
 
-function initialize(voices, settings) {
+function initialize(voices, settings, acceptLangs) {
   setI18nText();
 
   //create checkboxes
   createCheckboxes(voices);
 
   //toggle check state
-  var selectedLangs = settings.languages ? settings.languages.split(',') : [];
+  var selectedLangs = immediate(() => {
+    if (settings.languages) return settings.languages.split(',')
+    if (settings.languages == '') return []
+    const accept = new Set(acceptLangs.map(x => x.split('-',1)[0]))
+    const langs = Object.keys(groupVoicesByLang(voices)).filter(x => accept.has(x))
+    return langs.length ? langs : []
+  })
   var isSelected = function() {
     return selectedLangs.includes($(this).data("lang"));
   };

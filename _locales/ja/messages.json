@@ -29,6 +29,9 @@
   "options_premium_voices_enabled": {
     "message": "プレミアム音声が有効"
   },
+  "options_add_more_languages": {
+    "message": "言語を追加する"
+  },
   "options_enable_custom_voices": {
     "message": "カスタム音声を有効にする"
   },
