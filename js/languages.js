@@ -12,14 +12,15 @@ function initialize(voices, settings, acceptLangs) {
   setI18nText();
 
   //create checkboxes
-  createCheckboxes(voices);
+  const voicesByLang = groupVoicesByLang(voices)
+  createCheckboxes(voicesByLang)
 
   //toggle check state
   var selectedLangs = immediate(() => {
     if (settings.languages) return settings.languages.split(',')
     if (settings.languages == '') return []
-    const accept = new Set(acceptLangs.map(x => x.split('-',1)[0]))
-    const langs = Object.keys(groupVoicesByLang(voices)).filter(x => accept.has(x))
+    const accept = new Set(acceptLangs.map(x => parseLang(x).code))
+    const langs = Object.keys(voicesByLang).filter(x => accept.has(x))
     return langs.length ? langs : []
   })
   var isSelected = function() {
@@ -47,8 +48,7 @@ function initialize(voices, settings, acceptLangs) {
   })
 }
 
-function createCheckboxes(voices) {
-  const voicesForLang = groupVoicesByLang(voices)
+function createCheckboxes(voicesForLang) {
   for (var item of langList) {
     if (!voicesForLang[item.code]) continue;
 

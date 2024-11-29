@@ -80,19 +80,8 @@ function WebSpeechEngine() {
       }
     }))
     .then(function(voices) {
-      return voices.map(voice => {
-        let lang = voice.lang
-        if (lang) {
-          const code = lang.split("-",1)[0]
-          if (config.iso639map[code])
-            lang = config.iso639map[code] + lang.slice(code.length)
-        }
-        return {
-          voiceName: voice.name,
-          lang,
-          localService: voice.localService
-        }
-      })
+      for (var i=0; i<voices.length; i++) voices[i].voiceName = voices[i].name;
+      return voices;
     })
     .catch(function(err) {
       console.error(err);

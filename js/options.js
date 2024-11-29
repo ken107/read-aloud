@@ -122,7 +122,7 @@ function initialize(allVoices, settings, acceptLangs) {
   $("#test-voice").click(function() {
     var voiceName = $("#voices").val();
     var voice = voiceName && findVoiceByName(allVoices, voiceName);
-    var lang = (voice && voice.lang || "en-US").split("-")[0];
+    var lang = (voice && voice.lang) ? parseLang(voice.lang).code : "en";
     $("#test-voice .spinner").show();
     $("#status").hide();
     Promise.resolve(demoSpeech[lang])
@@ -172,13 +172,13 @@ function populateVoices(allVoices, settings, acceptLangs) {
   var selectedLangs = immediate(() => {
     if (settings.languages) return settings.languages.split(',')
     if (settings.languages == '') return null
-    const accept = new Set(acceptLangs.map(x => x.split('-',1)[0]))
+    const accept = new Set(acceptLangs.map(x => parseLang(x).code))
     const langs = Object.keys(groupVoicesByLang(allVoices)).filter(x => accept.has(x))
     return langs.length ? langs : null
   })
   var voices = !selectedLangs ? allVoices : allVoices.filter(
     function(voice) {
-      return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
+      return !voice.lang || selectedLangs.includes(parseLang(voice.lang).code);
     });
 
   //group by standard/premium

@@ -233,6 +233,7 @@ var config = {
     chi: 'zh',
     chu: 'cu',
     chv: 'cv',
+    cmn: 'zh',
     cor: 'kw',
     cos: 'co',
     cre: 'cr',
@@ -384,6 +385,7 @@ var config = {
     xho: 'xh',
     yid: 'yi',
     yor: 'yo',
+    yue: 'zh',
     zha: 'za',
     zul: 'zu'
   },
@@ -518,19 +520,7 @@ function getVoices(opts) {
 }
 
 function groupVoicesByLang(voices) {
-  return voices.groupBy(function(voice) {
-    if (voice.lang) {
-      var code = voice.lang.split('-',1)[0]
-      var alias = {
-        yue: "zh",
-        cmn: "zh",
-      }
-      return alias[code] || code
-    }
-    else {
-      return "<any>"
-    }
-  })
+  return voices.groupBy(voice => voice.lang ? parseLang(voice.lang).code : "<any>")
 }
 
 function isOfflineVoice(voice) {
@@ -607,7 +597,7 @@ function getSpeechVoice(voiceName, lang) {
       if (voiceName) voice = findVoiceByName(voices, voiceName);
       //if no specific voice indicated, but a preferred voice was configured for the language
       if (!voice && lang) {
-        voiceName = preferredVoiceByLang[lang.split("-")[0]];
+        voiceName = preferredVoiceByLang[parseLang(lang).code];
         if (voiceName) voice = findVoiceByName(voices, voiceName);
       }
       //otherwise, auto-select
@@ -636,20 +626,20 @@ function findVoiceByLang(voices, lang) {
   voices.forEach(function(voice) {
     if (voice.lang) {
       var voiceLang = parseLang(voice.lang);
-      if (voiceLang.lang == speechLang.lang) {
+      if (voiceLang.code == speechLang.code) {
         //language matches
-        if (voiceLang.rest == speechLang.rest) {
+        if (voiceLang.dialect == speechLang.dialect) {
           //dialect matches, prefer female
           if (voice.gender == "female") match.first = match.first || voice;
           else match.second = match.second || voice;
         }
-        else if (!voiceLang.rest) {
+        else if (!voiceLang.dialect) {
           //voice specifies no dialect
           match.third = match.third || voice;
         }
         else {
           //dialect mismatch, prefer en-US (if english)
-          if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = match.fourth || voice;
+          if (voiceLang.code == 'en' && voiceLang.dialect == 'us') match.fourth = match.fourth || voice;
           else match.sixth = match.sixth || voice;
         }
       }
@@ -811,10 +801,10 @@ function waitMillis(millis) {
 }
 
 function parseLang(lang) {
-  var tokens = lang.toLowerCase().replace(/_/g, '-').split(/-/, 2);
+  const [code, dialect] = lang.toLowerCase().split(/[-_]/)
   return {
-    lang: tokens[0],
-    rest: tokens[1]
+    code: config.iso639map[code] || code,
+    dialect
   };
 }
 
