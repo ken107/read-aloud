@@ -26,6 +26,9 @@
   "options_voicegroup_additional": {
     "message": "额外的声音"
   },
+  "options_add_more_languages": {
+    "message": "添加更多语言"
+  },
   "options_enable_custom_voices": {
     "message": "启用自定义语音"
   },
