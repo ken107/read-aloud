@@ -34,7 +34,10 @@ function Speech(texts, options) {
     if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;
     if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
     if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
-    if (isRemoteVoice(options.voice)) return remoteTtsEngine;
+    if (isRemoteVoice(options.voice)) {
+      remoteTtsEngine.prepare(options)
+      return remoteTtsEngine;
+    }
     if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 3*1000, 16*1000);
     return browserTtsEngine;
   }
