@@ -99,37 +99,30 @@ function DummyTtsEngine() {
 
 
 function RemoteTtsEngine(serviceUrl) {
-  var manifest = brapi.runtime.getManifest();
+  var readyPromise;
+  var prefetchAudio;
   var nextStartTime = 0;
-  var authToken;
-  var clientId;
-  function ready(options) {
-    return getAuthToken()
-      .then(function(token) {authToken = token})
-      .then(getUniqueClientId)
-      .then(function(id) {clientId = id})
-      .then(function() {
-        if (isPremiumVoice(options.voice) && !options.voice.autoSelect) {
-          if (!authToken) throw new Error(JSON.stringify({code: "error_login_required"}));
-          return getAccountInfo(authToken)
-            .then(function(account) {
-              if (!account) throw new Error(JSON.stringify({code: "error_login_required"}));
-              if (!account.balance) throw new Error(JSON.stringify({code: "error_payment_required"}));
-            })
-        }
-      })
+  this.prepare = function(options) {
+    readyPromise = immediate(async () => {
+      const authToken = await getAuthToken()
+      if (isPremiumVoice(options.voice) && !options.voice.autoSelect) {
+        if (!authToken) throw new Error(JSON.stringify({code: "error_login_required"}));
+        const account = await getAccountInfo(authToken)
+        if (!account) throw new Error(JSON.stringify({code: "error_login_required"}));
+        if (!account.balance) throw new Error(JSON.stringify({code: "error_payment_required"}));
+      }
+      return {
+        authToken,
+        clientId: await getUniqueClientId(),
+        manifest: brapi.runtime.getManifest()
+      }
+    })
   }
   this.speak = function(utterance, options, playbackState$) {
-    const urlPromise = ready(options)
-      .then(async function() {
-        const audioUrl = getAudioUrl(utterance, options.lang, options.voice)
-        const res = await fetch(audioUrl)
-        if (!res.ok) {
-          const msg = await res.text().catch(err => "")
-          throw new Error(msg || (res.status + " " + res.statusText))
-        }
-        const blob = await res.blob()
-        return URL.createObjectURL(blob)
+    const urlPromise = Promise.resolve()
+      .then(() => {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
+        else return getAudioUrl(utterance, options)
       })
     return playAudio(urlPromise, {...options, startTime: nextStartTime}, playbackState$).pipe(
       rxjs.tap(event => {
@@ -138,15 +131,23 @@ function RemoteTtsEngine(serviceUrl) {
     )
   }
   this.prefetch = function(utterance, options) {
-    fetch(getAudioUrl(utterance, options.lang, options.voice, true))
+    getAudioUrl(utterance, options)
+      .then(url => prefetchAudio = [utterance, options, url])
       .catch(console.error)
   }
   this.getVoices = function() {
     return voices;
   }
-  function getAudioUrl(utterance, lang, voice, prefetch) {
-    assert(utterance && lang && voice);
-    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&v=" + manifest.version + "&pf=" + (prefetch ? 1 : 0) + "&q=" + encodeURIComponent(utterance);
+  async function getAudioUrl(utterance, {lang, voice}) {
+    const {authToken, clientId, manifest} = await readyPromise
+    const url = serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&v=" + manifest.version + "&q=" + encodeURIComponent(utterance)
+    const res = await fetch(url)
+    if (!res.ok) {
+      const msg = await res.text().catch(err => "")
+      throw new Error(msg || (res.status + " " + res.statusText))
+    }
+    const blob = await res.blob()
+    return URL.createObjectURL(blob)
   }
   var voices = [
       {"voice_name": "Amazon Australian English (Nicole)", "lang": "en-AU", "gender": "female", "event_types": ["start", "end", "error"]},
