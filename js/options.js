@@ -343,8 +343,8 @@ function handleError(err) {
             })
           break;
         case "#auth-wavenet":
-          createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet");
-          window.close();
+          createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet")
+            .then(() => window.close())
           break;
         case "#user-gesture":
           getBackgroundPage()

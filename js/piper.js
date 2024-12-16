@@ -33,7 +33,7 @@ engineIdle$.pipe(
 const ugaDialog = document.createElement("DIV")
 ugaDialog.innerHTML = `
   <div class="alert alert-warning text-center">
-    Read Aloud uses this tab to synthesize Piper voices. It will close automatically after ${inactivityTimeout} minutes of inactivity.
+    Read Aloud uses this tab to synthesize Piper voices. It will close automatically after 15 minutes of inactivity.
   </div>
 `
 document.body.prepend(ugaDialog)

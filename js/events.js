@@ -44,8 +44,8 @@ const piperHost = immediate(() => {
     },
     async ready({requestFocus}) {
       if (requestFocus) {
-        brapi.runtime.sendMessage({to: "popup", type: "notification", method: "close"})
-          .catch(console.error)
+        const windows = brapi.extension.getViews({type: "popup"})
+        for (const w of windows) w.close()
       }
       try {
         const tab = tabSubject.getValue()

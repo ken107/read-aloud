@@ -1722,7 +1722,7 @@ function playAudio(urlPromise, options, playbackState$) {
 }
 
 function makeSilenceTrack() {
-  const audio = new Audio(brapi.runtime.getURL("sound/silence.mp3"))
+  const audio = new Audio("sound/silence.opus")
   audio.loop = true
   const stateMachine = new StateMachine({
     IDLE: {

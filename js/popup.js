@@ -11,13 +11,6 @@ piperInitializingSubject
     else $("#status").hide()
   })
 
-const dispatcher = makeDispatcher("popup", {
-  close() {
-    window.close()
-  }
-})
-brapi.runtime.onMessage.addListener(dispatcher.dispatch)
-
 
 
 $(function() {
@@ -87,8 +80,8 @@ function handleError(err) {
           brapi.tabs.create({url: "chrome://extensions/?id=" + brapi.runtime.id});
           break;
         case "#request-permissions":
-          createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(errInfo.perms)));
-          window.close();
+          createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(errInfo.perms)))
+            .then(() => window.close())
           break;
         case "#sign-in":
           getBackgroundPage()
@@ -102,9 +95,7 @@ function handleError(err) {
           break;
         case "#auth-wavenet":
           createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet")
-            .then(function() {
-              window.close()
-            })
+            .then(() => window.close())
           break;
         case "#user-gesture":
           getBackgroundPage()
