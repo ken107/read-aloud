@@ -3,11 +3,28 @@
 document.querySelector("form").parentElement.style.display = "none"
 
 //auto close
-const userIdle$ = makeIdle$(60*1000)
 const engineIdle$ = new rxjs.BehaviorSubject(true)
 const inactivityTimeout = 15
-rxjs.combineLatest(userIdle$, engineIdle$, (a, b) => a && b).pipe(
-  rxjs.switchMap(isIdle => isIdle ? rxjs.timer(inactivityTimeout*60*1000) : rxjs.EMPTY)
+engineIdle$.pipe(
+  rxjs.distinctUntilChanged(),
+  rxjs.switchMap(isIdle =>
+    rxjs.iif(
+      () => !isIdle,
+      rxjs.EMPTY,
+      rxjs.merge(
+        rxjs.timer(inactivityTimeout*60*1000),
+        rxjs.merge(
+          rxjs.fromEvent(document, "mousemove"),
+          rxjs.fromEvent(document, "keydown"),
+          rxjs.fromEvent(document, "touchstart")
+        ).pipe(
+          rxjs.map(() => {throw "reset"})
+        )
+      ).pipe(
+        rxjs.retry({delay: 1000})
+      )
+    )
+  )
 ).subscribe(() => {
   window.close()
 })
@@ -136,22 +153,4 @@ function requestServiceWorker(method, args) {
     method,
     args
   })
-}
-
-
-//helpers
-
-function makeIdle$(seconds) {
-  return rxjs.merge(
-    rxjs.timer(seconds * 1000),
-    rxjs.merge(
-      rxjs.fromEvent(document, "mousemove"),
-      rxjs.fromEvent(document, "keydown"),
-      rxjs.fromEvent(document, "touchstart")
-    )
-  ).pipe(
-    rxjs.switchMap(event => !event ? rxjs.of(true) : rxjs.concat(rxjs.of(false), rxjs.throwError(() => "reset"))),
-    rxjs.retry({delay: 1000}),
-    rxjs.distinctUntilChanged()
-  )
 }
