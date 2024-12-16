@@ -1,38 +1,27 @@
 
+//hide the Test form
 document.querySelector("form").parentElement.style.display = "none"
 
-const ugaPromise = new Promise(fulfill => {
-  const ugaDialog = document.createElement("DIV")
-  ugaDialog.innerHTML = `
-    <div class="modal d-block" style="background-color: rgba(0,0,0,.5)" tabIndex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Permission Required</h5>
-            <button type="button" class="btn-close" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            This tab synthesizes Piper voices. Please allow audio playback and keep it open.
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary">Allow</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `
-  document.body.appendChild(ugaDialog)
-  document.addEventListener("click", () => {
-    document.body.removeChild(ugaDialog)
-    fulfill()
-  }, {
-    once: true
-  })
+//auto close
+const userIdle$ = makeIdle$(60*1000)
+const engineIdle$ = new rxjs.BehaviorSubject(true)
+const inactivityTimeout = 15
+rxjs.combineLatest(userIdle$, engineIdle$, (a, b) => a && b).pipe(
+  rxjs.switchMap(isIdle => isIdle ? rxjs.timer(inactivityTimeout*60*1000) : rxjs.EMPTY)
+).subscribe(() => {
+  window.close()
 })
 
-let isUserActivated = false
-ugaPromise.then(() => isUserActivated = true)
+//keep-it-open billboard
+const ugaDialog = document.createElement("DIV")
+ugaDialog.innerHTML = `
+  <div class="alert alert-warning text-center">
+    Read Aloud uses this tab to synthesize Piper voices. It will close automatically after ${inactivityTimeout} minutes of inactivity.
+  </div>
+`
+document.body.prepend(ugaDialog)
 
+//vars
 let piperService
 
 
@@ -46,6 +35,7 @@ const domDispatcher = makeDispatcher("piper-host", {
   },
   onStart(args) {
     notifyServiceWorker("onPiperEvent", [{type: "start", ...args}])
+    engineIdle$.next(false)
   },
   onSentence(args) {
     notifyServiceWorker("onPiperEvent", [{type: "sentence", ...args}])
@@ -55,9 +45,20 @@ const domDispatcher = makeDispatcher("piper-host", {
   },
   onEnd(args) {
     notifyServiceWorker("onPiperEvent", [{type: "end", ...args}])
+    engineIdle$.next(true)
   },
   onError(args) {
     notifyServiceWorker("onPiperEvent", [{type: "error", ...args}])
+    engineIdle$.next(true)
+  },
+  audioPlay(args) {
+    return requestServiceWorker("audioPlay", [args.src, args])
+  },
+  audioPause() {
+    return requestServiceWorker("audioPause")
+  },
+  audioResume() {
+    return requestServiceWorker("audioResume")
   }
 })
 
@@ -78,7 +79,7 @@ window.addEventListener("message", event => {
 
 const extDispatcher = makeDispatcher("piper-host", {
   areYouThere() {
-    return {requestFocus: !isUserActivated}
+    return true
   },
   speak(args) {
     if (!piperService) throw new Error("No service")
@@ -91,6 +92,7 @@ const extDispatcher = makeDispatcher("piper-host", {
     return piperService?.sendRequest("resume", args)
   },
   stop(args) {
+    engineIdle$.next(true)
     return piperService?.sendRequest("stop", args)
   },
   forward(args) {
@@ -124,4 +126,32 @@ function notifyServiceWorker(method, args) {
     method,
     args
   })
+}
+
+function requestServiceWorker(method, args) {
+  return browser.runtime.sendMessage({
+    to: "service-worker",
+    type: "request",
+    id: String(Math.random()),
+    method,
+    args
+  })
+}
+
+
+//helpers
+
+function makeIdle$(seconds) {
+  return rxjs.merge(
+    rxjs.timer(seconds * 1000),
+    rxjs.merge(
+      rxjs.fromEvent(document, "mousemove"),
+      rxjs.fromEvent(document, "keydown"),
+      rxjs.fromEvent(document, "touchstart")
+    )
+  ).pipe(
+    rxjs.switchMap(event => !event ? rxjs.of(true) : rxjs.concat(rxjs.of(false), rxjs.throwError(() => "reset"))),
+    rxjs.retry({delay: 1000}),
+    rxjs.distinctUntilChanged()
+  )
 }

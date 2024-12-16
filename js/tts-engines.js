@@ -1277,6 +1277,7 @@ function PiperTtsEngine() {
                 pitch: options.pitch,
                 rate: options.rate,
                 volume: options.volume,
+                externalPlayback: true,
               })
             case "pause":
               return piperHost.sendRequest("pause")

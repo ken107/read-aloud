@@ -4,6 +4,32 @@ var playbackError = null;
 var silenceLoop = new Audio("sound/silence.opus");
 silenceLoop.loop = true;
 
+const audioPlayer = immediate(() => {
+  let current
+  return {
+    play(src, opts) {
+      if (current) current.playback.unsubscribe()
+      const url = (src instanceof Blob) ? URL.createObjectURL(src) : src
+      const playbackState$ = new rxjs.BehaviorSubject("resumed")
+      return new Promise((fulfill, reject) => {
+        current = {
+          playbackState$,
+          playback: playAudio(Promise.resolve(url), opts, playbackState$).subscribe({
+            complete: fulfill,
+            error: reject
+          })
+        }
+      })
+    },
+    pause() {
+      if (current) current.playbackState$.next("paused")
+    },
+    resume() {
+      if (current) current.playbackState$.next("resumed")
+    }
+  }
+})
+
 installContextMenus()
 
 
@@ -17,12 +43,16 @@ const piperHost = immediate(() => {
       tabSubject.next(tab)
     },
     async ready({requestFocus}) {
+      if (requestFocus) {
+        brapi.runtime.sendMessage({to: "popup", type: "notification", method: "close"})
+          .catch(console.error)
+      }
       try {
         const tab = tabSubject.getValue()
         if (!tab) throw "Absent"
         const status = await this.sendRequest("areYouThere")
-        if (!status) throw "Absent"
-        if (requestFocus || status.requestFocus) {
+        if (status != true) throw "Absent"
+        if (requestFocus) {
           await Promise.all([
             chrome.windows.update(tab.windowId, {focused: true}),
             chrome.tabs.update(tab.id, {active: true})
@@ -30,10 +60,8 @@ const piperHost = immediate(() => {
         }
       }
       catch (err) {
-        brapi.runtime.sendMessage({to: "popup", type: "notification", method: "close"})
-          .catch(console.error)
         tabSubject.next(null)
-        await brapi.tabs.create({url: "https://piper.ttstool.com/", pinned: true})
+        await brapi.tabs.create({url: "https://piper.ttstool.com/", pinned: true, active: requestFocus})
         await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
       }
     },
@@ -97,7 +125,10 @@ var handlers = {
   },
   onPiperEvent(event) {
     piperHost.eventSubject.next(event)
-  }
+  },
+  audioPlay: audioPlayer.play,
+  audioPause: audioPlayer.pause,
+  audioResume: audioPlayer.resume,
 }
 
 brapi.runtime.onMessage.addListener(

@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "1.76.0",
+  "version": "1.77.0",
   "default_locale": "en",
   "browser_specific_settings": {
     "gecko": {
@@ -48,6 +48,7 @@
         "https://piper.ttstool.com/"
       ],
       "js": [
+        "js/rxjs.umd.min.js",
         "js/messaging.js",
         "js/piper.js"
       ]
