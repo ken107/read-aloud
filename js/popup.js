@@ -267,7 +267,7 @@ function onStop() {
 }
 
 function onSettings() {
-  location.href = "options.html?referer=" + encodeURIComponent(location.pathname + location.search);
+  location.href = "options.html?referer=popup.html";
 }
 
 function onForward() {

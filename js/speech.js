@@ -398,7 +398,7 @@ function Speech(texts, options) {
       return recombine(sentence.split(/([,;:]\s+|\s-+\s+|—\s*)/));
     }
     this.getWords = function(sentence) {
-      var tokens = sentence.trim().split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
+      var tokens = sentence.split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
       var result = [];
       for (var i=0; i<tokens.length; i+=2) {
         if (tokens[i]) result.push(tokens[i]);

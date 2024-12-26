@@ -217,7 +217,7 @@ function initialize(voices, settings, acceptLangs) {
     savePreferredVoices();
   })
   $("#back-button").click(function() {
-    location.href = "options.html";
+    history.back();
   })
 }
 

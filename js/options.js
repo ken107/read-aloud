@@ -18,7 +18,7 @@
       if (queryString.referer) {
         $("button.close").show()
           .click(function() {
-            location.href = queryString.referer;
+            history.back();
           })
       }
     })
