@@ -473,17 +473,6 @@ function AmazonPollyTtsEngine() {
         }
     }
   }
-  function escapeXml(unsafe) {
-    return unsafe.replace(/[<>&'"]/g, function (c) {
-      switch (c) {
-          case '<': return '&lt;';
-          case '>': return '&gt;';
-          case '&': return '&amp;';
-          case '\'': return '&apos;';
-          case '"': return '&quot;';
-      }
-    })
-  }
   var voices = [
     {"voiceName":"AmazonPolly Turkish (Filiz)","lang":"tr-TR","gender":"female"},
     {"voiceName":"AmazonPolly Swedish (Astrid)","lang":"sv-SE","gender":"female"},
