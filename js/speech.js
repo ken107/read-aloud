@@ -19,7 +19,10 @@ function Speech(texts, options) {
   this.canRewind = () => engine.rewind != null || playlist.canRewind()
   this.forward = () => cmd$.next({name: "forward", delay: 750})
   this.rewind = () => cmd$.next({name: "rewind", delay: 750})
-  this.seek = index => cmd$.next({name: "seek", index})
+  this.seek = index => {
+    cmd$.next({name: "seek", index})
+    playbackState$.next("resumed")
+  }
   this.gotoEnd = () => cmd$.next({name: "gotoEnd"})
 
   function pickEngine() {
