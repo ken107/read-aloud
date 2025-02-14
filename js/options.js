@@ -66,15 +66,15 @@
       $("#voices")
         .change(function() {
           var voiceName = $(this).val();
-          if (voiceName == "@custom") location.href = "custom-voices.html";
-          else if (voiceName == "@languages") location.href = "languages.html";
+          if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
+          else if (voiceName == "@languages") brapi.tabs.create({url: "languages.html"});
           else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
           else if (voiceName == "@piper") bgPageInvoke("managePiperVoices").catch(console.error)
           else updateSettings({voiceName})
         });
       $("#languages-edit-button")
         .click(function() {
-          location.href = "languages.html";
+          brapi.tabs.create({url: "languages.html"});
         })
     })
 
