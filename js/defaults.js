@@ -170,7 +170,6 @@ function getVoices(opts) {
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
         settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
         ibmWatsonTtsEngine.getVoices(),
-        nvidiaRivaTtsEngine.getVoices(),
         phoneTtsEngine.getVoices(),
         settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
         settings.azureCreds ? azureTtsEngine.getVoices() : [],
@@ -246,10 +245,6 @@ function isIbmWatson(voice) {
   return /^IBM-Watson /.test(voice.voiceName);
 }
 
-function isNvidiaRiva(voice) {
-  return /^Nvidia-Riva /.test(voice.voiceName);
-}
-
 function isOpenai(voice) {
   return /^ChatGPT /.test(voice.voiceName);
 }
@@ -267,7 +262,7 @@ function isUseMyPhone(voice) {
 }
 
 function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isNvidiaRiva(voice) || isOpenai(voice) || isAzure(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isOpenai(voice) || isAzure(voice);
 }
 
 function isPremiumVoice(voice) {

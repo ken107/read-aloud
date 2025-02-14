@@ -30,7 +30,6 @@ function Speech(texts, options) {
     if (isAzure(options.voice)) return azureTtsEngine;
     if (isOpenai(options.voice)) return openaiTtsEngine;
     if (isUseMyPhone(options.voice)) return phoneTtsEngine;
-    if (isNvidiaRiva(options.voice)) return nvidiaRivaTtsEngine;
     if (isGoogleTranslate(options.voice) && !/\s(Hebrew|Telugu)$/.test(options.voice.voiceName)) {
       return googleTranslateTtsEngine
     }
