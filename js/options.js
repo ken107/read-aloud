@@ -135,7 +135,7 @@
 
   rxjs.combineLatest([settingsObservable.of("voiceName"), rateObservable, domReadyPromise])
     .subscribe(([voiceName, rate]) => {
-      $("#rate-warning").toggle((!voiceName || !isRemoteVoice({voiceName})) && rate > 2)
+      $("#rate-warning").toggle((!voiceName || isNativeVoice({voiceName})) && rate > 2)
     })
 
 
@@ -389,8 +389,11 @@
   function voiceSorter(a, b) {
     function getWeight(voice) {
       var weight = 0
-      if (isRemoteVoice(voice)) weight += 10
+      //native voices should appear before non-natives in Standard group
+      if (!isNativeVoice(voice)) weight += 10
+      //ReadAloud Generic Voice should appear first among the non-natives
       if (!isReadAloudCloud(voice)) weight += 1
+      //UseMyPhone should appear last in Offline group
       if (isUseMyPhone(voice)) weight += 1
       return weight
     }
