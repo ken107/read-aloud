@@ -941,10 +941,18 @@ function PhoneTtsEngine() {
 
 
 function OpenaiTtsEngine() {
-  const defaultApiUrl = "https://api.openai.com/v1"
+  this.defaultEndpointUrl = "https://api.openai.com/v1"
+  this.defaultVoiceList = [
+    {voice: "alloy", lang: "en-US", model: "tts-1"},
+    {voice: "echo", lang: "en-US", model: "tts-1"},
+    {voice: "fable", lang: "en-US", model: "tts-1"},
+    {voice: "onyx", lang: "en-US", model: "tts-1"},
+    {voice: "nova", lang: "en-US", model: "tts-1"},
+    {voice: "shimmer", lang: "en-US", model: "tts-1"},
+  ]
   var prefetchAudio
-  this.test = async function(apiKey, url) {
-    const res = await fetch((url || defaultApiUrl) + "/models", {
+  this.test = async function({apiKey, url, voiceList}) {
+    const res = await fetch(url + "/models", {
       headers: {"Authorization": "Bearer " + apiKey}
     })
     if (!res.ok) {
@@ -969,38 +977,39 @@ function OpenaiTtsEngine() {
       console.error(err)
     }
   }
-  this.getVoices = function() {
-    return voices
+  this.getVoices = async function() {
+    const {openaiCreds} = await getSettings(["openaiCreds"])
+    return openaiCreds.voiceList.map(({voice, lang}) => ({
+      voiceName: "OpenAI " + voice,
+      lang
+    }))
   }
   async function getAudioUrl(text, voice, pitch) {
     assert(text && voice)
-    const matches = voice.voiceName.match(/^ChatGPT .* \((\w+)\)$/)
-    const voiceName = matches[1]
     const {openaiCreds} = await getSettings(["openaiCreds"])
-    const res = await fetch((openaiCreds.url || defaultApiUrl) + "/audio/speech", {
+    const voiceId = voice.voiceName.slice(7)
+    const voiceInfo = openaiCreds.voiceList.find(x => x.voice == voiceId)
+    assert(voiceInfo, "Voice not found " + voiceId)
+    const res = await fetch(openaiCreds.url + "/audio/speech", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + openaiCreds.apiKey
+        ...(
+          openaiCreds.apiKey ? {
+            "Authorization": "Bearer " + openaiCreds.apiKey
+          } : null
+        )
       },
       body: JSON.stringify({
-        model: "tts-1",
+        model: voiceInfo.model,
         input: text,
-        voice: voiceName,
-        response_format: "opus",
+        voice: voiceInfo.voice,
+        response_format: "mp3",
       })
     })
     if (!res.ok) throw await res.json().then(x => x.error)
     return URL.createObjectURL(await res.blob())
   }
-  const voices = [
-    {"voiceName":"ChatGPT English (alloy)","lang":"en-US","gender":"female"},
-    {"voiceName":"ChatGPT English (echo)","lang":"en-US","gender":"male"},
-    {"voiceName":"ChatGPT English (fable)","lang":"en-US","gender":"female"},
-    {"voiceName":"ChatGPT English (onyx)","lang":"en-US","gender":"male"},
-    {"voiceName":"ChatGPT English (nova)","lang":"en-US","gender":"female"},
-    {"voiceName":"ChatGPT English (shimmer)","lang":"en-US","gender":"female"},
-  ]
 }
 
 

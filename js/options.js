@@ -265,26 +265,6 @@
 
 
 
-
-
-
-  function makeSettingsObservable() {
-    const changes = new rxjs.Observable(observer => brapi.storage.local.onChanged.addListener(changes => observer.next(changes)))
-      .pipe(rxjs.share())
-    return {
-      changes,
-      of(name) {
-        return rxjs.from(brapi.storage.local.get([name]))
-          .pipe(
-            rxjs.map(settings => settings[name]),
-            rxjs.concatWith(changes.pipe(rxjs.filter(settings => name in settings), rxjs.map(settings => settings[name].newValue))),
-          )
-      }
-    }
-  }
-
-
-
   function populateVoices(allVoices, settings, acceptLangs) {
     $("#voices").empty()
     $("<option>")

@@ -150,6 +150,21 @@ function clearState(key) {
   return brapi.storage.local.remove(key)
 }
 
+function makeSettingsObservable() {
+  const changes = new rxjs.Observable(observer => brapi.storage.local.onChanged.addListener(changes => observer.next(changes)))
+    .pipe(rxjs.share())
+  return {
+    changes,
+    of(name) {
+      return rxjs.from(brapi.storage.local.get([name]))
+        .pipe(
+          rxjs.map(settings => settings[name]),
+          rxjs.concatWith(changes.pipe(rxjs.filter(settings => name in settings), rxjs.map(settings => settings[name].newValue))),
+        )
+    }
+  }
+}
+
 
 /**
  * VOICES
@@ -246,7 +261,7 @@ function isIbmWatson(voice) {
 }
 
 function isOpenai(voice) {
-  return /^ChatGPT /.test(voice.voiceName);
+  return /^OpenAI /.test(voice.voiceName);
 }
 
 function isAzure(voice) {
