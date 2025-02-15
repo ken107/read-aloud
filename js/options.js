@@ -288,7 +288,9 @@
     })
     var voices = !selectedLangs ? allVoices : allVoices.filter(
       function(voice) {
-        return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0]);
+        return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0])
+          || isPiperVoice(voice)
+          || isOpenai(voice)
       });
 
     //group by standard/premium
