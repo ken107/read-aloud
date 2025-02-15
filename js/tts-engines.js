@@ -612,7 +612,7 @@ function GoogleWavenetTtsEngine() {
   }
   function getAudioUrl(text, voice, pitch) {
     assert(text && voice);
-    var matches = voice.voiceName.match(/^Google(\w+) .* \((\w+)\)$/);
+    var matches = voice.voiceName.match(/^Google(\S+) .* \((\w+)\)$/);
     var voiceName = voice.lang + "-" + matches[1] + "-" + matches[2][0];
     var endpoint = matches[1] == "Neural2" ? "us-central1-texttospeech.googleapis.com" : "texttospeech.googleapis.com";
     return getSettings(["gcpCreds", "gcpToken"])

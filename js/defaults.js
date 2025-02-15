@@ -229,7 +229,7 @@ function isAmazonPolly(voice) {
 }
 
 function isGoogleWavenet(voice) {
-  return /^Google(Standard|Wavenet|Neural2|Studio) /.test(voice.voiceName);
+  return /^Google(Standard|Wavenet|Neural2|Studio|Chirp-HD|News|Casual|Polyglot) /.test(voice.voiceName);
 }
 
 function isGoogleStudio(voice) {

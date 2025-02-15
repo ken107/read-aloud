@@ -91,8 +91,14 @@
   rxjs.combineLatest([settingsObservable.of("voiceName"), voicesPopulatedObservable])
     .subscribe(([voiceName]) => {
       $("#voices").val(voiceName || "")
-      $("#voice-info").toggle(!!voiceName && isGoogleWavenet({voiceName}))
     })
+
+  rxjs.combineLatest(
+    settingsObservable.of("voiceName"),
+    settingsObservable.of("gcpCreds")
+  ).subscribe(([voiceName, gcpCreds]) => {
+    $("#voice-info").toggle(!!voiceName && isGoogleWavenet({voiceName}) && !gcpCreds)
+  })
 
 
 
