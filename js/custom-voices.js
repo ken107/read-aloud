@@ -230,12 +230,12 @@ $(function() {
     editMode$.next(false)
   })
   $(".openai .btn-save").click(async () => {
-    const openaiCreds = {
-      url: $(".openai .txt-endpoint-url").val(),
-      apiKey: $(".openai .txt-api-key").val(),
-      voiceList: JSON.parse($(".openai .txt-voice-list").val())
-    }
     try {
+      const openaiCreds = {
+        url: $(".openai .txt-endpoint-url").val(),
+        apiKey: $(".openai .txt-api-key").val(),
+        voiceList: JSON.parse($(".openai .txt-voice-list").val())
+      }
       status$.next({type: "PROGRESS"})
       await openaiTtsEngine.test(openaiCreds)
       await updateSettings({openaiCreds})

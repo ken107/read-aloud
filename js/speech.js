@@ -36,7 +36,7 @@ function Speech(texts, options) {
     if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;
     if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
     if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
-    if (isPremiumVoice(options.voice)) {
+    if (isPremiumVoice(options.voice) || isReadAloudCloud(options.voice)) {
       premiumTtsEngine.prepare(options)
       return premiumTtsEngine;
     }
