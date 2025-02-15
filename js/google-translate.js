@@ -118,7 +118,7 @@
 
 
     window.googleTranslateReady = async function() {
-        const access = await getAccess()
+        const access = getAccess()
         if (access.isDenied()) {
             access.renewDenial()
             throw new Error("Service unavailable")
@@ -127,7 +127,7 @@
     }
 
     window.googleTranslateSynthesizeSpeech = async function(text, lang) {
-        const access = await getAccess()
+        const access = getAccess()
         if (access.isDenied()) throw new Error("Server returns 429")
         access.use()
 
@@ -136,29 +136,37 @@
         return "data:audio/mpeg;base64," + payload[0];
     }
 
-    async function getAccess() {
+    function getAccess() {
         const config = {
             continuousUseInterval: 60*60*1000,
             voluntaryGap: 5*60*1000,
             involuntaryGap: 15*60*1000
         }
-        const state = await getState("gtAccess") || {lastUsed: 0, denyUntil: 0}
-        const save = () => setState("gtAccess", state).catch(console.error)
+        const state = loadState() || {lastUsed: 0, denyUntil: 0}
         return {
             isDenied() {
                 return state.denyUntil > Date.now()
             },
             renewDenial() {
                 state.denyUntil = Date.now() + config.involuntaryGap
-                save()
+                saveState(state)
             },
             use() {
                 const now = Date.now()
                 if (now - state.lastUsed > config.voluntaryGap) state.intervalBegin = now
                 else if (now - state.intervalBegin > config.continuousUseInterval) state.denyUntil = now + config.involuntaryGap
                 state.lastUsed = now
-                save()
+                saveState(state)
             }
         }
+    }
+
+    function loadState() {
+        const item = localStorage.getItem("gtAccess")
+        return item ? JSON.parse(item) : null
+    }
+
+    function saveState(state) {
+        localStorage.setItem("gtAccess", JSON.stringify(state))
     }
 })();
