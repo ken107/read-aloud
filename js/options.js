@@ -95,7 +95,8 @@
 
   rxjs.combineLatest(
     settingsObservable.of("voiceName"),
-    settingsObservable.of("gcpCreds")
+    settingsObservable.of("gcpCreds"),
+    domReadyPromise
   ).subscribe(([voiceName, gcpCreds]) => {
     $("#voice-info").toggle(!!voiceName && isGoogleWavenet({voiceName}) && !gcpCreds)
   })
