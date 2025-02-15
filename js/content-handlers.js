@@ -66,7 +66,7 @@ var contentHandlers = [
         permissions: ["webNavigation"],
         origins: ["https://books.googleusercontent.com/"]
       }
-      return hasPermissions(perms)
+      return brapi.permissions.contains(perms)
         .then(function(has) {
           if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
         })
@@ -96,7 +96,7 @@ var contentHandlers = [
         permissions: ["webNavigation"],
         origins: this.targetOrigins
       }
-      return hasPermissions(perms)
+      return brapi.permissions.contains(perms)
         .then(function(has) {
           if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
         })
@@ -118,7 +118,7 @@ var contentHandlers = [
         permissions: ["webNavigation"],
         origins: ["https://ereader-web-viewer.chegg.com/"]
       }
-      return hasPermissions(perms)
+      return brapi.permissions.contains(perms)
         .then(function(has) {
           if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
         })
@@ -143,7 +143,7 @@ var contentHandlers = [
         permissions: ["webNavigation"],
         origins: ["https://jigsaw.vitalsource.com/", "https://jigsaw.chegg.com/"]
       }
-      return hasPermissions(perms)
+      return brapi.permissions.contains(perms)
         .then(function(has) {
           if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
         })
@@ -168,7 +168,7 @@ var contentHandlers = [
         permissions: ["webNavigation"],
         origins: ["https://luoa-content.s3.amazonaws.com/"]
       }
-      return hasPermissions(perms)
+      return brapi.permissions.contains(perms)
         .then(function(has) {
           if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
         })
@@ -230,7 +230,7 @@ var contentHandlers = [
         permissions: ["webNavigation"],
         origins: ["https://*.read.libbyapp.com/"]
       }
-      return hasPermissions(perms)
+      return brapi.permissions.contains(perms)
         .then(function(has) {
           if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
         })

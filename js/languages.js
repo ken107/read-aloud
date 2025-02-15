@@ -180,9 +180,7 @@ Promise.all([
   getSettings(["languages", "preferredVoices"]),
   brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
   domReady()
-]).then(spread(initialize));
-
-function initialize(voices, settings, acceptLangs) {
+]).then(([voices, settings, acceptLangs]) => {
   setI18nText();
 
   //create checkboxes
@@ -216,7 +214,7 @@ function initialize(voices, settings, acceptLangs) {
   $(".voice-list").change(function() {
     savePreferredVoices();
   })
-}
+})
 
 function createCheckboxes(voices) {
   const voicesForLang = groupVoicesByLang(voices)

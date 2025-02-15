@@ -1,8 +1,5 @@
 
-Promise.all([getSettings(), domReady()])
-  .then(spread(initialize));
-
-function initialize(settings) {
+Promise.all([getSettings(), domReady()]).then(([settings]) => {
   $("button.close")
     .show()
     .click(() => history.back())
@@ -13,4 +10,4 @@ function initialize(settings) {
       updateSettings({fixBtSilenceGap: this.checked})
         .catch(console.error)
     })
-}
+})

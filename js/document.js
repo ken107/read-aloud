@@ -27,8 +27,8 @@ function TabSource() {
   var waiting = true;
   var sendToSource;
 
-  this.ready = getState("sourceUri")
-    .then(uri => {
+  this.ready = brapi.storage.local.get(["sourceUri"])
+    .then(({sourceUri: uri}) => {
       if (uri.startsWith("contentscript:")) {
         const tabId = Number(uri.substr(14))
         sendToSource = sendToContentScript.bind(null, tabId)
@@ -80,7 +80,7 @@ function TabSource() {
     message.dest = "contentScript"
     const result = await brapi.tabs.sendMessage(tabId, message)
       .catch(err => {
-        clearState("contentScriptTabId")
+        brapi.storage.local.remove("contentScriptTabId")
         if (/^(A listener indicated|Could not establish)/.test(err.message)) throw new Error(err.message + " " + message.method)
         throw err
       })

@@ -85,7 +85,7 @@ function handleError(err) {
           brapi.tabs.create({url: "chrome://extensions/?id=" + brapi.runtime.id});
           break;
         case "#request-permissions":
-          requestPermissions(errInfo.perms)
+          brapi.permissions.request(errInfo.perms)
             .then(function(granted) {
               if (granted) {
                 if (errInfo.reload) return reloadAndPlay()
@@ -103,7 +103,7 @@ function handleError(err) {
             })
           break;
         case "#auth-wavenet":
-          requestPermissions(config.wavenetPerms)
+          brapi.permissions.request(config.wavenetPerms)
             .then(function(granted) {
               if (granted) bgPageInvoke("authWavenet");
             })

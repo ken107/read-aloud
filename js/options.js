@@ -405,7 +405,7 @@
               })
             break;
           case "#auth-wavenet":
-            requestPermissions(config.wavenetPerms)
+            brapi.permissions.request(config.wavenetPerms)
               .then(function(granted) {
                 if (granted) bgPageInvoke("authWavenet");
               })

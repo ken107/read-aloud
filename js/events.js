@@ -193,12 +193,12 @@ async function playTab(tabId) {
     const handler = contentHandlers.find(h => h.match(tab.url || "", tab.title))
     if (handler.validate) await handler.validate(tab)
     if (handler.getSourceUri) {
-      await setState("sourceUri", handler.getSourceUri(tab))
+      await brapi.storage.local.set({"sourceUri": handler.getSourceUri(tab)})
     }
     else {
       const frameId = handler.getFrameId && await getAllFrames(tab.id).then(frames => handler.getFrameId(frames))
       if (!await contentScriptAlreadyInjected(tab, frameId)) await injectContentScript(tab, frameId, handler.extraScripts)
-      await setState("sourceUri", "contentscript:" + tab.id)
+      await brapi.storage.local.set({"sourceUri": "contentscript:" + tab.id})
     }
   }
   finally {

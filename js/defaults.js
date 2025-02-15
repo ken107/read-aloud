@@ -130,26 +130,6 @@ async function updateSetting(name, value) {
   await brapi.storage.local.set(items)
 }
 
-function getState(key) {
-  return new Promise(function(fulfill) {
-    brapi.storage.local.get(key, function(items) {
-      fulfill(items[key]);
-    });
-  });
-}
-
-function setState(key, value) {
-  var items = {};
-  items[key] = value;
-  return new Promise(function(fulfill) {
-    brapi.storage.local.set(items, fulfill);
-  });
-}
-
-function clearState(key) {
-  return brapi.storage.local.remove(key)
-}
-
 function makeSettingsObservable() {
   const changes = new rxjs.Observable(observer => brapi.storage.local.onChanged.addListener(changes => observer.next(changes)))
     .pipe(rxjs.share())
@@ -435,24 +415,11 @@ function updateWindow(windowId, details) {
   })
 }
 
-function spread(f, self) {
-  return function(args) {
-    return f.apply(self, args);
-  };
-}
-
 function extraAction(action) {
   return function(data) {
     return Promise.resolve(action(data))
       .then(function() {return data})
   }
-}
-
-function callMethod(name) {
-  var args = Array.prototype.slice.call(arguments, 1);
-  return function(obj) {
-    return obj[name].apply(obj, args);
-  };
 }
 
 function waitMillis(millis) {
@@ -638,24 +605,6 @@ function StateMachine(states) {
   this.getState = function() {
     return currentStateName;
   }
-}
-
-function requestPermissions(perms) {
-  return new Promise(function(fulfill) {
-    brapi.permissions.request(perms, fulfill);
-  })
-}
-
-function hasPermissions(perms) {
-  return new Promise(function(fulfill) {
-    brapi.permissions.contains(perms, fulfill);
-  })
-}
-
-function removePermissions(perms) {
-  return new Promise(function(fulfill) {
-    brapi.permissions.remove(perms, fulfill);
-  })
 }
 
 function getAuthToken(opts) {

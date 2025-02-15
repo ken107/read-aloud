@@ -141,7 +141,7 @@ function ibmSave() {
 }
 
 function testIbm(apiKey, url) {
-  return requestPermissions({origins: [url + "/*"]})
+  return brapi.permissions.request({origins: [url + "/*"]})
     .then(function(granted) {
       if (!granted) throw new Error("Permission not granted");
     })
