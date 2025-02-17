@@ -274,21 +274,19 @@ function isPremiumVoice(voice) {
 }
 
 async function getSpeechVoice(voiceName, lang) {
-  let [voices, preferredVoiceByLang, googleTranslateReady] = await Promise.all([
-    rxjs.firstValueFrom(voices$),
-    getSetting("preferredVoices"),
-    googleTranslateTtsEngine.ready().then(() => true, err => false)
-  ])
+  let voices = await rxjs.firstValueFrom(voices$)
   var voice;
   //if a specific voice is indicated
   if (voiceName) voice = findVoiceByName(voices, voiceName);
   //if no specific voice indicated, but a preferred voice was configured for the language
-  if (!voice && lang && preferredVoiceByLang) {
+  if (!voice && lang) {
+    const preferredVoiceByLang = (await getSetting("preferredVoices")) || {}
     voiceName = preferredVoiceByLang[lang.split("-")[0]];
     if (voiceName) voice = findVoiceByName(voices, voiceName);
   }
   //otherwise, auto-select in order: offline, native, free, any
   if (!voice && lang) {
+    const googleTranslateReady = await googleTranslateTtsEngine.ready()
     voices = voices.filter(voice => !isUseMyPhone(voice) && (googleTranslateReady || !isGoogleTranslate(voice)))
     voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
       || findVoiceByLang(voices.filter(isGoogleNative), lang)

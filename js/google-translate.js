@@ -39,6 +39,7 @@
         return Promise.resolve(config.get("wiz"))
             .then(function(wiz) {
                 if (wiz && (wiz.timestamp + opts.tokensTTL * 1000) > Date.now()) return wiz;
+                console.debug("Fetching wiz from", url)
                 return fetchWizGlobalData(url)
                     .then(function(wiz) {
                         wiz.timestamp = Date.now();
@@ -117,13 +118,31 @@
     }
 
 
+    const isAvail$ = rxjs.defer(() =>
+        batchExecute("jQ1olc", [], {validateOnly: true})
+            .then(
+                () => {
+                    console.info("GoogleTranslate available")
+                    return true
+                },
+                err => {
+                    console.error("GoogleTranslate unavailable", err)
+                    return false
+                }
+            )
+    ).pipe(
+        rxjs.startWith(true),
+        rxjs.shareReplay(1)
+    )
+
     window.googleTranslateReady = async function() {
         const access = getAccess()
         if (access.isDenied()) {
             access.renewDenial()
-            throw new Error("Service unavailable")
+            return false
         }
-        return batchExecute("jQ1olc", [], {validateOnly: true});
+
+        return rxjs.firstValueFrom(isAvail$)
     }
 
     window.googleTranslateSynthesizeSpeech = async function(text, lang) {
