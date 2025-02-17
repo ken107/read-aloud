@@ -175,13 +175,18 @@ var langList = [
   {code: "zu", name: "isiZulu"},
 ]
 
-Promise.all([
-  getVoices(),
-  getSettings(["languages", "preferredVoices"]),
-  brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
+domReady().then(() => {
+  setI18nText()
+})
+
+rxjs.combineLatest(
+  voices$,
   domReady()
-]).then(([voices, settings, acceptLangs]) => {
-  setI18nText();
+).subscribe(async ([voices]) => {
+  const [settings, acceptLangs] = await Promise.all([
+    getSettings(["languages", "preferredVoices"]),
+    brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
+  ])
 
   //create checkboxes
   createCheckboxes(voices);
@@ -217,6 +222,8 @@ Promise.all([
 })
 
 function createCheckboxes(voices) {
+  $("#lang-list").empty()
+
   const voicesForLang = groupVoicesByLang(voices)
   for (var item of langList) {
     if (!voicesForLang[item.code]) continue;

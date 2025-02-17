@@ -1,9 +1,7 @@
 
 (function() {
   const queryString = getQueryString()
-  const settingsObservable = makeSettingsObservable()
   const domReadyPromise = domReady()
-  const voicesPromise = getVoices()
 
 
   //i18n
@@ -43,7 +41,9 @@
     })
 
   rxjs.combineLatest([
-      settingsObservable.of("authToken").pipe(rxjs.switchMap(token => token ? getAccountInfo(token) : Promise.resolve(null))),
+      observeSetting("authToken").pipe(
+        rxjs.switchMap(token => token ? getAccountInfo(token) : Promise.resolve(null))
+      ),
       domReadyPromise
     ])
     .subscribe(([account]) => showAccountInfo(account))
@@ -79,8 +79,8 @@
     })
 
   const voicesPopulatedObservable = rxjs.combineLatest([
-    voicesPromise,
-    settingsObservable.of("languages"),
+    voices$,
+    observeSetting("languages"),
     brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
     domReadyPromise
   ]).pipe(
@@ -88,14 +88,14 @@
       rxjs.share()
     )
 
-  rxjs.combineLatest([settingsObservable.of("voiceName"), voicesPopulatedObservable])
+  rxjs.combineLatest([observeSetting("voiceName"), voicesPopulatedObservable])
     .subscribe(([voiceName]) => {
       $("#voices").val(voiceName || "")
     })
 
   rxjs.combineLatest(
-    settingsObservable.of("voiceName"),
-    settingsObservable.of("gcpCreds"),
+    observeSetting("voiceName"),
+    observeSetting("gcpCreds"),
     domReadyPromise
   ).subscribe(([voiceName, gcpCreds]) => {
     $("#voice-info").toggle(!!voiceName && isGoogleWavenet({voiceName}) && !gcpCreds)
@@ -128,9 +128,9 @@
       return slider
     })
 
-  const rateObservable = settingsObservable.of("voiceName")
+  const rateObservable = observeSetting("voiceName")
     .pipe(
-      rxjs.switchMap(voiceName => settingsObservable.of("rate" + (voiceName || ""))),
+      rxjs.switchMap(voiceName => observeSetting("rate" + (voiceName || ""))),
       rxjs.share()
     )
 
@@ -140,7 +140,7 @@
       $("#rate-input").val(rate || defaults.rate)
     })
 
-  rxjs.combineLatest([settingsObservable.of("voiceName"), rateObservable, domReadyPromise])
+  rxjs.combineLatest([observeSetting("voiceName"), rateObservable, domReadyPromise])
     .subscribe(([voiceName, rate]) => {
       $("#rate-warning").toggle((!voiceName || isNativeVoice({voiceName})) && rate > 2)
     })
@@ -157,7 +157,7 @@
         })
     })
 
-  rxjs.combineLatest([settingsObservable.of("pitch"), pitchSliderPromise])
+  rxjs.combineLatest([observeSetting("pitch"), pitchSliderPromise])
     .subscribe(([pitch, slider]) => slider.setValue(pitch || defaults.pitch))
 
 
@@ -172,7 +172,7 @@
         })
     })
 
-  rxjs.combineLatest([settingsObservable.of("volume"), volumeSliderPromise])
+  rxjs.combineLatest([observeSetting("volume"), volumeSliderPromise])
     .subscribe(([volume, slider]) => slider.setValue(volume || defaults.volume))
 
 
@@ -186,7 +186,7 @@
         })
     })
 
-  rxjs.combineLatest([settingsObservable.of("showHighlighting"), domReadyPromise])
+  rxjs.combineLatest([observeSetting("showHighlighting"), domReadyPromise])
     .subscribe(([showHighlighting]) => $("#show-highlighting").val(showHighlighting || defaults.showHighlighting))
 
 
@@ -203,7 +203,7 @@
       $(".audio-playback-visible").toggle(settings.useEmbeddedPlayer ? true : false)
     })
 
-  rxjs.combineLatest([settingsObservable.of("useEmbeddedPlayer"), domReadyPromise])
+  rxjs.combineLatest([observeSetting("useEmbeddedPlayer"), domReadyPromise])
     .subscribe(([useEmbeddedPlayer]) => {
       $("#audio-playback").val(useEmbeddedPlayer ? "true" : "false")
     })
@@ -230,7 +230,7 @@
         .click(async function() {
           try {
             var voiceName = $("#voices").val();
-            var voice = voiceName && findVoiceByName(await voicesPromise, voiceName);
+            var voice = voiceName && findVoiceByName(await rxjs.firstValueFrom(voices$), voiceName);
             var lang = (voice && voice.lang || "en-US").split("-")[0];
             $("#test-voice .spinner").show();
             $("#status").parent().hide();
@@ -262,7 +262,7 @@
       $("#status").parent().hide()
     })
 
-  settingsObservable.changes
+  settingsChange$
     .subscribe(() => {
       showConfirmation()
       bgPageInvoke("stop").catch(err => "OK")
