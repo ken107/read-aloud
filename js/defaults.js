@@ -286,14 +286,17 @@ async function getSpeechVoice(voiceName, lang) {
   }
   //otherwise, auto-select in order: offline, native, free, any
   if (!voice && lang) {
-    const googleTranslateReady = await googleTranslateTtsEngine.ready()
-    voices = voices.filter(voice => !isUseMyPhone(voice) && (googleTranslateReady || !isGoogleTranslate(voice)))
+    voices = voices.filter(voice => !isUseMyPhone(voice))
     voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
       || findVoiceByLang(voices.filter(isGoogleNative), lang)
       || findVoiceByLang(voices.filter(isNativeVoice), lang)
-      || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
-      || findVoiceByLang(voices.filter(isPremiumVoice), lang)
-      || findVoiceByLang(voices, lang);
+
+    if (!voice) {
+      if (!await googleTranslateTtsEngine.ready()) voices = voices.filter(voice => !isGoogleTranslate(voice))
+      voice = findVoiceByLang(voices.filter(isGoogleTranslate), lang)
+        || findVoiceByLang(voices.filter(isPremiumVoice), lang)
+        || findVoiceByLang(voices, lang);
+    }
     if (voice && isPremiumVoice(voice)) voice = Object.assign({autoSelect: true}, voice);
   }
   return voice;
