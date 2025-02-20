@@ -4,14 +4,14 @@
     const url = "https://translate.google.com"
 
     const wiz$ = rxjs.defer(async () => {
-        let wiz = getState("gtWiz")
+        let wiz = await getSetting("gtWiz")
         if (wiz && wiz.expire > Date.now()) {
             console.debug("Wiz still valid")
         } else {
             console.debug("Fetching new wiz")
             wiz = await fetchWizGlobalData(url)
             wiz.expire = Date.now() + 3600*1000
-            setState("gtWiz", wiz)
+            await updateSetting("gtWiz", wiz)
         }
         return wiz
     }).pipe(
@@ -87,12 +87,6 @@
 
 
     window.googleTranslateReady = async function() {
-        const access = getAccess()
-        if (access.isDenied()) {
-            access.renewDenial()
-            return false
-        }
-
         try {
             await rxjs.firstValueFrom(
                 wiz$.pipe(
@@ -106,48 +100,8 @@
     }
 
     window.googleTranslateSynthesizeSpeech = async function(text, lang) {
-        const access = getAccess()
-        if (access.isDenied()) throw new Error("Server returns 429")
-        access.use()
-
         const payload = await batchExecute("jQ1olc", [text, lang, null])
         if (!payload) throw new Error("Failed to synthesize text '" + text.slice(0,25) + "…' in language " + lang)
         return "data:audio/mpeg;base64," + payload[0];
-    }
-
-
-    function getAccess() {
-        const config = {
-            continuousUseInterval: 60*60*1000,
-            voluntaryGap: 5*60*1000,
-            involuntaryGap: 15*60*1000
-        }
-        const state = getState("gtAccess") || {lastUsed: 0, denyUntil: 0}
-        return {
-            isDenied() {
-                return state.denyUntil > Date.now()
-            },
-            renewDenial() {
-                state.denyUntil = Date.now() + config.involuntaryGap
-                setState("gtAccess", state)
-            },
-            use() {
-                const now = Date.now()
-                if (now - state.lastUsed > config.voluntaryGap) state.intervalBegin = now
-                else if (now - state.intervalBegin > config.continuousUseInterval) state.denyUntil = now + config.involuntaryGap
-                state.lastUsed = now
-                setState("gtAccess", state)
-            }
-        }
-    }
-
-
-    function getState(key) {
-        const item = localStorage.getItem(key)
-        return item ? JSON.parse(item) : null
-    }
-
-    function setState(key, value) {
-        localStorage.setItem(key, JSON.stringify(value))
     }
 })();

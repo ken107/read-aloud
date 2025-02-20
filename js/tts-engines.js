@@ -978,8 +978,9 @@ function OpenaiTtsEngine() {
     }
   }
   this.getVoices = async function() {
-    const {openaiCreds} = await getSettings(["openaiCreds"])
-    return openaiCreds.voiceList.map(({voice, lang}) => ({
+    const openaiCreds = await getSetting("openaiCreds")
+    const voiceList = openaiCreds ? (openaiCreds.voiceList || this.defaultVoiceList) : []
+    return voiceList.map(({voice, lang}) => ({
       voiceName: "OpenAI " + voice,
       lang
     }))
