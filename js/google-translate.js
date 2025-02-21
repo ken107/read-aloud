@@ -1,97 +1,67 @@
 
 (function() {
-    var got = {
-        get: function(url) {
-            return ajaxGet(url).then(function(x) {return {body: x}});
-        },
-        post: function(url, opts) {
-            return ajaxPost(url + "?" + urlEncode(opts.searchParams), opts.form).then(function(x) {return {body: x}});
-        }
-    };
+    const url = "https://translate.google.com"
 
-    var config = {
-        get: function(key) {
-            return getSettings([key]).then(function(settings) {return settings[key]});
-        },
-        set: function(key, value) {
-            var settings = {};
-            settings[key] = value;
-            return updateSettings(settings);
+    const wiz$ = rxjs.defer(async () => {
+        let wiz = await getSetting("gtWiz")
+        if (wiz && wiz.expire > Date.now()) {
+            console.debug("Wiz still valid")
+        } else {
+            console.debug("Fetching new wiz")
+            wiz = await fetchWizGlobalData(url)
+            wiz.expire = Date.now() + 3600*1000
+            await updateSetting("gtWiz", wiz)
         }
-    };
+        return wiz
+    }).pipe(
+        rxjs.timeout({
+            first: 7500,
+            with: () => rxjs.throwError(() => new Error("Timeout fetching " + url))
+        }),
+        rxjs.tap({
+            error: err => console.error("Failed fetch wiz", err)
+        }),
+        rxjs.share({
+            connector: () => new rxjs.ReplaySubject(1),
+            resetOnComplete: false,
+            resetOnError: false,
+            resetOnRefCountZero: false
+        })
+    )
 
     var batchNumber = 0;
 
 
-    /**
-     * @param {string} rpcId                    ID of service to call
-     * @param {Array} payload                   Arguments for the service call
-     * @param {string} [opts.tld="com"]         translate.google.[tld]
-     * @param {number} [opts.tokensTTL=3600]    How long to cache tokens
-     */
-    function batchExecute(rpcId, payload, opts) {
-        if (!opts) opts = {};
-        if (!opts.tld) opts.tld = "com";
-        if (!opts.tokensTTL) opts.tokensTTL = 3600;
-
-        var url = "https://translate.google." + opts.tld;
-
-        return Promise.resolve(config.get("wiz"))
-            .then(function(wiz) {
-                if (wiz && (wiz.timestamp + opts.tokensTTL * 1000) > Date.now()) return wiz;
-                return fetchWizGlobalData(url)
-                    .then(function(wiz) {
-                        wiz.timestamp = Date.now();
-                        config.set("wiz", wiz);
-                        return wiz;
-                    })
-            })
-            .then(function(wiz) {
-                return getBatchExecuteParams(wiz, rpcId, payload);
-            })
-            .then(function(params) {
-                if (opts.validateOnly) return;
-                if (!params.body.at) delete params.body.at;
-                return got.post(url + "/_/TranslateWebserverUi/data/batchexecute", {
-                        searchParams: params.query,
-                        form: params.body,
-                        responseType: "text"
-                    })
-                    .then(function(res) {
-                        var match = res.body.match(/\d+/);
-                        return res.body.substr(match.index + match[0].length, Number(match[0]));
-                    })
-                    .then(JSON.parse)
-                    .then(function(envelopes) {
-                        var payload = envelopes[0][2];
-                        return JSON.parse(payload);
-                    })
-            })
+    async function batchExecute(rpcId, payload) {
+        const wiz = await rxjs.firstValueFrom(wiz$)
+        const {query, body} = getBatchExecuteParams(wiz, rpcId, payload)
+        if (!body.at) delete body.at
+        const res = {body: await ajaxPost(url + "/_/TranslateWebserverUi/data/batchexecute?" + urlEncode(query), body)}
+        var match = res.body.match(/\d+/);
+        const envelopes = JSON.parse(res.body.substr(match.index + match[0].length, Number(match[0])))
+        var payload = envelopes[0][2];
+        return JSON.parse(payload);
     }
 
 
-    function fetchWizGlobalData(url) {
+    async function fetchWizGlobalData(url) {
         var propFinder = {
             "f.sid": /"FdrFJe":"(.*?)"/,
             "bl": /"cfb2h":"(.*?)"/,
             "at": /"SNlM0e":"(.*?)"/,
         }
-        return got.get(url)
-            .then(function(res) {
-                var start = res.body.indexOf("WIZ_global_data = {");
-                if (start == -1) throw new Error("Wiz not found");
-                var end = res.body.indexOf("</script>", start);
-                return res.body.substring(start, end);
-            })
-            .then(function(text) {
-                var wiz = {};
-                for (var prop in propFinder) {
-                    var match = propFinder[prop].exec(text);
-                    if (match) wiz[prop] = match[1];
-                    else console.warn("Wiz property not found '" + prop + "'");
-                }
-                return wiz;
-            })
+        const res = {body: await ajaxGet(url)}
+        var start = res.body.indexOf("WIZ_global_data = {");
+        if (start == -1) throw new Error("Wiz not found");
+        var end = res.body.indexOf("</script>", start);
+        const text = res.body.substring(start, end)
+        var wiz = {};
+        for (var prop in propFinder) {
+            var match = propFinder[prop].exec(text);
+            if (match) wiz[prop] = match[1];
+            else console.warn("Wiz property not found '" + prop + "'");
+        }
+        return wiz;
     }
 
 
@@ -118,7 +88,11 @@
 
 
     window.googleTranslateReady = function() {
-        return batchExecute("jQ1olc", [], {validateOnly: true});
+        return rxjs.firstValueFrom(
+            wiz$.pipe(
+                rxjs.timeout(2500)
+            )
+        )
     }
 
     window.googleTranslateSynthesizeSpeech = function(text, lang) {
