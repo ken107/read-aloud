@@ -43,9 +43,6 @@ function initialize(voices, settings, acceptLangs) {
   $(".voice-list").change(function() {
     savePreferredVoices();
   })
-  $("#back-button").click(function() {
-    history.back();
-  })
 }
 
 function createCheckboxes(voicesForLang) {
