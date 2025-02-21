@@ -485,6 +485,21 @@ function setState(key, value) {
   });
 }
 
+function makeSettingsObservable() {
+  const changes = new rxjs.Observable(observer => brapi.storage.local.onChanged.addListener(changes => observer.next(changes)))
+    .pipe(rxjs.share())
+  return {
+    changes,
+    of(name) {
+      return rxjs.from(brapi.storage.local.get([name]))
+        .pipe(
+          rxjs.map(settings => settings[name]),
+          rxjs.concatWith(changes.pipe(rxjs.filter(settings => name in settings), rxjs.map(settings => settings[name].newValue))),
+        )
+    }
+  }
+}
+
 
 /**
  * VOICES
@@ -559,7 +574,7 @@ function isIbmWatson(voice) {
 }
 
 function isOpenai(voice) {
-  return /^ChatGPT /.test(voice.voiceName);
+  return /^OpenAI /.test(voice.voiceName);
 }
 
 function isAzure(voice) {
@@ -1603,6 +1618,7 @@ const AwsPolly = (function() {
       return {
         promise: async () => {
           const res = await this.client.fetch(this.endpoint + "/v1/voices");
+          if (!res.ok) throw new Error("Server return " + res.status)
           return res.json();
         }
       }
@@ -1613,6 +1629,7 @@ const AwsPolly = (function() {
           const res = await this.client.fetch(this.endpoint + "/v1/speech", {
             body: JSON.stringify(opts)
           })
+          if (!res.ok) throw new Error("Server return " + res.status)
           return res.blob();
         }
       }

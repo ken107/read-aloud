@@ -10,11 +10,12 @@
   .card {
     margin-top: 30px;
   }
+  .card-header .subtext {
+    font-size: smaller;
+    color: #6c757d;
+  }
   .card-body {
     padding-bottom: .25rem;
-  }
-  .container {
-    min-width: 500px;
   }
   .dark-mode .card {
     background-color: #363636;
@@ -24,131 +25,176 @@
   }
   </style>
 
+  <script src="js/rxjs.umd.min.js"></script>
   <script src="js/jquery-3.7.1.min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/tts-engines.js"></script>
   <script src="js/custom-voices.js"></script>
 </head>
 <body>
-  <div class="container">
+  <div class="container pb-5">
     <h3 class="mt-3">Enable Custom Voices</h3>
 
-    <div class="card">
-      <div class="card-header">
-        Enter AWS credentials to enable Amazon Polly voices.
-      </div>
-      <div class="card-body">
-        <form>
-          <div class="form-group">
-            <div class="input-group">
-              <input type="text" class="form-control" id="aws-access-key-id" placeholder="Access key ID" />
-              <input type="text" class="form-control" id="aws-secret-access-key" placeholder="Secret access key" />
-              <div class="input-group-append">
-                <button type="button" class="btn btn-primary" id="aws-save-button">Save</button>
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="card border-primary">
+          <div class="card-header">
+            Amazon Polly
+            <div class="subtext">Enter AWS credentials to enable Amazon Polly voices</div>
+          </div>
+          <div class="card-body">
+            <form>
+              <div class="form-group">
+                <input type="text" class="form-control" id="aws-access-key-id" placeholder="Access key ID" />
               </div>
-            </div>
+              <div class="form-group">
+                <input type="text" class="form-control" id="aws-secret-access-key" placeholder="Secret access key" />
+              </div>
+              <div class="form-group">
+                <button type="button" class="btn btn-outline-primary" id="aws-save-button">Save</button>
+              </div>
+              <div class="form-group">
+                <img id="aws-progress" class="status progress" src="img/loading.gif" />
+                <div id="aws-success" class="status alert alert-success"></div>
+                <div id="aws-error" class="status alert alert-danger"></div>
+              </div>
+            </form>
           </div>
-          <div class="form-group">
-            <img id="aws-progress" class="status progress" src="img/loading.gif" />
-            <div id="aws-success" class="status alert alert-success"></div>
-            <div id="aws-error" class="status alert alert-danger"></div>
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="card-header">
-        Enter GCP API key to enable Google Wavenet voices.
-      </div>
-      <div class="card-body">
-        <form>
-          <div class="form-group">
-            <div class="input-group">
-              <input type="text" class="form-control" id="gcp-api-key" placeholder="API key" />
-              <div class="input-group-append">
-                <button type="button" class="btn btn-primary" id="gcp-save-button">Save</button>
+      <div class="col-lg-6">
+        <div class="card border-primary">
+          <div class="card-header">
+            Google Wavenet
+            <div class="subtext">Enter GCP API key to enable Google Wavenet voices</div>
+          </div>
+          <div class="card-body">
+            <form>
+              <div class="form-group">
+                <input type="text" class="form-control" id="gcp-api-key" placeholder="API key" />
               </div>
-            </div>
+              <div class="form-group">
+                <button type="button" class="btn btn-outline-primary" id="gcp-save-button">Save</button>
+              </div>
+              <div class="form-group">
+                <img id="gcp-progress" class="status progress" src="img/loading.gif" />
+                <div id="gcp-success" class="status alert alert-success"></div>
+                <div id="gcp-error" class="status alert alert-danger"></div>
+              </div>
+            </form>
           </div>
-          <div class="form-group">
-            <img id="gcp-progress" class="status progress" src="img/loading.gif" />
-            <div id="gcp-success" class="status alert alert-success"></div>
-            <div id="gcp-error" class="status alert alert-danger"></div>
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="card-header">
-        Enter IBM API key to enable IBM Watson voices.
-      </div>
-      <div class="card-body">
-        <form>
-          <div class="form-group">
-            <div class="input-group">
-              <input type="text" class="form-control" id="ibm-api-key" placeholder="API key" />
-              <input type="text" class="form-control" id="ibm-url" placeholder="URL" />
-              <div class="input-group-append">
-                <button type="button" class="btn btn-primary" id="ibm-save-button">Save</button>
+      <div class="col-lg-6">
+        <div class="card border-primary">
+          <div class="card-header">
+            IBM Watson
+            <div class="subtext">Enter IBM API key to enable IBM Watson voices</div>
+          </div>
+          <div class="card-body">
+            <form>
+              <div class="form-group">
+                <input type="text" class="form-control" id="ibm-api-key" placeholder="API key" />
               </div>
-            </div>
+              <div class="form-group">
+                <input type="text" class="form-control" id="ibm-url" placeholder="URL" />
+              </div>
+              <div class="form-group">
+                <button type="button" class="btn btn-outline-primary" id="ibm-save-button">Save</button>
+              </div>
+              <div class="form-group">
+                <img id="ibm-progress" class="status progress" src="img/loading.gif" />
+                <div id="ibm-success" class="status alert alert-success"></div>
+                <div id="ibm-error" class="status alert alert-danger"></div>
+              </div>
+            </form>
           </div>
-          <div class="form-group">
-            <img id="ibm-progress" class="status progress" src="img/loading.gif" />
-            <div id="ibm-success" class="status alert alert-success"></div>
-            <div id="ibm-error" class="status alert alert-danger"></div>
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="card-header card-header-dark">
-        Enter OpenAI API key to enable ChatGPT voices.
-      </div>
-      <div class="card-body">
-        <form>
-          <div class="form-group">
-            <div class="input-group">
-              <input type="text" class="form-control" id="openai-api-key" placeholder="API Key">
-              <input type="text" class="form-control" id="openai-url" placeholder="[Optional] API URL">
-              <div class="input-group-append">
-                <button type="button" class="btn btn-primary" id="openai-save-button">Save</button>
+      <div class="col-lg-6">
+        <div class="card border-primary">
+          <div class="card-header">
+            Microsoft Azure
+            <div class="subtext">Enter Azure credentials to enable Microsoft Azure voices</div>
+          </div>
+          <div class="card-body">
+            <form>
+              <div class="form-group">
+                <input type="text" class="form-control" id="azure-region" placeholder="SPEECH_REGION">
               </div>
-            </div>
+              <div class="form-group">
+                <input type="text" class="form-control" id="azure-key" placeholder="SPEECH_KEY">
+              </div>
+              <div class="form-group">
+                <button type="button" class="btn btn-outline-primary" id="azure-save-button">Save</button>
+              </div>
+              <div class="form-group">
+                <img id="azure-progress" class="status progress" src="img/loading.gif">
+                <div id="azure-success" class="status alert alert-success"></div>
+                <div id="azure-error" class="status alert alert-danger"></div>
+              </div>
+            </form>
           </div>
-          <div class="form-group">
-            <img id="openai-progress" class="status progress" src="img/loading.gif">
-            <div id="openai-success" class="status alert alert-success"></div>
-            <div id="openai-error" class="status alert alert-danger"></div>
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="card-header">
-        Enter Azure credentials to enable Azure voices.
-      </div>
-      <div class="card-body">
-        <form>
-          <div class="form-group">
-            <div class="input-group">
-              <input type="text" class="form-control" id="azure-region" placeholder="SPEECH_REGION">
-              <input type="text" class="form-control" id="azure-key" placeholder="SPEECH_KEY">
-              <div class="input-group-append">
-                <button type="button" class="btn btn-primary" id="azure-save-button">Save</button>
-              </div>
+      <div class="col-lg-6">
+        <div class="card border-primary openai">
+          <div class="card-header card-header-dark">
+            OpenAI
+            <div class="subtext">Use OpenAI or an OpenAI-compatible Speech endpoint</div>
+          </div>
+          <div class="card-body view-new">
+            <div class="form-group">
+              <button type="button" class="btn btn-outline-primary btn-add">Add</button>
             </div>
           </div>
-          <div class="form-group">
-            <img id="azure-progress" class="status progress" src="img/loading.gif">
-            <div id="azure-success" class="status alert alert-success"></div>
-            <div id="azure-error" class="status alert alert-danger"></div>
+          <div class="card-body view-exist">
+            <div class="form-group">
+              <div class="text-muted">API URL</div>
+              <div class="endpoint-url"></div>
+            </div>
+            <div class="form-group">
+              <div class="text-muted">API Key</div>
+              <div class="api-key"></div>
+            </div>
+            <div class="form-group">
+              <div class="text-muted">Voice List</div>
+              <div class="voice-list"></div>
+            </div>
+            <div class="form-group">
+              <button type="button" class="btn btn-outline-primary btn-edit">Edit</button>
+              <button type="button" class="btn btn-outline-danger btn-delete">Delete</button>
+            </div>
           </div>
-        </form>
+          <div class="card-body view-edit">
+            <form>
+              <div class="form-group">
+                <label>API URL</label>
+                <input type="text" class="form-control txt-endpoint-url">
+              </div>
+              <div class="form-group">
+                <label>API Key (if required)</label>
+                <input type="password" class="form-control txt-api-key">
+              </div>
+              <div class="form-group">
+                <label>Voice List</label>
+                <textarea class="form-control txt-voice-list" rows="6"></textarea>
+              </div>
+              <div class="form-group">
+                <img class="status progress" src="img/loading.gif">
+                <div class="status error alert alert-danger"></div>
+              </div>
+              <div class="form-group">
+                <button type="button" class="btn btn-primary btn-save">Save</button>
+                <button type="button" class="btn btn-light btn-cancel">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
 
