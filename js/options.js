@@ -315,8 +315,8 @@ function showConfirmation() {
   $(".green-check").finish().show().delay(500).fadeOut();
 }
 
-function updateDependents(settings) {
-  if (settings.voiceName && isGoogleWavenet(settings)) $("#voice-info").show();
+async function updateDependents(settings) {
+  if (settings.voiceName && isGoogleWavenet(settings) && !await getSetting("gcpCreds")) $("#voice-info").show();
   else $("#voice-info").hide();
 
   if (settings.voiceName && !isNativeVoice(settings) && !isGoogleWavenet(settings)) $(".pitch-visible").hide();

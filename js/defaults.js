@@ -469,6 +469,17 @@ function clearSettings(names) {
   });
 }
 
+async function getSetting(name) {
+  const items = await brapi.storage.local.get([name])
+  return items[name]
+}
+
+async function updateSetting(name, value) {
+  const items = {}
+  items[name] = value
+  await brapi.storage.local.set(items)
+}
+
 function makeSettingsObservable() {
   const changes = new rxjs.Observable(observer => brapi.storage.local.onChanged.addListener(changes => observer.next(changes)))
     .pipe(rxjs.share())
@@ -550,7 +561,7 @@ function isAmazonPolly(voice) {
 }
 
 function isGoogleWavenet(voice) {
-  return /^Google(Standard|Wavenet|Neural2) /.test(voice.voiceName);
+  return /^Google(Standard|Wavenet|Neural2|Studio|Chirp-HD|News|Casual|Polyglot) /.test(voice.voiceName);
 }
 
 function isIbmWatson(voice) {
