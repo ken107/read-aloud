@@ -290,8 +290,11 @@ function populateVoices(allVoices, settings, acceptLangs) {
 function voiceSorter(a, b) {
   function getWeight(voice) {
     var weight = 0
-    if (isRemoteVoice(voice)) weight += 10
+    //native voices should appear before non-natives in Standard group
+    if (!isNativeVoice(voice)) weight += 10
+    //ReadAloud Generic Voice should appear first among the non-natives
     if (!isReadAloudCloud(voice)) weight += 1
+    //UseMyPhone should appear last in Offline group
     if (isUseMyPhone(voice)) weight += 1
     return weight
   }
@@ -316,10 +319,10 @@ function updateDependents(settings) {
   if (settings.voiceName && isGoogleWavenet(settings)) $("#voice-info").show();
   else $("#voice-info").hide();
 
-  if (settings.voiceName && isRemoteVoice(settings) && !isGoogleWavenet(settings)) $(".pitch-visible").hide();
+  if (settings.voiceName && !isNativeVoice(settings) && !isGoogleWavenet(settings)) $(".pitch-visible").hide();
   else $(".pitch-visible").show();
 
-  if ((!settings.voiceName || !isRemoteVoice(settings)) && settings.rate > 2) $("#rate-warning").show();
+  if ((!settings.voiceName || isNativeVoice(settings)) && settings.rate > 2) $("#rate-warning").show();
   else $("#rate-warning").hide();
 }
 

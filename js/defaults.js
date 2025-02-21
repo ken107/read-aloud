@@ -574,8 +574,18 @@ function isUseMyPhone(voice) {
   return voice.isUseMyPhone == true
 }
 
-function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isOpenai(voice) || isAzure(voice);
+function isNativeVoice(voice) {
+  return !(
+    isGoogleTranslate(voice)
+    || isAmazonCloud(voice)
+    || isMicrosoftCloud(voice)
+    || isReadAloudCloud(voice)
+    || isAmazonPolly(voice)
+    || isGoogleWavenet(voice)
+    || isIbmWatson(voice)
+    || isOpenai(voice)
+    || isAzure(voice)
+  )
 }
 
 function isPremiumVoice(voice) {
@@ -596,10 +606,10 @@ function getSpeechVoice(voiceName, lang) {
         if (voiceName) voice = findVoiceByName(voices, voiceName);
       }
       //otherwise, auto-select
-      voices = voices.filter(negate(isUseMyPhone))    //do not auto-select "Use My Phone"
+      voices = voices.filter(voice => !isUseMyPhone(voice))    //do not auto-select "Use My Phone"
       if (!voice && lang) {
         voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
-          || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
+          || findVoiceByLang(voices.filter(isNativeVoice), lang)
           || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
           || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
           || findVoiceByLang(voices.filter(isPremiumVoice), lang)
@@ -757,12 +767,6 @@ function getBackgroundPage() {
   return new Promise(function(fulfill) {
     brapi.runtime.getBackgroundPage(fulfill);
   });
-}
-
-function negate(pred) {
-  return function() {
-    return !pred.apply(this, arguments);
-  }
 }
 
 function spread(f, self) {
