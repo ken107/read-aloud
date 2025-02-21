@@ -206,20 +206,6 @@ brapi.commands.onCommand.addListener(function(command) {
 })
 
 
-/**
- * chrome.ttsEngine handlers
- */
-if (brapi.ttsEngine) (function() {
-  brapi.ttsEngine.onSpeak.addListener(function(utterance, options, onEvent) {
-    options = Object.assign({}, options, {voice: {voiceName: options.voiceName}});
-    remoteTtsEngine.speak(utterance, options, onEvent);
-  });
-  brapi.ttsEngine.onStop.addListener(remoteTtsEngine.stop);
-  brapi.ttsEngine.onPause.addListener(remoteTtsEngine.pause);
-  brapi.ttsEngine.onResume.addListener(remoteTtsEngine.resume);
-})()
-
-
 
 /**
  * METHODS

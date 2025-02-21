@@ -1,6 +1,6 @@
 
 var browserTtsEngine = typeof speechSynthesis != 'undefined' ? new WebSpeechEngine() : new DummyTtsEngine();
-var remoteTtsEngine = new RemoteTtsEngine(config.serviceUrl);
+var premiumTtsEngine = new PremiumTtsEngine(config.serviceUrl);
 var googleTranslateTtsEngine = new GoogleTranslateTtsEngine();
 var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
 var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
@@ -97,7 +97,7 @@ function DummyTtsEngine() {
 }
 
 
-function RemoteTtsEngine(serviceUrl) {
+function PremiumTtsEngine(serviceUrl) {
   var readyPromise;
   var prefetchAudio;
   var nextStartTime = 0;

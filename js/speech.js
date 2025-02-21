@@ -36,9 +36,9 @@ function Speech(texts, options) {
     if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;
     if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
     if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
-    if (isRemoteVoice(options.voice)) {
-      remoteTtsEngine.prepare(options)
-      return remoteTtsEngine;
+    if (isPremiumVoice(options.voice) || isReadAloudCloud(options.voice)) {
+      premiumTtsEngine.prepare(options)
+      return premiumTtsEngine;
     }
     return browserTtsEngine;
   }

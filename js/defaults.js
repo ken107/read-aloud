@@ -501,7 +501,7 @@ function getVoices(opts) {
             console.error(err)
             return []
           }),
-        remoteTtsEngine.getVoices(),
+        premiumTtsEngine.getVoices(),
         settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
         settings.gcpCreds
           ? googleWavenetTtsEngine.getVoices()
@@ -602,9 +602,9 @@ function getSpeechVoice(voiceName, lang) {
           || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
           || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
           || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
-          || findVoiceByLang(voices.filter(negate(isPremiumVoice)), lang)
+          || findVoiceByLang(voices.filter(isPremiumVoice), lang)
           || findVoiceByLang(voices, lang);
-        if (voice && isRemoteVoice(voice)) voice = Object.assign({autoSelect: true}, voice);
+        if (voice && isPremiumVoice(voice)) voice = Object.assign({autoSelect: true}, voice);
       }
       return voice;
     })
