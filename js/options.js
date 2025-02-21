@@ -1,4 +1,6 @@
 
+var queryString = getQueryString();
+
 Promise.all([
   getVoices(),
   getSettings(),
@@ -12,7 +14,6 @@ function initialize(allVoices, settings, acceptLangs) {
   updateDependents(settings);
 
   //close button
-  var queryString = getQueryString();
   if (queryString.referer) {
     $("button.close").show()
       .click(function() {
@@ -25,7 +26,7 @@ function initialize(allVoices, settings, acceptLangs) {
     .click(function() {
       getAuthToken({interactive: true})
         .then(function(token) {
-          brapi.tabs.create({url: config.webAppUrl + "/premium-voices.html?t=" + token});
+          createTabAndClosePopup(config.webAppUrl + "/premium-voices.html?t=" + token)
         })
         .catch(handleError)
       return false;
@@ -67,14 +68,13 @@ function initialize(allVoices, settings, acceptLangs) {
     .val(settings.voiceName || "")
     .change(function() {
       var voiceName = $(this).val();
-      if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
-      else if (voiceName == "@languages") brapi.tabs.create({url: "languages.html"});
-      else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
+      if (voiceName == "@custom") createTabAndClosePopup("custom-voices.html")
+      else if (voiceName == "@languages") createTabAndClosePopup("languages.html")
       else if (voiceName == "@piper") bgPageInvoke("managePiperVoices")
       else saveSettings({voiceName: voiceName});
     });
   $("#languages-edit-button").click(function() {
-    brapi.tabs.create({url: "languages.html"});
+    createTabAndClosePopup("languages.html")
   })
 
 
@@ -161,7 +161,7 @@ function initialize(allVoices, settings, acceptLangs) {
 
   //hot key
   $("#hotkeys-link").click(function() {
-    brapi.tabs.create({url: getHotkeySettingsUrl()});
+    createTabAndClosePopup(getHotkeySettingsUrl())
   });
 }
 
@@ -348,8 +348,7 @@ function handleError(err) {
             })
           break;
         case "#auth-wavenet":
-          createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet")
-            .then(() => window.close())
+          createTabAndClosePopup("firefox-perm.html?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet")
           break;
         case "#user-gesture":
           getBackgroundPage()
@@ -377,6 +376,14 @@ function showAccountInfo(account) {
   else {
     $("#account-info").hide();
   }
+}
+
+function createTabAndClosePopup(url) {
+  brapi.tabs.create({url})
+    .then(() => {
+      if (queryString.isPopup) window.close()
+    })
+    .catch(handleError)
 }
 
 

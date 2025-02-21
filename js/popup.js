@@ -76,12 +76,8 @@ function handleError(err) {
     $("#status").html(formatError(errInfo)).show();
     $("#status a").click(function() {
       switch ($(this).attr("href")) {
-        case "#open-extension-settings":
-          brapi.tabs.create({url: "chrome://extensions/?id=" + brapi.runtime.id});
-          break;
         case "#request-permissions":
-          createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(errInfo.perms)))
-            .then(() => window.close())
+          createTabAndClosePopup("firefox-perm.html?perms=" + encodeURIComponent(JSON.stringify(errInfo.perms)))
           break;
         case "#sign-in":
           getBackgroundPage()
@@ -94,8 +90,7 @@ function handleError(err) {
             })
           break;
         case "#auth-wavenet":
-          createTab(brapi.runtime.getURL("firefox-perm.html") + "?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet")
-            .then(() => window.close())
+          createTabAndClosePopup("firefox-perm.html?perms=" + encodeURIComponent(JSON.stringify(config.wavenetPerms)) + "&then=auth-wavenet")
           break;
         case "#user-gesture":
           getBackgroundPage()
@@ -105,7 +100,7 @@ function handleError(err) {
             })
           break;
         case "#open-pdf-viewer":
-          brapi.tabs.create({url: config.pdfViewerUrl})
+          createTabAndClosePopup(config.pdfViewerUrl)
           break
         case "#connect-phone":
           location.href = "connect-phone.html"
@@ -116,6 +111,14 @@ function handleError(err) {
   else {
     $("#status").text(err.message).show();
   }
+}
+
+function createTabAndClosePopup(url) {
+  brapi.tabs.create({url})
+    .then(() => {
+      if (queryString.isPopup) window.close()
+    })
+    .catch(handleError)
 }
 
 
@@ -245,7 +248,7 @@ function onStop() {
 }
 
 function onSettings() {
-  location.href = "options.html?referer=popup.html";
+  location.href = "options.html?referer=popup.html" + (queryString.isPopup ? "&isPopup=" + queryString.isPopup : "")
 }
 
 function onForward() {
