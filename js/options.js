@@ -178,7 +178,9 @@ function populateVoices(allVoices, settings, acceptLangs) {
   })
   var voices = !selectedLangs ? allVoices : allVoices.filter(
     function(voice) {
-      return !voice.lang || selectedLangs.includes(parseLang(voice.lang).code);
+      return !voice.lang || selectedLangs.includes(parseLang(voice.lang).code)
+          || isPiperVoice(voice)
+          || isOpenai(voice)
     });
 
   //group by standard/premium
