@@ -7,7 +7,7 @@ $(function() {
       })
   }
 
-  getState("lastUrl").then(function(url) {$("#txt-url").val(url)});
+  brapi.storage.local.get("lastUrl").then(({lastUrl}) => $("#txt-url").val(lastUrl));
   $("#txt-comment").focus();
   $("#btn-submit").click(submit);
 });

@@ -330,8 +330,8 @@ function reportError(err) {
   if (err && err.stack) {
     var details = err.stack;
     if (!details.startsWith(err.name)) details = err.name + ": " + err.message + "\n" + details;
-    getState("lastUrl")
-      .then(function(url) {return reportIssue(url, details)})
+    brapi.storage.local.get("lastUrl")
+      .then(({lastUrl}) => reportIssue(lastUrl, details))
       .catch(console.error)
   }
 }

@@ -71,7 +71,7 @@ function TabSource(tabId) {
           permissions: ["webNavigation"],
           origins: ["https://books.googleusercontent.com/"]
         }
-        return hasPermissions(perms)
+        return brapi.permissions.contains(perms)
           .then(function(has) {
             if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
           })
@@ -95,7 +95,7 @@ function TabSource(tabId) {
           permissions: ["webNavigation"],
           origins: ["https://word-edit.officeapps.live.com/"]
         }
-        return hasPermissions(perms)
+        return brapi.permissions.contains(perms)
           .then(function(has) {
             if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
           })
@@ -119,7 +119,7 @@ function TabSource(tabId) {
           permissions: ["webNavigation"],
           origins: ["https://ereader-web-viewer.chegg.com/"]
         }
-        return hasPermissions(perms)
+        return brapi.permissions.contains(perms)
           .then(function(has) {
             if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
           })
@@ -144,7 +144,7 @@ function TabSource(tabId) {
           permissions: ["webNavigation"],
           origins: ["https://jigsaw.vitalsource.com/", "https://jigsaw.chegg.com/"]
         }
-        return hasPermissions(perms)
+        return brapi.permissions.contains(perms)
           .then(function(has) {
             if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}));
           })
@@ -179,7 +179,7 @@ function TabSource(tabId) {
           permissions: ["webNavigation"],
           origins: ["https://luoa-content.s3.amazonaws.com/"]
         }
-        return hasPermissions(perms)
+        return brapi.permissions.contains(perms)
           .then(function(has) {
             if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
           })
@@ -257,7 +257,7 @@ function TabSource(tabId) {
           permissions: ["webNavigation"],
           origins: ["https://*.read.libbyapp.com/"]
         }
-        return hasPermissions(perms)
+        return brapi.permissions.contains(perms)
           .then(function(has) {
             if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
           })
@@ -280,7 +280,7 @@ function TabSource(tabId) {
         var perms = {
           origins: ["https://support.readaloud.app/"]
         }
-        return hasPermissions(perms)
+        return brapi.permissions.contains(perms)
           .then(function(has) {
             if (!has) throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
           })
@@ -424,7 +424,7 @@ function Doc(source, onEnd) {
   var currentIndex;
   var activeSpeech;
   var ready = Promise.resolve(source.getUri())
-    .then(function(uri) {return setState("lastUrl", uri)})
+    .then(uri => brapi.storage.local.set({lastUrl: uri}))
     .then(function() {return source.ready})
     .then(function(result) {info = result})
   var foundText;

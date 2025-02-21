@@ -469,22 +469,6 @@ function clearSettings(names) {
   });
 }
 
-function getState(key) {
-  return new Promise(function(fulfill) {
-    brapi.storage.local.get(key, function(items) {
-      fulfill(items[key]);
-    });
-  });
-}
-
-function setState(key, value) {
-  var items = {};
-  items[key] = value;
-  return new Promise(function(fulfill) {
-    brapi.storage.local.set(items, fulfill);
-  });
-}
-
 function makeSettingsObservable() {
   const changes = new rxjs.Observable(observer => brapi.storage.local.onChanged.addListener(changes => observer.next(changes)))
     .pipe(rxjs.share())
@@ -1130,24 +1114,6 @@ function StateMachine(states) {
   this.getState = function() {
     return currentStateName;
   }
-}
-
-function requestPermissions(perms) {
-  return new Promise(function(fulfill) {
-    brapi.permissions.request(perms, fulfill);
-  })
-}
-
-function hasPermissions(perms) {
-  return new Promise(function(fulfill) {
-    brapi.permissions.contains(perms, fulfill);
-  })
-}
-
-function removePermissions(perms) {
-  return new Promise(function(fulfill) {
-    brapi.permissions.remove(perms, fulfill);
-  })
 }
 
 function getAuthToken(opts) {
