@@ -561,7 +561,7 @@ function isAmazonPolly(voice) {
 }
 
 function isGoogleWavenet(voice) {
-  return /^Google(Standard|Wavenet|Neural2|Studio|Chirp-HD|News|Casual|Polyglot) /.test(voice.voiceName);
+  return /^Google(Standard|Wavenet|Neural2|Studio|Chirp-HD|Chirp3-HD|News|Casual|Polyglot) /.test(voice.voiceName);
 }
 
 function isIbmWatson(voice) {
