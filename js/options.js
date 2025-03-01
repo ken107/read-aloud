@@ -250,7 +250,7 @@ function populateVoices(allVoices, settings, acceptLangs) {
   }
 
   //create the premium optgroup
-  if (brapi.identity && brapi.identity.launchWebAuthFlow) {
+  if (groups.premium.length) {
     $("<optgroup>").appendTo($("#voices"));
     var premium = $("<optgroup>")
       .attr("label", brapi.i18n.getMessage("options_voicegroup_premium"))

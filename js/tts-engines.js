@@ -135,7 +135,7 @@ function PremiumTtsEngine(serviceUrl) {
       .catch(console.error)
   }
   this.getVoices = function() {
-    return voices;
+    return brapi.identity && brapi.identity.launchWebAuthFlow ? voices : []
   }
   async function getAudioUrl(utterance, {lang, voice}) {
     const {authToken, clientId, manifest} = await readyPromise
