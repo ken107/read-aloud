@@ -101,6 +101,13 @@ function parseQueryString(search) {
 /**
  * SETTINGS
  */
+const settingsChange$ = rxjs.fromEventPattern(
+  h => brapi.storage.local.onChanged.addListener(h),
+  h => brapi.storage.local.onChanged.removeListener(h)
+).pipe(
+  rxjs.share()
+)
+
 function getSettings(names) {
   return new Promise(function(fulfill) {
     brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "darkMode"], fulfill);
@@ -130,57 +137,43 @@ async function updateSetting(name, value) {
   await brapi.storage.local.set(items)
 }
 
-function getState(key) {
-  return new Promise(function(fulfill) {
-    brapi.storage.local.get(key, function(items) {
-      fulfill(items[key]);
-    });
-  });
-}
-
-function setState(key, value) {
-  var items = {};
-  items[key] = value;
-  return new Promise(function(fulfill) {
-    brapi.storage.local.set(items, fulfill);
-  });
-}
-
-function clearState(key) {
-  return brapi.storage.local.remove(key)
+function observeSetting(name) {
+  return rxjs.concat(
+    rxjs.defer(() => getSetting(name)),
+    settingsChange$.pipe(
+      rxjs.filter(settings => name in settings),
+      rxjs.map(settings => settings[name].newValue)
+    )
+  )
 }
 
 
 /**
  * VOICES
  */
-function getVoices(opts) {
-  if (!opts) opts = {}
-  return getSettings(["awsCreds", "gcpCreds", "openaiCreds", "azureCreds", "piperVoices"])
-    .then(function(settings) {
-      return Promise.all([
-        browserTtsEngine.getVoices(),
-        Promise.resolve(!opts.excludeUnavailable || googleTranslateTtsEngine.ready())
-          .then(() => googleTranslateTtsEngine.getVoices())
-          .catch(err => {
-            console.error(err)
-            return []
-          }),
-        remoteTtsEngine.getVoices(),
-        settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
-        settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
-        ibmWatsonTtsEngine.getVoices(),
-        nvidiaRivaTtsEngine.getVoices(),
-        phoneTtsEngine.getVoices(),
-        settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
-        settings.azureCreds ? azureTtsEngine.getVoices() : [],
-        settings.piperVoices || [],
-      ])
-    })
-    .then(function(arr) {
-      return Array.prototype.concat.apply([], arr);
-    })
-}
+const voices$ = rxjs.combineLatest({
+  awsCreds: observeSetting("awsCreds"),
+  gcpCreds: observeSetting("gcpCreds"),
+  ibmCreds: observeSetting("ibmCreds"),
+  openaiCreds: observeSetting("openaiCreds"),
+  azureCreds: observeSetting("azureCreds"),
+  piperVoices: observeSetting("piperVoices"),
+}).pipe(
+  rxjs.exhaustMap(settings => Promise.all([
+    browserTtsEngine.getVoices(),
+    googleTranslateTtsEngine.getVoices(),
+    premiumTtsEngine.getVoices(),
+    settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
+    settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
+    settings.ibmCreds ? ibmWatsonTtsEngine.getVoices() : [],
+    phoneTtsEngine.getVoices(),
+    settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
+    settings.azureCreds ? azureTtsEngine.getVoices() : [],
+    settings.piperVoices || [],
+  ])),
+  rxjs.map(arr => arr.flat()),
+  rxjs.shareReplay(1)
+)
 
 function groupVoicesByLang(voices) {
   return voices.groupBy(function(voice) {
@@ -235,7 +228,7 @@ function isAmazonPolly(voice) {
 }
 
 function isGoogleWavenet(voice) {
-  return /^Google(Standard|Wavenet|Neural2|Studio) /.test(voice.voiceName);
+  return /^Google(Standard|Wavenet|Neural2|Studio|Chirp-HD|Chirp3-HD|News|Casual|Polyglot) /.test(voice.voiceName);
 }
 
 function isGoogleStudio(voice) {
@@ -246,12 +239,8 @@ function isIbmWatson(voice) {
   return /^IBM-Watson /.test(voice.voiceName);
 }
 
-function isNvidiaRiva(voice) {
-  return /^Nvidia-Riva /.test(voice.voiceName);
-}
-
 function isOpenai(voice) {
-  return /^ChatGPT /.test(voice.voiceName);
+  return /^OpenAI /.test(voice.voiceName);
 }
 
 function isAzure(voice) {
@@ -266,40 +255,51 @@ function isUseMyPhone(voice) {
   return voice.isUseMyPhone == true
 }
 
-function isRemoteVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isReadAloudCloud(voice) || isGoogleTranslate(voice) || isGoogleWavenet(voice) || isAmazonPolly(voice) || isIbmWatson(voice) || isNvidiaRiva(voice) || isOpenai(voice) || isAzure(voice);
+function isNativeVoice(voice) {
+  return !(
+    isGoogleTranslate(voice)
+    || isAmazonCloud(voice)
+    || isMicrosoftCloud(voice)
+    || isReadAloudCloud(voice)
+    || isAmazonPolly(voice)
+    || isGoogleWavenet(voice)
+    || isIbmWatson(voice)
+    || isOpenai(voice)
+    || isAzure(voice)
+  )
 }
 
 function isPremiumVoice(voice) {
   return isAmazonCloud(voice) || isMicrosoftCloud(voice);
 }
 
-function getSpeechVoice(voiceName, lang) {
-  return Promise.all([getVoices({excludeUnavailable: true}), getSettings(["preferredVoices"])])
-    .then(function(res) {
-      var voices = res[0];
-      var preferredVoiceByLang = res[1].preferredVoices || {};
-      var voice;
-      //if a specific voice is indicated
-      if (voiceName) voice = findVoiceByName(voices, voiceName);
-      //if no specific voice indicated, but a preferred voice was configured for the language
-      if (!voice && lang) {
-        voiceName = preferredVoiceByLang[lang.split("-")[0]];
-        if (voiceName) voice = findVoiceByName(voices, voiceName);
-      }
-      //otherwise, auto-select
-      voices = voices.filter(negate(isUseMyPhone))    //do not auto-select "Use My Phone"
-      if (!voice && lang) {
-        voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
-          || findVoiceByLang(voices.filter(isGoogleNative), lang)
-          || findVoiceByLang(voices.filter(negate(isRemoteVoice)), lang)
-          || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
-          || findVoiceByLang(voices.filter(negate(isPremiumVoice)), lang)
-          || findVoiceByLang(voices, lang);
-        if (voice && isRemoteVoice(voice)) voice = Object.assign({autoSelect: true}, voice);
-      }
-      return voice;
-    })
+async function getSpeechVoice(voiceName, lang) {
+  let voices = await rxjs.firstValueFrom(voices$)
+  var voice;
+  //if a specific voice is indicated
+  if (voiceName) voice = findVoiceByName(voices, voiceName);
+  //if no specific voice indicated, but a preferred voice was configured for the language
+  if (!voice && lang) {
+    const preferredVoiceByLang = (await getSetting("preferredVoices")) || {}
+    voiceName = preferredVoiceByLang[lang.split("-")[0]];
+    if (voiceName) voice = findVoiceByName(voices, voiceName);
+  }
+  //otherwise, auto-select in order: offline, native, free, any
+  if (!voice && lang) {
+    voices = voices.filter(voice => !isUseMyPhone(voice))
+    voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
+      || findVoiceByLang(voices.filter(isGoogleNative), lang)
+      || findVoiceByLang(voices.filter(isNativeVoice), lang)
+
+    if (!voice) {
+      if (!await googleTranslateTtsEngine.ready()) voices = voices.filter(voice => !isGoogleTranslate(voice))
+      voice = findVoiceByLang(voices.filter(isGoogleTranslate), lang)
+        || findVoiceByLang(voices.filter(isPremiumVoice), lang)
+        || findVoiceByLang(voices, lang);
+    }
+    if (voice && isPremiumVoice(voice)) voice = Object.assign({autoSelect: true}, voice);
+  }
+  return voice;
 }
 
 function findVoiceByName(voices, name) {
@@ -415,30 +415,11 @@ function updateWindow(windowId, details) {
   })
 }
 
-function negate(pred) {
-  return function() {
-    return !pred.apply(this, arguments);
-  }
-}
-
-function spread(f, self) {
-  return function(args) {
-    return f.apply(self, args);
-  };
-}
-
 function extraAction(action) {
   return function(data) {
     return Promise.resolve(action(data))
       .then(function() {return data})
   }
-}
-
-function callMethod(name) {
-  var args = Array.prototype.slice.call(arguments, 1);
-  return function(obj) {
-    return obj[name].apply(obj, args);
-  };
 }
 
 function waitMillis(millis) {
@@ -614,24 +595,6 @@ function StateMachine(states) {
   this.getState = function() {
     return currentStateName;
   }
-}
-
-function requestPermissions(perms) {
-  return new Promise(function(fulfill) {
-    brapi.permissions.request(perms, fulfill);
-  })
-}
-
-function hasPermissions(perms) {
-  return new Promise(function(fulfill) {
-    brapi.permissions.contains(perms, fulfill);
-  })
-}
-
-function removePermissions(perms) {
-  return new Promise(function(fulfill) {
-    brapi.permissions.remove(perms, fulfill);
-  })
 }
 
 function getAuthToken(opts) {

@@ -1,5 +1,6 @@
 try {
   importScripts(
+    "js/rxjs.umd.min.js",
     "js/defaults.js",
     "js/messaging.js",
     "js/content-handlers.js",

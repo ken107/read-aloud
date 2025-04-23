@@ -11,9 +11,6 @@
     margin-top: 15px;
     margin-bottom: 20px;
   }
-  .container {
-    min-width: 300px;
-  }
   .voice-list {
     display: inline-block;
     margin: .2em 0 .8em 1em;
@@ -38,6 +35,7 @@
   }
   </style>
 
+  <script src="js/rxjs.umd.min.js"></script>
   <script src="js/jquery-3.7.1.min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/tts-engines.js"></script>
@@ -45,9 +43,6 @@
 </head>
 <body>
   <div class="container">
-    <button id="back-button" type="button" class="close" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
     <h2 data-i18n="languages_heading"></h2>
     <form>
       <div class="form-group" id="lang-list">

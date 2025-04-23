@@ -19,7 +19,10 @@ function Speech(texts, options) {
   this.canRewind = () => engine.rewind != null || playlist.canRewind()
   this.forward = () => cmd$.next({name: "forward", delay: 750})
   this.rewind = () => cmd$.next({name: "rewind", delay: 750})
-  this.seek = index => cmd$.next({name: "seek", index})
+  this.seek = index => {
+    cmd$.next({name: "seek", index})
+    playbackState$.next("resumed")
+  }
   this.gotoEnd = () => cmd$.next({name: "gotoEnd"})
 
   function pickEngine() {
@@ -27,14 +30,16 @@ function Speech(texts, options) {
     if (isAzure(options.voice)) return azureTtsEngine;
     if (isOpenai(options.voice)) return openaiTtsEngine;
     if (isUseMyPhone(options.voice)) return phoneTtsEngine;
-    if (isNvidiaRiva(options.voice)) return nvidiaRivaTtsEngine;
     if (isGoogleTranslate(options.voice) && !/\s(Hebrew|Telugu)$/.test(options.voice.voiceName)) {
       return googleTranslateTtsEngine
     }
     if (isAmazonPolly(options.voice)) return amazonPollyTtsEngine;
     if (isGoogleWavenet(options.voice)) return googleWavenetTtsEngine;
     if (isIbmWatson(options.voice)) return ibmWatsonTtsEngine;
-    if (isRemoteVoice(options.voice)) return remoteTtsEngine;
+    if (isPremiumVoice(options.voice) || isReadAloudCloud(options.voice)) {
+      premiumTtsEngine.prepare(options)
+      return premiumTtsEngine;
+    }
     if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 3*1000, 16*1000);
     return browserTtsEngine;
   }
@@ -395,7 +400,7 @@ function Speech(texts, options) {
       return recombine(sentence.split(/([,;:]\s+|\s-+\s+|—\s*)/));
     }
     this.getWords = function(sentence) {
-      var tokens = sentence.trim().split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
+      var tokens = sentence.split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
       var result = [];
       for (var i=0; i<tokens.length; i+=2) {
         if (tokens[i]) result.push(tokens[i]);

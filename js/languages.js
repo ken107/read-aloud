@@ -175,15 +175,18 @@ var langList = [
   {code: "zu", name: "isiZulu"},
 ]
 
-Promise.all([
-  getVoices(),
-  getSettings(["languages", "preferredVoices"]),
-  brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
-  domReady()
-]).then(spread(initialize));
+domReady().then(() => {
+  setI18nText()
+})
 
-function initialize(voices, settings, acceptLangs) {
-  setI18nText();
+rxjs.combineLatest(
+  voices$,
+  domReady()
+).subscribe(async ([voices]) => {
+  const [settings, acceptLangs] = await Promise.all([
+    getSettings(["languages", "preferredVoices"]),
+    brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
+  ])
 
   //create checkboxes
   createCheckboxes(voices);
@@ -216,12 +219,11 @@ function initialize(voices, settings, acceptLangs) {
   $(".voice-list").change(function() {
     savePreferredVoices();
   })
-  $("#back-button").click(function() {
-    location.href = "options.html";
-  })
-}
+})
 
 function createCheckboxes(voices) {
+  $("#lang-list").empty()
+
   const voicesForLang = groupVoicesByLang(voices)
   for (var item of langList) {
     if (!voicesForLang[item.code]) continue;

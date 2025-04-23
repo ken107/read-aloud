@@ -1,11 +1,10 @@
 
 var browserTtsEngine = brapi.tts ? new BrowserTtsEngine() : (typeof speechSynthesis != 'undefined' ? new WebSpeechEngine() : new DummyTtsEngine());
-var remoteTtsEngine = new RemoteTtsEngine(config.serviceUrl);
+var premiumTtsEngine = new PremiumTtsEngine(config.serviceUrl);
 var googleTranslateTtsEngine = new GoogleTranslateTtsEngine();
 var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
 var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
 var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
-var nvidiaRivaTtsEngine = new NvidiaRivaTtsEngine();
 var phoneTtsEngine = new PhoneTtsEngine();
 var openaiTtsEngine = new OpenaiTtsEngine();
 var azureTtsEngine = new AzureTtsEngine();
@@ -174,38 +173,31 @@ function TimeoutTtsEngine(baseEngine, startTimeout, endTimeout) {
 }
 
 
-function RemoteTtsEngine(serviceUrl) {
-  var manifest = brapi.runtime.getManifest();
+function PremiumTtsEngine(serviceUrl) {
+  var readyPromise;
+  var prefetchAudio;
   var nextStartTime = 0;
-  var authToken;
-  var clientId;
-  function ready(options) {
-    return getAuthToken()
-      .then(function(token) {authToken = token})
-      .then(getUniqueClientId)
-      .then(function(id) {clientId = id})
-      .then(function() {
-        if (isPremiumVoice(options.voice) && !options.voice.autoSelect) {
-          if (!authToken) throw new Error(JSON.stringify({code: "error_login_required"}));
-          return getAccountInfo(authToken)
-            .then(function(account) {
-              if (!account) throw new Error(JSON.stringify({code: "error_login_required"}));
-              if (!account.balance) throw new Error(JSON.stringify({code: "error_payment_required"}));
-            })
-        }
-      })
+  this.prepare = function(options) {
+    readyPromise = immediate(async () => {
+      const authToken = await getAuthToken()
+      if (isPremiumVoice(options.voice) && !options.voice.autoSelect) {
+        if (!authToken) throw new Error(JSON.stringify({code: "error_login_required"}));
+        const account = await getAccountInfo(authToken)
+        if (!account) throw new Error(JSON.stringify({code: "error_login_required"}));
+        if (!account.balance) throw new Error(JSON.stringify({code: "error_payment_required"}));
+      }
+      return {
+        authToken,
+        clientId: await getUniqueClientId(),
+        manifest: brapi.runtime.getManifest()
+      }
+    })
   }
   this.speak = function(utterance, options, playbackState$) {
-    const urlPromise = ready(options)
-      .then(async function() {
-        const audioUrl = getAudioUrl(utterance, options.lang, options.voice)
-        const res = await fetch(audioUrl)
-        if (!res.ok) {
-          const msg = await res.text().catch(err => "")
-          throw new Error(msg || (res.status + " " + res.statusText))
-        }
-        const blob = await res.blob()
-        return URL.createObjectURL(blob)
+    const urlPromise = Promise.resolve()
+      .then(() => {
+        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
+        else return getAudioUrl(utterance, options)
       })
     return playAudio(urlPromise, {...options, startTime: nextStartTime}, playbackState$).pipe(
       rxjs.tap(event => {
@@ -214,14 +206,23 @@ function RemoteTtsEngine(serviceUrl) {
     )
   }
   this.prefetch = function(utterance, options) {
-    ajaxGet(getAudioUrl(utterance, options.lang, options.voice, true));
+    getAudioUrl(utterance, options)
+      .then(url => prefetchAudio = [utterance, options, url])
+      .catch(console.error)
   }
   this.getVoices = function() {
     return voices;
   }
-  function getAudioUrl(utterance, lang, voice, prefetch) {
-    assert(utterance && lang && voice);
-    return serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&v=" + manifest.version + "&pf=" + (prefetch ? 1 : 0) + "&q=" + encodeURIComponent(utterance);
+  async function getAudioUrl(utterance, {lang, voice}) {
+    const {authToken, clientId, manifest} = await readyPromise
+    const url = serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&v=" + manifest.version + "&q=" + encodeURIComponent(utterance)
+    const res = await fetch(url)
+    if (!res.ok) {
+      const msg = await res.text().catch(err => "")
+      throw new Error(msg || (res.status + " " + res.statusText))
+    }
+    const blob = await res.blob()
+    return URL.createObjectURL(blob)
   }
   var voices = [
       {"voice_name": "Amazon Australian English (Nicole)", "lang": "en-AU", "gender": "female", "event_types": ["start", "end", "error"]},
@@ -611,8 +612,9 @@ function GoogleWavenetTtsEngine() {
   }
   function getAudioUrl(text, voice, pitch) {
     assert(text && voice);
-    var matches = voice.voiceName.match(/^Google(\w+) .* \((\w+)\)$/);
-    var voiceName = voice.lang + "-" + matches[1] + "-" + matches[2][0];
+    var matches = voice.voiceName.match(/^Google(\S+) .* \((\w+)\)$/);
+    const voiceType = matches[1];
+    const speakerId = voiceType == "Chirp3-HD" ? matches[2] : matches[2][0];
     var endpoint = matches[1] == "Neural2" ? "us-central1-texttospeech.googleapis.com" : "texttospeech.googleapis.com";
     return getSettings(["gcpCreds", "gcpToken"])
       .then(function(settings) {
@@ -622,13 +624,13 @@ function GoogleWavenetTtsEngine() {
           },
           voice: {
             languageCode: voice.lang,
-            name: voiceName
+            name: voice.lang + "-" + voiceType + "-" + speakerId
           },
           audioConfig: {
             audioEncoding: "OGG_OPUS",
-            pitch: ((pitch || 1) -1) *20
           }
         }
+        if (!voiceType.startsWith("Chirp")) postData.audioConfig.pitch = ((pitch || 1) -1) *20;
         if (settings.gcpCreds) return ajaxPost("https://" + endpoint + "/v1/text:synthesize?key=" + settings.gcpCreds.apiKey, postData, "json");
         if (!settings.gcpToken) throw new Error(JSON.stringify({code: "error_wavenet_auth_required"}));
         return ajaxPost("https://cxl-services.appspot.com/proxy?url=https://texttospeech.googleapis.com/v1beta1/text:synthesize&token=" + settings.gcpToken, postData, "json")
@@ -822,71 +824,6 @@ function IbmWatsonTtsEngine() {
 }
 
 
-function NvidiaRivaTtsEngine() {
-  const RIVA_VOICE_PREFIX = "Nvidia-Riva "
-  var prefetchAudio;
-  this.speak = function(utterance, options, playbackState$) {
-    const urlPromise = Promise.resolve()
-      .then(function() {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
-        else return getAudioUrl(utterance, options.voice, options.pitch, options.rate);
-      })
-    // Rate supplied to player is always 1 because it is already represented in the generated audio
-    return playAudio(urlPromise, {...options, rate: 1}, playbackState$)
-  };
-  this.prefetch = function(utterance, options) {
-    getAudioUrl(utterance, options.voice, options.pitch, options.rate)
-      .then(function(url) {
-        prefetchAudio = [utterance, options, url];
-      })
-      .catch(console.error)
-  };
-  this.getVoices = function() {
-    return getSettings(["rivaVoices", "rivaCreds"])
-      .then(function(items) {
-        if (!items.rivaCreds) return [];
-        if (items.rivaVoices && Date.now()-items.rivaVoices[0].ts < 24*3600*1000) return items.rivaVoices;
-        return fetchVoices(items.rivaCreds.url)
-          .then(function(list) {
-            list[0].ts = Date.now();
-            updateSettings({rivaVoices: list}).catch(console.error);
-            return list;
-          })
-          .catch(function(err) {
-            console.error(err);
-            return [];
-          })
-      })
-  }
-  async function getAudioUrl(text, voice, pitch, rate) {
-    assert(text && voice);
-    const settings = await getSettings(["rivaCreds"])
-    const res = await fetch(settings.rivaCreds.url + "/tts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "audio/ogg;codecs=opus"
-      },
-      body: JSON.stringify({
-        voice: voice.voiceName.replace(RIVA_VOICE_PREFIX,''),
-        text: escapeHtml(text),
-        pitch,
-        rate
-      })
-    })
-    if (!res.ok) throw new Error("Server returns " + res.status)
-    const blob = await res.blob()
-    return URL.createObjectURL(blob);
-  }
-  this.fetchVoices = fetchVoices;
-  function fetchVoices(url) {
-    return ajaxGet({ url: url + "/voices" }).then(JSON.parse).then((voices)=>{
-      return voices.map((v)=>({...v, voiceName:RIVA_VOICE_PREFIX+v.voiceName}))
-    })
-  }
-}
-
-
 function PhoneTtsEngine() {
   var isSpeaking = false
   var conn
@@ -1005,10 +942,18 @@ function PhoneTtsEngine() {
 
 
 function OpenaiTtsEngine() {
-  const defaultApiUrl = "https://api.openai.com/v1"
+  this.defaultEndpointUrl = "https://api.openai.com/v1"
+  this.defaultVoiceList = [
+    {voice: "alloy", lang: "en-US", model: "tts-1"},
+    {voice: "echo", lang: "en-US", model: "tts-1"},
+    {voice: "fable", lang: "en-US", model: "tts-1"},
+    {voice: "onyx", lang: "en-US", model: "tts-1"},
+    {voice: "nova", lang: "en-US", model: "tts-1"},
+    {voice: "shimmer", lang: "en-US", model: "tts-1"},
+  ]
   var prefetchAudio
-  this.test = async function(apiKey, url) {
-    const res = await fetch((url || defaultApiUrl) + "/models", {
+  this.test = async function({apiKey, url, voiceList}) {
+    const res = await fetch(url + "/models", {
       headers: {"Authorization": "Bearer " + apiKey}
     })
     if (!res.ok) {
@@ -1033,38 +978,40 @@ function OpenaiTtsEngine() {
       console.error(err)
     }
   }
-  this.getVoices = function() {
-    return voices
+  this.getVoices = async function() {
+    const openaiCreds = await getSetting("openaiCreds")
+    const voiceList = openaiCreds ? (openaiCreds.voiceList || this.defaultVoiceList) : []
+    return voiceList.map(({voice, lang}) => ({
+      voiceName: "OpenAI " + voice,
+      lang
+    }))
   }
   async function getAudioUrl(text, voice, pitch) {
     assert(text && voice)
-    const matches = voice.voiceName.match(/^ChatGPT .* \((\w+)\)$/)
-    const voiceName = matches[1]
     const {openaiCreds} = await getSettings(["openaiCreds"])
-    const res = await fetch((openaiCreds.url || defaultApiUrl) + "/audio/speech", {
+    const voiceId = voice.voiceName.slice(7)
+    const voiceInfo = openaiCreds.voiceList.find(x => x.voice == voiceId)
+    assert(voiceInfo, "Voice not found " + voiceId)
+    const res = await fetch(openaiCreds.url + "/audio/speech", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + openaiCreds.apiKey
+        ...(
+          openaiCreds.apiKey ? {
+            "Authorization": "Bearer " + openaiCreds.apiKey
+          } : null
+        )
       },
       body: JSON.stringify({
-        model: "tts-1",
+        model: voiceInfo.model,
         input: text,
-        voice: voiceName,
-        response_format: "opus",
+        voice: voiceInfo.voice,
+        response_format: "mp3",
       })
     })
     if (!res.ok) throw await res.json().then(x => x.error)
     return URL.createObjectURL(await res.blob())
   }
-  const voices = [
-    {"voiceName":"ChatGPT English (alloy)","lang":"en-US","gender":"female"},
-    {"voiceName":"ChatGPT English (echo)","lang":"en-US","gender":"male"},
-    {"voiceName":"ChatGPT English (fable)","lang":"en-US","gender":"female"},
-    {"voiceName":"ChatGPT English (onyx)","lang":"en-US","gender":"male"},
-    {"voiceName":"ChatGPT English (nova)","lang":"en-US","gender":"female"},
-    {"voiceName":"ChatGPT English (shimmer)","lang":"en-US","gender":"female"},
-  ]
 }
 
 

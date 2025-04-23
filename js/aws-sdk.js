@@ -317,6 +317,7 @@ function makeAWS() {
       return {
         promise: async () => {
           const res = await this.client.fetch(this.endpoint + "/v1/voices");
+          if (!res.ok) throw new Error("Server return " + res.status)
           return res.json();
         }
       }
@@ -327,6 +328,7 @@ function makeAWS() {
           const res = await this.client.fetch(this.endpoint + "/v1/speech", {
             body: JSON.stringify(opts)
           })
+          if (!res.ok) throw new Error("Server return " + res.status)
           return res.blob();
         }
       }

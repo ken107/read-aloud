@@ -1,6 +1,6 @@
 
 $(function() {
-  getSettings(["awsCreds", "gcpCreds", "ibmCreds", "rivaCreds", "openaiCreds", "azureCreds"])
+  getSettings(["awsCreds", "gcpCreds", "ibmCreds", "azureCreds"])
     .then(function(items) {
       if (items.awsCreds) {
         $("#aws-access-key-id").val(obfuscate(items.awsCreds.accessKeyId));
@@ -14,13 +14,6 @@ $(function() {
         $("#ibm-api-key").val(obfuscate(items.ibmCreds.apiKey));
         $("#ibm-url").val(obfuscate(items.ibmCreds.url));
       }
-      if (items.rivaCreds) {
-        $("#riva-url").val(obfuscate(items.rivaCreds.url));
-      }
-      if (items.openaiCreds) {
-        $("#openai-api-key").val(obfuscate(items.openaiCreds.apiKey))
-        $("#openai-url").val(items.openaiCreds.url || "")
-      }
       if (items.azureCreds) {
         $("#azure-region").val(items.azureCreds.region)
         $("#azure-key").val(obfuscate(items.azureCreds.key))
@@ -30,8 +23,6 @@ $(function() {
   $("#aws-save-button").click(awsSave);
   $("#gcp-save-button").click(gcpSave);
   $("#ibm-save-button").click(ibmSave);
-  $("#riva-save-button").click(rivaSave);
-  $("#openai-save-button").click(openaiSave)
   $("#azure-save-button").click(azureSave)
 })
 
@@ -148,7 +139,7 @@ function ibmSave() {
 }
 
 function testIbm(apiKey, url) {
-  return requestPermissions({origins: [url + "/*"]})
+  return brapi.permissions.request({origins: [url + "/*"]})
     .then(function(granted) {
       if (!granted) throw new Error("Permission not granted");
     })
@@ -156,71 +147,6 @@ function testIbm(apiKey, url) {
       return ibmWatsonTtsEngine.fetchVoices(apiKey, url);
     })
 }
-
-function rivaSave() {
-  $(".status").hide();
-  var url = $("#riva-url").val().trim();
-  if (url) {
-    $("#riva-progress").show();
-    testRiva(url)
-      .then(function() {
-        $("#riva-progress").hide();
-        updateSettings({rivaCreds: {url: url}});
-        $("#riva-success").text("Nvidia Riva voices are enabled.").show();
-        $("#riva-url").val(obfuscate(url));
-      },
-      function(err) {
-        $("#riva-progress").hide();
-        $("#riva-error").text("Test failed: " + err.message).show();
-      })
-  }
-  else if (!url) {
-    clearSettings(["rivaCreds"])
-      .then(function() {
-        $("#riva-success").text("Nvidia Riva voices are disabled.").show();
-      })
-  }
-  else {
-    $("#riva-error").text("Missing required fields.").show();
-  }
-}
-
-function testRiva(url) {
-  return requestPermissions({origins: [url + "/*"]})
-  .then(function(granted) {
-    if (!granted) throw new Error("Permission not granted");
-  })
-  .then(function() {
-    return nvidiaRivaTtsEngine.fetchVoices(url);
-  })
-}
-
-
-async function openaiSave() {
-  $(".status").hide()
-  const apiKey = $("#openai-api-key").val().trim()
-  const url = $("#openai-url").val().trim()
-  if (apiKey) {
-    $("#openai-progress").show()
-    try {
-      await openaiTtsEngine.test(apiKey, url)
-      await updateSettings({openaiCreds: {apiKey, url}})
-      $("#openai-success").text("ChatGPT voices are enabled.").show()
-      $("#openai-api-key").val(obfuscate(apiKey))
-    }
-    catch (err) {
-      $("#openai-error").text("Test failed: " + err.message).show()
-    }
-    finally {
-      $("#openai-progress").hide()
-    }
-  }
-  else {
-    await clearSettings(["openaiCreds"])
-    $("#openai-success").text("ChatGPT voices are disabled.").show()
-  }
-}
-
 
 
 async function azureSave() {
@@ -254,3 +180,70 @@ async function azureSave() {
 async function testAzure(region, key) {
   await azureTtsEngine.fetchVoices(region, key)
 }
+
+
+
+//OpenAI
+$(function() {
+  const creds$ = observeSetting("openaiCreds")
+  const editMode$ = new rxjs.BehaviorSubject(false)
+  const status$ = new rxjs.BehaviorSubject({type: "IDLE"})
+
+  rxjs.combineLatest(creds$, editMode$).subscribe(([creds, editMode]) => {
+    $(".openai .view-new").toggle(creds == null && !editMode)
+    $(".openai .view-exist").toggle(creds != null && !editMode)
+    $(".openai .view-edit").toggle(editMode)
+  })
+
+  creds$.subscribe(creds => {
+    const endpointUrl = creds && creds.url || openaiTtsEngine.defaultEndpointUrl
+    const apiKey = creds && creds.apiKey || ""
+    const voiceList = creds && creds.voiceList || openaiTtsEngine.defaultVoiceList
+    $(".openai .endpoint-url").text(endpointUrl)
+    $(".openai .api-key").text(apiKey && (apiKey.slice(0,13) + "*****" + apiKey.slice(-5)))
+    $(".openai .voice-list").text(voiceList.map(x => x.voice).join(", "))
+    $(".openai .txt-endpoint-url").val(endpointUrl)
+    $(".openai .txt-api-key").val(apiKey)
+    $(".openai .txt-voice-list").val(JSON.stringify(voiceList, null, 2))
+  })
+
+  status$.subscribe(status => {
+    $(".openai .status.progress").toggle(status.type == "PROGRESS")
+    $(".openai .status.success").toggle(status.type == "SUCCESS")
+    $(".openai .status.error").toggle(status.type == "ERROR")
+      .text(status.type == "ERROR" ? status.error.message : "")
+  })
+
+  //actions
+  $(".openai .btn-add").click(() => {
+    status$.next({type: "IDLE"})
+    editMode$.next(true)
+  })
+  $(".openai .btn-edit").click(() => {
+    status$.next({type: "IDLE"})
+    editMode$.next(true)
+  })
+  $(".openai .btn-delete").click(() => {
+    clearSettings(["openaiCreds"])
+    editMode$.next(false)
+  })
+  $(".openai .btn-save").click(async () => {
+    try {
+      const openaiCreds = {
+        url: $(".openai .txt-endpoint-url").val(),
+        apiKey: $(".openai .txt-api-key").val(),
+        voiceList: JSON.parse($(".openai .txt-voice-list").val())
+      }
+      status$.next({type: "PROGRESS"})
+      await openaiTtsEngine.test(openaiCreds)
+      await updateSettings({openaiCreds})
+      editMode$.next(false)
+      status$.next({type: "IDLE"})
+    } catch (err) {
+      status$.next({type: "ERROR", error: err})
+    }
+  })
+  $(".openai .btn-cancel").click(() => {
+    editMode$.next(false)
+  })
+})
