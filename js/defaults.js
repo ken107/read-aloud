@@ -251,6 +251,10 @@ function isPiperVoice(voice) {
   return /^Piper /.test(voice.voiceName)
 }
 
+function isRHVoice(voice) {
+  return /^RHVoice /.test(voice.voiceName)
+}
+
 function isUseMyPhone(voice) {
   return voice.isUseMyPhone == true
 }
@@ -270,7 +274,7 @@ function isNativeVoice(voice) {
 }
 
 function isPremiumVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isRHVoice(voice)
 }
 
 async function getSpeechVoice(voiceName, lang) {

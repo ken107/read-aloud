@@ -210,8 +210,20 @@ function PremiumTtsEngine(serviceUrl) {
       .then(url => prefetchAudio = [utterance, options, url])
       .catch(console.error)
   }
-  this.getVoices = function() {
-    return voices;
+  this.getVoices = async function() {
+    const premiumVoiceList = await getSetting("premiumVoiceList")
+    if (!premiumVoiceList || premiumVoiceList.expire < Date.now()) refreshVoiceList()
+    return premiumVoiceList ? premiumVoiceList.items : voices
+  }
+  async function refreshVoiceList() {
+    try {
+      const res = await fetch(serviceUrl + "/read-aloud/list-voices/premium")
+      if (!res.ok) throw new Error("Server return " + res.status)
+      const items = await res.json()
+      await updateSetting("premiumVoiceList", {items, expire: Date.now() + 24*3600*1000})
+    } catch (err) {
+      console.error("Error refreshing premium voice list", err)
+    }
   }
   async function getAudioUrl(utterance, {lang, voice}) {
     const {authToken, clientId, manifest} = await readyPromise
