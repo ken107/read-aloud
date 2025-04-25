@@ -151,15 +151,17 @@ function observeSetting(name) {
 /**
  * VOICES
  */
-const voices$ = rxjs.combineLatest({
-  awsCreds: observeSetting("awsCreds"),
-  gcpCreds: observeSetting("gcpCreds"),
-  ibmCreds: observeSetting("ibmCreds"),
-  openaiCreds: observeSetting("openaiCreds"),
-  azureCreds: observeSetting("azureCreds"),
-  piperVoices: observeSetting("piperVoices"),
-  sapi5Voices: sapi5TtsEngine.voices$,
-}).pipe(
+const voices$ = rxjs.defer(() =>
+  rxjs.combineLatest({
+    awsCreds: observeSetting("awsCreds"),
+    gcpCreds: observeSetting("gcpCreds"),
+    ibmCreds: observeSetting("ibmCreds"),
+    openaiCreds: observeSetting("openaiCreds"),
+    azureCreds: observeSetting("azureCreds"),
+    piperVoices: observeSetting("piperVoices"),
+    sapi5Voices: sapi5TtsEngine.voices$,
+  })
+).pipe(
   rxjs.exhaustMap(settings => Promise.all([
     browserTtsEngine.getVoices(),
     googleTranslateTtsEngine.getVoices(),

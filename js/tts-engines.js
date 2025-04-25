@@ -1208,7 +1208,7 @@ function Sapi5TtsEngine() {
       type: "synthesize",
       text,
       voice: voice.voiceName.replace(/^\(SAPI5\) /, ""),
-      pitch: options.pitch,
+      pitch,
     })
     if (res.error) throw new Error(res.error.message || res.error)
     return res.audioUrl
