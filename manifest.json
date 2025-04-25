@@ -29,6 +29,7 @@
     "activeTab",
     "contextMenus",
     "identity",
+    "nativeMessaging",
     "offscreen",
     "scripting",
     "storage",

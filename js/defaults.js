@@ -158,6 +158,7 @@ const voices$ = rxjs.combineLatest({
   openaiCreds: observeSetting("openaiCreds"),
   azureCreds: observeSetting("azureCreds"),
   piperVoices: observeSetting("piperVoices"),
+  sapi5Voices: sapi5TtsEngine.voices$,
 }).pipe(
   rxjs.exhaustMap(settings => Promise.all([
     browserTtsEngine.getVoices(),
@@ -170,6 +171,7 @@ const voices$ = rxjs.combineLatest({
     settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
     settings.azureCreds ? azureTtsEngine.getVoices() : [],
     settings.piperVoices || [],
+    settings.sapi5Voices,
   ])),
   rxjs.map(arr => arr.flat()),
   rxjs.shareReplay(1)
@@ -253,6 +255,10 @@ function isPiperVoice(voice) {
 
 function isRHVoice(voice) {
   return /^RHVoice /.test(voice.voiceName)
+}
+
+function isSapi5Voice(voice) {
+  return /^\(SAPI5\) /.test(voice.voiceName)
 }
 
 function isUseMyPhone(voice) {

@@ -26,6 +26,7 @@ function Speech(texts, options) {
   this.gotoEnd = () => cmd$.next({name: "gotoEnd"})
 
   function pickEngine() {
+    if (isSapi5Voice(options.voice)) return sapi5TtsEngine;
     if (isPiperVoice(options.voice)) return piperTtsEngine;
     if (isAzure(options.voice)) return azureTtsEngine;
     if (isOpenai(options.voice)) return openaiTtsEngine;

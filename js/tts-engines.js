@@ -9,6 +9,7 @@ var phoneTtsEngine = new PhoneTtsEngine();
 var openaiTtsEngine = new OpenaiTtsEngine();
 var azureTtsEngine = new AzureTtsEngine();
 const piperTtsEngine = new PiperTtsEngine()
+const sapi5TtsEngine = new Sapi5TtsEngine()
 
 
 /*
@@ -1180,5 +1181,36 @@ function PiperTtsEngine() {
   }
   this.seek = function(index) {
     control?.next({type: "seek", index})
+  }
+}
+
+
+function Sapi5TtsEngine() {
+  this.voices$ = rxjs.defer(() => brapi.runtime.sendNativeMessage("app.readaloud.sapi5", {type: "listVoices"})).pipe(
+    rxjs.map(res => {
+      if (res.error) throw new Error(res.error.message || res.error)
+      return res.voices.map(item => ({
+        voiceName: "(SAPI5) " + item.Name,
+        lang: item.Language,
+        gender: item.Gender,
+        remote: false
+      }))
+    }),
+    rxjs.catchError(err => rxjs.EMPTY),
+    rxjs.startWith([]),
+    rxjs.shareReplay(1)
+  )
+  this.speak = function(text, options, playbackState$) {
+    return playAudio(getAudioUrl(text, options), options, playbackState$)
+  }
+  async function getAudioUrl(text, {voice, pitch}) {
+    const res = await brapi.runtime.sendNativeMessage("app.readaloud.sapi5", {
+      type: "synthesize",
+      text,
+      voice: voice.voiceName.replace(/^\(SAPI5\) /, ""),
+      pitch: options.pitch,
+    })
+    if (res.error) throw new Error(res.error.message || res.error)
+    return res.audioUrl
   }
 }
