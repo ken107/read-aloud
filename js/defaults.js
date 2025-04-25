@@ -264,6 +264,7 @@ function isNativeVoice(voice) {
     isGoogleTranslate(voice)
     || isAmazonCloud(voice)
     || isMicrosoftCloud(voice)
+    || isRHVoice(voice)
     || isReadAloudCloud(voice)
     || isAmazonPolly(voice)
     || isGoogleWavenet(voice)
