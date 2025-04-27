@@ -213,7 +213,10 @@ function PremiumTtsEngine(serviceUrl) {
   this.getVoices = async function() {
     const premiumVoiceList = await getSetting("premiumVoiceList")
     if (!premiumVoiceList || premiumVoiceList.expire < Date.now()) refreshVoiceList()
-    return premiumVoiceList ? premiumVoiceList.items : voices
+    return (premiumVoiceList ? premiumVoiceList.items : voices)
+      .concat(
+        {voiceName: "ReadAloud Generic Voice", autoSelect: true},
+      )
   }
   async function refreshVoiceList() {
     try {
@@ -362,9 +365,6 @@ function PremiumTtsEngine(serviceUrl) {
     .map(function(item) {
       return {voiceName: item.voice_name, lang: item.lang};
     })
-    .concat(
-      {voiceName: "ReadAloud Generic Voice", autoSelect: true},
-    )
 }
 
 
