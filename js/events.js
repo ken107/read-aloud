@@ -3,7 +3,6 @@ brapi.runtime.onInstalled.addListener(function() {
   installContentScripts()
   installContextMenus()
 })
-if (getBrowser() == "firefox") brapi.runtime.onStartup.addListener(installContextMenus);
 
 
 /**

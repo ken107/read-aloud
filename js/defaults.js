@@ -29,6 +29,7 @@ var config = {
     permissions: ["webRequest"],
     origins: ["https://*/"]
   },
+  browserId: getBrowser(),
 }
 
 var defaults = {
@@ -571,7 +572,7 @@ function getBrowser() {
 }
 
 function getHotkeySettingsUrl() {
-  switch (getBrowser()) {
+  switch (config.browserId) {
     case 'opera': return 'opera://settings/configureCommands';
     case 'chrome': return 'chrome://extensions/configureCommands';
     default: return brapi.runtime.getURL("shortcuts.html");

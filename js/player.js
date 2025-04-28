@@ -101,7 +101,7 @@ if (queryString.has("autoclose"))
   rxjs.combineLatest(idleSubject, piperSubject.pipe(rxjs.startWith(null)))
     .pipe(
       rxjs.switchMap(([isIdle, piper]) => {
-        if (isIdle) return rxjs.timer(piper ? 15*60*1000 : 5*60*1000)
+        if (isIdle) return rxjs.timer(queryString.get("autoclose") == "long" || piper ? 15*60*1000 : 5*60*1000)
         else return rxjs.EMPTY
       })
     )
@@ -129,8 +129,13 @@ var messageHandlers = {
 
 registerMessageListener("player", messageHandlers)
 
-bgPageInvoke("playerCheckIn")
-  .catch(console.error)
+if (queryString.has("opener")) {
+  brapi.runtime.sendMessage({dest: queryString.get("opener"), method: "playerCheckIn"})
+    .catch(console.error)
+} else {
+  bgPageInvoke("playerCheckIn")
+    .catch(console.error)
+}
 
 document.addEventListener("DOMContentLoaded", initialize)
 
