@@ -1,5 +1,12 @@
 
 var queryString = getQueryString()
+const playerCheckIn$ = new rxjs.Subject()
+
+registerMessageListener("popup", {
+  playerCheckIn() {
+    playerCheckIn$.next()
+  }
+})
 
 const piperInitializingSubject = new rxjs.Subject()
 piperInitializingSubject
@@ -114,6 +121,23 @@ function handleError(err) {
         case "#connect-phone":
           location.href = "connect-phone.html"
           break
+      }
+    })
+  }
+  else if (config.browserId == "opera" && /locked fullscreen/.test(err.message)) {
+    $("#status").html("Click <a href='#open-player-tab'>here</a> to start read aloud.").show()
+    $("#status a").click(async function() {
+      try {
+        playerCheckIn$.pipe(rxjs.take(1)).subscribe(() => $("#btnPlay").click())
+        const tab = await brapi.tabs.create({
+          url: "player.html?opener=popup&autoclose=long",
+          index: 0,
+          active: false,
+        })
+        brapi.tabs.update(tab.id, {pinned: true})
+          .catch(console.error)
+      } catch (err) {
+        handleError(err)
       }
     })
   }

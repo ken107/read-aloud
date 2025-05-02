@@ -29,6 +29,7 @@ var config = {
     permissions: ["webRequest"],
     origins: ["https://*/"]
   },
+  browserId: getBrowser(),
 }
 
 var defaults = {
@@ -251,6 +252,10 @@ function isPiperVoice(voice) {
   return /^Piper /.test(voice.voiceName)
 }
 
+function isRHVoice(voice) {
+  return /^RHVoice /.test(voice.voiceName)
+}
+
 function isUseMyPhone(voice) {
   return voice.isUseMyPhone == true
 }
@@ -260,6 +265,7 @@ function isNativeVoice(voice) {
     isGoogleTranslate(voice)
     || isAmazonCloud(voice)
     || isMicrosoftCloud(voice)
+    || isRHVoice(voice)
     || isReadAloudCloud(voice)
     || isAmazonPolly(voice)
     || isGoogleWavenet(voice)
@@ -270,7 +276,7 @@ function isNativeVoice(voice) {
 }
 
 function isPremiumVoice(voice) {
-  return isAmazonCloud(voice) || isMicrosoftCloud(voice);
+  return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isRHVoice(voice)
 }
 
 async function getSpeechVoice(voiceName, lang) {
