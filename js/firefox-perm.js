@@ -1,8 +1,15 @@
 $(function() {
   var query = getQueryString();
   var perms = JSON.parse(query.perms);
+  const origins = perms.origins;
+  const allOrigins = ["http://*/", "https://*/"];
 
   $("#perms").text(JSON.stringify(perms, null, 2));
+  $("#allUrls").toggle(query.allUrlsOption == 'true')
+  $("#cboAllUrls").change(function() {
+    perms.origins = this.checked ? allOrigins : origins;
+    $("#perms").text(JSON.stringify(perms, null, 2));
+  })
   $("#success, #error").hide();
   $("#grantBtn").click(function() {
     $("#success, #error").hide();

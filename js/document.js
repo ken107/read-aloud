@@ -56,6 +56,7 @@ function TabSource(tabId) {
             brapi.tabs.update(tab.id, {
               url: "firefox-perm.html?" + new URLSearchParams({
                 perms: JSON.stringify(perms),
+                allUrlsOption: true,
                 then: "redirect",
                 redirect: viewerUrl
               })
