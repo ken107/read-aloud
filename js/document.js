@@ -40,8 +40,59 @@ function TabSource(tabId) {
       match: function(url) {
         return /\.pdf$/i.test(url.split("?")[0]);
       },
-      validate: function() {
-        throw new Error(JSON.stringify({code: "error_upload_pdf", tabId: tab.id}));
+      async validate(tab) {
+        const viewerUrl = "pdf-viewer.html?" + new URLSearchParams({url: tab.url})
+        const perms = {
+          origins: [tab.url]
+        }
+        const hasPerms = await brapi.permissions.contains(perms)
+        if (hasPerms) {
+          await Promise.all([
+            brapi.tabs.update(tab.id, {url: viewerUrl}),
+            rxjs.firstValueFrom(pdfViewerCheckIn$)
+          ])
+        } else {
+          await Promise.all([
+            brapi.tabs.update(tab.id, {
+              url: "firefox-perm.html?" + new URLSearchParams({
+                perms: JSON.stringify(perms),
+                then: "redirect",
+                redirect: viewerUrl
+              })
+            }),
+            rxjs.firstValueFrom(pdfViewerCheckIn$.pipe(
+              rxjs.timeout(15*1000)
+            ))
+          ])
+        }
+      },
+      connect() {
+        peer = {
+          invoke(method, ...args) {
+            return brapi.runtime.sendMessage({dest: 'pdfViewer', method, args})
+          },
+          disconnect() {}
+        }
+        return peer.invoke('getDocumentInfo')
+      }
+    },
+
+    // Embedded PDF viewer ------------------------------------------------------
+    {
+      match(url) {
+        const {protocol} = new URL(brapi.runtime.getURL("dummy"))
+        return url.startsWith(protocol) && url.split('?')[0].endsWith('/pdf-viewer.html')
+      },
+      validate() {
+      },
+      connect() {
+        peer = {
+          invoke(method, ...args) {
+            return brapi.runtime.sendMessage({dest: 'pdfViewer', method, args})
+          },
+          disconnect() {}
+        }
+        return peer.invoke('getDocumentInfo')
       }
     },
 
@@ -319,7 +370,7 @@ function TabSource(tabId) {
       if (!res) throw new Error(JSON.stringify({code: "error_page_unreadable"}));
       tab = res;
       handler = handlers.find(function(h) {return h.match(tab.url || "")});
-      return handler.validate();
+      return handler.validate(tab);
     })
     .then(function() {
       if (handler.getFrameId)

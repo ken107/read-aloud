@@ -10,6 +10,7 @@ $(function() {
       if (granted) {
         $("#success").show();
         if (query.then == "auth-wavenet") getBackgroundPage().then(callMethod("authWavenet")).then(closeThisTab);
+        else if (query.then == "redirect") location.href = query.redirect
       }
       else $("#error").show();
     })

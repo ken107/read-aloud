@@ -3,6 +3,7 @@ var activeDoc;
 var playbackError = null;
 var silenceLoop = new Audio("sound/silence.opus");
 silenceLoop.loop = true;
+const pdfViewerCheckIn$ = new rxjs.Subject()
 
 const audioPlayer = immediate(() => {
   let current
@@ -129,6 +130,9 @@ var handlers = {
   audioPlay: audioPlayer.play,
   audioPause: audioPlayer.pause,
   audioResume: audioPlayer.resume,
+  pdfViewerCheckIn() {
+    pdfViewerCheckIn$.next()
+  },
 }
 
 brapi.runtime.onMessage.addListener(
