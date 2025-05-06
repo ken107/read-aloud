@@ -38,7 +38,7 @@ function TabSource(tabId) {
     // PDF file:// --------------------------------------------------------------
     {
       match: function(url) {
-        return /\.pdf$/i.test(url.split("?")[0]);
+        return /^http.*\.pdf$/i.test(url.split("?")[0]);
       },
       async validate(tab) {
         const viewerUrl = "pdf-viewer.html?" + new URLSearchParams({url: tab.url})
@@ -100,16 +100,10 @@ function TabSource(tabId) {
     // file:// ------------------------------------------------------------------
     {
       match: function(url) {
-        return /^file:/.test(url);
+        return /^(file|content):/.test(url);
       },
-      validate: function() {
-        return new Promise(function(fulfill) {
-          //brapi.extension.isAllowedFileSchemeAccess(fulfill);
-          fulfill(true);
-        })
-        .then(function(allowed) {
-          if (!allowed) throw new Error(JSON.stringify({code: "error_file_access"}));
-        })
+      validate() {
+        throw new Error(JSON.stringify({code: "error_file_access"}))
       }
     },
 

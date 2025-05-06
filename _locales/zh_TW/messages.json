@@ -14,6 +14,15 @@
   "options_voice_label": {
     "message": "朗讀語音"
   },
+  "options_voicegroup_offline": {
+    "message": "離線語音"
+  },
+  "options_voicegroup_piper": {
+    "message": "Piper語音（實驗性）"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Google Cloud語音"
+  },
   "options_voicegroup_standard": {
     "message": "標準的語音"
   },
@@ -35,6 +44,9 @@
   "options_enable_custom_voices": {
     "message": "啟用客製化語音"
   },
+  "options_enable_piper_voices": {
+    "message": "管理Piper語音"
+  },
   "options_rate_label": {
     "message": "朗讀速度"
   },
@@ -49,6 +61,15 @@
   },
   "options_show_highlighting": {
     "message": "標示朗讀文字"
+  },
+  "options_highlighting_off": {
+    "message": "關閉"
+  },
+  "options_highlighting_popup": {
+    "message": "在彈出視窗中顯示"
+  },
+  "options_highlighting_window": {
+    "message": "在獨立視窗中顯示"
   },
   "options_hotkeys_link": {
     "message": "編輯快捷鍵"
@@ -65,6 +86,15 @@
   "options_success_status": {
     "message": "已儲存。"
   },
+  "options_logged_in_as": {
+    "message": "已登入為"
+  },
+  "options_account_button": {
+    "message": "帳戶"
+  },
+  "options_logout_button": {
+    "message": "登出"
+  },
   "context_read_selection": {
     "message": "朗讀所選文字"
   },
@@ -77,8 +107,14 @@
   "error_upload_pdf": {
     "message": "使用表格上傳您的 PDF 檔案進行朗讀"
   },
+  "error_ajax_pdf": {
+    "message": "請將此PDF檔案儲存到您的電腦並在此[PDF查看器](open-pdf-viewer)中開啟它以朗讀"
+  },
   "error_page_unreadable": {
     "message": "無法朗讀這個網站"
+  },
+  "error_reader_mode": {
+    "message": "請在進入閱讀模式*之前*開始朗讀"
   },
   "error_file_access": {
     "message": "您需要在擴充套件設定中授權 Read Aloud 存取檔案位置"
@@ -94,6 +130,21 @@
   },
   "error_payment_required": {
     "message": "餘額不足"
+  },
+  "error_wavenet_auth_required": {
+    "message": "您需要授予額外的[權限](auth-wavenet)以啟用Google Wavenet語音"
+  },
+  "error_user_gesture_required": {
+    "message": "點擊[這裡](user-gesture)開始"
+  },
+  "error_phone_not_connected": {
+    "message": "手機未連接。[連接](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "手機已斷開連接({reason})。[重新連接](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "點擊每個回答旁邊的揚聲器圖示以朗讀"
   },
   "languages_heading": {
     "message": "語言選項"

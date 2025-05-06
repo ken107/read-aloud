@@ -14,6 +14,15 @@
   "options_voice_label": {
     "message": "音声"
   },
+  "options_voicegroup_offline": {
+    "message": "オフライン音声"
+  },
+  "options_voicegroup_piper": {
+    "message": "Piper音声（実験的）"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Google Cloud音声"
+  },
   "options_voicegroup_standard": {
     "message": "標準音声"
   },
@@ -35,6 +44,9 @@
   "options_enable_custom_voices": {
     "message": "カスタム音声を有効にする"
   },
+  "options_enable_piper_voices": {
+    "message": "Piper音声を管理する"
+  },
   "options_rate_label": {
     "message": "スピード"
   },
@@ -49,6 +61,15 @@
   },
   "options_show_highlighting": {
     "message": "テキストの強調表示"
+  },
+  "options_highlighting_off": {
+    "message": "オフにする"
+  },
+  "options_highlighting_popup": {
+    "message": "ポップアップで表示"
+  },
+  "options_highlighting_window": {
+    "message": "別ウィンドウで表示"
   },
   "options_hotkeys_link": {
     "message": "ショートカットキーを編集する"
@@ -65,6 +86,15 @@
   "options_success_status": {
     "message": "変更が保存されました。"
   },
+  "options_logged_in_as": {
+    "message": "ログイン中："
+  },
+  "options_account_button": {
+    "message": "アカウント"
+  },
+  "options_logout_button": {
+    "message": "ログアウト"
+  },
   "context_read_selection": {
     "message": "選択したテキストを読み上げる"
   },
@@ -77,11 +107,17 @@
   "error_upload_pdf": {
     "message": "読み上げるにはフォームを使用してPDFファイルをアップロードしてください"
   },
+  "error_ajax_pdf": {
+    "message": "このPDFファイルをコンピューターに保存し、[PDFビューア](open-pdf-viewer)内で開いて読み上げてください"
+  },
   "error_page_unreadable": {
     "message": "このウェブサイトを読み上げることはできません"
   },
+  "error_reader_mode": {
+    "message": "リーダーモードに入る*前に*読み上げを開始してください"
+  },
   "error_file_access": {
-    "message": "拡張子[設定]のファイルURLへの読み上げアクセスを許可する必要があります (open-extension-settings)"
+    "message": "ローカルファイルにアクセスできません。PDFファイルの場合は、[PDFビューア](open-pdf-viewer)内で開いて読み上げてください"
   },
   "error_add_permissions": {
     "message": "このウェブサイトにReadAloudの追加の[権限](request-permissions)を付与する必要があります"
@@ -100,6 +136,15 @@
   },
   "error_user_gesture_required": {
     "message": "[こちら](user-gesture)をクリックして開始します"
+  },
+  "error_phone_not_connected": {
+    "message": "スマートフォンが接続されていません。[接続](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "スマートフォンが切断されました（{reason}）。[再接続](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "各回答の横にあるスピーカーアイコンをクリックして読み上げます"
   },
   "languages_heading": {
     "message": "言語オプション"

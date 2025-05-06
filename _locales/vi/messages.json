@@ -14,11 +14,23 @@
   "options_voice_label": {
     "message": "Giọng đọc"
   },
+  "options_voicegroup_offline": {
+    "message": "Giọng đọc ngoại tuyến"
+  },
+  "options_voicegroup_piper": {
+    "message": "Giọng đọc Piper (thử nghiệm)"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Giọng đọc Google Cloud"
+  },
   "options_voicegroup_standard": {
     "message": "Các giọng chuẩn"
   },
   "options_voicegroup_premium": {
     "message": "Các giọng chất lượng cao"
+  },
+  "options_voicegroup_additional": {
+    "message": "Giọng đọc bổ sung"
   },
   "options_enable_premium_voices": {
     "message": "Bật các giọng chất lượng cao"
@@ -28,6 +40,12 @@
   },
   "options_add_more_languages": {
     "message": "Thêm nhiều ngôn ngữ hơn"
+  },
+  "options_enable_custom_voices": {
+    "message": "Bật giọng đọc tùy chỉnh"
+  },
+  "options_enable_piper_voices": {
+    "message": "Quản lý giọng đọc Piper"
   },
   "options_rate_label": {
     "message": "Tốc độ đọc"
@@ -44,6 +62,15 @@
   "options_show_highlighting": {
     "message": "Highlight câu đang đọc"
   },
+  "options_highlighting_off": {
+    "message": "Tắt"
+  },
+  "options_highlighting_popup": {
+    "message": "Hiển thị trong cửa sổ popup"
+  },
+  "options_highlighting_window": {
+    "message": "Hiển thị trong cửa sổ riêng biệt"
+  },
   "options_hotkeys_link": {
     "message": "Chỉnh sửa phím tắt"
   },
@@ -59,6 +86,15 @@
   "options_success_status": {
     "message": "Đã lưu lại."
   },
+  "options_logged_in_as": {
+    "message": "Đã đăng nhập với tên"
+  },
+  "options_account_button": {
+    "message": "Tài khoản"
+  },
+  "options_logout_button": {
+    "message": "Đăng xuất"
+  },
   "context_read_selection": {
     "message": "Đọc"
   },
@@ -71,14 +107,44 @@
   "error_upload_pdf": {
     "message": "Sử dụng biểu mẫu để tải lên tệp PDF của bạn để đọc to"
   },
+  "error_ajax_pdf": {
+    "message": "Vui lòng lưu tệp PDF này vào máy tính của bạn và mở nó trong [trình xem PDF](open-pdf-viewer) này để đọc to"
+  },
   "error_page_unreadable": {
     "message": "Không thể đọc to trang web này"
+  },
+  "error_reader_mode": {
+    "message": "Vui lòng bắt đầu đọc to *trước khi* vào chế độ đọc"
+  },
+  "error_file_access": {
+    "message": "Không thể truy cập tệp cục bộ. Nếu đây là tệp PDF, vui lòng mở nó trong [trình xem PDF](open-pdf-viewer) để đọc to"
+  },
+  "error_add_permissions": {
+    "message": "Bạn cần cấp cho Read Aloud [quyền](request-permissions) bổ sung cho trang web này"
   },
   "error_login_required": {
     "message": "Vui lòng [đăng nhập](sign-in) để sử dụng các giọng chất lượng cao"
   },
   "error_voice_unavailable": {
     "message": "Giọng nói không khả dụng, vui lòng chọn một giọng nói khác"
+  },
+  "error_payment_required": {
+    "message": "Hết tín dụng"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Bạn cần cấp [quyền](auth-wavenet) bổ sung để bật giọng nói Google Wavenet"
+  },
+  "error_user_gesture_required": {
+    "message": "Nhấp [vào đây](user-gesture) để bắt đầu"
+  },
+  "error_phone_not_connected": {
+    "message": "Điện thoại không được kết nối. [Kết nối](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Điện thoại bị ngắt kết nối ({reason}). [Kết nối lại](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Nhấp vào biểu tượng loa bên cạnh mỗi câu trả lời để đọc to"
   },
   "languages_heading": {
     "message": "Lựa chọn ngôn ngữ"

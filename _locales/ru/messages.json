@@ -14,6 +14,15 @@
   "options_voice_label": {
     "message": "Голос"
   },
+  "options_voicegroup_offline": {
+    "message": "Автономные голоса"
+  },
+  "options_voicegroup_piper": {
+    "message": "Голоса Piper (экспериментальные)"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Голоса Google Cloud"
+  },
   "options_voicegroup_standard": {
     "message": "Стандартные голоса"
   },
@@ -34,6 +43,9 @@
   },
   "options_enable_custom_voices": {
     "message": "Включить пользовательские голоса"
+  },
+  "options_enable_piper_voices": {
+    "message": "Управление голосами Piper"
   },
   "options_rate_label": {
     "message": "Скорость"
@@ -101,6 +113,9 @@
   "error_page_unreadable": {
     "message": "Невозможно прочитать вслух этот сайт"
   },
+  "error_reader_mode": {
+    "message": "Пожалуйста, начните чтение вслух *до* входа в режим чтения"
+  },
   "error_file_access": {
     "message": "Вам необходимо предоставить доступ для Read Aloud к URL-адресам файлов в расширении [настройки](открыть-настройки-расширения)"
   },
@@ -121,6 +136,15 @@
   },
   "error_user_gesture_required": {
     "message": "Нажмите [здесь](пользовательский жест), чтобы начать"
+  },
+  "error_phone_not_connected": {
+    "message": "Телефон не подключен. [Подключить](подключить-телефон)"
+  },
+  "error_phone_disconnected": {
+    "message": "Телефон отключен ({reason}). [Переподключить](подключить-телефон)"
+  },
+  "error_chatgpt": {
+    "message": "Нажмите на значок динамика рядом с каждым ответом, чтобы прочитать его вслух"
   },
   "languages_heading": {
     "message": "Параметры языка"

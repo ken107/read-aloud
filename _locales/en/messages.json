@@ -117,7 +117,7 @@
     "message": "Please start read aloud *before* entering reader mode"
   },
   "error_file_access": {
-    "message": "You need to grant Read Aloud access to file URLs in extension [settings](open-extension-settings)"
+    "message": "Cannot access local file. If this is a PDF file, please open it inside [PDF viewer](open-pdf-viewer) to read aloud"
   },
   "error_add_permissions": {
     "message": "You need to grant Read Aloud additional [permissions](request-permissions) for this website"

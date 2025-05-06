@@ -14,11 +14,23 @@
   "options_voice_label": {
     "message": "朗读语音"
   },
+  "options_voicegroup_offline": {
+    "message": "离线语音"
+  },
+  "options_voicegroup_piper": {
+    "message": "Piper语音（实验性）"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Google Cloud语音"
+  },
   "options_voicegroup_standard": {
     "message": "标准的声音"
   },
   "options_voicegroup_premium": {
     "message": "优质的声音"
+  },
+  "options_voicegroup_additional": {
+    "message": "其他语音"
   },
   "options_enable_premium_voices": {
     "message": "启用高级音色"
@@ -28,6 +40,12 @@
   },
   "options_add_more_languages": {
     "message": "添加更多语言"
+  },
+  "options_enable_custom_voices": {
+    "message": "启用自定义语音"
+  },
+  "options_enable_piper_voices": {
+    "message": "管理Piper语音"
   },
   "options_rate_label": {
     "message": "朗读速度"
@@ -44,6 +62,15 @@
   "options_show_highlighting": {
     "message": "标示朗读文本"
   },
+  "options_highlighting_off": {
+    "message": "关闭"
+  },
+  "options_highlighting_popup": {
+    "message": "在弹出窗口中显示"
+  },
+  "options_highlighting_window": {
+    "message": "在单独窗口中显示"
+  },
   "options_hotkeys_link": {
     "message": "编辑快捷键"
   },
@@ -59,6 +86,15 @@
   "options_success_status": {
     "message": "已储存。"
   },
+  "options_logged_in_as": {
+    "message": "已登录为"
+  },
+  "options_account_button": {
+    "message": "账户"
+  },
+  "options_logout_button": {
+    "message": "退出登录"
+  },
   "context_read_selection": {
     "message": "朗读所选文本"
   },
@@ -71,14 +107,44 @@
   "error_upload_pdf": {
     "message": "使用表格上传您的PDF文件进行朗读"
   },
+  "error_ajax_pdf": {
+    "message": "请将此PDF文件保存到您的计算机并在此[PDF查看器](open-pdf-viewer)中打开它以大声朗读"
+  },
   "error_page_unreadable": {
     "message": "不能大声朗读这个网站"
+  },
+  "error_reader_mode": {
+    "message": "请在进入阅读模式*之前*开始朗读"
+  },
+  "error_file_access": {
+    "message": "无法访问本地文件。如果这是PDF文件，请在[PDF查看器](open-pdf-viewer)中打开它以大声朗读"
+  },
+  "error_add_permissions": {
+    "message": "您需要为此网站授予Read Aloud额外的[权限](request-permissions)"
   },
   "error_login_required": {
     "message": "请[登录](sign-in)以使用高级语音"
   },
   "error_voice_unavailable": {
     "message": "语音不可用，请选择另一个"
+  },
+  "error_payment_required": {
+    "message": "已用完点数"
+  },
+  "error_wavenet_auth_required": {
+    "message": "您需要授予额外的[权限](auth-wavenet)以启用Google Wavenet语音"
+  },
+  "error_user_gesture_required": {
+    "message": "点击[此处](user-gesture)开始"
+  },
+  "error_phone_not_connected": {
+    "message": "手机未连接。[连接](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "手机已断开连接({reason})。[重新连接](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "点击每个回答旁边的扬声器图标以大声朗读"
   },
   "languages_heading": {
     "message": "语言选项"

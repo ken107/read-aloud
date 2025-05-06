@@ -14,6 +14,15 @@
   "options_voice_label": {
     "message": "Voz"
   },
+  "options_voicegroup_offline": {
+    "message": "Voces Offline"
+  },
+  "options_voicegroup_piper": {
+    "message": "Voces Piper (experimental)"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Voces de Google Cloud"
+  },
   "options_voicegroup_standard": {
     "message": "Voces Estándar"
   },
@@ -29,7 +38,13 @@
   "options_add_more_languages": {
     "message": "Añadir más idiomas"
   },
-   "options_rate_label": {
+  "options_enable_custom_voices": {
+    "message": "Habilitar Voces Personalizadas"
+  },
+  "options_enable_piper_voices": {
+    "message": "Gestionar Voces Piper"
+  },
+  "options_rate_label": {
     "message": "Velocidad"
   },
   "options_rate_warning": {
@@ -43,6 +58,15 @@
   },
   "options_show_highlighting": {
     "message": "Resaltado De Texto"
+  },
+  "options_highlighting_off": {
+    "message": "Desactivar"
+  },
+  "options_highlighting_popup": {
+    "message": "Mostrar en ventana emergente"
+  },
+  "options_highlighting_window": {
+    "message": "Mostrar en una ventana separada"
   },
   "options_hotkeys_link": {
     "message": "Editar teclas de acceso directo"
@@ -59,6 +83,15 @@
   "options_success_status": {
     "message": "Cambios guardados."
   },
+  "options_logged_in_as": {
+    "message": "Conectado como"
+  },
+  "options_account_button": {
+    "message": "Cuenta"
+  },
+  "options_logout_button": {
+    "message": "Cerrar sesión"
+  },
   "context_read_selection": {
     "message": "Leer en voz alta el texto seleccionado"
   },
@@ -71,14 +104,44 @@
   "error_upload_pdf": {
     "message": "Use el formulario para cargar su archivo PDF y leer en voz alta"
   },
+  "error_ajax_pdf": {
+    "message": "Por favor guarde este archivo PDF en su computadora y ábralo dentro de este [visor de PDF](open-pdf-viewer) para leerlo en voz alta"
+  },
   "error_page_unreadable": {
     "message": "No puedo leer en voz alta este sitio web"
+  },
+  "error_reader_mode": {
+    "message": "Por favor inicie la lectura en voz alta *antes* de entrar en el modo de lectura"
+  },
+  "error_file_access": {
+    "message": "No se puede acceder al archivo local. Si es un archivo PDF, ábralo dentro del [visor de PDF](open-pdf-viewer) para leerlo en voz alta"
+  },
+  "error_add_permissions": {
+    "message": "Necesita otorgar a Read Aloud [permisos](request-permissions) adicionales para este sitio web"
   },
   "error_login_required": {
     "message": "Por favor [inicie sesión](sign-in) para utilizar las voces premium"
   },
   "error_voice_unavailable": {
     "message": "Voz no disponible, por favor elija otro"
+  },
+  "error_payment_required": {
+    "message": "Sin crédito"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Necesita otorgar [permisos](auth-wavenet) adicionales para habilitar las voces de Google Wavenet"
+  },
+  "error_user_gesture_required": {
+    "message": "Haga clic [aquí](user-gesture) para comenzar"
+  },
+  "error_phone_not_connected": {
+    "message": "Teléfono no conectado. [Conectar](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Teléfono desconectado ({reason}). [Reconectar](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Haga clic en el icono del altavoz junto a cada respuesta para leerla en voz alta"
   },
   "languages_heading": {
     "message": "Opciones de lenguaje"
