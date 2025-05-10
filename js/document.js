@@ -102,8 +102,13 @@ function TabSource(tabId) {
       match: function(url) {
         return /^(file|content):/.test(url);
       },
-      validate() {
-        throw new Error(JSON.stringify({code: "error_file_access"}))
+      async validate(tab) {
+        // check if we can execute script in the tab
+        try {
+          await brapi.tabs.executeScript(tab.id, {code: "1"})
+        } catch (e) {
+          throw new Error(JSON.stringify({code: "error_file_access"}))
+        }
       }
     },
 
