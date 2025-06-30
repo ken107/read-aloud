@@ -23,7 +23,7 @@ function KindleDoc() {
   function seek(index) {
     for (; currentIndex<index; currentIndex++) simulateClick(document.getElementById("kr-chevron-right"))
     for (; currentIndex>index; currentIndex--) simulateClick(document.getElementById("kr-chevron-left"))
-    return waitMillis(150)
+    return waitMillis(500)
   }
 
   async function fetchTexts() {
@@ -45,8 +45,8 @@ function KindleDoc() {
   function capturePage() {
     const img = $(".kg-full-page-img > img").get(0)
     const canvas = document.createElement("canvas")
-    canvas.width = img.width
-    canvas.height = img.height
+    canvas.width = img.naturalWidth
+    canvas.height = img.naturalHeight
     const ctx = canvas.getContext("2d")
     ctx.imageSmoothingEnabled = false
     ctx.drawImage(img, 0, 0)
