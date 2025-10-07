@@ -1018,6 +1018,7 @@ function OpenaiTtsEngine() {
         model: voiceInfo.model,
         input: text,
         voice: voiceInfo.voice,
+        instructions: voiceInfo.instructions,
         response_format: "mp3",
       })
     })
