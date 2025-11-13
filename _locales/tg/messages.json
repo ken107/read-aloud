@@ -1,0 +1,179 @@
+{
+  "extension_name": {
+    "message": "Барномаи «Баланд хонед»: Табдили матн ба нутқ"
+  },
+  "extension_short_name": {
+    "message": "Барномаи «Баланд хонед»"
+  },
+  "extension_description": {
+    "message": "Танҳо як маротиба тугмаро зер карда, мақолаи саҳифаи ҷориро ба воситаи технологияи табдили матн ба нутқ(TTS) баланд хонед. Зиёда аз 40 забон дастгирӣ карда мешавад."
+  },
+  "options_heading": {
+    "message": "Имконот"
+  },
+  "options_voice_label": {
+    "message": "Овоз"
+  },
+  "options_voicegroup_offline": {
+    "message": "Овозҳои насбшуда"
+  },
+  "options_voicegroup_piper": {
+    "message": "Овозҳои «Пайпер» (озмоишӣ)"
+  },
+  "options_voicegroup_standard": {
+    "message": "Овозҳои стандартӣ"
+  },
+  "options_voicegroup_premium": {
+    "message": "Овозҳои баландсифат"
+  },
+  "options_voicegroup_additional": {
+    "message": "Овозҳои иловагӣ"
+  },
+  "options_add_more_languages": {
+    "message": "Илова кардани забонҳои дигар"
+  },
+  "options_enable_custom_voices": {
+    "message": "Фаъол кардани забонҳои фармоишӣ"
+  },
+  "options_enable_piper_voices": {
+    "message": "Идоракунии овозҳои «Пайпер»"
+  },
+  "options_rate_label": {
+    "message": "Суръат"
+  },
+  "options_rate_warning": {
+    "message": "Тавзеҳ: Баъзе аз забонҳо бо суръати баланд пахш карда намешаванд."
+  },
+  "options_pitch_label": {
+    "message": "Дараҷа"
+  },
+  "options_volume_label": {
+    "message": "Баландии садо"
+  },
+  "options_show_highlighting": {
+    "message": "Ҷудо кардани матн бо ранг"
+  },
+  "options_highlighting_off": {
+    "message": "Ғайрифаъол кардан"
+  },
+  "options_highlighting_popup": {
+    "message": "Намоиш дар равзанаи зоҳиршаванда"
+  },
+  "options_highlighting_window": {
+    "message": "Намоиш дар равзанаи алоҳида"
+  },
+  "options_audio_playback": {
+    "message": "Пахши аудиоӣ"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Истифодаи варақаи алоҳида"
+  },
+  "options_audio_playback_embedded": {
+    "message": "Дар ҳудуди саҳифа"
+  },
+  "options_hotkeys_link": {
+    "message": "Таҳрир кардани тугмаи миёнбур"
+  },
+  "options_test_button": {
+    "message": "Санҷиш"
+  },
+  "options_reset_button": {
+    "message": "Бозсозӣ"
+  },
+  "options_logged_in_as": {
+    "message": "Бо номи зерин ворид шуд:"
+  },
+  "options_account_button": {
+    "message": "Ҳисоб"
+  },
+  "options_logout_button": {
+    "message": "Баромад"
+  },
+  "player_tab_explanation": {
+    "message": "Барномаи «Баланд хонед» барои пахши аудиоӣ аз ин варақа истифода мебарад. Ҳангоми бефаъолиятӣ ин варақа пас аз 5 дақиқа ба таври худкор пӯшида мешавад."
+  },
+  "player_hidethistab_link": {
+    "message": "Пинҳон кардани ин варақа"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Ин варақаро пинҳон мекунед?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Агар шумо ин варақаро пинҳон кунед, барномаи «Баланд хонед» аудиоро дар ҳудуди саҳифаи ҷорӣ пахш мекунад. Ин маънои онро дорад, ки агар шумо аз ин саҳифа ба саҳифаи дигар гузаред, хониши матн қатъ карда мешавад.\n\n(Ин танзим тавассути саҳифаи «Имконот» дар дохили васеъшавӣ бекор карда мешавад)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Пинҳон кардан"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Бекор кардан"
+  },
+  "player_permission_dialog_title": {
+    "message": "Иҷозат лозим аст"
+  },
+  "player_permission_dialog_body": {
+    "message": "Ба барномаи «Баланд хонед» иҷозат медиҳед, то тавонад аудиоро пахш кунад?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Иҷозат додан"
+  },
+  "context_read_selection": {
+    "message": "Хондани матни интихобшуда бо овози баланд"
+  },
+  "error_no_text": {
+    "message": "Ягон матн барои хониш ёфт нашуд, лутфан, аввал матнеро, ки мехоҳед бо овози баланд хонда шавад, интихоб намоед"
+  },
+  "error_no_voice": {
+    "message": "Ин забон дастгирӣ намешавад: «{lang}»"
+  },
+  "error_upload_pdf": {
+    "message": "Барои бор кардани файли «PDF» ва хондани он бо овози баланд, лутфан, аз ин шакл истифода баред"
+  },
+  "error_ajax_pdf": {
+    "message": "Лутфан, ин файли «PDF»-ро ба компютери худ нигоҳ доред ва барои хондани матни файл бо овози баланд, онро дохили ин [Намоишгари «PDF»](open-pdf-viewer) кушоед"
+  },
+  "error_page_unreadable": {
+    "message": "Матни ин сомона бо овози баланд хонда намешавад"
+  },
+  "error_file_access": {
+    "message": "Шумо бояд иҷозат диҳед, то барномаи «Баланд хонед» тавонад ба нишониҳои «URL»-и файлҳо дар [танзимоти](open-extension-settings) васеъшавӣ дастрасӣ пайдо намояд"
+  },
+  "error_add_permissions": {
+    "message": "Барои ин сомона шумо бояд ба барномаи «Баланд хонед» [иҷозатҳои](request-permissions) иловагиро татбиқ намоед"
+  },
+  "error_login_required": {
+    "message": "Барои истифода кардани овозҳои баландсифат, лутфан, [ворид шавед](sign-in)"
+  },
+  "error_voice_unavailable": {
+    "message": "Ин овоз дастнорас аст, лутфан, забони дигареро интихоб намоед"
+  },
+  "error_payment_required": {
+    "message": "Маблағро илова намоед"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Барои фаъол кардани овозҳои «Google Wavenet» шумо бояд [иҷозатҳои](auth-wavenet) иловагиро татбиқ кунед"
+  },
+  "error_phone_not_connected": {
+    "message": "Телефон пайваст нашудааст. [Пайваст намоед](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Пайвасти телефон қатъ шуд ({reason}). [Аз нав пайваст намоед](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Пеш аз ҳар як ҷавоб нишонаи баландгӯякро зер кунед, то ки он бо овози баланд хонда шавад"
+  },
+  "languages_heading": {
+    "message": "Имконоти забон"
+  },
+  "languages_back_button": {
+    "message": "Бозгашт ба имконот"
+  },
+  "google_translate_request_permission": {
+    "message": "Барои табдил кардани матн ба нутқ, барномаи «Баланд хонед» мехоҳад, ки аз «Google Translate» истифода барад."
+  },
+  "google_translate_allow_button": {
+    "message": "Иҷозат додан"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Барои табдил кардани матн ба нутқ, барномаи «Баланд хонед» аз технологияи «Google Translate» истифода мебарад.  Лутфан, ин варақаро кушода нигоҳ доред."
+  }
+}
