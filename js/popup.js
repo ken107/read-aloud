@@ -68,15 +68,13 @@ async function init() {
   $("#decrease-window-size").click(changeWindowSize.bind(null, -1));
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
   $("#toggle-dark-mode").click(toggleDarkMode);
-
+  $("#downloadBtn").click(onDownload);
   refreshSize();
   checkAnnouncements();
 
   const {state} = await bgPageInvoke("getPlaybackState")
   if (state == "PAUSED" || state == "STOPPED") onPlay()
 }
-
-
 
 function handleError(err) {
   if (!err) return;
@@ -319,6 +317,26 @@ function changeFontSize(delta) {
     })
     .catch(handleError)
 }
+
+async function onDownload() {
+  try {
+    const text = await bgPageInvoke("getSelectedTextFromTab");
+
+    if (!text) return alert("Please select some text first.");
+
+    const base64Audio = await bgPageInvoke("downloadSelectedText", text);
+
+    const a = document.createElement("a");
+    a.href = base64Audio;
+    a.download = "readaloud.mp3";
+    a.click();
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to download audio.");
+  }
+}
+
 
 function changeWindowSize(delta) {
   getSettings(["highlightWindowSize"])

@@ -22,9 +22,58 @@ var handlers = {
   reportIssue: reportIssue,
   authWavenet: authWavenet,
   managePiperVoices,
+  getSelectedTextFromTab: getSelectedTextFromTab
 }
 
 registerMessageListener("serviceWorker", handlers)
+
+
+async function generateAudioBlob(text) {
+  // same voice/settings used for normal play
+  const settings = await getSettings();
+  const rate = await getSetting("rate" + (settings.voiceName || ""));
+  
+  const speech = new Speech([text], {
+    rate: rate || defaults.rate,
+    pitch: settings.pitch || defaults.pitch,
+    volume: settings.volume || defaults.volume,
+    lang: settings.lang || "en-US"
+  });
+
+  // Convert speech to blob
+  return await speech.createAudioBlob();
+}
+
+
+function blobToBase64(blob) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+}
+
+
+async function getSelectedTextFromTab() {
+  const tab = await getActiveTab();
+  if (!tab) return "";
+
+  // Try all frames
+  const results = await brapi.scripting.executeScript({
+    target: { tabId: tab.id, allFrames: true },
+    func: () => window.getSelection().toString().trim()
+  });
+
+  // Loop through results and return the first non-empty selection
+  for (const r of results) {
+    if (r && r.result && r.result.trim()) {
+      return r.result.trim();
+    }
+  }
+
+  // Nothing selected
+  return "";
+}
 
 
 /**
