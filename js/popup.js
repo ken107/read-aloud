@@ -320,20 +320,30 @@ function changeFontSize(delta) {
 
 async function onDownload() {
   try {
-    const text = await bgPageInvoke("getSelectedTextFromTab");
+    // 1. Ask BACKGROUND for selected text
+    const selectedText = await bgPageInvoke("getSelectedText");
 
-    if (!text) return alert("Please select some text first.");
+    if (!selectedText) {
+      alert("Please select some text first.");
+      return;
+    }
 
-    const base64Audio = await bgPageInvoke("downloadSelectedText", text);
+    console.log("Popup received selected text:", selectedText);
 
+    // 2. Ask BACKGROUND to synthesize audio
+    const base64Audio = await bgPageInvoke("downloadSelectedText", [selectedText]);
+
+    // 3. Trigger file download
     const a = document.createElement("a");
     a.href = base64Audio;
     a.download = "readaloud.mp3";
     a.click();
 
+    console.log("Audio download completed");
+
   } catch (err) {
-    console.error(err);
-    alert("Failed to download audio.");
+    console.error("DOWNLOAD ERROR → FULL ERROR:", JSON.stringify(err, null, 2));
+  alert("Unable to download file. Check console.");
   }
 }
 

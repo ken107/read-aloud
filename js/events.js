@@ -1,5 +1,5 @@
 
-brapi.runtime.onInstalled.addListener(function() {
+brapi.runtime.onInstalled.addListener(function () {
   installContentScripts()
   installContextMenus()
 })
@@ -22,58 +22,73 @@ var handlers = {
   reportIssue: reportIssue,
   authWavenet: authWavenet,
   managePiperVoices,
-  getSelectedTextFromTab: getSelectedTextFromTab
+  getSelectedText: getSelectedText,
+  downloadSelectedText: downloadSelectedText
+
 }
 
 registerMessageListener("serviceWorker", handlers)
 
 
 async function generateAudioBlob(text) {
-  // same voice/settings used for normal play
+  // Get TTS settings
   const settings = await getSettings();
   const rate = await getSetting("rate" + (settings.voiceName || ""));
-  
+
+  // Choose language
+  let lang = settings.lang || "en-US";
+
+  // Create a Speech instance (same used for Read Aloud player)
   const speech = new Speech([text], {
     rate: rate || defaults.rate,
     pitch: settings.pitch || defaults.pitch,
     volume: settings.volume || defaults.volume,
-    lang: settings.lang || "en-US"
+    lang: lang
   });
 
-  // Convert speech to blob
+  // Generate & return the audio blob
   return await speech.createAudioBlob();
 }
 
 
 function blobToBase64(blob) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
 }
 
+async function getSelectedText() {
+  try {
+    const tabs = await brapi.tabs.query({ active: true, currentWindow: true });
+    if (!tabs.length) return "";
 
-async function getSelectedTextFromTab() {
-  const tab = await getActiveTab();
-  if (!tab) return "";
+    const tabId = tabs[0].id;
 
-  // Try all frames
-  const results = await brapi.scripting.executeScript({
-    target: { tabId: tab.id, allFrames: true },
-    func: () => window.getSelection().toString().trim()
-  });
+    const result = await brapi.scripting.executeScript({
+      target: { tabId },
+      func: () => window.getSelection().toString().trim(),
+    });
 
-  // Loop through results and return the first non-empty selection
-  for (const r of results) {
-    if (r && r.result && r.result.trim()) {
-      return r.result.trim();
-    }
+    return result[0].result || "";
+  } catch (e) {
+    console.error("getSelectedText ERROR:", e);
+    return "";
   }
+};
 
-  // Nothing selected
-  return "";
+
+async function downloadSelectedText(text) {
+   console.log("BG → sending to player:", text);
+  return sendToPlayer({
+    dest: "player",
+    method: "synthesizeDownloadAudio",
+    args: [text]
+  });
 }
+
 
 
 /**
@@ -89,7 +104,7 @@ async function installContentScripts() {
       world: "MAIN"
     },
   ]
-  const registeredIds = await brapi.scripting.getRegisteredContentScripts({ids: scripts.map(x => x.id)})
+  const registeredIds = await brapi.scripting.getRegisteredContentScripts({ ids: scripts.map(x => x.id) })
     .then(scripts => scripts.map(x => x.id))
     .catch(err => {
       console.error(err)
@@ -108,15 +123,15 @@ async function installContentScripts() {
 
 function installContextMenus() {
   if (brapi.contextMenus)
-  brapi.contextMenus.create({
-    id: "read-selection",
-    title: brapi.i18n.getMessage("context_read_selection"),
-    contexts: ["selection"]
-  },
-  function() {
-    if (brapi.runtime.lastError) console.error(brapi.runtime.lastError)
-    else console.info("Installed context menus")
-  })
+    brapi.contextMenus.create({
+      id: "read-selection",
+      title: brapi.i18n.getMessage("context_read_selection"),
+      contexts: ["selection"]
+    },
+      function () {
+        if (brapi.runtime.lastError) console.error(brapi.runtime.lastError)
+        else console.info("Installed context menus")
+      })
 }
 
 
@@ -124,49 +139,49 @@ function installContextMenus() {
  * Context menu handlers
  */
 if (brapi.contextMenus)
-brapi.contextMenus.onClicked.addListener(function(info, tab) {
-  if (info.menuItemId == "read-selection")
-    Promise.resolve()
-      .then(function() {
-        if (tab && tab.id != -1) return detectTabLanguage(tab.id)
-        else return undefined
-      })
-      .then(function(lang) {
-        return playText(info.selectionText, {lang: lang})
-      })
-      .catch(handleHeadlessError)
-})
+  brapi.contextMenus.onClicked.addListener(function (info, tab) {
+    if (info.menuItemId == "read-selection")
+      Promise.resolve()
+        .then(function () {
+          if (tab && tab.id != -1) return detectTabLanguage(tab.id)
+          else return undefined
+        })
+        .then(function (lang) {
+          return playText(info.selectionText, { lang: lang })
+        })
+        .catch(handleHeadlessError)
+  })
 
 
 /**
  * Shortcut keys handlers
  */
 if (brapi.commands)
-brapi.commands.onCommand.addListener(function(command) {
-  if (command == "play") {
-    getPlaybackState()
-      .then(function(stateInfo) {
-        switch (stateInfo.state) {
-          case "PLAYING": return pause()
-          case "PAUSED": return resume()
-          case "STOPPED": return playTab()
-        }
-      })
-      .catch(handleHeadlessError)
-  }
-  else if (command == "stop") {
-    stop()
-      .catch(handleHeadlessError)
-  }
-  else if (command == "forward") {
-    forward()
-      .catch(handleHeadlessError)
-  }
-  else if (command == "rewind") {
-    rewind()
-      .catch(handleHeadlessError)
-  }
-})
+  brapi.commands.onCommand.addListener(function (command) {
+    if (command == "play") {
+      getPlaybackState()
+        .then(function (stateInfo) {
+          switch (stateInfo.state) {
+            case "PLAYING": return pause()
+            case "PAUSED": return resume()
+            case "STOPPED": return playTab()
+          }
+        })
+        .catch(handleHeadlessError)
+    }
+    else if (command == "stop") {
+      stop()
+        .catch(handleHeadlessError)
+    }
+    else if (command == "forward") {
+      forward()
+        .catch(handleHeadlessError)
+    }
+    else if (command == "rewind") {
+      rewind()
+        .catch(handleHeadlessError)
+    }
+  })
 
 
 /**
@@ -229,24 +244,24 @@ var currentTask = {
 async function playText(text, opts) {
   const hasPlayer = await stop().then(res => res == true, err => false)
   if (!hasPlayer) await injectPlayer(await getActiveTab())
-  await sendToPlayer({method: "playText", args: [text, opts]})
+  await sendToPlayer({ method: "playText", args: [text, opts] })
 }
 
 async function playTab(tabId) {
   const tab = tabId ? await getTab(tabId) : await getActiveTab()
-  if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}))
+  if (!tab) throw new Error(JSON.stringify({ code: "error_page_unreadable" }))
 
   const task = currentTask.begin()
   try {
     const handler = contentHandlers.find(h => h.match(tab.url || "", tab.title))
     if (handler.validate) await handler.validate(tab)
     if (handler.getSourceUri) {
-      await brapi.storage.local.set({"sourceUri": handler.getSourceUri(tab)})
+      await brapi.storage.local.set({ "sourceUri": handler.getSourceUri(tab) })
     }
     else {
       const frameId = handler.getFrameId && await getAllFrames(tab.id).then(frames => handler.getFrameId(frames))
       if (!await contentScriptAlreadyInjected(tab, frameId)) await injectContentScript(tab, frameId, handler.extraScripts)
-      await brapi.storage.local.set({"sourceUri": "contentscript:" + tab.id})
+      await brapi.storage.local.set({ "sourceUri": "contentscript:" + tab.id })
     }
   }
   finally {
@@ -255,7 +270,7 @@ async function playTab(tabId) {
 
   const hasPlayer = await stop().then(res => res == true, err => false)
   if (!hasPlayer) await injectPlayer(tab)
-  await sendToPlayer({method: "playTab"})
+  await sendToPlayer({ method: "playTab" })
 }
 
 async function reloadAndPlayTab(tabId) {
@@ -284,37 +299,37 @@ async function reloadAndPlayTab(tabId) {
 
 function stop() {
   currentTask.cancel()
-  return sendToPlayer({method: "stop"})
+  return sendToPlayer({ method: "stop" })
 }
 
 function pause() {
-  return sendToPlayer({method: "pause"})
+  return sendToPlayer({ method: "pause" })
 }
 
 function resume() {
-  return sendToPlayer({method: "resume"})
+  return sendToPlayer({ method: "resume" })
 }
 
 async function getPlaybackState() {
-  if (currentTask.isActive()) return {state: "LOADING"}
+  if (currentTask.isActive()) return { state: "LOADING" }
   try {
-    return await sendToPlayer({method: "getPlaybackState"}) || {state: "STOPPED"}
+    return await sendToPlayer({ method: "getPlaybackState" }) || { state: "STOPPED" }
   }
   catch (err) {
-    return {state: "STOPPED"}
+    return { state: "STOPPED" }
   }
 }
 
 function forward() {
-  return sendToPlayer({method: "forward"})
+  return sendToPlayer({ method: "forward" })
 }
 
 function rewind() {
-  return sendToPlayer({method: "rewind"})
+  return sendToPlayer({ method: "rewind" })
 }
 
 function seek(n) {
-  return sendToPlayer({method: "seek", args: [n]})
+  return sendToPlayer({ method: "seek", args: [n] })
 }
 
 
@@ -327,7 +342,7 @@ function handleHeadlessError(err) {
 function reportIssue(url, comment) {
   var manifest = brapi.runtime.getManifest();
   return getSettings()
-    .then(function(settings) {
+    .then(function (settings) {
       if (url) settings.url = url;
       settings.version = manifest.version;
       settings.userAgent = navigator.userAgent;
@@ -340,7 +355,7 @@ function reportIssue(url, comment) {
 
 function authWavenet() {
   createTab("https://cloud.google.com/text-to-speech/#put-text-to-speech-into-action", true)
-    .then(function(tab) {
+    .then(function (tab) {
       addRequestListener();
       brapi.tabs.onRemoved.addListener(onTabRemoved);
       return showInstructions();
@@ -361,14 +376,14 @@ function authWavenet() {
         var parser = new URL(details.url);
         var qs = parser.search ? parseQueryString(parser.search) : {};
         if (qs.token) {
-          updateSettings({gcpToken: qs.token});
+          updateSettings({ gcpToken: qs.token });
           showSuccess();
         }
       }
       function showInstructions() {
         return brapi.scripting.executeScript({
-          target: {tabId: tab.id},
-          func: function() {
+          target: { tabId: tab.id },
+          func: function () {
             var elem = document.createElement('DIV')
             elem.id = 'ra-notice'
             elem.style.position = 'fixed'
@@ -387,8 +402,8 @@ function authWavenet() {
       }
       function showSuccess() {
         return brapi.scripting.executeScript({
-          target: {tabId: tab.id},
-          func: function() {
+          target: { tabId: tab.id },
+          func: function () {
             var elem = document.getElementById('ra-notice')
             elem.style.backgroundColor = '#0d0'
             elem.innerHTML = 'Successful, you can now use Google Wavenet voices. You may close this tab.'
@@ -403,18 +418,18 @@ async function openPdfViewer(tabId, pdfUrl) {
     origins: ["http://*/", "https://*/"]
   }
   if (!await brapi.permissions.contains(perms)) {
-    throw new Error(JSON.stringify({code: "error_add_permissions", perms: perms}))
+    throw new Error(JSON.stringify({ code: "error_add_permissions", perms: perms }))
   }
   await setTabUrl(tabId, brapi.runtime.getURL("pdf-viewer.html?url=" + encodeURIComponent(pdfUrl)))
   await new Promise(f => handlers.pdfViewerCheckIn = f)
 }
 
 async function managePiperVoices() {
-  const result = await sendToPlayer({method: "managePiperVoices"}).catch(err => false)
+  const result = await sendToPlayer({ method: "managePiperVoices" }).catch(err => false)
   if (result != "OK") {
-    if (result == "POPOUT") await sendToPlayer({method: "close"})
+    if (result == "POPOUT") await sendToPlayer({ method: "close" })
     await injectPlayer()
-    await sendToPlayer({method: "managePiperVoices"})
+    await sendToPlayer({ method: "managePiperVoices" })
   }
 }
 
@@ -426,7 +441,7 @@ async function contentScriptAlreadyInjected(tab, frameId) {
       tabId: tab.id,
       frameIds: frameId ? [frameId] : undefined,
     },
-    func: function() {
+    func: function () {
       return typeof brapi != "undefined"
     }
   })
@@ -447,7 +462,7 @@ async function injectContentScript(tab, frameId, extraScripts) {
       "js/content.js",
     ]
   })
-  const files = extraScripts || await brapi.tabs.sendMessage(tab.id, {dest: "contentScript", method: "getRequireJs"})
+  const files = extraScripts || await brapi.tabs.sendMessage(tab.id, { dest: "contentScript", method: "getRequireJs" })
   await brapi.scripting.executeScript({
     target: {
       tabId: tab.id,
@@ -468,7 +483,7 @@ async function injectPlayer(tab) {
         throw new Error("Incognito tab")
       }
       await brapi.scripting.executeScript({
-        target: {tabId: tab.id},
+        target: { tabId: tab.id },
         func: createPlayerFrame
       })
     }
@@ -499,7 +514,7 @@ async function createPlayerTab() {
     index: 0,
     active: false,
   })
-  await brapi.tabs.update(tab.id, {pinned: true})
+  await brapi.tabs.update(tab.id, { pinned: true })
 }
 
 
