@@ -18,9 +18,9 @@ piperInitializingSubject
     else $("#status").hide()
   })
 
-$(function() {
+$(function () {
   if (queryString.isPopup) $("body").addClass("is-popup")
-  else getCurrentTab().then(function(currentTab) {return updateSettings({readAloudTab: currentTab.id})})
+  else getCurrentTab().then(function (currentTab) { return updateSettings({ readAloudTab: currentTab.id }) })
 })
 
 
@@ -38,8 +38,8 @@ async function popout(tabId) {
   const url = brapi.runtime.getURL("popup.html?tab=" + activeTab.id)
   try {
     if (!tabId) throw "Create"
-    const tab = await updateTab(tabId, {url, active: true})
-    await updateWindow(tab.windowId, {focused: true}).catch(console.error)
+    const tab = await updateTab(tabId, { url, active: true })
+    await updateWindow(tab.windowId, { focused: true }).catch(console.error)
     window.close()
   }
   catch (err) {
@@ -72,7 +72,7 @@ async function init() {
   refreshSize();
   checkAnnouncements();
 
-  const {state} = await bgPageInvoke("getPlaybackState")
+  const { state } = await bgPageInvoke("getPlaybackState")
   if (state == "PAUSED" || state == "STOPPED") onPlay()
 }
 
@@ -84,14 +84,14 @@ function handleError(err) {
     var errInfo = JSON.parse(err.message);
 
     $("#status").html(formatError(errInfo)).show();
-    $("#status a").click(function() {
+    $("#status a").click(function () {
       switch ($(this).attr("href")) {
         case "#open-extension-settings":
-          brapi.tabs.create({url: "chrome://extensions/?id=" + brapi.runtime.id});
+          brapi.tabs.create({ url: "chrome://extensions/?id=" + brapi.runtime.id });
           break;
         case "#request-permissions":
           brapi.permissions.request(errInfo.perms)
-            .then(function(granted) {
+            .then(function (granted) {
               if (granted) {
                 if (errInfo.reload) return reloadAndPlay()
                 else $("#btnPlay").click()
@@ -99,22 +99,22 @@ function handleError(err) {
             })
           break;
         case "#sign-in":
-          getAuthToken({interactive: true})
-            .then(function(token) {
+          getAuthToken({ interactive: true })
+            .then(function (token) {
               if (token) $("#btnPlay").click();
             })
-            .catch(function(err) {
+            .catch(function (err) {
               $("#status").text(err.message).show();
             })
           break;
         case "#auth-wavenet":
           brapi.permissions.request(config.wavenetPerms)
-            .then(function(granted) {
+            .then(function (granted) {
               if (granted) bgPageInvoke("authWavenet");
             })
           break;
         case "#open-pdf-viewer":
-          brapi.tabs.create({url: config.pdfViewerUrl})
+          brapi.tabs.create({ url: config.pdfViewerUrl })
           break
         case "#connect-phone":
           location.href = "connect-phone.html"
@@ -124,7 +124,7 @@ function handleError(err) {
   }
   else if (config.browserId == "opera" && /locked fullscreen/.test(err.message)) {
     $("#status").html("Click <a href='#open-player-tab'>here</a> to start read aloud.").show()
-    $("#status a").click(async function() {
+    $("#status a").click(async function () {
       try {
         playerCheckIn$.pipe(rxjs.take(1)).subscribe(() => $("#btnPlay").click())
         const tab = await brapi.tabs.create({
@@ -132,7 +132,7 @@ function handleError(err) {
           index: 0,
           active: false,
         })
-        brapi.tabs.update(tab.id, {pinned: true})
+        brapi.tabs.update(tab.id, { pinned: true })
           .catch(console.error)
       } catch (err) {
         handleError(err)
@@ -181,12 +181,12 @@ function updateHighlighting(speech) {
   var elem = $("#highlight");
   if (!elem.data("texts")
     || elem.data("texts").length != speech.texts.length
-    || elem.data("texts").some((text,i) => text != speech.texts[i])
+    || elem.data("texts").some((text, i) => text != speech.texts[i])
   ) {
     elem.css("direction", speech.isRTL ? "rtl" : "")
-      .data({texts: speech.texts, position: null})
+      .data({ texts: speech.texts, position: null })
       .empty()
-    for (let i=0; i<speech.texts.length; i++) {
+    for (let i = 0; i < speech.texts.length; i++) {
       makeSpan(speech.texts[i])
         .css("cursor", "pointer")
         .click(onSeek.bind(null, i))
@@ -247,7 +247,7 @@ function scrollIntoView(child, scrollParent) {
   const childTop = child.offset().top - scrollParent.offset().top
   const childBottom = childTop + child.outerHeight()
   if (childTop < 0 || childBottom >= scrollParent.height())
-    scrollParent.animate({scrollTop: scrollParent[0].scrollTop + childTop - 10})
+    scrollParent.animate({ scrollTop: scrollParent[0].scrollTop + childTop - 10 })
 }
 
 
@@ -258,7 +258,7 @@ function onPlay() {
   $("#status").hide();
   const requestId = currentPlayRequestId = Math.random()
   bgPageInvoke("getPlaybackState")
-    .then(function(stateInfo) {
+    .then(function (stateInfo) {
       if (stateInfo.state == "PAUSED") return bgPageInvoke("resume")
       else return bgPageInvoke("playTab", queryString.tab ? [Number(queryString.tab)] : [])
     })
@@ -311,16 +311,16 @@ function onSeek(n) {
 
 function changeFontSize(delta) {
   getSettings(["highlightFontSize"])
-    .then(function(settings) {
+    .then(function (settings) {
       var newSize = (settings.highlightFontSize || defaults.highlightFontSize) + delta;
-      if (newSize >= 1 && newSize <= 8) return updateSettings({highlightFontSize: newSize}).then(refreshSize);
+      if (newSize >= 1 && newSize <= 8) return updateSettings({ highlightFontSize: newSize }).then(refreshSize);
     })
     .catch(handleError)
 }
 
 async function onDownload() {
   try {
-    // 1. Ask BACKGROUND for selected text
+    // Ask BACKGROUND for selected text
     const selectedText = await bgPageInvoke("getSelectedText");
 
     if (!selectedText) {
@@ -328,38 +328,42 @@ async function onDownload() {
       return;
     }
 
-    console.log("Popup received selected text:", selectedText);
-
-    // 2. Ask BACKGROUND to synthesize audio
+    // Ask BACKGROUND to synthesize audio
     const base64Audio = await bgPageInvoke("downloadSelectedText", [selectedText]);
 
-    // 3. Trigger file download
+    // Trigger file download
     const a = document.createElement("a");
     a.href = base64Audio;
-    a.download = "readaloud.mp3";
+    a.download = makeSafeFilename(selectedText) + ".mp3";
     a.click();
-
-    console.log("Audio download completed");
 
   } catch (err) {
     console.error("DOWNLOAD ERROR → FULL ERROR:", JSON.stringify(err, null, 2));
-  alert("Unable to download file. Check console.");
+    alert("Unable to download file. Check console.");
   }
 }
 
+function makeSafeFilename(text) {
+  return text
+    .trim()
+    .slice(0, 40)                 // limit length
+    .replace(/[\/\\:*?"<>|]/g, "") // remove illegal characters
+    .replace(/\s+/g, "_")          // replace spaces
+    .toLowerCase();
+}
 
 function changeWindowSize(delta) {
   getSettings(["highlightWindowSize"])
-    .then(function(settings) {
+    .then(function (settings) {
       var newSize = (settings.highlightWindowSize || defaults.highlightWindowSize) + delta;
-      if (newSize >= 1 && newSize <= 3) return updateSettings({highlightWindowSize: newSize}).then(refreshSize);
+      if (newSize >= 1 && newSize <= 3) return updateSettings({ highlightWindowSize: newSize }).then(refreshSize);
     })
     .catch(handleError)
 }
 
 function refreshSize() {
   return getSettings(["highlightFontSize", "highlightWindowSize"])
-    .then(function(settings) {
+    .then(function (settings) {
       var fontSize = getFontSize(settings);
       var windowSize = getWindowSize(settings);
       $("#highlight").css({
@@ -394,29 +398,29 @@ function refreshSize() {
 function checkAnnouncements() {
   var now = new Date().getTime();
   getSettings(["announcement"])
-    .then(function(settings) {
+    .then(function (settings) {
       var ann = settings.announcement;
       if (ann && ann.expire > now)
         return ann;
       else
         return ajaxGet(config.serviceUrl + "/read-aloud/announcement")
           .then(JSON.parse)
-          .then(function(result) {
-            result.expire = now + 6*3600*1000;
+          .then(function (result) {
+            result.expire = now + 6 * 3600 * 1000;
             if (ann && result.id == ann.id) {
               result.lastShown = ann.lastShown;
               result.disabled = ann.disabled;
             }
-            updateSettings({announcement: result});
+            updateSettings({ announcement: result });
             return result;
           })
     })
-    .then(function(ann) {
+    .then(function (ann) {
       if (ann.text && !ann.disabled) {
-        if (!ann.lastShown || now-ann.lastShown > ann.period*60*1000) {
+        if (!ann.lastShown || now - ann.lastShown > ann.period * 60 * 1000) {
           showAnnouncement(ann);
           ann.lastShown = now;
-          updateSettings({announcement: ann});
+          updateSettings({ announcement: ann });
         }
       }
     })
@@ -426,13 +430,13 @@ function showAnnouncement(ann) {
   var html = escapeHtml(ann.text).replace(/\[(.*?)\]/g, "<a target='_blank' href='" + ann.link + "'>$1</a>").replace(/\n/g, "<br/>");
   $("#footer").html(html).addClass("announcement");
   if (ann.disableIfClick)
-    $("#footer a").click(function() {
+    $("#footer a").click(function () {
       ann.disabled = true;
-      updateSettings({announcement: ann});
+      updateSettings({ announcement: ann });
     })
 }
 
 function toggleDarkMode() {
   const darkMode = document.body.classList.toggle("dark-mode")
-  updateSettings({darkMode})
+  updateSettings({ darkMode })
 }

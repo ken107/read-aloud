@@ -141,105 +141,52 @@ if (queryString.has("opener")) {
 document.addEventListener("DOMContentLoaded", initialize)
 
 async function synthesizeDownloadAudio(text) {
-  console.log("PLAYER: synthesizeDownloadAudio received:", text);
 
-  // Load settings
-  const settings = await getSettings(["voiceName", "rate", "pitch", "voices"]);
+  // SETTINGS
+  const settings = await getSettings(["rate", "pitch"]);
+  const lang = "en";  // best voice
 
-  // Resolve voice list
-  let voiceList = settings.voices || [];
-  if (!voiceList.length) {
-    // fallback: detect voices from engines (GoogleTranslate)
-    voiceList = googleTranslateTtsEngine.getVoices();
+  // SPLIT TEXT INTO SMALL CHUNKS (MAX 180 characters)
+  const chunks = [];
+  let remaining = text.trim();
+
+  while (remaining.length > 0) {
+    chunks.push(remaining.slice(0, 180));
+    remaining = remaining.slice(180);
   }
 
-  // Resolve active voice
-  const voiceName =
-    settings.voiceName ||
-    (voiceList[0] && voiceList[0].voiceName);
+  const audioBlobs = [];
 
-  let voice = voiceList.find(v => v.voiceName === voiceName);
+  // STEP 3 — GET AUDIO URL FOR EACH CHUNK
+  for (let i = 0; i < chunks.length; i++) {
+    const part = chunks[i];
 
-  if (!voice) {
-    console.error("Voice detection failed. settings.voiceName =", settings.voiceName);
-    throw new Error("Unable to detect current playback voice");
-  }
-
-  console.log("Voice detected for DOWNLOAD:", voice);
-
-  // if GoogleTranslate voice → force English Wavenet voice
-  if (voice.voiceName.startsWith("GoogleTranslate")) {
-    console.warn("GoogleTranslate voice detected — forcing Wavenet");
-
-    // Load Wavenet voices properly (it's async)
-    let wavenetList = [];
+    let url;
     try {
-      wavenetList = await googleWavenetTtsEngine.getVoices();
-    } catch (e) {
-      console.error("Failed to load Wavenet voices:", e);
+      url = await googleTranslateSynthesizeSpeech(part, lang);
+    } catch (err) {
+      console.error("Chunk synthesis failed:", err);
+      throw new Error("GoogleTranslate TTS failed for chunk " + (i + 1));
     }
 
-    console.log("Loaded Wavenet list:", wavenetList);
-
-    // Pick English voice
-    const fallbackVoice = wavenetList.find(v => v.lang && v.lang.startsWith("en")) || null;
-
-    console.log("FallbackVoice: ", fallbackVoice);
-
-    if (!fallbackVoice) {
-      throw new Error("No English Wavenet voices available.");
-    }
-
-    // override actual voice
-    voice = fallbackVoice;
-
+    // FETCH BLOB
+    const blob = await fetch(url).then(r => r.blob());
+    audioBlobs.push(blob);
   }
 
-  const options = {
-    lang: voice.lang,
-    voice: voice,
-    rate: settings.rate || 1.0,
-    pitch: settings.pitch || 1.0,
-  };
+  // MERGE ALL BLOBS INTO ONE FINAL MP3
+  const merged = new Blob(audioBlobs, { type: "audio/mp3" });
 
-  console.log(" Step 1 — worked");
-
-  // Create Speech instance
-  const speech = new Speech([text], options);
-
-  console.log(" Step 2 — worked");
-
-  const engine = speech.engine || speech._engine || speech.__engine;
-  if (!engine) throw new Error("Cannot access speech engine");
-
-  console.log("Using engine for DOWNLOAD:", engine.constructor.name);
-  console.log(" Step 3 — worked");
-
-  // Get audio URL
-  let url;
-
-  if (engine.getAudioUrl) {
-    url = await engine.getAudioUrl(text, options.voice, options.pitch);
-  } else {
-    url = await getAudioUrlForDownload(engine, text, options);
-  }
-
-  if (!url) throw new Error("Unable to obtain audio URL");
-
-  console.log(" Step 4 — worked");
-
-  // Fetch blob
-  const blob = await fetch(url).then(r => r.blob());
-
-  console.log(" Step 5 — worked");
-
-  // Convert to base64
+  // STEP 5 — Convert to Base64
   return await new Promise(resolve => {
     const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.readAsDataURL(blob);
+    reader.onloadend = () => {
+      resolve(reader.result);
+    };
+    reader.readAsDataURL(merged);
   });
 }
+
 
 
 async function getAudioUrlForDownload(engine, text, options) {
