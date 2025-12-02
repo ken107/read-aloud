@@ -7,6 +7,7 @@ function Speech(texts, options) {
 
   var self = this;
   const engine = pickEngine()
+  this.engine = engine;
   let piperState
 
   this.options = options;

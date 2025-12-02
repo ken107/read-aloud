@@ -1,10 +1,10 @@
 
-(function() {
+(function () {
   registerMessageListener("contentScript", {
     getRequireJs: getRequireJs,
     getDocumentInfo: getInfo,
     getCurrentIndex: getCurrentIndex,
-    getTexts: getTexts
+    getTexts: getTexts,
   })
 
   function getInfo() {
@@ -17,7 +17,7 @@
 
   function getLang() {
     var lang = document.documentElement.lang || $("html").attr("xml:lang");
-    if (lang) lang = lang.split(",",1)[0].replace(/_/g, '-');
+    if (lang) lang = lang.split(",", 1)[0].replace(/_/g, '-');
     return lang;
   }
 
@@ -47,9 +47,9 @@
       || $("embed[type='application/pdf']").length
       || $("iframe[src*='.pdf']").length) return ["js/content/pdf-doc.js"];
     else if (/^\d+\.\d+\.\d+\.\d+$/.test(location.hostname)
-        && location.port === "1122"
-        && location.protocol === "http:"
-        && location.pathname === "/bookshelf/index.html") return  ["js/content/yd-app-web.js"];
+      && location.port === "1122"
+      && location.protocol === "http:"
+      && location.pathname === "/bookshelf/index.html") return ["js/content/yd-app-web.js"];
     else return ["js/content/html-doc.js"];
   }
 
@@ -65,7 +65,7 @@
     }
     else {
       return Promise.resolve(readAloudDoc.getTexts(index, quietly))
-        .then(function(texts) {
+        .then(function (texts) {
           if (texts && Array.isArray(texts)) {
             if (!quietly) console.log(texts.join("\n\n"));
           }
@@ -90,7 +90,7 @@
     if (!audioCanPlay()) return;
     const silenceTrack = getSilenceTrack()
     try {
-      const should = await sendToPlayer({method: "shouldPlaySilence", args: [providerId]})
+      const should = await sendToPlayer({ method: "shouldPlaySilence", args: [providerId] })
       if (should) silenceTrack.start()
       else silenceTrack.stop()
     }
@@ -128,7 +128,7 @@ function isNotEmpty(text) {
 function fixParagraphs(texts) {
   var out = [];
   var para = "";
-  for (var i=0; i<texts.length; i++) {
+  for (var i = 0; i < texts.length; i++) {
     if (!texts[i]) {
       if (para) {
         out.push(para);
@@ -137,7 +137,7 @@ function fixParagraphs(texts) {
       continue;
     }
     if (para) {
-      if (/[-\u2013\u2014]$/.test(para)) para = para.substr(0, para.length-1);
+      if (/[-\u2013\u2014]$/.test(para)) para = para.substr(0, para.length - 1);
       else para += " ";
     }
     para += texts[i].replace(/[-\u2013\u2014]\r?\n/g, "");
@@ -153,8 +153,8 @@ function fixParagraphs(texts) {
 function tryGetTexts(getTexts, millis) {
   return waitMillis(500)
     .then(getTexts)
-    .then(function(texts) {
-      if (texts && !texts.length && millis-500 > 0) return tryGetTexts(getTexts, millis-500);
+    .then(function (texts) {
+      if (texts && !texts.length && millis - 500 > 0) return tryGetTexts(getTexts, millis - 500);
       else return texts;
     })
 }
@@ -181,20 +181,20 @@ function simulateMouseEvent(element, eventName, coordX, coordY) {
 
 function simulateClick(elementToClick) {
   var box = elementToClick.getBoundingClientRect(),
-      coordX = box.left + (box.right - box.left) / 2,
-      coordY = box.top + (box.bottom - box.top) / 2;
-  simulateMouseEvent (elementToClick, "mousedown", coordX, coordY);
-  simulateMouseEvent (elementToClick, "mouseup", coordX, coordY);
-  simulateMouseEvent (elementToClick, "click", coordX, coordY);
+    coordX = box.left + (box.right - box.left) / 2,
+    coordY = box.top + (box.bottom - box.top) / 2;
+  simulateMouseEvent(elementToClick, "mousedown", coordX, coordY);
+  simulateMouseEvent(elementToClick, "mouseup", coordX, coordY);
+  simulateMouseEvent(elementToClick, "click", coordX, coordY);
 }
 
-const getMath = (function() {
+const getMath = (function () {
   let promise = Promise.resolve(null)
   return () => promise = promise.then(math => math || makeMath())
 })();
 
 async function makeMath() {
-  const getXmlFromMathEl = function(mathEl) {
+  const getXmlFromMathEl = function (mathEl) {
     const clone = mathEl.cloneNode(true)
     $("annotation, annotation-xml", clone).remove()
     removeAllAttrs(clone, true)
@@ -210,11 +210,11 @@ async function makeMath() {
         return mathEl ? getXmlFromMathEl(mathEl) : el.getAttribute("data-mathml")
       },
     })
-    .when(() => document.querySelector("math"), {
-      selector: "math",
-      getXML: getXmlFromMathEl,
-    })
-    .else(null)
+      .when(() => document.querySelector("math"), {
+        selector: "math",
+        getXML: getXmlFromMathEl,
+      })
+      .else(null)
 
   if (!math) return null
   const elems = $(math.selector).get()
@@ -229,8 +229,8 @@ async function makeMath() {
   catch (err) {
     console.error(err)
     return {
-      show() {},
-      hide() {}
+      show() { },
+      hide() { }
     }
   }
 
