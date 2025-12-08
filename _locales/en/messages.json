@@ -17,8 +17,8 @@
   "options_voicegroup_offline": {
     "message": "Offline Voices"
   },
-  "options_voicegroup_piper": {
-    "message": "Piper Voices (experimental)"
+  "options_voicegroup_experimental": {
+    "message": "Experimental AI Voices"
   },
   "options_voicegroup_standard": {
     "message": "Standard Voices"
@@ -30,13 +30,16 @@
     "message": "Additional Voices"
   },
   "options_add_more_languages": {
-    "message": "Add More Languages"
+    "message": "➕ Add more languages..."
   },
   "options_enable_custom_voices": {
-    "message": "Enable Custom Voices"
+    "message": "🧩 Enable custom voices..."
   },
   "options_enable_piper_voices": {
-    "message": "Manage Piper Voices"
+    "message": "⚡ Install Piper voices..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Install Supertonic voices..."
   },
   "options_rate_label": {
     "message": "Speed"

@@ -159,18 +159,20 @@ const voices$ = rxjs.combineLatest({
   openaiCreds: observeSetting("openaiCreds"),
   azureCreds: observeSetting("azureCreds"),
   piperVoices: observeSetting("piperVoices"),
+  supertonicVoices: observeSetting("supertonicVoices"),
 }).pipe(
   rxjs.exhaustMap(settings => Promise.all([
     browserTtsEngine.getVoices(),
     googleTranslateTtsEngine.getVoices(),
-    premiumTtsEngine.getVoices(),
+    phoneTtsEngine.getVoices(),
+    settings.supertonicVoices || [],
+    settings.piperVoices || [],
+    settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
     settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
     settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
     settings.ibmCreds ? ibmWatsonTtsEngine.getVoices() : [],
-    phoneTtsEngine.getVoices(),
-    settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
     settings.azureCreds ? azureTtsEngine.getVoices() : [],
-    settings.piperVoices || [],
+    premiumTtsEngine.getVoices(),
   ])),
   rxjs.map(arr => arr.flat()),
   rxjs.shareReplay(1)
@@ -250,6 +252,10 @@ function isAzure(voice) {
 
 function isPiperVoice(voice) {
   return /^Piper /.test(voice.voiceName)
+}
+
+function isSupertonicVoice(voice) {
+  return /^Supertonic /.test(voice.voiceName)
 }
 
 function isRHVoice(voice) {
