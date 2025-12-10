@@ -22,6 +22,7 @@ var handlers = {
   reportIssue: reportIssue,
   authWavenet: authWavenet,
   managePiperVoices,
+  manageSupertonicVoices,
 }
 
 registerMessageListener("serviceWorker", handlers)
@@ -369,6 +370,15 @@ async function managePiperVoices() {
   }
 }
 
+async function manageSupertonicVoices() {
+  const result = await sendToPlayer({method: "manageSupertonicVoices"}).catch(err => false)
+  if (result != "OK") {
+    if (result == "POPOUT") await sendToPlayer({method: "close"})
+    await injectPlayer()
+    await sendToPlayer({method: "manageSupertonicVoices"})
+  }
+}
+
 
 
 async function contentScriptAlreadyInjected(tab, frameId) {
@@ -410,9 +420,13 @@ async function injectContentScript(tab, frameId, extraScripts) {
 }
 
 async function injectPlayer(tab) {
-  const settings = await getSettings(["useEmbeddedPlayer", "piperVoices"])
+  const settings = await getSettings(["useEmbeddedPlayer", "piperVoices", "supertonicVoices"])
   const promise = new Promise(f => handlers.playerCheckIn = f)
-  if (tab && settings.useEmbeddedPlayer && (settings.piperVoices || []).length == 0) {
+  if (tab && settings.useEmbeddedPlayer
+    //don't use embedded player if there are Piper or Supertonic voices installed
+    && (settings.piperVoices || []).length == 0
+    && (settings.supertonicVoices || []).length == 0
+  ) {
     try {
       if (tab.incognito) {
         //https://developer.chrome.com/docs/extensions/mv3/manifest/incognito/

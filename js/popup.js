@@ -8,13 +8,13 @@ registerMessageListener("popup", {
   }
 })
 
-const piperInitializingSubject = new rxjs.Subject()
-piperInitializingSubject
+const engineInitializingSubject = new rxjs.Subject()
+engineInitializingSubject
   .pipe(
     rxjs.distinctUntilChanged()
   )
-  .subscribe(isInitializing => {
-    if (isInitializing) $("#status").text("Piper engine initializing...").show()
+  .subscribe(engine => {
+    if (engine) $("#status").text(`${engine} TTS engine initializing...`).show()
     else $("#status").hide()
   })
 
@@ -161,7 +161,7 @@ async function updateButtons() {
   var playbackErr = stateInfo.playbackError
 
   if (playbackErr) handleError(playbackErr)
-  piperInitializingSubject.next(!!speech?.isPiper && state == "LOADING")
+  engineInitializingSubject.next(state == "LOADING" && speech?.engine)
 
   $("#imgLoading").toggle(state == "LOADING");
   $("#btnSettings").toggle(state == "STOPPED");

@@ -77,6 +77,7 @@
           else if (voiceName == "@languages") brapi.tabs.create({url: "languages.html"});
           else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
           else if (voiceName == "@piper") bgPageInvoke("managePiperVoices").catch(console.error)
+          else if (voiceName == "@supertonic") bgPageInvoke("manageSupertonicVoices").catch(console.error)
           else updateSettings({voiceName})
         });
       $("#languages-edit-button")
@@ -298,18 +299,19 @@
       function(voice) {
         return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0])
           || isPiperVoice(voice)
+          || isSupertonicVoice(voice)
           || isOpenai(voice)
       });
 
     //group by standard/premium
     var groups = Object.assign({
-        piper: [],
+        experimental: [],
         offline: [],
         premium: [],
         standard: [],
       },
       voices.groupBy(function(voice) {
-        if (isPiperVoice(voice)) return "piper"
+        if (isPiperVoice(voice) || isSupertonicVoice(voice)) return "experimental"
         if (isOfflineVoice(voice)) return "offline"
         if (isPremiumVoice(voice)) return "premium";
         return "standard"
@@ -327,21 +329,25 @@
         .appendTo(offline)
     }
 
-    //create piper group
+    //create experimental group
     $("<optgroup>").appendTo("#voices")
-    const piper = $("<optgroup>")
-      .attr("label", brapi.i18n.getMessage("options_voicegroup_piper"))
+    const experimental = $("<optgroup>")
+      .attr("label", brapi.i18n.getMessage("options_voicegroup_experimental"))
       .appendTo("#voices")
-    for (const voice of groups.piper) {
+    for (const voice of groups.experimental) {
       $("<option>")
         .val(voice.voiceName)
         .text(voice.voiceName)
-        .appendTo(piper)
+        .appendTo(experimental)
     }
     $("<option>")
       .val("@piper")
       .text(brapi.i18n.getMessage("options_enable_piper_voices"))
-      .appendTo(piper)
+      .appendTo(experimental)
+    $("<option>")
+      .val("@supertonic")
+      .text(brapi.i18n.getMessage("options_enable_supertonic_voices"))
+      .appendTo(experimental)
 
     //create the standard optgroup
     $("<optgroup>").appendTo($("#voices"))
