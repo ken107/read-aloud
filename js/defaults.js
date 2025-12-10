@@ -571,6 +571,12 @@ function getUniqueClientId() {
   }
 }
 
+function getBrowser() {
+  if (/Opera|OPR\//.test(navigator.userAgent)) return 'opera';
+  if (/firefox/i.test(navigator.userAgent)) return 'firefox';
+  return 'chrome';
+}
+
 function getHotkeySettingsUrl() {
   return "edge://extensions/shortcuts"
 }
