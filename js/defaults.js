@@ -501,7 +501,7 @@ function makeSettingsObservable() {
  */
 function getVoices(opts) {
   if (!opts) opts = {}
-  return getSettings(["awsCreds", "gcpCreds", "openaiCreds", "azureCreds", "piperVoices"])
+  return getSettings(["awsCreds", "gcpCreds", "openaiCreds", "azureCreds", "piperVoices", "supertonicVoices"])
     .then(function(settings) {
       return Promise.all([
         browserTtsEngine.getVoices(),
@@ -521,6 +521,7 @@ function getVoices(opts) {
         settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
         settings.azureCreds ? azureTtsEngine.getVoices() : [],
         settings.piperVoices || [],
+        settings.supertonicVoices || [],
       ])
     })
     .then(function(arr) {
@@ -578,6 +579,10 @@ function isAzure(voice) {
 
 function isPiperVoice(voice) {
   return /^Piper /.test(voice.voiceName)
+}
+
+function isSupertonicVoice(voice) {
+  return /^Supertonic /.test(voice.voiceName)
 }
 
 function isRHVoice(voice) {

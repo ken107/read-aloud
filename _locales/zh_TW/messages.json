@@ -17,9 +17,6 @@
   "options_voicegroup_offline": {
     "message": "離線語音"
   },
-  "options_voicegroup_piper": {
-    "message": "Piper語音（實驗性）"
-  },
   "options_voicegroup_googlecloud": {
     "message": "Google Cloud語音"
   },
@@ -39,13 +36,16 @@
     "message": "高級語音已啟用"
   },
   "options_add_more_languages": {
-    "message": "增加更多語言"
+    "message": "➕ 增加更多語言"
   },
   "options_enable_custom_voices": {
-    "message": "啟用客製化語音"
+    "message": "🧩 啟用客製化語音"
   },
   "options_enable_piper_voices": {
-    "message": "管理Piper語音"
+    "message": "⚡ 管理Piper語音"
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ 管理Supertonic語音"
   },
   "options_rate_label": {
     "message": "朗讀速度"

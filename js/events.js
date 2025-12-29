@@ -83,6 +83,54 @@ const piperHost = immediate(() => {
 
 
 /**
+ * Supertonic
+ */
+const supertonicHost = immediate(() => {
+  const tabSubject = new rxjs.BehaviorSubject(null)
+  return {
+    setTab(tab) {
+      tabSubject.next(tab)
+    },
+    async ready({requestFocus}) {
+      if (requestFocus) {
+        const windows = brapi.extension.getViews({type: "popup"})
+        for (const w of windows) w.close()
+      }
+      try {
+        const tab = tabSubject.getValue()
+        if (!tab) throw "Absent"
+        const status = await this.sendRequest("areYouThere")
+        if (status != true) throw "Absent"
+        if (requestFocus) {
+          await Promise.all([
+            chrome.windows.update(tab.windowId, {focused: true}),
+            chrome.tabs.update(tab.id, {active: true})
+          ])
+        }
+      }
+      catch (err) {
+        tabSubject.next(null)
+        await brapi.tabs.create({url: "https://supertonic.ttstool.com/", pinned: true, active: requestFocus})
+        await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
+      }
+    },
+    async sendRequest(method, args) {
+      const tab = tabSubject.getValue()
+      const {error, result} = await brapi.tabs.sendMessage(tab.id, {
+        to: "supertonic-host",
+        type: "request",
+        id: String(Math.random()),
+        method,
+        args
+      })
+      return error ? Promise.reject(error) : result
+    },
+    eventSubject: new rxjs.Subject()
+  }
+})
+
+
+/**
  * IPC handlers
  */
 var handlers = {
@@ -126,6 +174,15 @@ var handlers = {
   },
   onPiperEvent(event) {
     piperHost.eventSubject.next(event)
+  },
+  manageSupertonicVoices() {
+    return supertonicHost.ready({requestFocus: true})
+  },
+  supertonicServiceReady() {
+    supertonicHost.setTab(this.sender.tab)
+  },
+  onSupertonicEvent(event) {
+    supertonicHost.eventSubject.next(event)
   },
   audioPlay: audioPlayer.play,
   audioPause: audioPlayer.pause,

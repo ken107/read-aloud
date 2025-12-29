@@ -17,9 +17,6 @@
   "options_voicegroup_offline": {
     "message": "オフライン音声"
   },
-  "options_voicegroup_piper": {
-    "message": "Piper音声（実験的）"
-  },
   "options_voicegroup_googlecloud": {
     "message": "Google Cloud音声"
   },
@@ -45,7 +42,10 @@
     "message": "カスタム音声を有効にする"
   },
   "options_enable_piper_voices": {
-    "message": "Piper音声を管理する"
+    "message": "⚡ Piper音声を管理する"
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Supertonic音声を管理する"
   },
   "options_rate_label": {
     "message": "スピード"

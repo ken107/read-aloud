@@ -17,8 +17,8 @@
   "options_voicegroup_offline": {
     "message": "Giọng đọc ngoại tuyến"
   },
-  "options_voicegroup_piper": {
-    "message": "Giọng đọc Piper (thử nghiệm)"
+  "options_voicegroup_experimental": {
+    "message": "Giọng đọc AI (thử nghiệm)"
   },
   "options_voicegroup_googlecloud": {
     "message": "Giọng đọc Google Cloud"
@@ -39,13 +39,16 @@
     "message": "Các giọng chất lượng cao đã được bật"
   },
   "options_add_more_languages": {
-    "message": "Thêm nhiều ngôn ngữ hơn"
+    "message": "➕ Thêm nhiều ngôn ngữ hơn"
   },
   "options_enable_custom_voices": {
-    "message": "Bật giọng đọc tùy chỉnh"
+    "message": "🧩 Bật giọng đọc tùy chỉnh"
   },
   "options_enable_piper_voices": {
-    "message": "Quản lý giọng đọc Piper"
+    "message": "⚡ Cài đặt giọng đọc Piper"
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Cài đặt giọng đọc Supertonic"
   },
   "options_rate_label": {
     "message": "Tốc độ đọc"

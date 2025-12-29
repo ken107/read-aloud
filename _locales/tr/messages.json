@@ -17,9 +17,6 @@
   "options_voicegroup_offline": {
     "message": "Çevrimdışı Sesler"
   },
-  "options_voicegroup_piper": {
-    "message": "Piper Sesleri (deneysel)"
-  },
   "options_voicegroup_googlecloud": {
     "message": "Google Cloud Sesleri"
   },
@@ -39,13 +36,16 @@
     "message": "Premium sesler etkinleştirildi"
   },
   "options_add_more_languages": {
-    "message": "Daha fazla dil ekle"
+    "message": "➕ Daha fazla dil ekle"
   },
   "options_enable_custom_voices": {
-    "message": "Özel Sesleri Etkinleştirme"
+    "message": "🧩 Özel Sesleri Etkinleştirme"
   },
   "options_enable_piper_voices": {
-    "message": "Piper Seslerini Yönet"
+    "message": "⚡ Piper Seslerini Yönet"
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Supertonic Seslerini Yönet"
   },
   "options_rate_label": {
     "message": "Hız"
