@@ -71,6 +71,7 @@ function initialize(allVoices, settings, acceptLangs) {
       if (voiceName == "@custom") createTabAndClosePopup("custom-voices.html")
       else if (voiceName == "@languages") createTabAndClosePopup("languages.html")
       else if (voiceName == "@piper") bgPageInvoke("managePiperVoices")
+      else if (voiceName == "@supertonic") bgPageInvoke("manageSupertonicVoices")
       else saveSettings({voiceName: voiceName});
     });
   $("#languages-edit-button").click(function() {
@@ -180,12 +181,13 @@ function populateVoices(allVoices, settings, acceptLangs) {
     function(voice) {
       return !voice.lang || selectedLangs.includes(parseLang(voice.lang).code)
           || isPiperVoice(voice)
+          || isSupertonicVoice(voice)
           || isOpenai(voice)
     });
 
   //group by standard/premium
   var groups = Object.assign({
-      piper: [],
+      experimental: [],
       offline: [],
       premium: [],
       standard: [],
@@ -193,7 +195,7 @@ function populateVoices(allVoices, settings, acceptLangs) {
     },
     voices.groupBy(function(voice) {
       if (isGoogleWavenet(voice)) return "googlecloud"
-      if (isPiperVoice(voice)) return "piper"
+      if (isPiperVoice(voice) || isSupertonicVoice(voice)) return "experimental"
       if (isOfflineVoice(voice)) return "offline"
       if (isPremiumVoice(voice)) return "premium";
       else return "standard";
@@ -211,21 +213,25 @@ function populateVoices(allVoices, settings, acceptLangs) {
       .appendTo(offline)
   }
 
-  //create piper group
+  //create experimental group
   $("<optgroup>").appendTo("#voices")
-  const piper = $("<optgroup>")
-    .attr("label", brapi.i18n.getMessage("options_voicegroup_piper"))
+  const experimental = $("<optgroup>")
+    .attr("label", brapi.i18n.getMessage("options_voicegroup_experimental"))
     .appendTo("#voices")
-  for (const voice of groups.piper) {
+  for (const voice of groups.experimental) {
     $("<option>")
       .val(voice.voiceName)
       .text(voice.voiceName)
-      .appendTo(piper)
+      .appendTo(experimental)
   }
   $("<option>")
     .val("@piper")
     .text(brapi.i18n.getMessage("options_enable_piper_voices"))
-    .appendTo(piper)
+    .appendTo(experimental)
+  $("<option>")
+    .val("@supertonic")
+    .text(brapi.i18n.getMessage("options_enable_supertonic_voices"))
+    .appendTo(experimental)
 
   //create the standard optgroup
   $("<optgroup>").appendTo($("#voices"))

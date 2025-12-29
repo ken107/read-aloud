@@ -52,6 +52,16 @@
         "js/messaging.js",
         "js/piper.js"
       ]
+    },
+    {
+      "matches": [
+        "https://supertonic.ttstool.com/"
+      ],
+      "js": [
+        "js/rxjs.umd.min.js",
+        "js/messaging.js",
+        "js/supertonic.js"
+      ]
     }
   ],
   "background": {

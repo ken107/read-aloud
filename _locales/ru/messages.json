@@ -17,9 +17,6 @@
   "options_voicegroup_offline": {
     "message": "Автономные голоса"
   },
-  "options_voicegroup_piper": {
-    "message": "Голоса Piper (экспериментальные)"
-  },
   "options_voicegroup_googlecloud": {
     "message": "Голоса Google Cloud"
   },
@@ -39,13 +36,16 @@
     "message": "Премиум-голоса включены"
   },
   "options_add_more_languages": {
-    "message": "Добавить больше языков"
+    "message": "➕ Добавить больше языков"
   },
   "options_enable_custom_voices": {
-    "message": "Включить пользовательские голоса"
+    "message": "🧩 Включить пользовательские голоса"
   },
   "options_enable_piper_voices": {
-    "message": "Управление голосами Piper"
+    "message": "⚡ Управление голосами Piper"
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Управление голосами Supertonic"
   },
   "options_rate_label": {
     "message": "Скорость"

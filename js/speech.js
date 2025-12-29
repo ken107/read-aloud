@@ -5,9 +5,8 @@ function Speech(texts, options) {
   for (var i=0; i<texts.length; i++) if (/[\w)]$/.test(texts[i])) texts[i] += '.';
   if (texts.length) texts = getChunks(texts.join("\n\n"));
 
-  var self = this;
   const engine = pickEngine()
-  let piperState
+  let enginePlaybackState
 
   this.options = options;
   this.play = () => playbackState$.next("resumed")
@@ -27,6 +26,7 @@ function Speech(texts, options) {
 
   function pickEngine() {
     if (isPiperVoice(options.voice)) return piperTtsEngine;
+    if (isSupertonicVoice(options.voice)) return supertonicTtsEngine;
     if (isAzure(options.voice)) return azureTtsEngine;
     if (isOpenai(options.voice)) return openaiTtsEngine;
     if (isUseMyPhone(options.voice)) return phoneTtsEngine;
@@ -47,7 +47,7 @@ function Speech(texts, options) {
     var isEA = /^zh|ko|ja/.test(options.lang);
     var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
     if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
-    else if (isPiperVoice(options.voice)) return [text];
+    else if (isPiperVoice(options.voice) || isSupertonicVoice(options.voice)) return [text];
     else return new CharBreaker(750, punctuator, 200).breakText(text);
   }
 
@@ -61,12 +61,17 @@ function Speech(texts, options) {
 
   function getInfo() {
     return {
-      texts: piperState ? piperState.texts : texts,
+      texts: enginePlaybackState ? enginePlaybackState.texts : texts,
       position: {
-        index: piperState ? piperState.index : playlist.getIndex()
+        index: enginePlaybackState ? enginePlaybackState.index : playlist.getIndex()
       },
       isRTL: /^(ar|az|dv|he|iw|ku|fa|ur)\b/.test(options.lang),
-      isPiper: engine == piperTtsEngine,
+      engine: immediate(() => {
+        switch (engine) {
+          case piperTtsEngine: return 'Piper'
+          case supertonicTtsEngine: return 'Supertonic'
+        }
+      })
     }
   }
 
@@ -148,7 +153,7 @@ function Speech(texts, options) {
       switch (event.type) {
         case "start":
           if (event.sentenceStartIndicies) {
-            piperState = {
+            enginePlaybackState = {
               texts: event.sentenceStartIndicies.map((startIndex, i, arr) => texts[0].slice(startIndex, arr[i+1])),
               sentenceStartIndicies: event.sentenceStartIndicies,
               index: 0
@@ -159,12 +164,12 @@ function Speech(texts, options) {
           }
           break
         case "sentence":
-          if (piperState) {
-            piperState.index = piperState.sentenceStartIndicies.indexOf(event.startIndex)
+          if (enginePlaybackState) {
+            enginePlaybackState.index = enginePlaybackState.sentenceStartIndicies.indexOf(event.startIndex)
           }
           break
         case "end":
-          if (piperState) {
+          if (enginePlaybackState) {
             cmd$.complete()
           } else {
             cmd$.next({name: "forward"})
@@ -172,12 +177,12 @@ function Speech(texts, options) {
           break
       }
     },
-    complete() {
-      if (self.onEnd) self.onEnd()
+    complete: () => {
+      if (this.onEnd) this.onEnd()
     },
-    error(err) {
+    error: err => {
       if (err.name != "CancellationException") {
-        if (self.onEnd) self.onEnd(err)
+        if (this.onEnd) this.onEnd(err)
       }
     }
   })

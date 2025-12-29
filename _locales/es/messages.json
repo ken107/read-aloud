@@ -17,9 +17,6 @@
   "options_voicegroup_offline": {
     "message": "Voces Offline"
   },
-  "options_voicegroup_piper": {
-    "message": "Voces Piper (experimental)"
-  },
   "options_voicegroup_googlecloud": {
     "message": "Voces de Google Cloud"
   },
@@ -42,7 +39,10 @@
     "message": "Habilitar Voces Personalizadas"
   },
   "options_enable_piper_voices": {
-    "message": "Gestionar Voces Piper"
+    "message": "⚡ Gestionar Voces Piper"
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Gestionar Voces Supertonic"
   },
   "options_rate_label": {
     "message": "Velocidad"

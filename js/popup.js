@@ -1,13 +1,13 @@
 
 var queryString = getQueryString()
 
-const piperInitializingSubject = new rxjs.Subject()
-piperInitializingSubject
+const engineInitializingSubject = new rxjs.Subject()
+engineInitializingSubject
   .pipe(
     rxjs.distinctUntilChanged()
   )
-  .subscribe(isInitializing => {
-    if (isInitializing) $("#status").text("Piper engine initializing...").show()
+  .subscribe(engine => {
+    if (engine) $("#status").text(`${engine} TTS engine initializing...`).show()
     else $("#status").hide()
   })
 
@@ -135,7 +135,7 @@ function updateButtons() {
     const showHighlighting = settings.showHighlighting != null ? Number(settings.showHighlighting) : defaults.showHighlighting
 
     if (playbackErr) handleError(playbackErr)
-    piperInitializingSubject.next(!!speech?.isPiper && state == "LOADING")
+    engineInitializingSubject.next(state == "LOADING" && speech?.engine)
 
     $("#imgLoading").toggle(state == "LOADING");
     $("#btnSettings").toggle(state == "STOPPED");
