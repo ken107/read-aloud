@@ -408,11 +408,19 @@ var getSingletonAudio = lazy(() => {
 
 var getSilenceTrack = lazy(() => makeSilenceTrack())
 
-if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-  document.addEventListener("DOMContentLoaded", function() {
-    document.body.classList.add("dark-mode")
-  })
-}
+immediate(async () => {
+  const [darkMode] = await Promise.all([
+    getSetting("darkMode"),
+    new Promise(f => document.addEventListener("DOMContentLoaded", f))
+  ])
+  if (typeof darkMode == "boolean") {
+    document.body.classList.toggle("dark-mode", darkMode)
+  } else {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.body.classList.add("dark-mode")
+    }
+  }
+})
 
 
 /**
@@ -1622,6 +1630,9 @@ const AwsPolly = (function() {
 })();
 
 
+/**
+ * HELPERS
+ */
 function truncateRepeatedChars(text, max) {
   var result = ""
   var startIndex = 0
