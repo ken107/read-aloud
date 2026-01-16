@@ -516,9 +516,10 @@ function AmazonPollyTtsEngine() {
       if (voice.Style) voiceName += ` +${voice.Style}`;
       return {
         voiceName,
-        lang: voice.AdditionalLanguageCodes
+        lang: voice.LanguageCode,
+        langs: voice.AdditionalLanguageCodes
           ? [voice.LanguageCode, ...voice.AdditionalLanguageCodes]
-          : voice.LanguageCode,
+          : undefined,
         gender: voice.Gender.toLowerCase(),
       }
     })
@@ -959,15 +960,15 @@ function PhoneTtsEngine() {
 function OpenaiTtsEngine() {
   this.defaultEndpointUrl = "https://api.openai.com/v1"
   this.defaultVoiceList = [
-    {voice: "alloy", lang: ["en-US", "zh-CN"], model: "tts-1"},
-    {voice: "ash", lang: ["en-US", "zh-CN"], model: "tts-1"},
-    {voice: "coral", lang: ["en-US", "zh-CN"], model: "tts-1"},
-    {voice: "echo", lang: ["en-US", "zh-CN"], model: "tts-1"},
-    {voice: "fable", lang: ["en-US", "zh-CN"], model: "tts-1"},
-    {voice: "onyx", lang: ["en-US", "zh-CN"], model: "tts-1"},
-    {voice: "nova", lang: ["en-US", "zh-CN"], model: "tts-1"},
-    {voice: "sage", lang: ["en-US", "zh-CN"], model: "tts-1"},
-    {voice: "shimmer", lang: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "alloy", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "ash", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "coral", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "echo", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "fable", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "onyx", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "nova", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "sage", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "shimmer", langs: ["en-US", "zh-CN"], model: "tts-1"},
   ]
   var prefetchAudio
   this.test = async function({apiKey, url, voiceList}) {
@@ -999,9 +1000,10 @@ function OpenaiTtsEngine() {
   this.getVoices = async function() {
     const openaiCreds = await getSetting("openaiCreds")
     const voiceList = openaiCreds ? (openaiCreds.voiceList || this.defaultVoiceList) : []
-    return voiceList.map(({voice, lang}) => ({
+    return voiceList.map(({voice, lang, langs}) => ({
       voiceName: "OpenAI " + voice,
-      lang
+      lang,
+      langs
     }))
   }
   async function getAudioUrl(text, voice, pitch) {

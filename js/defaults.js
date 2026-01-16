@@ -196,13 +196,13 @@ function groupVoicesByLang(voices) {
 }
 
 function getVoiceLanguages(voice) {
-  return voice.lang
-    ? (Array.isArray(voice.lang) ? voice.lang : [voice.lang])
-    : null
+  if (voice.langs) return voice.langs
+  else if (voice.lang) return [voice.lang]
+  else return undefined
 }
 
 function getFirstLanguage(voice) {
-  if (Array.isArray(voice.lang)) return voice.lang[0]
+  if (voice.langs) return voice.langs[0]
   else return voice.lang
 }
 
