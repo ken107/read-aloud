@@ -180,18 +180,30 @@ const voices$ = rxjs.combineLatest({
 
 function groupVoicesByLang(voices) {
   return voices.groupBy(function(voice) {
-    if (voice.lang) {
-      var code = voice.lang.split('-',1)[0]
+    const voiceLanguages = getVoiceLanguages(voice)
+    if (voiceLanguages) {
       var alias = {
         yue: "zh",
         cmn: "zh",
       }
-      return alias[code] || code
+      return voiceLanguages.map(parseLang).map(({ lang }) => alias[lang] || lang)
     }
     else {
+      //voice declares no language, assume can handle any lang
       return "<any>"
     }
   })
+}
+
+function getVoiceLanguages(voice) {
+  return voice.lang
+    ? (Array.isArray(voice.lang) ? voice.lang : [voice.lang])
+    : null
+}
+
+function getFirstLanguage(voice) {
+  if (Array.isArray(voice.lang)) return voice.lang[0]
+  else return voice.lang
 }
 
 function isOfflineVoice(voice) {
@@ -293,7 +305,7 @@ async function getSpeechVoice(voiceName, lang) {
   //if no specific voice indicated, but a preferred voice was configured for the language
   if (!voice && lang) {
     const preferredVoiceByLang = (await getSetting("preferredVoices")) || {}
-    voiceName = preferredVoiceByLang[lang.split("-")[0]];
+    voiceName = preferredVoiceByLang[parseLang(lang).lang]
     if (voiceName) voice = findVoiceByName(voices, voiceName);
   }
   //otherwise, auto-select in order: offline, native, free, any
@@ -323,23 +335,25 @@ function findVoiceByLang(voices, lang) {
   var speechLang = parseLang(lang);
   var match = {};
   voices.forEach(function(voice) {
-    if (voice.lang) {
-      var voiceLang = parseLang(voice.lang);
-      if (voiceLang.lang == speechLang.lang) {
-        //language matches
-        if (voiceLang.rest == speechLang.rest) {
-          //dialect matches, prefer female
-          if (voice.gender == "female") match.first = match.first || voice;
-          else match.second = match.second || voice;
-        }
-        else if (!voiceLang.rest) {
-          //voice specifies no dialect
-          match.third = match.third || voice;
-        }
-        else {
-          //dialect mismatch, prefer en-US (if english)
-          if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = match.fourth || voice;
-          else match.sixth = match.sixth || voice;
+    const voiceLanguages = getVoiceLanguages(voice)
+    if (voiceLanguages) {
+      for (const voiceLang of voiceLanguages.map(parseLang)) {
+        if (voiceLang.lang == speechLang.lang) {
+          //language matches
+          if (voiceLang.rest == speechLang.rest) {
+            //dialect matches, prefer female
+            if (voice.gender == "female") match.first = match.first || voice;
+            else match.second = match.second || voice;
+          }
+          else if (!voiceLang.rest) {
+            //voice specifies no dialect
+            match.third = match.third || voice;
+          }
+          else {
+            //dialect mismatch, prefer en-US (if english)
+            if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = match.fourth || voice;
+            else match.sixth = match.sixth || voice;
+          }
         }
       }
     }
@@ -516,11 +530,13 @@ function polyfills() {
       }
       var result = {};
       for (var i=0; i<this.length; i++) {
-        var key = keySelector(this[i]);
-        if (key != null) {
-          var value = valueReducer(result[key], this[i]);
-          if (value !== undefined) result[key] = value;
-          else delete result[key];
+        const keys = keySelector(this[i])
+        if (keys != null) {
+          for (const key of Array.isArray(keys) ? keys : [keys]) {
+            var value = valueReducer(result[key], this[i]);
+            if (value !== undefined) result[key] = value;
+            else delete result[key];
+          }
         }
       }
       return result;

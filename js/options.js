@@ -239,7 +239,7 @@
           try {
             var voiceName = $("#voices").val();
             var voice = voiceName && findVoiceByName(await rxjs.firstValueFrom(voices$), voiceName);
-            var lang = (voice && voice.lang || "en-US").split("-")[0];
+            const { lang } = parseLang(voice && getFirstLanguage(voice) || "en-US")
             $("#test-voice .spinner").show();
             $("#status").parent().hide();
             if (!demoSpeech[lang]) {
@@ -297,7 +297,9 @@
     })
     var voices = !selectedLangs ? allVoices : allVoices.filter(
       function(voice) {
-        return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0])
+        const voiceLanguages = getVoiceLanguages(voice)
+        return !voiceLanguages
+          || voiceLanguages.map(parseLang).some(({ lang }) => selectedLangs.includes(lang))
           || isPiperVoice(voice)
           || isSupertonicVoice(voice)
           || isOpenai(voice)

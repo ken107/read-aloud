@@ -516,7 +516,9 @@ function AmazonPollyTtsEngine() {
       if (voice.Style) voiceName += ` +${voice.Style}`;
       return {
         voiceName,
-        lang: voice.LanguageCode,
+        lang: voice.AdditionalLanguageCodes
+          ? [voice.LanguageCode, ...voice.AdditionalLanguageCodes]
+          : voice.LanguageCode,
         gender: voice.Gender.toLowerCase(),
       }
     })
@@ -957,12 +959,15 @@ function PhoneTtsEngine() {
 function OpenaiTtsEngine() {
   this.defaultEndpointUrl = "https://api.openai.com/v1"
   this.defaultVoiceList = [
-    {voice: "alloy", lang: "en-US", model: "tts-1"},
-    {voice: "echo", lang: "en-US", model: "tts-1"},
-    {voice: "fable", lang: "en-US", model: "tts-1"},
-    {voice: "onyx", lang: "en-US", model: "tts-1"},
-    {voice: "nova", lang: "en-US", model: "tts-1"},
-    {voice: "shimmer", lang: "en-US", model: "tts-1"},
+    {voice: "alloy", lang: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "ash", lang: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "coral", lang: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "echo", lang: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "fable", lang: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "onyx", lang: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "nova", lang: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "sage", lang: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "shimmer", lang: ["en-US", "zh-CN"], model: "tts-1"},
   ]
   var prefetchAudio
   this.test = async function({apiKey, url, voiceList}) {
