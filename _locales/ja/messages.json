@@ -17,6 +17,9 @@
   "options_voicegroup_offline": {
     "message": "オフライン音声"
   },
+  "options_voicegroup_experimental": {
+    "message": "実験的なAI音声"
+  },
   "options_voicegroup_googlecloud": {
     "message": "Google Cloud音声"
   },

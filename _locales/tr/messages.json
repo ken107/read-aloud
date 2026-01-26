@@ -17,6 +17,9 @@
   "options_voicegroup_offline": {
     "message": "Çevrimdışı Sesler"
   },
+  "options_voicegroup_experimental": {
+    "message": "Deneysel Yapay Zeka Sesleri"
+  },
   "options_voicegroup_googlecloud": {
     "message": "Google Cloud Sesleri"
   },

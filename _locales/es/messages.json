@@ -17,6 +17,9 @@
   "options_voicegroup_offline": {
     "message": "Voces Offline"
   },
+  "options_voicegroup_experimental": {
+    "message": "Voces de IA Experimentales"
+  },
   "options_voicegroup_googlecloud": {
     "message": "Voces de Google Cloud"
   },
@@ -25,6 +28,9 @@
   },
   "options_voicegroup_premium": {
     "message": "Voces Premium"
+  },
+  "options_voicegroup_additional": {
+    "message": "Voces Adicionales"
   },
   "options_enable_premium_voices": {
     "message": "Habilitar Voces Premium"

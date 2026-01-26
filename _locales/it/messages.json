@@ -17,6 +17,9 @@
   "options_voicegroup_offline": {
     "message": "Voci Offline"
   },
+  "options_voicegroup_experimental": {
+    "message": "Voci AI Sperimentali"
+  },
   "options_voicegroup_googlecloud": {
     "message": "Voci Google Cloud"
   },
@@ -26,6 +29,9 @@
   "options_voicegroup_premium": {
     "message": "Voci Premium"
   },
+  "options_voicegroup_additional": {
+    "message": "Voci Aggiuntive"
+  },
   "options_enable_premium_voices": {
     "message": "Abilita Voci Premium"
   },
@@ -34,6 +40,9 @@
   },
   "options_add_more_languages": {
     "message": "Aggiungere altre lingue"
+  },
+  "options_enable_custom_voices": {
+    "message": "🧩 Abilita voci personalizzate..."
   },
   "options_enable_piper_voices": {
     "message": "⚡ Gestisci Voci Piper"
