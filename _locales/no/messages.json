@@ -1,0 +1,167 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Tekst til tale-leser"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Les opp den nåværende nettsidens artikkel med ett klikk ved hjelp av tekst til tale (TTS). Støtter 40+ språk."
+  },
+  "options_heading": {
+    "message": "Alternativer"
+  },
+  "options_voice_label": {
+    "message": "Stemme"
+  },
+  "options_voicegroup_offline": {
+    "message": "Offline-stemmer"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Eksperimentelle AI-stemmer"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Google Cloud-stemmer"
+  },
+  "options_voicegroup_standard": {
+    "message": "Standardstemmer"
+  },
+  "options_voicegroup_premium": {
+    "message": "Premium-stemmer (krever kjøp)"
+  },
+  "options_voicegroup_additional": {
+    "message": "Flere stemmer"
+  },
+  "options_enable_premium_voices": {
+    "message": "Aktiver premium-stemmer"
+  },
+  "options_premium_voices_enabled": {
+    "message": "Premium-stemmer er aktivert"
+  },
+  "options_add_more_languages": {
+    "message": "➕ Legg til flere språk..."
+  },
+  "options_enable_custom_voices": {
+    "message": "🧩 Aktiver egendefinerte stemmer..."
+  },
+  "options_enable_piper_voices": {
+    "message": "⚡ Installer Piper-stemmer..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Installer Supertonic-stemmer..."
+  },
+  "options_rate_label": {
+    "message": "Hastighet"
+  },
+  "options_rate_warning": {
+    "message": "Merk: noen stemmer fungerer kanskje ikke ved høy hastighet."
+  },
+  "options_pitch_label": {
+    "message": "Tonehøyde"
+  },
+  "options_volume_label": {
+    "message": "Volum"
+  },
+  "options_show_highlighting": {
+    "message": "Tekstutheving"
+  },
+  "options_highlighting_off": {
+    "message": "Slå av"
+  },
+  "options_highlighting_popup": {
+    "message": "Vis i popup"
+  },
+  "options_highlighting_window": {
+    "message": "Vis i eget vindu"
+  },
+  "options_hotkeys_link": {
+    "message": "Rediger hurtigtaster"
+  },
+  "options_save_button": {
+    "message": "Lagre"
+  },
+  "options_test_button": {
+    "message": "Test"
+  },
+  "options_reset_button": {
+    "message": "Tilbakestill"
+  },
+  "options_success_status": {
+    "message": "Endringer lagret."
+  },
+  "options_logged_in_as": {
+    "message": "Logget inn som"
+  },
+  "options_account_button": {
+    "message": "Konto"
+  },
+  "options_logout_button": {
+    "message": "Logg ut"
+  },
+  "context_read_selection": {
+    "message": "Les opp markert tekst"
+  },
+  "error_no_text": {
+    "message": "Fant ingen tekst å lese, prøv å markere teksten du vil lese først"
+  },
+  "error_no_voice": {
+    "message": "Språket støttes ikke '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Bruk skjemaet for å laste opp PDF-filen din for opplesning"
+  },
+  "error_ajax_pdf": {
+    "message": "Lagre denne PDF-filen på datamaskinen din og åpne den i [PDF-viseren](open-pdf-viewer) for å lese opp"
+  },
+  "error_page_unreadable": {
+    "message": "Kan ikke lese opp denne nettsiden"
+  },
+  "error_reader_mode": {
+    "message": "Start opplesning *før* du går inn i lesemodus"
+  },
+  "error_file_access": {
+    "message": "Kan ikke få tilgang til lokal fil. Hvis det er en PDF-fil, åpne den i [PDF-viseren](open-pdf-viewer) for å lese opp"
+  },
+  "error_add_permissions": {
+    "message": "Du må gi Read Aloud ytterligere [tillatelser](request-permissions) for denne nettsiden"
+  },
+  "error_login_required": {
+    "message": "Vennligst [logg inn](sign-in) for å bruke premium-stemmer"
+  },
+  "error_voice_unavailable": {
+    "message": "Stemme ikke tilgjengelig, velg en annen"
+  },
+  "error_payment_required": {
+    "message": "Tomt for kreditt"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Du må gi ytterligere [tillatelser](auth-wavenet) for å aktivere Google Wavenet-stemmer"
+  },
+  "error_user_gesture_required": {
+    "message": "Klikk [her](user-gesture) for å starte"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefon ikke tilkoblet. [Koble til](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon frakoblet ({reason}). [Koble til igjen](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Klikk på høyttalerikonet ved siden av hvert svar for å lese det opp"
+  },
+  "languages_heading": {
+    "message": "Språkalternativer"
+  },
+  "languages_back_button": {
+    "message": "Tilbake til alternativer"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud vil bruke Google Oversetter for tekst til tale."
+  },
+  "google_translate_allow_button": {
+    "message": "Tillat"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud bruker Google Oversetter for tekst til tale. Hold denne fanen åpen."
+  }
+}

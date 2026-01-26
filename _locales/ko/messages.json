@@ -1,0 +1,167 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: 텍스트 음성 변환 리더"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "텍스트 음성 변환(TTS)을 사용하여 클릭 한 번으로 현재 웹페이지 기사를 소리내어 읽어줍니다. 40개 이상의 언어를 지원합니다."
+  },
+  "options_heading": {
+    "message": "옵션"
+  },
+  "options_voice_label": {
+    "message": "음성"
+  },
+  "options_voicegroup_offline": {
+    "message": "오프라인 음성"
+  },
+  "options_voicegroup_experimental": {
+    "message": "실험적 AI 음성"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Google Cloud 음성"
+  },
+  "options_voicegroup_standard": {
+    "message": "표준 음성"
+  },
+  "options_voicegroup_premium": {
+    "message": "프리미엄 음성 (구매 필요)"
+  },
+  "options_voicegroup_additional": {
+    "message": "추가 음성"
+  },
+  "options_enable_premium_voices": {
+    "message": "프리미엄 음성 활성화"
+  },
+  "options_premium_voices_enabled": {
+    "message": "프리미엄 음성이 활성화되었습니다"
+  },
+  "options_add_more_languages": {
+    "message": "➕ 더 많은 언어 추가..."
+  },
+  "options_enable_custom_voices": {
+    "message": "🧩 사용자 정의 음성 활성화..."
+  },
+  "options_enable_piper_voices": {
+    "message": "⚡ Piper 음성 설치..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Supertonic 음성 설치..."
+  },
+  "options_rate_label": {
+    "message": "속도"
+  },
+  "options_rate_warning": {
+    "message": "참고: 일부 음성은 빠른 속도에서 작동하지 않을 수 있습니다."
+  },
+  "options_pitch_label": {
+    "message": "음높이"
+  },
+  "options_volume_label": {
+    "message": "음량"
+  },
+  "options_show_highlighting": {
+    "message": "텍스트 강조 표시"
+  },
+  "options_highlighting_off": {
+    "message": "끄기"
+  },
+  "options_highlighting_popup": {
+    "message": "팝업에 표시"
+  },
+  "options_highlighting_window": {
+    "message": "별도 창에 표시"
+  },
+  "options_hotkeys_link": {
+    "message": "단축키 편집"
+  },
+  "options_save_button": {
+    "message": "저장"
+  },
+  "options_test_button": {
+    "message": "테스트"
+  },
+  "options_reset_button": {
+    "message": "초기화"
+  },
+  "options_success_status": {
+    "message": "변경 사항이 저장되었습니다."
+  },
+  "options_logged_in_as": {
+    "message": "로그인됨:"
+  },
+  "options_account_button": {
+    "message": "계정"
+  },
+  "options_logout_button": {
+    "message": "로그아웃"
+  },
+  "context_read_selection": {
+    "message": "선택한 텍스트 소리내어 읽기"
+  },
+  "error_no_text": {
+    "message": "읽을 텍스트를 찾지 못했습니다. 먼저 읽고 싶은 텍스트를 선택해 보세요"
+  },
+  "error_no_voice": {
+    "message": "지원되지 않는 언어 '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "PDF 파일을 소리내어 읽으려면 양식을 사용하여 업로드하세요"
+  },
+  "error_ajax_pdf": {
+    "message": "이 PDF 파일을 컴퓨터에 저장한 후 [PDF 뷰어](open-pdf-viewer)에서 열어 소리내어 읽으세요"
+  },
+  "error_page_unreadable": {
+    "message": "이 웹사이트를 소리내어 읽을 수 없습니다"
+  },
+  "error_reader_mode": {
+    "message": "읽기 모드에 들어가기 *전에* 소리내어 읽기를 시작하세요"
+  },
+  "error_file_access": {
+    "message": "로컬 파일에 접근할 수 없습니다. PDF 파일인 경우 [PDF 뷰어](open-pdf-viewer)에서 열어 소리내어 읽으세요"
+  },
+  "error_add_permissions": {
+    "message": "이 웹사이트에 대해 Read Aloud에 추가 [권한](request-permissions)을 부여해야 합니다"
+  },
+  "error_login_required": {
+    "message": "프리미엄 음성을 사용하려면 [로그인](sign-in)하세요"
+  },
+  "error_voice_unavailable": {
+    "message": "음성을 사용할 수 없습니다. 다른 음성을 선택하세요"
+  },
+  "error_payment_required": {
+    "message": "크레딧이 부족합니다"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Google Wavenet 음성을 활성화하려면 추가 [권한](auth-wavenet)을 부여해야 합니다"
+  },
+  "error_user_gesture_required": {
+    "message": "시작하려면 [여기](user-gesture)를 클릭하세요"
+  },
+  "error_phone_not_connected": {
+    "message": "전화기가 연결되지 않았습니다. [연결](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "전화기 연결이 끊어졌습니다 ({reason}). [다시 연결](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "각 답변 옆의 스피커 아이콘을 클릭하여 소리내어 읽으세요"
+  },
+  "languages_heading": {
+    "message": "언어 옵션"
+  },
+  "languages_back_button": {
+    "message": "옵션으로 돌아가기"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud가 텍스트 음성 변환을 위해 Google 번역을 사용하려고 합니다."
+  },
+  "google_translate_allow_button": {
+    "message": "허용"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud가 텍스트 음성 변환을 위해 Google 번역을 사용 중입니다. 이 탭을 열어 두세요."
+  }
+}

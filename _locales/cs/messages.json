@@ -1,0 +1,167 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Hlasový čtečka textu"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Přečtěte si nahlas článek na aktuální webové stránce jedním kliknutím pomocí převodu textu na řeč (TTS). Podporuje více než 40 jazyků."
+  },
+  "options_heading": {
+    "message": "Možnosti"
+  },
+  "options_voice_label": {
+    "message": "Hlas"
+  },
+  "options_voicegroup_offline": {
+    "message": "Offline hlasy"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Experimentální AI hlasy"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Hlasy Google Cloud"
+  },
+  "options_voicegroup_standard": {
+    "message": "Standardní hlasy"
+  },
+  "options_voicegroup_premium": {
+    "message": "Prémiové hlasy (vyžadují nákup)"
+  },
+  "options_voicegroup_additional": {
+    "message": "Další hlasy"
+  },
+  "options_enable_premium_voices": {
+    "message": "Povolit prémiové hlasy"
+  },
+  "options_premium_voices_enabled": {
+    "message": "Prémiové hlasy jsou povoleny"
+  },
+  "options_add_more_languages": {
+    "message": "➕ Přidat další jazyky..."
+  },
+  "options_enable_custom_voices": {
+    "message": "🧩 Povolit vlastní hlasy..."
+  },
+  "options_enable_piper_voices": {
+    "message": "⚡ Nainstalovat hlasy Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Nainstalovat hlasy Supertonic..."
+  },
+  "options_rate_label": {
+    "message": "Rychlost"
+  },
+  "options_rate_warning": {
+    "message": "Poznámka: některé hlasy nemusí fungovat při vysoké rychlosti."
+  },
+  "options_pitch_label": {
+    "message": "Výška tónu"
+  },
+  "options_volume_label": {
+    "message": "Hlasitost"
+  },
+  "options_show_highlighting": {
+    "message": "Zvýraznění textu"
+  },
+  "options_highlighting_off": {
+    "message": "Vypnout"
+  },
+  "options_highlighting_popup": {
+    "message": "Zobrazit v popup okně"
+  },
+  "options_highlighting_window": {
+    "message": "Zobrazit v samostatném okně"
+  },
+  "options_hotkeys_link": {
+    "message": "Upravit klávesové zkratky"
+  },
+  "options_save_button": {
+    "message": "Uložit"
+  },
+  "options_test_button": {
+    "message": "Test"
+  },
+  "options_reset_button": {
+    "message": "Obnovit"
+  },
+  "options_success_status": {
+    "message": "Změny uloženy."
+  },
+  "options_logged_in_as": {
+    "message": "Přihlášen jako"
+  },
+  "options_account_button": {
+    "message": "Účet"
+  },
+  "options_logout_button": {
+    "message": "Odhlásit"
+  },
+  "context_read_selection": {
+    "message": "Přečíst vybraný text nahlas"
+  },
+  "error_no_text": {
+    "message": "Nenalezen žádný text ke čtení, zkuste nejprve vybrat text, který chcete přečíst"
+  },
+  "error_no_voice": {
+    "message": "Jazyk není podporován '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Použijte prosím formulář k nahrání souboru PDF ke čtení nahlas"
+  },
+  "error_ajax_pdf": {
+    "message": "Uložte prosím tento soubor PDF do počítače a otevřete ho v [prohlížeči PDF](open-pdf-viewer) ke čtení nahlas"
+  },
+  "error_page_unreadable": {
+    "message": "Nelze číst nahlas tuto webovou stránku"
+  },
+  "error_reader_mode": {
+    "message": "Spusťte prosím čtení nahlas *před* vstupem do režimu čtečky"
+  },
+  "error_file_access": {
+    "message": "Nelze přistoupit k lokálnímu souboru. Pokud je to PDF soubor, otevřete ho prosím v [prohlížeči PDF](open-pdf-viewer) ke čtení nahlas"
+  },
+  "error_add_permissions": {
+    "message": "Musíte udělit Read Aloud další [oprávnění](request-permissions) pro tuto webovou stránku"
+  },
+  "error_login_required": {
+    "message": "Prosím [přihlaste se](sign-in) pro použití prémiových hlasů"
+  },
+  "error_voice_unavailable": {
+    "message": "Hlas není dostupný, vyberte prosím jiný"
+  },
+  "error_payment_required": {
+    "message": "Vyčerpaný kredit"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Musíte udělit další [oprávnění](auth-wavenet) pro povolení hlasů Google Wavenet"
+  },
+  "error_user_gesture_required": {
+    "message": "Klikněte [zde](user-gesture) pro spuštění"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefon není připojen. [Připojit](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon odpojen ({reason}). [Znovu připojit](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Klikněte na ikonu reproduktoru vedle každé odpovědi pro její přečtení nahlas"
+  },
+  "languages_heading": {
+    "message": "Možnosti jazyka"
+  },
+  "languages_back_button": {
+    "message": "Zpět na možnosti"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud by chtěl použít Google Překladač pro převod textu na řeč."
+  },
+  "google_translate_allow_button": {
+    "message": "Povolit"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud používá Google Překladač pro převod textu na řeč. Prosím nechte tuto kartu otevřenou."
+  }
+}

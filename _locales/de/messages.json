@@ -1,0 +1,167 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Ein Text-zu-Sprache Vorleser"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Lesen Sie den aktuellen Webseitenartikel mit einem Klick vor, mit Text-zu-Sprache (TTS). Unterstützt über 40 Sprachen."
+  },
+  "options_heading": {
+    "message": "Einstellungen"
+  },
+  "options_voice_label": {
+    "message": "Stimme"
+  },
+  "options_voicegroup_offline": {
+    "message": "Offline-Stimmen"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Experimentelle KI-Stimmen"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Google Cloud Stimmen"
+  },
+  "options_voicegroup_standard": {
+    "message": "Standard-Stimmen"
+  },
+  "options_voicegroup_premium": {
+    "message": "Premium-Stimmen (Kauf erforderlich)"
+  },
+  "options_voicegroup_additional": {
+    "message": "Zusätzliche Stimmen"
+  },
+  "options_enable_premium_voices": {
+    "message": "Premium-Stimmen aktivieren"
+  },
+  "options_premium_voices_enabled": {
+    "message": "Premium-Stimmen sind aktiviert"
+  },
+  "options_add_more_languages": {
+    "message": "➕ Weitere Sprachen hinzufügen..."
+  },
+  "options_enable_custom_voices": {
+    "message": "🧩 Benutzerdefinierte Stimmen aktivieren..."
+  },
+  "options_enable_piper_voices": {
+    "message": "⚡ Piper-Stimmen installieren..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Supertonic-Stimmen installieren..."
+  },
+  "options_rate_label": {
+    "message": "Geschwindigkeit"
+  },
+  "options_rate_warning": {
+    "message": "Hinweis: Einige Stimmen funktionieren möglicherweise nicht bei hoher Geschwindigkeit."
+  },
+  "options_pitch_label": {
+    "message": "Tonhöhe"
+  },
+  "options_volume_label": {
+    "message": "Lautstärke"
+  },
+  "options_show_highlighting": {
+    "message": "Texthervorhebung"
+  },
+  "options_highlighting_off": {
+    "message": "Ausschalten"
+  },
+  "options_highlighting_popup": {
+    "message": "Im Popup anzeigen"
+  },
+  "options_highlighting_window": {
+    "message": "In separatem Fenster anzeigen"
+  },
+  "options_hotkeys_link": {
+    "message": "Tastenkürzel bearbeiten"
+  },
+  "options_save_button": {
+    "message": "Speichern"
+  },
+  "options_test_button": {
+    "message": "Testen"
+  },
+  "options_reset_button": {
+    "message": "Zurücksetzen"
+  },
+  "options_success_status": {
+    "message": "Änderungen gespeichert."
+  },
+  "options_logged_in_as": {
+    "message": "Angemeldet als"
+  },
+  "options_account_button": {
+    "message": "Konto"
+  },
+  "options_logout_button": {
+    "message": "Abmelden"
+  },
+  "context_read_selection": {
+    "message": "Ausgewählten Text vorlesen"
+  },
+  "error_no_text": {
+    "message": "Kein Text zum Vorlesen gefunden. Versuchen Sie, zuerst den gewünschten Text auszuwählen"
+  },
+  "error_no_voice": {
+    "message": "Sprache nicht unterstützt '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Bitte verwenden Sie das Formular, um Ihre PDF-Datei zum Vorlesen hochzuladen"
+  },
+  "error_ajax_pdf": {
+    "message": "Bitte speichern Sie diese PDF-Datei auf Ihrem Computer und öffnen Sie sie im [PDF-Viewer](open-pdf-viewer) zum Vorlesen"
+  },
+  "error_page_unreadable": {
+    "message": "Diese Website kann nicht vorgelesen werden"
+  },
+  "error_reader_mode": {
+    "message": "Bitte starten Sie das Vorlesen *bevor* Sie den Lesemodus aktivieren"
+  },
+  "error_file_access": {
+    "message": "Lokale Datei nicht zugänglich. Bei PDF-Dateien öffnen Sie diese bitte im [PDF-Viewer](open-pdf-viewer) zum Vorlesen"
+  },
+  "error_add_permissions": {
+    "message": "Sie müssen Read Aloud zusätzliche [Berechtigungen](request-permissions) für diese Website erteilen"
+  },
+  "error_login_required": {
+    "message": "Bitte [anmelden](sign-in), um die Premium-Stimmen zu nutzen"
+  },
+  "error_voice_unavailable": {
+    "message": "Stimme nicht verfügbar, bitte wählen Sie eine andere"
+  },
+  "error_payment_required": {
+    "message": "Guthaben aufgebraucht"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Sie müssen zusätzliche [Berechtigungen](auth-wavenet) erteilen, um Google Wavenet-Stimmen zu aktivieren"
+  },
+  "error_user_gesture_required": {
+    "message": "Klicken Sie [hier](user-gesture), um zu starten"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefon nicht verbunden. [Verbinden](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon getrennt ({reason}). [Erneut verbinden](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Klicken Sie auf das Lautsprecher-Symbol neben jeder Antwort, um sie vorzulesen"
+  },
+  "languages_heading": {
+    "message": "Sprachoptionen"
+  },
+  "languages_back_button": {
+    "message": "Zurück zu Einstellungen"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud möchte Google Translate für Text-zu-Sprache verwenden."
+  },
+  "google_translate_allow_button": {
+    "message": "Erlauben"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud verwendet Google Translate für Text-zu-Sprache. Bitte lassen Sie diesen Tab geöffnet."
+  }
+}

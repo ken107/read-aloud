@@ -1,0 +1,167 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Text till tal-läsare"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Läs upp den aktuella webbsidans artikel med ett klick, med text till tal (TTS). Stöder 40+ språk."
+  },
+  "options_heading": {
+    "message": "Alternativ"
+  },
+  "options_voice_label": {
+    "message": "Röst"
+  },
+  "options_voicegroup_offline": {
+    "message": "Offline-röster"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Experimentella AI-röster"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Google Cloud-röster"
+  },
+  "options_voicegroup_standard": {
+    "message": "Standardröster"
+  },
+  "options_voicegroup_premium": {
+    "message": "Premiumröster (kräver köp)"
+  },
+  "options_voicegroup_additional": {
+    "message": "Ytterligare röster"
+  },
+  "options_enable_premium_voices": {
+    "message": "Aktivera premiumröster"
+  },
+  "options_premium_voices_enabled": {
+    "message": "Premiumröster är aktiverade"
+  },
+  "options_add_more_languages": {
+    "message": "➕ Lägg till fler språk..."
+  },
+  "options_enable_custom_voices": {
+    "message": "🧩 Aktivera anpassade röster..."
+  },
+  "options_enable_piper_voices": {
+    "message": "⚡ Installera Piper-röster..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Installera Supertonic-röster..."
+  },
+  "options_rate_label": {
+    "message": "Hastighet"
+  },
+  "options_rate_warning": {
+    "message": "Obs: vissa röster kanske inte fungerar vid hög hastighet."
+  },
+  "options_pitch_label": {
+    "message": "Tonhöjd"
+  },
+  "options_volume_label": {
+    "message": "Volym"
+  },
+  "options_show_highlighting": {
+    "message": "Textmarkering"
+  },
+  "options_highlighting_off": {
+    "message": "Stäng av"
+  },
+  "options_highlighting_popup": {
+    "message": "Visa i popup"
+  },
+  "options_highlighting_window": {
+    "message": "Visa i separat fönster"
+  },
+  "options_hotkeys_link": {
+    "message": "Redigera kortkommandon"
+  },
+  "options_save_button": {
+    "message": "Spara"
+  },
+  "options_test_button": {
+    "message": "Testa"
+  },
+  "options_reset_button": {
+    "message": "Återställ"
+  },
+  "options_success_status": {
+    "message": "Ändringar sparade."
+  },
+  "options_logged_in_as": {
+    "message": "Inloggad som"
+  },
+  "options_account_button": {
+    "message": "Konto"
+  },
+  "options_logout_button": {
+    "message": "Logga ut"
+  },
+  "context_read_selection": {
+    "message": "Läs upp markerad text"
+  },
+  "error_no_text": {
+    "message": "Hittade ingen text att läsa, försök markera texten du vill läsa först"
+  },
+  "error_no_voice": {
+    "message": "Språket stöds inte '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Använd formuläret för att ladda upp din PDF-fil för uppläsning"
+  },
+  "error_ajax_pdf": {
+    "message": "Spara denna PDF-fil på din dator och öppna den i [PDF-visaren](open-pdf-viewer) för uppläsning"
+  },
+  "error_page_unreadable": {
+    "message": "Kan inte läsa upp denna webbplats"
+  },
+  "error_reader_mode": {
+    "message": "Starta uppläsning *innan* du går in i läsläge"
+  },
+  "error_file_access": {
+    "message": "Kan inte komma åt lokal fil. Om det är en PDF-fil, öppna den i [PDF-visaren](open-pdf-viewer) för uppläsning"
+  },
+  "error_add_permissions": {
+    "message": "Du måste ge Read Aloud ytterligare [behörigheter](request-permissions) för denna webbplats"
+  },
+  "error_login_required": {
+    "message": "Vänligen [logga in](sign-in) för att använda premiumröster"
+  },
+  "error_voice_unavailable": {
+    "message": "Rösten är inte tillgänglig, välj en annan"
+  },
+  "error_payment_required": {
+    "message": "Slut på kredit"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Du måste ge ytterligare [behörigheter](auth-wavenet) för att aktivera Google Wavenet-röster"
+  },
+  "error_user_gesture_required": {
+    "message": "Klicka [här](user-gesture) för att starta"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefon inte ansluten. [Anslut](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon frånkopplad ({reason}). [Återanslut](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Klicka på högtalarikonen bredvid varje svar för att läsa upp det"
+  },
+  "languages_heading": {
+    "message": "Språkalternativ"
+  },
+  "languages_back_button": {
+    "message": "Tillbaka till alternativ"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud vill använda Google Översätt för text till tal."
+  },
+  "google_translate_allow_button": {
+    "message": "Tillåt"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud använder Google Översätt för text till tal. Håll denna flik öppen."
+  }
+}

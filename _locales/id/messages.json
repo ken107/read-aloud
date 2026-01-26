@@ -1,0 +1,167 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Pembaca Teks ke Suara"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Baca artikel halaman web saat ini dengan satu klik, menggunakan text to speech (TTS). Mendukung 40+ bahasa."
+  },
+  "options_heading": {
+    "message": "Opsi"
+  },
+  "options_voice_label": {
+    "message": "Suara"
+  },
+  "options_voicegroup_offline": {
+    "message": "Suara Offline"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Suara AI Eksperimental"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "Suara Google Cloud"
+  },
+  "options_voicegroup_standard": {
+    "message": "Suara Standar"
+  },
+  "options_voicegroup_premium": {
+    "message": "Suara Premium (memerlukan pembelian)"
+  },
+  "options_voicegroup_additional": {
+    "message": "Suara Tambahan"
+  },
+  "options_enable_premium_voices": {
+    "message": "Aktifkan Suara Premium"
+  },
+  "options_premium_voices_enabled": {
+    "message": "Suara premium telah diaktifkan"
+  },
+  "options_add_more_languages": {
+    "message": "➕ Tambah lebih banyak bahasa..."
+  },
+  "options_enable_custom_voices": {
+    "message": "🧩 Aktifkan suara kustom..."
+  },
+  "options_enable_piper_voices": {
+    "message": "⚡ Instal suara Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ Instal suara Supertonic..."
+  },
+  "options_rate_label": {
+    "message": "Kecepatan"
+  },
+  "options_rate_warning": {
+    "message": "Catatan: beberapa suara mungkin tidak berfungsi pada kecepatan tinggi."
+  },
+  "options_pitch_label": {
+    "message": "Nada"
+  },
+  "options_volume_label": {
+    "message": "Volume"
+  },
+  "options_show_highlighting": {
+    "message": "Penyorotan Teks"
+  },
+  "options_highlighting_off": {
+    "message": "Matikan"
+  },
+  "options_highlighting_popup": {
+    "message": "Tampilkan di popup"
+  },
+  "options_highlighting_window": {
+    "message": "Tampilkan di jendela terpisah"
+  },
+  "options_hotkeys_link": {
+    "message": "Edit tombol pintasan"
+  },
+  "options_save_button": {
+    "message": "Simpan"
+  },
+  "options_test_button": {
+    "message": "Tes"
+  },
+  "options_reset_button": {
+    "message": "Reset"
+  },
+  "options_success_status": {
+    "message": "Perubahan disimpan."
+  },
+  "options_logged_in_as": {
+    "message": "Masuk sebagai"
+  },
+  "options_account_button": {
+    "message": "Akun"
+  },
+  "options_logout_button": {
+    "message": "Keluar"
+  },
+  "context_read_selection": {
+    "message": "Baca teks yang dipilih"
+  },
+  "error_no_text": {
+    "message": "Tidak menemukan teks untuk dibaca, coba pilih teks yang ingin Anda baca terlebih dahulu"
+  },
+  "error_no_voice": {
+    "message": "Bahasa tidak didukung '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Silakan gunakan formulir untuk mengunggah file PDF Anda untuk dibaca"
+  },
+  "error_ajax_pdf": {
+    "message": "Silakan simpan file PDF ini ke komputer Anda dan buka di [penampil PDF](open-pdf-viewer) untuk dibaca"
+  },
+  "error_page_unreadable": {
+    "message": "Tidak dapat membaca situs web ini"
+  },
+  "error_reader_mode": {
+    "message": "Silakan mulai read aloud *sebelum* masuk mode pembaca"
+  },
+  "error_file_access": {
+    "message": "Tidak dapat mengakses file lokal. Jika ini file PDF, silakan buka di [penampil PDF](open-pdf-viewer) untuk dibaca"
+  },
+  "error_add_permissions": {
+    "message": "Anda perlu memberikan Read Aloud [izin](request-permissions) tambahan untuk situs web ini"
+  },
+  "error_login_required": {
+    "message": "Silakan [masuk](sign-in) untuk menggunakan Suara Premium"
+  },
+  "error_voice_unavailable": {
+    "message": "Suara tidak tersedia, silakan pilih yang lain"
+  },
+  "error_payment_required": {
+    "message": "Kredit habis"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Anda perlu memberikan [izin](auth-wavenet) tambahan untuk mengaktifkan suara Google Wavenet"
+  },
+  "error_user_gesture_required": {
+    "message": "Klik [di sini](user-gesture) untuk memulai"
+  },
+  "error_phone_not_connected": {
+    "message": "Telepon tidak terhubung. [Hubungkan](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telepon terputus ({reason}). [Hubungkan kembali](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Klik ikon speaker di sebelah setiap jawaban untuk membacanya"
+  },
+  "languages_heading": {
+    "message": "Opsi Bahasa"
+  },
+  "languages_back_button": {
+    "message": "Kembali ke Opsi"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud ingin menggunakan Google Translate untuk text-to-speech."
+  },
+  "google_translate_allow_button": {
+    "message": "Izinkan"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud menggunakan Google Translate untuk text-to-speech. Harap biarkan tab ini tetap terbuka."
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: قارئ النص إلى كلام"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "اقرأ مقال صفحة الويب الحالية بصوت عالٍ بنقرة واحدة، باستخدام تحويل النص إلى كلام (TTS). يدعم أكثر من 40 لغة."
+  },
+  "options_heading": {
+    "message": "الخيارات"
+  },
+  "options_voice_label": {
+    "message": "الصوت"
+  },
+  "options_voicegroup_offline": {
+    "message": "الأصوات غير المتصلة"
+  },
+  "options_voicegroup_experimental": {
+    "message": "أصوات الذكاء الاصطناعي التجريبية"
+  },
+  "options_voicegroup_googlecloud": {
+    "message": "أصوات Google Cloud"
+  },
+  "options_voicegroup_standard": {
+    "message": "الأصوات القياسية"
+  },
+  "options_voicegroup_premium": {
+    "message": "الأصوات المميزة (تتطلب الشراء)"
+  },
+  "options_voicegroup_additional": {
+    "message": "أصوات إضافية"
+  },
+  "options_enable_premium_voices": {
+    "message": "تفعيل الأصوات المميزة"
+  },
+  "options_premium_voices_enabled": {
+    "message": "الأصوات المميزة مفعّلة"
+  },
+  "options_add_more_languages": {
+    "message": "➕ إضافة المزيد من اللغات..."
+  },
+  "options_enable_custom_voices": {
+    "message": "🧩 تفعيل الأصوات المخصصة..."
+  },
+  "options_enable_piper_voices": {
+    "message": "⚡ تثبيت أصوات Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "⚡ تثبيت أصوات Supertonic..."
+  },
+  "options_rate_label": {
+    "message": "السرعة"
+  },
+  "options_rate_warning": {
+    "message": "ملاحظة: قد لا تعمل بعض الأصوات بسرعة عالية."
+  },
+  "options_pitch_label": {
+    "message": "درجة الصوت"
+  },
+  "options_volume_label": {
+    "message": "مستوى الصوت"
+  },
+  "options_show_highlighting": {
+    "message": "تمييز النص"
+  },
+  "options_highlighting_off": {
+    "message": "إيقاف"
+  },
+  "options_highlighting_popup": {
+    "message": "عرض في النافذة المنبثقة"
+  },
+  "options_highlighting_window": {
+    "message": "عرض في نافذة منفصلة"
+  },
+  "options_hotkeys_link": {
+    "message": "تعديل مفاتيح الاختصار"
+  },
+  "options_save_button": {
+    "message": "حفظ"
+  },
+  "options_test_button": {
+    "message": "اختبار"
+  },
+  "options_reset_button": {
+    "message": "إعادة تعيين"
+  },
+  "options_success_status": {
+    "message": "تم حفظ التغييرات."
+  },
+  "options_logged_in_as": {
+    "message": "تم تسجيل الدخول كـ"
+  },
+  "options_account_button": {
+    "message": "الحساب"
+  },
+  "options_logout_button": {
+    "message": "تسجيل الخروج"
+  },
+  "context_read_selection": {
+    "message": "قراءة النص المحدد بصوت عالٍ"
+  },
+  "error_no_text": {
+    "message": "لم يتم العثور على نص للقراءة، حاول تحديد النص الذي تريد قراءته أولاً"
+  },
+  "error_no_voice": {
+    "message": "اللغة غير مدعومة '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "يرجى استخدام النموذج لتحميل ملف PDF الخاص بك للقراءة بصوت عالٍ"
+  },
+  "error_ajax_pdf": {
+    "message": "يرجى حفظ ملف PDF هذا على جهاز الكمبيوتر الخاص بك وفتحه في [عارض PDF](open-pdf-viewer) للقراءة بصوت عالٍ"
+  },
+  "error_page_unreadable": {
+    "message": "لا يمكن قراءة هذا الموقع بصوت عالٍ"
+  },
+  "error_reader_mode": {
+    "message": "يرجى بدء القراءة بصوت عالٍ *قبل* الدخول إلى وضع القراءة"
+  },
+  "error_file_access": {
+    "message": "لا يمكن الوصول إلى الملف المحلي. إذا كان ملف PDF، يرجى فتحه في [عارض PDF](open-pdf-viewer) للقراءة بصوت عالٍ"
+  },
+  "error_add_permissions": {
+    "message": "تحتاج إلى منح Read Aloud [أذونات](request-permissions) إضافية لهذا الموقع"
+  },
+  "error_login_required": {
+    "message": "يرجى [تسجيل الدخول](sign-in) لاستخدام الأصوات المميزة"
+  },
+  "error_voice_unavailable": {
+    "message": "الصوت غير متاح، يرجى اختيار صوت آخر"
+  },
+  "error_payment_required": {
+    "message": "نفد الرصيد"
+  },
+  "error_wavenet_auth_required": {
+    "message": "تحتاج إلى منح [أذونات](auth-wavenet) إضافية لتفعيل أصوات Google Wavenet"
+  },
+  "error_user_gesture_required": {
+    "message": "انقر [هنا](user-gesture) للبدء"
+  },
+  "error_phone_not_connected": {
+    "message": "الهاتف غير متصل. [اتصال](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "انقطع اتصال الهاتف ({reason}). [إعادة الاتصال](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "انقر على أيقونة مكبر الصوت بجانب كل إجابة لقراءتها بصوت عالٍ"
+  },
+  "languages_heading": {
+    "message": "خيارات اللغة"
+  },
+  "languages_back_button": {
+    "message": "العودة إلى الخيارات"
+  },
+  "google_translate_request_permission": {
+    "message": "يريد Read Aloud استخدام ترجمة Google لتحويل النص إلى كلام."
+  },
+  "google_translate_allow_button": {
+    "message": "السماح"
+  },
+  "google_translate_keep_page_open": {
+    "message": "يستخدم Read Aloud ترجمة Google لتحويل النص إلى كلام. يرجى إبقاء علامة التبويب هذه مفتوحة."
+  }
+}
