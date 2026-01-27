@@ -1,15 +1,30 @@
 
 var queryString = getQueryString();
 
-Promise.all([
-  getVoices(),
-  getSettings(),
+
+const voicesPopulated$ = rxjs.combineLatest([
+  voices$,
+  observeSetting("languages"),
   brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
   domReady()
-])
-  .then(spread(initialize));
+]).pipe(
+  rxjs.tap(([voices, languages, acceptLangs]) => populateVoices(voices, {languages}, acceptLangs)),
+  rxjs.share()
+)
 
-function initialize(allVoices, settings, acceptLangs) {
+rxjs.combineLatest([
+  observeSetting("voiceName"),
+  voicesPopulated$
+]).subscribe(([voiceName]) => {
+  $("#voices").val(voiceName || "")
+})
+
+
+Promise.all([
+  getSettings(),
+  domReady()
+])
+  .then(([settings]) => {
   setI18nText();
   updateDependents(settings);
 
@@ -63,9 +78,7 @@ function initialize(allVoices, settings, acceptLangs) {
 
 
   //voices
-  populateVoices(allVoices, settings, acceptLangs);
   $("#voices")
-    .val(settings.voiceName || "")
     .change(function() {
       var voiceName = $(this).val();
       if (voiceName == "@custom") createTabAndClosePopup("custom-voices.html")
@@ -120,9 +133,9 @@ function initialize(allVoices, settings, acceptLangs) {
     if (err) handleError(err)
   })
 
-  $("#test-voice").click(function() {
+  $("#test-voice").click(async function() {
     var voiceName = $("#voices").val();
-    var voice = voiceName && findVoiceByName(allVoices, voiceName);
+    var voice = voiceName && findVoiceByName(await rxjs.firstValueFrom(voices$), voiceName);
     var lang = (voice && voice.lang) ? parseLang(voice.lang).code : "en";
     $("#test-voice .spinner").show();
     $("#status").hide();
@@ -164,11 +177,17 @@ function initialize(allVoices, settings, acceptLangs) {
   $("#hotkeys-link").click(function() {
     createTabAndClosePopup(getHotkeySettingsUrl())
   });
-}
+})
 
 
 
 function populateVoices(allVoices, settings, acceptLangs) {
+  $("#voices").empty()
+  $("<option>")
+    .val("")
+    .text("Auto select")
+    .appendTo("#voices")
+
   //get voices filtered by selected languages
   var selectedLangs = immediate(() => {
     if (settings.languages) return settings.languages.split(',')

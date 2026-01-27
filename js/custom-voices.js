@@ -1,6 +1,4 @@
 
-const settingsObservable = makeSettingsObservable()
-
 $(function() {
   getSettings(["awsCreds", "gcpCreds", "ibmCreds", "azureCreds"])
     .then(function(items) {
@@ -181,7 +179,7 @@ async function testAzure(region, key) {
 
 //OpenAI
 $(function() {
-  const creds$ = settingsObservable.of("openaiCreds")
+  const creds$ = observeSetting("openaiCreds")
   const editMode$ = new rxjs.BehaviorSubject(false)
   const status$ = new rxjs.BehaviorSubject({type: "IDLE"})
 

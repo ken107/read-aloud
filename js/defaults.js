@@ -459,6 +459,13 @@ function parseUrl(url) {
 /**
  * SETTINGS
  */
+const settingsChange$ = rxjs.fromEventPattern(
+  h => brapi.storage.local.onChanged.addListener(h),
+  h => brapi.storage.local.onChanged.removeListener(h)
+).pipe(
+  rxjs.share()
+)
+
 function getSettings(names) {
   return new Promise(function(fulfill) {
     brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices"], fulfill);
@@ -488,54 +495,47 @@ async function updateSetting(name, value) {
   await brapi.storage.local.set(items)
 }
 
-function makeSettingsObservable() {
-  const changes = new rxjs.Observable(observer => brapi.storage.local.onChanged.addListener(changes => observer.next(changes)))
-    .pipe(rxjs.share())
-  return {
-    changes,
-    of(name) {
-      return rxjs.from(brapi.storage.local.get([name]))
-        .pipe(
-          rxjs.map(settings => settings[name]),
-          rxjs.concatWith(changes.pipe(rxjs.filter(settings => name in settings), rxjs.map(settings => settings[name].newValue))),
-        )
-    }
-  }
+function observeSetting(name) {
+  return rxjs.concat(
+    rxjs.defer(() => getSetting(name)),
+    settingsChange$.pipe(
+      rxjs.filter(settings => name in settings),
+      rxjs.map(settings => settings[name].newValue)
+    )
+  )
 }
 
 
 /**
  * VOICES
  */
-function getVoices(opts) {
-  if (!opts) opts = {}
-  return getSettings(["awsCreds", "gcpCreds", "openaiCreds", "azureCreds", "piperVoices", "supertonicVoices"])
-    .then(function(settings) {
-      return Promise.all([
-        browserTtsEngine.getVoices(),
-        Promise.resolve(!opts.excludeUnavailable || googleTranslateTtsEngine.ready())
-          .then(() => googleTranslateTtsEngine.getVoices())
-          .catch(err => {
-            console.error(err)
-            return []
-          }),
-        premiumTtsEngine.getVoices(),
-        settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
-        settings.gcpCreds
-          ? googleWavenetTtsEngine.getVoices()
-          : (!isMobileOS() ? googleWavenetTtsEngine.getFreeVoices() : []),
-        ibmWatsonTtsEngine.getVoices(),
-        !isMobileOS() ? phoneTtsEngine.getVoices() : [],
-        settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
-        settings.azureCreds ? azureTtsEngine.getVoices() : [],
-        settings.piperVoices || [],
-        settings.supertonicVoices || [],
-      ])
-    })
-    .then(function(arr) {
-      return Array.prototype.concat.apply([], arr);
-    })
-}
+const voices$ = rxjs.combineLatest({
+  awsCreds: observeSetting("awsCreds"),
+  gcpCreds: observeSetting("gcpCreds"),
+  ibmCreds: observeSetting("ibmCreds"),
+  openaiCreds: observeSetting("openaiCreds"),
+  azureCreds: observeSetting("azureCreds"),
+  piperVoices: observeSetting("piperVoices"),
+  supertonicVoices: observeSetting("supertonicVoices"),
+}).pipe(
+  rxjs.switchMap(settings => Promise.all([
+    browserTtsEngine.getVoices(),
+    googleTranslateTtsEngine.getVoices(),
+    premiumTtsEngine.getVoices(),
+    settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
+    settings.gcpCreds
+      ? googleWavenetTtsEngine.getVoices()
+      : (!isMobileOS() ? googleWavenetTtsEngine.getFreeVoices() : []),
+    settings.ibmCreds ? ibmWatsonTtsEngine.getVoices() : [],
+    !isMobileOS() ? phoneTtsEngine.getVoices() : [],
+    settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
+    settings.azureCreds ? azureTtsEngine.getVoices() : [],
+    settings.piperVoices || [],
+    settings.supertonicVoices || [],
+  ])),
+  rxjs.map(arr => arr.flat()),
+  rxjs.shareReplay(1)
+)
 
 function groupVoicesByLang(voices) {
   return voices.groupBy(voice => voice.lang ? parseLang(voice.lang).code : "<any>")
@@ -620,32 +620,30 @@ function isPremiumVoice(voice) {
   return isAmazonCloud(voice) || isMicrosoftCloud(voice) || isRHVoice(voice)
 }
 
-function getSpeechVoice(voiceName, lang) {
-  return Promise.all([getVoices({excludeUnavailable: true}), getSettings(["preferredVoices"])])
-    .then(function(res) {
-      var voices = res[0];
-      var preferredVoiceByLang = res[1].preferredVoices || {};
-      var voice;
-      //if a specific voice is indicated
-      if (voiceName) voice = findVoiceByName(voices, voiceName);
-      //if no specific voice indicated, but a preferred voice was configured for the language
-      if (!voice && lang) {
-        voiceName = preferredVoiceByLang[parseLang(lang).code];
-        if (voiceName) voice = findVoiceByName(voices, voiceName);
-      }
-      //otherwise, auto-select
-      voices = voices.filter(voice => !isUseMyPhone(voice))    //do not auto-select "Use My Phone"
-      if (!voice && lang) {
-        voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
-          || findVoiceByLang(voices.filter(isNativeVoice), lang)
-          || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
-          || findVoiceByLang(voices.filter(isGoogleTranslate), lang)
-          || findVoiceByLang(voices.filter(isPremiumVoice), lang)
-          || findVoiceByLang(voices, lang);
-        if (voice && isPremiumVoice(voice)) voice = Object.assign({autoSelect: true}, voice);
-      }
-      return voice;
-    })
+async function getSpeechVoice(voiceName, lang) {
+  let voices = await rxjs.firstValueFrom(voices$)
+  var voice;
+  //if a specific voice is indicated
+  if (voiceName) voice = findVoiceByName(voices, voiceName);
+  //if no specific voice indicated, but a preferred voice was configured for the language
+  const preferredVoiceByLang = await getSetting("preferredVoices")
+  if (!voice && lang && preferredVoiceByLang) {
+    voiceName = preferredVoiceByLang[parseLang(lang).code];
+    if (voiceName) voice = findVoiceByName(voices, voiceName);
+  }
+  //otherwise, auto-select in order: offline, native, free, any
+  if (!voice && lang) {
+    voices = voices.filter(voice => !isUseMyPhone(voice))    //do not auto-select "Use My Phone"
+    voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
+      || findVoiceByLang(voices.filter(isNativeVoice), lang)
+      || findVoiceByLang(voices.filter(isReadAloudCloud), lang)
+      || await googleTranslateTtsEngine.ready().then(() => true, err => false)
+        && findVoiceByLang(voices.filter(isGoogleTranslate), lang)
+      || findVoiceByLang(voices.filter(isPremiumVoice), lang)
+      || findVoiceByLang(voices, lang);
+    if (voice && isPremiumVoice(voice)) voice = Object.assign({autoSelect: true}, voice);
+  }
+  return voice;
 }
 
 function findVoiceByName(voices, name) {
