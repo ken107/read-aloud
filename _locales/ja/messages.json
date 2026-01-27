@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "プレミアム音声"
   },
+  "options_voicegroup_experimental": {
+    "message": "実験的なAI音声"
+  },
   "options_voicegroup_additional": {
     "message": "追加の音声"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "カスタム音声を有効にする"
+  },
+  "options_enable_piper_voices": {
+    "message": "Piper音声をインストール..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Supertonic音声をインストール..."
   },
   "options_rate_label": {
     "message": "スピード"
@@ -145,6 +154,15 @@
   },
   "error_wavenet_auth_required": {
     "message": "Google Wavenetの音声を有効にするには、追加の[権限](auth-wavenet)を付与する必要があります"
+  },
+  "error_phone_not_connected": {
+    "message": "電話が接続されていません。[接続](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "電話が切断されました（{reason}）。[再接続](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "各回答の横にあるスピーカーアイコンをクリックして読み上げます"
   },
   "languages_heading": {
     "message": "言語オプション"

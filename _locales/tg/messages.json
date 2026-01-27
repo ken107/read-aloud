@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "Овозҳои баландсифат"
   },
+  "options_voicegroup_experimental": {
+    "message": "Овозҳои таҷрибавии AI"
+  },
   "options_voicegroup_additional": {
     "message": "Овозҳои иловагӣ"
   },
@@ -34,6 +37,9 @@
   },
   "options_enable_piper_voices": {
     "message": "Идоракунии овозҳои «Пайпер»"
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Насб кардани овозҳои Supertonic..."
   },
   "options_rate_label": {
     "message": "Суръат"

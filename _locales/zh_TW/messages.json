@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "高級的語音"
   },
+  "options_voicegroup_experimental": {
+    "message": "實驗性AI語音"
+  },
   "options_voicegroup_additional": {
     "message": "額外的語音"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "啟用客製化語音"
+  },
+  "options_enable_piper_voices": {
+    "message": "安裝Piper語音..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "安裝Supertonic語音..."
   },
   "options_rate_label": {
     "message": "朗讀速度"
@@ -145,6 +154,15 @@
   },
   "error_wavenet_auth_required": {
     "message": "您需要授予額外的[權限](auth-wavenet) 才能啟用 Google Wavenet 語音"
+  },
+  "error_phone_not_connected": {
+    "message": "手機未連接。[連接](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "手機已斷開連接（{reason}）。[重新連接](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "點擊每個回答旁邊的揚聲器圖標進行朗讀"
   },
   "languages_heading": {
     "message": "語言選項"

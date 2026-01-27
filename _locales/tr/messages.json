@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "Premium Sesler"
   },
+  "options_voicegroup_experimental": {
+    "message": "Deneysel AI Sesleri"
+  },
   "options_voicegroup_additional": {
     "message": "Ek Sesler"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "Özel Sesleri Etkinleştirme"
+  },
+  "options_enable_piper_voices": {
+    "message": "Piper seslerini yükle..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Supertonic seslerini yükle..."
   },
   "options_rate_label": {
     "message": "Hız"
@@ -145,6 +154,15 @@
   },
   "error_wavenet_auth_required": {
     "message": "Google Wavenet seslerini etkinleştirmek için ek [izinler](auth-wavenet) vermeniz gerekir"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefon bağlı değil. [Bağlan](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon bağlantısı kesildi ({reason}). [Yeniden bağlan](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Her yanıtın yanındaki hoparlör simgesine tıklayarak sesli okuyun"
   },
   "languages_heading": {
     "message": "Dil Seçenekleri"

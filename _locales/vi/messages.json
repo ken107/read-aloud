@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "Giọng đọc chất lượng cao"
   },
+  "options_voicegroup_experimental": {
+    "message": "Giọng AI thử nghiệm"
+  },
   "options_voicegroup_additional": {
     "message": "Bổ sung thêm giọng đọc"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "Bật giọng nói tùy chỉnh"
+  },
+  "options_enable_piper_voices": {
+    "message": "Cài đặt giọng Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Cài đặt giọng Supertonic..."
   },
   "options_rate_label": {
     "message": "Tốc độ đọc"
@@ -145,6 +154,15 @@
   },
   "error_wavenet_auth_required": {
     "message": "Bạn cần cấp thêm [quyền](auth-wavenet) để bật giọng nói của Google Wavenet"
+  },
+  "error_phone_not_connected": {
+    "message": "Điện thoại chưa kết nối. [Kết nối](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Điện thoại đã ngắt kết nối ({reason}). [Kết nối lại](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Nhấp vào biểu tượng loa bên cạnh mỗi câu trả lời để đọc to"
   },
   "languages_heading": {
     "message": "Lựa chọn ngôn ngữ"

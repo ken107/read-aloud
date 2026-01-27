@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "Премиум-голоса"
   },
+  "options_voicegroup_experimental": {
+    "message": "Экспериментальные AI-голоса"
+  },
   "options_voicegroup_additional": {
     "message": "Дополнительные голоса"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "Включить пользовательские голоса"
+  },
+  "options_enable_piper_voices": {
+    "message": "Установить голоса Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Установить голоса Supertonic..."
   },
   "options_rate_label": {
     "message": "Скорость"
@@ -145,6 +154,15 @@
   },
   "error_wavenet_auth_required": {
     "message": "Вам необходимо предоставить дополнительные [разрешения](auth-wavenet), чтобы включить голоса Google Wavenet."
+  },
+  "error_phone_not_connected": {
+    "message": "Телефон не подключен. [Подключить](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Телефон отключен ({reason}). [Переподключить](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Нажмите на значок динамика рядом с каждым ответом, чтобы прочитать его вслух"
   },
   "languages_heading": {
     "message": "Параметры языка"
