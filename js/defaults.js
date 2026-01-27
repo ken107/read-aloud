@@ -517,9 +517,14 @@ const voices$ = rxjs.combineLatest({
   azureCreds: observeSetting("azureCreds"),
   piperVoices: observeSetting("piperVoices"),
   supertonicVoices: observeSetting("supertonicVoices"),
+  useSpeechDispatcher: observeSetting("useSpeechDispatcher"),
 }).pipe(
   rxjs.switchMap(settings => Promise.all([
-    browserTtsEngine.getVoices(),
+    browserTtsEngine.getVoices().then(voices =>
+      settings.useSpeechDispatcher
+        ? voices
+        : voices.filter(voice => !isSpeechDispatcher(voice))
+    ),
     googleTranslateTtsEngine.getVoices(),
     premiumTtsEngine.getVoices(),
     settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
@@ -543,6 +548,11 @@ function groupVoicesByLang(voices) {
 
 function isOfflineVoice(voice) {
   return voice.localService == true
+}
+
+// speech-dispatcher voices have URI format "urn:moz-tts:speechd:..."
+function isSpeechDispatcher(voice) {
+  return /:speechd:/.test(voice.voiceURI)
 }
 
 function isChromeOSNative(voice) {

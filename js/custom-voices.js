@@ -1,4 +1,17 @@
 
+Promise.all([
+  browserTtsEngine.getVoices().then(voices => voices.some(isSpeechDispatcher)),
+  getSetting('useSpeechDispatcher').then(b => !!b),
+  domReady()
+]).then(([hasSpeechdVoices, useSpeechd]) => {
+  $("#speechd-panel").toggle(hasSpeechdVoices || useSpeechd)
+  $("#speechd-toggle").prop("checked", useSpeechd)
+    .change(function() {
+      updateSetting("useSpeechDispatcher", this.checked)
+    })
+})
+
+
 $(function() {
   getSettings(["awsCreds", "gcpCreds", "ibmCreds", "azureCreds"])
     .then(function(items) {
