@@ -1,0 +1,182 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: โปรแกรมอ่านออกเสียงข้อความ"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "อ่านออกเสียงบทความบนหน้าเว็บปัจจุบันด้วยคลิกเดียว โดยใช้การแปลงข้อความเป็นเสียง รองรับกว่า 40 ภาษา"
+  },
+  "options_heading": {
+    "message": "ตัวเลือก"
+  },
+  "options_voice_label": {
+    "message": "เสียง"
+  },
+  "options_voicegroup_offline": {
+    "message": "เสียงออฟไลน์"
+  },
+  "options_voicegroup_experimental": {
+    "message": "เสียง AI ทดลอง"
+  },
+  "options_voicegroup_standard": {
+    "message": "เสียงมาตรฐาน"
+  },
+  "options_voicegroup_premium": {
+    "message": "เสียงพรีเมียม"
+  },
+  "options_voicegroup_additional": {
+    "message": "เสียงเพิ่มเติม"
+  },
+  "options_add_more_languages": {
+    "message": "เพิ่มภาษาอื่นๆ..."
+  },
+  "options_enable_custom_voices": {
+    "message": "เปิดใช้เสียงที่กำหนดเอง..."
+  },
+  "options_enable_piper_voices": {
+    "message": "ติดตั้งเสียง Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "ติดตั้งเสียง Supertonic..."
+  },
+  "options_rate_label": {
+    "message": "ความเร็ว"
+  },
+  "options_rate_warning": {
+    "message": "หมายเหตุ: เสียงบางรายการอาจไม่ทำงานที่ความเร็วสูง"
+  },
+  "options_pitch_label": {
+    "message": "ระดับเสียง"
+  },
+  "options_volume_label": {
+    "message": "ความดัง"
+  },
+  "options_show_highlighting": {
+    "message": "การไฮไลท์ข้อความ"
+  },
+  "options_highlighting_off": {
+    "message": "ปิด"
+  },
+  "options_highlighting_popup": {
+    "message": "แสดงในป๊อปอัป"
+  },
+  "options_highlighting_window": {
+    "message": "แสดงในหน้าต่างแยก"
+  },
+  "options_audio_playback": {
+    "message": "การเล่นเสียง"
+  },
+  "options_audio_playback_standalone": {
+    "message": "ใช้แท็บแยก"
+  },
+  "options_audio_playback_embedded": {
+    "message": "ในหน้าเว็บ"
+  },
+  "options_hotkeys_link": {
+    "message": "แก้ไขปุ่มลัด"
+  },
+  "options_test_button": {
+    "message": "ทดสอบ"
+  },
+  "options_reset_button": {
+    "message": "รีเซ็ต"
+  },
+  "options_logged_in_as": {
+    "message": "เข้าสู่ระบบเป็น"
+  },
+  "options_account_button": {
+    "message": "บัญชี"
+  },
+  "options_logout_button": {
+    "message": "ออกจากระบบ"
+  },
+  "player_tab_explanation": {
+    "message": "Read Aloud ใช้แท็บนี้สำหรับการเล่นเสียง แท็บนี้จะปิดอัตโนมัติหลังจากไม่มีกิจกรรม 5 นาที"
+  },
+  "player_hidethistab_link": {
+    "message": "ซ่อนแท็บนี้"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "ซ่อนแท็บนี้?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "หากคุณซ่อนแท็บนี้ Read Aloud จะเล่นเสียงภายในหน้าเว็บปัจจุบัน ซึ่งหมายความว่าการนำทางออกจากหน้าจะทำให้การพูดหยุด\n\n(การตั้งค่านี้สามารถย้อนกลับได้จากหน้าตัวเลือกส่วนขยาย)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "ซ่อน"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "ยกเลิก"
+  },
+  "player_permission_dialog_title": {
+    "message": "ขอสิทธิ์"
+  },
+  "player_permission_dialog_body": {
+    "message": "อนุญาตให้ Read Aloud เล่นเสียง?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "อนุญาต"
+  },
+  "context_read_selection": {
+    "message": "อ่านออกเสียงข้อความที่เลือก"
+  },
+  "error_no_text": {
+    "message": "ไม่พบข้อความที่จะอ่าน ลองเลือกข้อความที่คุณต้องการอ่านก่อน"
+  },
+  "error_no_voice": {
+    "message": "ภาษาไม่รองรับ '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "กรุณาใช้แบบฟอร์มเพื่ออัปโหลดไฟล์ PDF ของคุณเพื่ออ่านออกเสียง"
+  },
+  "error_ajax_pdf": {
+    "message": "กรุณาบันทึกไฟล์ PDF นี้ลงในคอมพิวเตอร์ของคุณและเปิดใน [โปรแกรมดู PDF](open-pdf-viewer) นี้เพื่ออ่านออกเสียง"
+  },
+  "error_page_unreadable": {
+    "message": "ไม่สามารถอ่านออกเสียงเว็บไซต์นี้"
+  },
+  "error_file_access": {
+    "message": "คุณต้องให้สิทธิ์ Read Aloud เข้าถึง URL ไฟล์ใน[การตั้งค่า](open-extension-settings)ส่วนขยาย"
+  },
+  "error_add_permissions": {
+    "message": "คุณต้องให้[สิทธิ์](request-permissions)เพิ่มเติมแก่ Read Aloud สำหรับเว็บไซต์นี้"
+  },
+  "error_login_required": {
+    "message": "กรุณา[เข้าสู่ระบบ](sign-in)เพื่อใช้เสียงพรีเมียม"
+  },
+  "error_voice_unavailable": {
+    "message": "เสียงไม่พร้อมใช้งาน กรุณาเลือกเสียงอื่น"
+  },
+  "error_payment_required": {
+    "message": "เครดิตหมด"
+  },
+  "error_wavenet_auth_required": {
+    "message": "คุณต้องให้[สิทธิ์](auth-wavenet)เพิ่มเติมเพื่อเปิดใช้เสียง Google Wavenet"
+  },
+  "error_phone_not_connected": {
+    "message": "โทรศัพท์ไม่ได้เชื่อมต่อ [เชื่อมต่อ](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "โทรศัพท์ถูกตัดการเชื่อมต่อ ({reason}) [เชื่อมต่อใหม่](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "คลิกไอคอนลำโพงข้างคำตอบแต่ละข้อเพื่ออ่านออกเสียง"
+  },
+  "languages_heading": {
+    "message": "ตัวเลือกภาษา"
+  },
+  "languages_back_button": {
+    "message": "กลับไปที่ตัวเลือก"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud ต้องการใช้ Google แปลภาษาสำหรับการแปลงข้อความเป็นเสียง"
+  },
+  "google_translate_allow_button": {
+    "message": "อนุญาต"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud กำลังใช้ Google แปลภาษาสำหรับการแปลงข้อความเป็นเสียง กรุณาเปิดแท็บนี้ไว้"
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: قارئ النصوص الصوتي"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "اقرأ مقالة صفحة الويب الحالية بصوت عالٍ بنقرة واحدة، باستخدام تحويل النص إلى كلام. يدعم أكثر من 40 لغة."
+  },
+  "options_heading": {
+    "message": "الخيارات"
+  },
+  "options_voice_label": {
+    "message": "الصوت"
+  },
+  "options_voicegroup_offline": {
+    "message": "الأصوات غير المتصلة"
+  },
+  "options_voicegroup_experimental": {
+    "message": "أصوات الذكاء الاصطناعي التجريبية"
+  },
+  "options_voicegroup_standard": {
+    "message": "الأصوات القياسية"
+  },
+  "options_voicegroup_premium": {
+    "message": "الأصوات المميزة"
+  },
+  "options_voicegroup_additional": {
+    "message": "أصوات إضافية"
+  },
+  "options_add_more_languages": {
+    "message": "إضافة المزيد من اللغات..."
+  },
+  "options_enable_custom_voices": {
+    "message": "تمكين الأصوات المخصصة..."
+  },
+  "options_enable_piper_voices": {
+    "message": "تثبيت أصوات Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "تثبيت أصوات Supertonic..."
+  },
+  "options_rate_label": {
+    "message": "السرعة"
+  },
+  "options_rate_warning": {
+    "message": "ملاحظة: قد لا تعمل بعض الأصوات بسرعة عالية."
+  },
+  "options_pitch_label": {
+    "message": "درجة الصوت"
+  },
+  "options_volume_label": {
+    "message": "مستوى الصوت"
+  },
+  "options_show_highlighting": {
+    "message": "تمييز النص"
+  },
+  "options_highlighting_off": {
+    "message": "إيقاف"
+  },
+  "options_highlighting_popup": {
+    "message": "عرض في نافذة منبثقة"
+  },
+  "options_highlighting_window": {
+    "message": "عرض في نافذة منفصلة"
+  },
+  "options_audio_playback": {
+    "message": "تشغيل الصوت"
+  },
+  "options_audio_playback_standalone": {
+    "message": "استخدام علامة تبويب منفصلة"
+  },
+  "options_audio_playback_embedded": {
+    "message": "في الصفحة"
+  },
+  "options_hotkeys_link": {
+    "message": "تعديل مفاتيح الاختصار"
+  },
+  "options_test_button": {
+    "message": "اختبار"
+  },
+  "options_reset_button": {
+    "message": "إعادة تعيين"
+  },
+  "options_logged_in_as": {
+    "message": "تسجيل الدخول باسم"
+  },
+  "options_account_button": {
+    "message": "الحساب"
+  },
+  "options_logout_button": {
+    "message": "تسجيل الخروج"
+  },
+  "player_tab_explanation": {
+    "message": "يستخدم Read Aloud علامة التبويب هذه لتشغيل الصوت. ستُغلق علامة التبويب هذه تلقائياً بعد 5 دقائق من عدم النشاط."
+  },
+  "player_hidethistab_link": {
+    "message": "إخفاء علامة التبويب هذه"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "إخفاء علامة التبويب هذه؟"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "إذا أخفيت علامة التبويب هذه، سيقوم Read Aloud بتشغيل الصوت داخل صفحة الويب الحالية. هذا يعني أن الانتقال بعيداً عن الصفحة سيؤدي إلى توقف الكلام.\n\n(يمكن التراجع عن هذا الإعداد من صفحة خيارات الإضافة)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "إخفاء"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "إلغاء"
+  },
+  "player_permission_dialog_title": {
+    "message": "طلب إذن"
+  },
+  "player_permission_dialog_body": {
+    "message": "السماح لـ Read Aloud بتشغيل الصوت؟"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "السماح"
+  },
+  "context_read_selection": {
+    "message": "قراءة النص المحدد بصوت عالٍ"
+  },
+  "error_no_text": {
+    "message": "لم يتم العثور على نص للقراءة، حاول تحديد النص الذي تريد قراءته أولاً"
+  },
+  "error_no_voice": {
+    "message": "اللغة غير مدعومة '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "يرجى استخدام النموذج لتحميل ملف PDF الخاص بك للقراءة بصوت عالٍ"
+  },
+  "error_ajax_pdf": {
+    "message": "يرجى حفظ ملف PDF هذا على جهاز الكمبيوتر الخاص بك وفتحه داخل [عارض PDF](open-pdf-viewer) للقراءة بصوت عالٍ"
+  },
+  "error_page_unreadable": {
+    "message": "لا يمكن قراءة هذا الموقع بصوت عالٍ"
+  },
+  "error_file_access": {
+    "message": "تحتاج إلى منح Read Aloud إذن الوصول إلى عناوين URL للملفات في [الإعدادات](open-extension-settings)"
+  },
+  "error_add_permissions": {
+    "message": "تحتاج إلى منح Read Aloud [أذونات](request-permissions) إضافية لهذا الموقع"
+  },
+  "error_login_required": {
+    "message": "يرجى [تسجيل الدخول](sign-in) لاستخدام الأصوات المميزة"
+  },
+  "error_voice_unavailable": {
+    "message": "الصوت غير متوفر، يرجى اختيار صوت آخر"
+  },
+  "error_payment_required": {
+    "message": "نفاد الرصيد"
+  },
+  "error_wavenet_auth_required": {
+    "message": "تحتاج إلى منح [أذونات](auth-wavenet) إضافية لتمكين أصوات Google Wavenet"
+  },
+  "error_phone_not_connected": {
+    "message": "الهاتف غير متصل. [اتصال](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "تم قطع اتصال الهاتف ({reason}). [إعادة الاتصال](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "انقر على أيقونة السماعة بجانب كل إجابة لقراءتها بصوت عالٍ"
+  },
+  "languages_heading": {
+    "message": "خيارات اللغة"
+  },
+  "languages_back_button": {
+    "message": "العودة إلى الخيارات"
+  },
+  "google_translate_request_permission": {
+    "message": "يرغب Read Aloud في استخدام ترجمة Google لتحويل النص إلى كلام."
+  },
+  "google_translate_allow_button": {
+    "message": "السماح"
+  },
+  "google_translate_keep_page_open": {
+    "message": "يستخدم Read Aloud ترجمة Google لتحويل النص إلى كلام. يرجى إبقاء علامة التبويب هذه مفتوحة."
+  }
+}

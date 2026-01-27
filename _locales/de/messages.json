@@ -1,0 +1,182 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Text-zu-Sprache Vorleser"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Lesen Sie den aktuellen Webseiten-Artikel mit einem Klick laut vor, mit Text-zu-Sprache. Unterstützt über 40 Sprachen."
+  },
+  "options_heading": {
+    "message": "Optionen"
+  },
+  "options_voice_label": {
+    "message": "Stimme"
+  },
+  "options_voicegroup_offline": {
+    "message": "Offline-Stimmen"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Experimentelle KI-Stimmen"
+  },
+  "options_voicegroup_standard": {
+    "message": "Standardstimmen"
+  },
+  "options_voicegroup_premium": {
+    "message": "Premium-Stimmen"
+  },
+  "options_voicegroup_additional": {
+    "message": "Zusätzliche Stimmen"
+  },
+  "options_add_more_languages": {
+    "message": "Weitere Sprachen hinzufügen..."
+  },
+  "options_enable_custom_voices": {
+    "message": "Benutzerdefinierte Stimmen aktivieren..."
+  },
+  "options_enable_piper_voices": {
+    "message": "Piper-Stimmen installieren..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Supertonic-Stimmen installieren..."
+  },
+  "options_rate_label": {
+    "message": "Geschwindigkeit"
+  },
+  "options_rate_warning": {
+    "message": "Hinweis: Einige Stimmen funktionieren möglicherweise nicht bei hoher Geschwindigkeit."
+  },
+  "options_pitch_label": {
+    "message": "Tonhöhe"
+  },
+  "options_volume_label": {
+    "message": "Lautstärke"
+  },
+  "options_show_highlighting": {
+    "message": "Texthervorhebung"
+  },
+  "options_highlighting_off": {
+    "message": "Ausschalten"
+  },
+  "options_highlighting_popup": {
+    "message": "Im Popup anzeigen"
+  },
+  "options_highlighting_window": {
+    "message": "In separatem Fenster anzeigen"
+  },
+  "options_audio_playback": {
+    "message": "Audio-Wiedergabe"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Separaten Tab verwenden"
+  },
+  "options_audio_playback_embedded": {
+    "message": "Auf der Seite"
+  },
+  "options_hotkeys_link": {
+    "message": "Tastenkürzel bearbeiten"
+  },
+  "options_test_button": {
+    "message": "Testen"
+  },
+  "options_reset_button": {
+    "message": "Zurücksetzen"
+  },
+  "options_logged_in_as": {
+    "message": "Angemeldet als"
+  },
+  "options_account_button": {
+    "message": "Konto"
+  },
+  "options_logout_button": {
+    "message": "Abmelden"
+  },
+  "player_tab_explanation": {
+    "message": "Read Aloud verwendet diesen Tab für die Audio-Wiedergabe. Dieser Tab wird nach 5 Minuten Inaktivität automatisch geschlossen."
+  },
+  "player_hidethistab_link": {
+    "message": "Diesen Tab ausblenden"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Diesen Tab ausblenden?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Wenn Sie diesen Tab ausblenden, wird Read Aloud Audio innerhalb der aktuellen Webseite abspielen. Das bedeutet, dass das Verlassen der Seite die Sprachwiedergabe stoppt.\n\n(Diese Einstellung kann auf der Optionen-Seite der Erweiterung rückgängig gemacht werden)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Ausblenden"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Abbrechen"
+  },
+  "player_permission_dialog_title": {
+    "message": "Berechtigung angefordert"
+  },
+  "player_permission_dialog_body": {
+    "message": "Read Aloud erlauben, Audio abzuspielen?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Erlauben"
+  },
+  "context_read_selection": {
+    "message": "Markierten Text vorlesen"
+  },
+  "error_no_text": {
+    "message": "Kein Text zum Lesen gefunden, versuchen Sie zuerst den Text auszuwählen, den Sie lesen möchten"
+  },
+  "error_no_voice": {
+    "message": "Sprache nicht unterstützt '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Bitte verwenden Sie das Formular, um Ihre PDF-Datei zum Vorlesen hochzuladen"
+  },
+  "error_ajax_pdf": {
+    "message": "Bitte speichern Sie diese PDF-Datei auf Ihrem Computer und öffnen Sie sie in diesem [PDF-Viewer](open-pdf-viewer) zum Vorlesen"
+  },
+  "error_page_unreadable": {
+    "message": "Diese Webseite kann nicht vorgelesen werden"
+  },
+  "error_file_access": {
+    "message": "Sie müssen Read Aloud Zugriff auf Datei-URLs in den [Einstellungen](open-extension-settings) der Erweiterung gewähren"
+  },
+  "error_add_permissions": {
+    "message": "Sie müssen Read Aloud zusätzliche [Berechtigungen](request-permissions) für diese Webseite gewähren"
+  },
+  "error_login_required": {
+    "message": "Bitte [anmelden](sign-in), um die Premium-Stimmen zu nutzen"
+  },
+  "error_voice_unavailable": {
+    "message": "Stimme nicht verfügbar, bitte wählen Sie eine andere"
+  },
+  "error_payment_required": {
+    "message": "Guthaben aufgebraucht"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Sie müssen zusätzliche [Berechtigungen](auth-wavenet) erteilen, um Google Wavenet-Stimmen zu aktivieren"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefon nicht verbunden. [Verbinden](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon getrennt ({reason}). [Erneut verbinden](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Klicken Sie auf das Lautsprecher-Symbol neben jeder Antwort, um sie vorzulesen"
+  },
+  "languages_heading": {
+    "message": "Sprachoptionen"
+  },
+  "languages_back_button": {
+    "message": "Zurück zu den Optionen"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud möchte Google Übersetzer für Text-zu-Sprache verwenden."
+  },
+  "google_translate_allow_button": {
+    "message": "Erlauben"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud verwendet Google Übersetzer für Text-zu-Sprache. Bitte lassen Sie diesen Tab geöffnet."
+  }
+}

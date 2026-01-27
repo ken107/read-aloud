@@ -1,0 +1,182 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Text till tal-uppläsare"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Läs den aktuella webbsidans artikel högt med ett klick, med text till tal. Stöder över 40 språk."
+  },
+  "options_heading": {
+    "message": "Alternativ"
+  },
+  "options_voice_label": {
+    "message": "Röst"
+  },
+  "options_voicegroup_offline": {
+    "message": "Offlineröster"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Experimentella AI-röster"
+  },
+  "options_voicegroup_standard": {
+    "message": "Standardröster"
+  },
+  "options_voicegroup_premium": {
+    "message": "Premiumröster"
+  },
+  "options_voicegroup_additional": {
+    "message": "Ytterligare röster"
+  },
+  "options_add_more_languages": {
+    "message": "Lägg till fler språk..."
+  },
+  "options_enable_custom_voices": {
+    "message": "Aktivera anpassade röster..."
+  },
+  "options_enable_piper_voices": {
+    "message": "Installera Piper-röster..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Installera Supertonic-röster..."
+  },
+  "options_rate_label": {
+    "message": "Hastighet"
+  },
+  "options_rate_warning": {
+    "message": "Obs: vissa röster kanske inte fungerar vid hög hastighet."
+  },
+  "options_pitch_label": {
+    "message": "Tonhöjd"
+  },
+  "options_volume_label": {
+    "message": "Volym"
+  },
+  "options_show_highlighting": {
+    "message": "Textmarkering"
+  },
+  "options_highlighting_off": {
+    "message": "Stäng av"
+  },
+  "options_highlighting_popup": {
+    "message": "Visa i popup"
+  },
+  "options_highlighting_window": {
+    "message": "Visa i separat fönster"
+  },
+  "options_audio_playback": {
+    "message": "Ljuduppspelning"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Använd separat flik"
+  },
+  "options_audio_playback_embedded": {
+    "message": "På sidan"
+  },
+  "options_hotkeys_link": {
+    "message": "Redigera kortkommandon"
+  },
+  "options_test_button": {
+    "message": "Testa"
+  },
+  "options_reset_button": {
+    "message": "Återställ"
+  },
+  "options_logged_in_as": {
+    "message": "Inloggad som"
+  },
+  "options_account_button": {
+    "message": "Konto"
+  },
+  "options_logout_button": {
+    "message": "Logga ut"
+  },
+  "player_tab_explanation": {
+    "message": "Read Aloud använder denna flik för ljuduppspelning. Denna flik stängs automatiskt efter 5 minuters inaktivitet."
+  },
+  "player_hidethistab_link": {
+    "message": "Dölj denna flik"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Dölj denna flik?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Om du döljer denna flik kommer Read Aloud att spela upp ljud inne på den aktuella webbsidan. Det betyder att navigering bort från sidan kommer att stoppa talet.\n\n(Denna inställning kan återställas från tilläggets alternativsida)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Dölj"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Avbryt"
+  },
+  "player_permission_dialog_title": {
+    "message": "Behörighet begärd"
+  },
+  "player_permission_dialog_body": {
+    "message": "Tillåt Read Aloud att spela upp ljud?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Tillåt"
+  },
+  "context_read_selection": {
+    "message": "Läs markerad text högt"
+  },
+  "error_no_text": {
+    "message": "Hittade ingen text att läsa, försök att markera texten du vill läsa först"
+  },
+  "error_no_voice": {
+    "message": "Språk stöds inte '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Använd formuläret för att ladda upp din PDF-fil för att läsa högt"
+  },
+  "error_ajax_pdf": {
+    "message": "Spara denna PDF-fil på din dator och öppna den i denna [PDF-visare](open-pdf-viewer) för att läsa högt"
+  },
+  "error_page_unreadable": {
+    "message": "Kan inte läsa denna webbplats högt"
+  },
+  "error_file_access": {
+    "message": "Du måste ge Read Aloud åtkomst till fil-URL:er i tilläggets [inställningar](open-extension-settings)"
+  },
+  "error_add_permissions": {
+    "message": "Du måste ge Read Aloud ytterligare [behörigheter](request-permissions) för denna webbplats"
+  },
+  "error_login_required": {
+    "message": "Vänligen [logga in](sign-in) för att använda Premiumröster"
+  },
+  "error_voice_unavailable": {
+    "message": "Röst inte tillgänglig, välj en annan"
+  },
+  "error_payment_required": {
+    "message": "Slut på krediter"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Du måste ge ytterligare [behörigheter](auth-wavenet) för att aktivera Google Wavenet-röster"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefon inte ansluten. [Anslut](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon frånkopplad ({reason}). [Återanslut](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Klicka på högtalarikonen bredvid varje svar för att läsa det högt"
+  },
+  "languages_heading": {
+    "message": "Språkalternativ"
+  },
+  "languages_back_button": {
+    "message": "Tillbaka till alternativ"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud vill använda Google Översätt för text till tal."
+  },
+  "google_translate_allow_button": {
+    "message": "Tillåt"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud använder Google Översätt för text till tal. Vänligen håll denna flik öppen."
+  }
+}

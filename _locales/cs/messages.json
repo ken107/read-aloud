@@ -1,0 +1,182 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Hlasová čtečka textu"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Přečtěte nahlas aktuální článek na webové stránce jedním kliknutím pomocí převodu textu na řeč. Podporuje více než 40 jazyků."
+  },
+  "options_heading": {
+    "message": "Možnosti"
+  },
+  "options_voice_label": {
+    "message": "Hlas"
+  },
+  "options_voicegroup_offline": {
+    "message": "Offline hlasy"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Experimentální AI hlasy"
+  },
+  "options_voicegroup_standard": {
+    "message": "Standardní hlasy"
+  },
+  "options_voicegroup_premium": {
+    "message": "Prémiové hlasy"
+  },
+  "options_voicegroup_additional": {
+    "message": "Další hlasy"
+  },
+  "options_add_more_languages": {
+    "message": "Přidat další jazyky..."
+  },
+  "options_enable_custom_voices": {
+    "message": "Povolit vlastní hlasy..."
+  },
+  "options_enable_piper_voices": {
+    "message": "Nainstalovat hlasy Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Nainstalovat hlasy Supertonic..."
+  },
+  "options_rate_label": {
+    "message": "Rychlost"
+  },
+  "options_rate_warning": {
+    "message": "Poznámka: některé hlasy nemusí fungovat při vysoké rychlosti."
+  },
+  "options_pitch_label": {
+    "message": "Výška"
+  },
+  "options_volume_label": {
+    "message": "Hlasitost"
+  },
+  "options_show_highlighting": {
+    "message": "Zvýraznění textu"
+  },
+  "options_highlighting_off": {
+    "message": "Vypnout"
+  },
+  "options_highlighting_popup": {
+    "message": "Zobrazit ve vyskakovacím okně"
+  },
+  "options_highlighting_window": {
+    "message": "Zobrazit v samostatném okně"
+  },
+  "options_audio_playback": {
+    "message": "Přehrávání zvuku"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Použít samostatnou kartu"
+  },
+  "options_audio_playback_embedded": {
+    "message": "Na stránce"
+  },
+  "options_hotkeys_link": {
+    "message": "Upravit klávesové zkratky"
+  },
+  "options_test_button": {
+    "message": "Test"
+  },
+  "options_reset_button": {
+    "message": "Obnovit"
+  },
+  "options_logged_in_as": {
+    "message": "Přihlášen jako"
+  },
+  "options_account_button": {
+    "message": "Účet"
+  },
+  "options_logout_button": {
+    "message": "Odhlásit"
+  },
+  "player_tab_explanation": {
+    "message": "Read Aloud používá tuto kartu pro přehrávání zvuku. Tato karta se automaticky zavře po 5 minutách nečinnosti."
+  },
+  "player_hidethistab_link": {
+    "message": "Skrýt tuto kartu"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Skrýt tuto kartu?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Pokud skryjete tuto kartu, Read Aloud bude přehrávat zvuk uvnitř aktuální webové stránky. To znamená, že opuštění stránky způsobí zastavení řeči.\n\n(Toto nastavení lze vrátit zpět ze stránky možností rozšíření)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Skrýt"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Zrušit"
+  },
+  "player_permission_dialog_title": {
+    "message": "Vyžadováno oprávnění"
+  },
+  "player_permission_dialog_body": {
+    "message": "Povolit Read Aloud přehrávat zvuk?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Povolit"
+  },
+  "context_read_selection": {
+    "message": "Přečíst nahlas vybraný text"
+  },
+  "error_no_text": {
+    "message": "Nebyl nalezen žádný text ke čtení, zkuste nejprve vybrat text, který chcete přečíst"
+  },
+  "error_no_voice": {
+    "message": "Jazyk není podporován '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Použijte prosím formulář k nahrání PDF souboru pro čtení nahlas"
+  },
+  "error_ajax_pdf": {
+    "message": "Uložte prosím tento PDF soubor do počítače a otevřete ho v tomto [PDF prohlížeči](open-pdf-viewer) pro čtení nahlas"
+  },
+  "error_page_unreadable": {
+    "message": "Nelze číst nahlas tuto webovou stránku"
+  },
+  "error_file_access": {
+    "message": "Musíte udělit Read Aloud přístup k URL souborů v [nastavení](open-extension-settings) rozšíření"
+  },
+  "error_add_permissions": {
+    "message": "Musíte udělit Read Aloud dodatečná [oprávnění](request-permissions) pro tuto webovou stránku"
+  },
+  "error_login_required": {
+    "message": "Prosím [přihlaste se](sign-in) pro použití prémiových hlasů"
+  },
+  "error_voice_unavailable": {
+    "message": "Hlas není dostupný, vyberte prosím jiný"
+  },
+  "error_payment_required": {
+    "message": "Vyčerpán kredit"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Musíte udělit dodatečná [oprávnění](auth-wavenet) pro povolení hlasů Google Wavenet"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefon není připojen. [Připojit](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon odpojen ({reason}). [Znovu připojit](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Klikněte na ikonu reproduktoru vedle každé odpovědi pro její přečtení nahlas"
+  },
+  "languages_heading": {
+    "message": "Možnosti jazyka"
+  },
+  "languages_back_button": {
+    "message": "Zpět na možnosti"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud by chtěl použít Google Překladač pro převod textu na řeč."
+  },
+  "google_translate_allow_button": {
+    "message": "Povolit"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud používá Google Překladač pro převod textu na řeč. Prosím ponechte tuto kartu otevřenou."
+  }
+}

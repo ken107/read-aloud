@@ -1,0 +1,182 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Голосовий читач тексту"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Читайте вголос статтю поточної веб-сторінки одним кліком, використовуючи синтез мовлення. Підтримує понад 40 мов."
+  },
+  "options_heading": {
+    "message": "Параметри"
+  },
+  "options_voice_label": {
+    "message": "Голос"
+  },
+  "options_voicegroup_offline": {
+    "message": "Офлайн-голоси"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Експериментальні AI-голоси"
+  },
+  "options_voicegroup_standard": {
+    "message": "Стандартні голоси"
+  },
+  "options_voicegroup_premium": {
+    "message": "Преміум-голоси"
+  },
+  "options_voicegroup_additional": {
+    "message": "Додаткові голоси"
+  },
+  "options_add_more_languages": {
+    "message": "Додати більше мов..."
+  },
+  "options_enable_custom_voices": {
+    "message": "Увімкнути користувацькі голоси..."
+  },
+  "options_enable_piper_voices": {
+    "message": "Встановити голоси Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Встановити голоси Supertonic..."
+  },
+  "options_rate_label": {
+    "message": "Швидкість"
+  },
+  "options_rate_warning": {
+    "message": "Примітка: деякі голоси можуть не працювати на високій швидкості."
+  },
+  "options_pitch_label": {
+    "message": "Висота"
+  },
+  "options_volume_label": {
+    "message": "Гучність"
+  },
+  "options_show_highlighting": {
+    "message": "Виділення тексту"
+  },
+  "options_highlighting_off": {
+    "message": "Вимкнути"
+  },
+  "options_highlighting_popup": {
+    "message": "Показати у спливаючому вікні"
+  },
+  "options_highlighting_window": {
+    "message": "Показати в окремому вікні"
+  },
+  "options_audio_playback": {
+    "message": "Відтворення аудіо"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Використовувати окрему вкладку"
+  },
+  "options_audio_playback_embedded": {
+    "message": "На сторінці"
+  },
+  "options_hotkeys_link": {
+    "message": "Редагувати гарячі клавіші"
+  },
+  "options_test_button": {
+    "message": "Тест"
+  },
+  "options_reset_button": {
+    "message": "Скинути"
+  },
+  "options_logged_in_as": {
+    "message": "Ви увійшли як"
+  },
+  "options_account_button": {
+    "message": "Обліковий запис"
+  },
+  "options_logout_button": {
+    "message": "Вийти"
+  },
+  "player_tab_explanation": {
+    "message": "Read Aloud використовує цю вкладку для відтворення аудіо. Ця вкладка автоматично закриється через 5 хвилин бездіяльності."
+  },
+  "player_hidethistab_link": {
+    "message": "Сховати цю вкладку"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Сховати цю вкладку?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Якщо ви сховаєте цю вкладку, Read Aloud відтворюватиме аудіо на поточній веб-сторінці. Це означає, що перехід зі сторінки зупинить мовлення.\n\n(Цей параметр можна скасувати на сторінці параметрів розширення)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Сховати"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Скасувати"
+  },
+  "player_permission_dialog_title": {
+    "message": "Запит дозволу"
+  },
+  "player_permission_dialog_body": {
+    "message": "Дозволити Read Aloud відтворювати аудіо?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Дозволити"
+  },
+  "context_read_selection": {
+    "message": "Прочитати вголос виділений текст"
+  },
+  "error_no_text": {
+    "message": "Не знайдено тексту для читання, спробуйте спочатку виділити текст, який хочете прочитати"
+  },
+  "error_no_voice": {
+    "message": "Мова не підтримується '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Будь ласка, скористайтеся формою, щоб завантажити PDF-файл для читання вголос"
+  },
+  "error_ajax_pdf": {
+    "message": "Будь ласка, збережіть цей PDF-файл на комп'ютер і відкрийте його в цьому [переглядачі PDF](open-pdf-viewer) для читання вголос"
+  },
+  "error_page_unreadable": {
+    "message": "Неможливо прочитати вголос цей веб-сайт"
+  },
+  "error_file_access": {
+    "message": "Вам потрібно надати Read Aloud доступ до URL-адрес файлів у [налаштуваннях](open-extension-settings) розширення"
+  },
+  "error_add_permissions": {
+    "message": "Вам потрібно надати Read Aloud додаткові [дозволи](request-permissions) для цього веб-сайту"
+  },
+  "error_login_required": {
+    "message": "Будь ласка, [увійдіть](sign-in), щоб використовувати Преміум-голоси"
+  },
+  "error_voice_unavailable": {
+    "message": "Голос недоступний, виберіть інший"
+  },
+  "error_payment_required": {
+    "message": "Кредити вичерпано"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Вам потрібно надати додаткові [дозволи](auth-wavenet), щоб увімкнути голоси Google Wavenet"
+  },
+  "error_phone_not_connected": {
+    "message": "Телефон не підключено. [Підключити](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Телефон відключено ({reason}). [Підключити знову](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Натисніть на значок динаміка поруч із кожною відповіддю, щоб прочитати її вголос"
+  },
+  "languages_heading": {
+    "message": "Параметри мови"
+  },
+  "languages_back_button": {
+    "message": "Назад до параметрів"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud хоче використовувати Google Перекладач для синтезу мовлення."
+  },
+  "google_translate_allow_button": {
+    "message": "Дозволити"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud використовує Google Перекладач для синтезу мовлення. Будь ласка, тримайте цю вкладку відкритою."
+  }
+}

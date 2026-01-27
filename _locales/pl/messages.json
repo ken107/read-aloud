@@ -1,0 +1,182 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Czytnik tekstu na mowę"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Czytaj na głos bieżący artykuł na stronie internetowej jednym kliknięciem, używając zamiany tekstu na mowę. Obsługuje ponad 40 języków."
+  },
+  "options_heading": {
+    "message": "Opcje"
+  },
+  "options_voice_label": {
+    "message": "Głos"
+  },
+  "options_voicegroup_offline": {
+    "message": "Głosy offline"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Eksperymentalne głosy AI"
+  },
+  "options_voicegroup_standard": {
+    "message": "Głosy standardowe"
+  },
+  "options_voicegroup_premium": {
+    "message": "Głosy premium"
+  },
+  "options_voicegroup_additional": {
+    "message": "Dodatkowe głosy"
+  },
+  "options_add_more_languages": {
+    "message": "Dodaj więcej języków..."
+  },
+  "options_enable_custom_voices": {
+    "message": "Włącz niestandardowe głosy..."
+  },
+  "options_enable_piper_voices": {
+    "message": "Zainstaluj głosy Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Zainstaluj głosy Supertonic..."
+  },
+  "options_rate_label": {
+    "message": "Prędkość"
+  },
+  "options_rate_warning": {
+    "message": "Uwaga: niektóre głosy mogą nie działać przy wysokiej prędkości."
+  },
+  "options_pitch_label": {
+    "message": "Wysokość"
+  },
+  "options_volume_label": {
+    "message": "Głośność"
+  },
+  "options_show_highlighting": {
+    "message": "Podświetlanie tekstu"
+  },
+  "options_highlighting_off": {
+    "message": "Wyłącz"
+  },
+  "options_highlighting_popup": {
+    "message": "Pokaż w oknie popup"
+  },
+  "options_highlighting_window": {
+    "message": "Pokaż w osobnym oknie"
+  },
+  "options_audio_playback": {
+    "message": "Odtwarzanie dźwięku"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Użyj osobnej karty"
+  },
+  "options_audio_playback_embedded": {
+    "message": "Na stronie"
+  },
+  "options_hotkeys_link": {
+    "message": "Edytuj skróty klawiaturowe"
+  },
+  "options_test_button": {
+    "message": "Test"
+  },
+  "options_reset_button": {
+    "message": "Resetuj"
+  },
+  "options_logged_in_as": {
+    "message": "Zalogowano jako"
+  },
+  "options_account_button": {
+    "message": "Konto"
+  },
+  "options_logout_button": {
+    "message": "Wyloguj"
+  },
+  "player_tab_explanation": {
+    "message": "Read Aloud używa tej karty do odtwarzania dźwięku. Ta karta zostanie automatycznie zamknięta po 5 minutach braku aktywności."
+  },
+  "player_hidethistab_link": {
+    "message": "Ukryj tę kartę"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Ukryć tę kartę?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Jeśli ukryjesz tę kartę, Read Aloud będzie odtwarzać dźwięk wewnątrz bieżącej strony internetowej. Oznacza to, że opuszczenie strony spowoduje zatrzymanie mowy.\n\n(To ustawienie można cofnąć na stronie opcji rozszerzenia)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Ukryj"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Anuluj"
+  },
+  "player_permission_dialog_title": {
+    "message": "Wymagane uprawnienie"
+  },
+  "player_permission_dialog_body": {
+    "message": "Zezwolić Read Aloud na odtwarzanie dźwięku?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Zezwól"
+  },
+  "context_read_selection": {
+    "message": "Przeczytaj na głos zaznaczony tekst"
+  },
+  "error_no_text": {
+    "message": "Nie znaleziono tekstu do przeczytania, najpierw spróbuj zaznaczyć tekst, który chcesz przeczytać"
+  },
+  "error_no_voice": {
+    "message": "Język nieobsługiwany '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Użyj formularza, aby przesłać plik PDF do przeczytania na głos"
+  },
+  "error_ajax_pdf": {
+    "message": "Zapisz ten plik PDF na komputerze i otwórz go w tej [przeglądarce PDF](open-pdf-viewer), aby przeczytać na głos"
+  },
+  "error_page_unreadable": {
+    "message": "Nie można przeczytać na głos tej strony internetowej"
+  },
+  "error_file_access": {
+    "message": "Musisz przyznać Read Aloud dostęp do adresów URL plików w [ustawieniach](open-extension-settings) rozszerzenia"
+  },
+  "error_add_permissions": {
+    "message": "Musisz przyznać Read Aloud dodatkowe [uprawnienia](request-permissions) dla tej strony internetowej"
+  },
+  "error_login_required": {
+    "message": "Proszę [zaloguj się](sign-in), aby korzystać z głosów Premium"
+  },
+  "error_voice_unavailable": {
+    "message": "Głos niedostępny, wybierz inny"
+  },
+  "error_payment_required": {
+    "message": "Brak kredytów"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Musisz przyznać dodatkowe [uprawnienia](auth-wavenet), aby włączyć głosy Google Wavenet"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefon niepodłączony. [Połącz](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon odłączony ({reason}). [Połącz ponownie](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Kliknij ikonę głośnika obok każdej odpowiedzi, aby przeczytać ją na głos"
+  },
+  "languages_heading": {
+    "message": "Opcje języka"
+  },
+  "languages_back_button": {
+    "message": "Powrót do opcji"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud chce użyć Tłumacza Google do zamiany tekstu na mowę."
+  },
+  "google_translate_allow_button": {
+    "message": "Zezwól"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud używa Tłumacza Google do zamiany tekstu na mowę. Proszę nie zamykać tej karty."
+  }
+}

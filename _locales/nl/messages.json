@@ -1,0 +1,182 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Tekst naar spraak voorlezer"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Lees het huidige webpagina-artikel hardop voor met één klik, met tekst naar spraak. Ondersteunt meer dan 40 talen."
+  },
+  "options_heading": {
+    "message": "Opties"
+  },
+  "options_voice_label": {
+    "message": "Stem"
+  },
+  "options_voicegroup_offline": {
+    "message": "Offline stemmen"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Experimentele AI-stemmen"
+  },
+  "options_voicegroup_standard": {
+    "message": "Standaard stemmen"
+  },
+  "options_voicegroup_premium": {
+    "message": "Premium stemmen"
+  },
+  "options_voicegroup_additional": {
+    "message": "Extra stemmen"
+  },
+  "options_add_more_languages": {
+    "message": "Meer talen toevoegen..."
+  },
+  "options_enable_custom_voices": {
+    "message": "Aangepaste stemmen inschakelen..."
+  },
+  "options_enable_piper_voices": {
+    "message": "Piper-stemmen installeren..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Supertonic-stemmen installeren..."
+  },
+  "options_rate_label": {
+    "message": "Snelheid"
+  },
+  "options_rate_warning": {
+    "message": "Let op: sommige stemmen werken mogelijk niet op hoge snelheid."
+  },
+  "options_pitch_label": {
+    "message": "Toonhoogte"
+  },
+  "options_volume_label": {
+    "message": "Volume"
+  },
+  "options_show_highlighting": {
+    "message": "Tekstmarkering"
+  },
+  "options_highlighting_off": {
+    "message": "Uitschakelen"
+  },
+  "options_highlighting_popup": {
+    "message": "Tonen in popup"
+  },
+  "options_highlighting_window": {
+    "message": "Tonen in apart venster"
+  },
+  "options_audio_playback": {
+    "message": "Audio afspelen"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Apart tabblad gebruiken"
+  },
+  "options_audio_playback_embedded": {
+    "message": "Op de pagina"
+  },
+  "options_hotkeys_link": {
+    "message": "Sneltoetsen bewerken"
+  },
+  "options_test_button": {
+    "message": "Testen"
+  },
+  "options_reset_button": {
+    "message": "Resetten"
+  },
+  "options_logged_in_as": {
+    "message": "Ingelogd als"
+  },
+  "options_account_button": {
+    "message": "Account"
+  },
+  "options_logout_button": {
+    "message": "Uitloggen"
+  },
+  "player_tab_explanation": {
+    "message": "Read Aloud gebruikt dit tabblad voor audio afspelen. Dit tabblad wordt automatisch gesloten na 5 minuten inactiviteit."
+  },
+  "player_hidethistab_link": {
+    "message": "Dit tabblad verbergen"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Dit tabblad verbergen?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Als u dit tabblad verbergt, speelt Read Aloud audio af binnen de huidige webpagina. Dit betekent dat het verlaten van de pagina de spraak stopt.\n\n(Deze instelling kan worden teruggedraaid via de Opties-pagina van de extensie)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Verbergen"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Annuleren"
+  },
+  "player_permission_dialog_title": {
+    "message": "Toestemming gevraagd"
+  },
+  "player_permission_dialog_body": {
+    "message": "Read Aloud toestaan audio af te spelen?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Toestaan"
+  },
+  "context_read_selection": {
+    "message": "Geselecteerde tekst hardop voorlezen"
+  },
+  "error_no_text": {
+    "message": "Geen tekst gevonden om voor te lezen, probeer eerst de tekst te selecteren die u wilt lezen"
+  },
+  "error_no_voice": {
+    "message": "Taal niet ondersteund '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Gebruik het formulier om uw PDF-bestand te uploaden voor voorlezen"
+  },
+  "error_ajax_pdf": {
+    "message": "Sla dit PDF-bestand op uw computer op en open het in deze [PDF-viewer](open-pdf-viewer) om hardop voor te lezen"
+  },
+  "error_page_unreadable": {
+    "message": "Kan deze website niet hardop voorlezen"
+  },
+  "error_file_access": {
+    "message": "U moet Read Aloud toegang geven tot bestands-URL's in de extensie [instellingen](open-extension-settings)"
+  },
+  "error_add_permissions": {
+    "message": "U moet Read Aloud extra [machtigingen](request-permissions) geven voor deze website"
+  },
+  "error_login_required": {
+    "message": "[Log in](sign-in) om de Premium stemmen te gebruiken"
+  },
+  "error_voice_unavailable": {
+    "message": "Stem niet beschikbaar, kies een andere"
+  },
+  "error_payment_required": {
+    "message": "Geen tegoed meer"
+  },
+  "error_wavenet_auth_required": {
+    "message": "U moet extra [machtigingen](auth-wavenet) verlenen om Google Wavenet-stemmen in te schakelen"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefoon niet verbonden. [Verbinden](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefoon losgekoppeld ({reason}). [Opnieuw verbinden](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Klik op het luidsprekerpictogram naast elk antwoord om het hardop voor te lezen"
+  },
+  "languages_heading": {
+    "message": "Taalopties"
+  },
+  "languages_back_button": {
+    "message": "Terug naar opties"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud wil Google Translate gebruiken voor tekst naar spraak."
+  },
+  "google_translate_allow_button": {
+    "message": "Toestaan"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud gebruikt Google Translate voor tekst naar spraak. Houd dit tabblad open."
+  }
+}

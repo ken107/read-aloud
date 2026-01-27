@@ -1,0 +1,182 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: Tekst til tale-oplæser"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "Læs den aktuelle webside-artikel højt med et klik ved hjælp af tekst til tale. Understøtter mere end 40 sprog."
+  },
+  "options_heading": {
+    "message": "Indstillinger"
+  },
+  "options_voice_label": {
+    "message": "Stemme"
+  },
+  "options_voicegroup_offline": {
+    "message": "Offline-stemmer"
+  },
+  "options_voicegroup_experimental": {
+    "message": "Eksperimentelle AI-stemmer"
+  },
+  "options_voicegroup_standard": {
+    "message": "Standardstemmer"
+  },
+  "options_voicegroup_premium": {
+    "message": "Premium-stemmer"
+  },
+  "options_voicegroup_additional": {
+    "message": "Yderligere stemmer"
+  },
+  "options_add_more_languages": {
+    "message": "Tilføj flere sprog..."
+  },
+  "options_enable_custom_voices": {
+    "message": "Aktivér brugerdefinerede stemmer..."
+  },
+  "options_enable_piper_voices": {
+    "message": "Installér Piper-stemmer..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Installér Supertonic-stemmer..."
+  },
+  "options_rate_label": {
+    "message": "Hastighed"
+  },
+  "options_rate_warning": {
+    "message": "Bemærk: nogle stemmer fungerer muligvis ikke ved høj hastighed."
+  },
+  "options_pitch_label": {
+    "message": "Tonehøjde"
+  },
+  "options_volume_label": {
+    "message": "Lydstyrke"
+  },
+  "options_show_highlighting": {
+    "message": "Tekstfremhævning"
+  },
+  "options_highlighting_off": {
+    "message": "Slå fra"
+  },
+  "options_highlighting_popup": {
+    "message": "Vis i popup"
+  },
+  "options_highlighting_window": {
+    "message": "Vis i separat vindue"
+  },
+  "options_audio_playback": {
+    "message": "Lydafspilning"
+  },
+  "options_audio_playback_standalone": {
+    "message": "Brug separat fane"
+  },
+  "options_audio_playback_embedded": {
+    "message": "På siden"
+  },
+  "options_hotkeys_link": {
+    "message": "Rediger genvejstaster"
+  },
+  "options_test_button": {
+    "message": "Test"
+  },
+  "options_reset_button": {
+    "message": "Nulstil"
+  },
+  "options_logged_in_as": {
+    "message": "Logget ind som"
+  },
+  "options_account_button": {
+    "message": "Konto"
+  },
+  "options_logout_button": {
+    "message": "Log ud"
+  },
+  "player_tab_explanation": {
+    "message": "Read Aloud bruger denne fane til lydafspilning. Denne fane lukkes automatisk efter 5 minutters inaktivitet."
+  },
+  "player_hidethistab_link": {
+    "message": "Skjul denne fane"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "Skjul denne fane?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "Hvis du skjuler denne fane, vil Read Aloud afspille lyd inde på den aktuelle webside. Det betyder, at navigation væk fra siden vil stoppe talen.\n\n(Denne indstilling kan fortrydes fra udvidelsens indstillingsside)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "Skjul"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "Annuller"
+  },
+  "player_permission_dialog_title": {
+    "message": "Tilladelse anmodet"
+  },
+  "player_permission_dialog_body": {
+    "message": "Tillad Read Aloud at afspille lyd?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "Tillad"
+  },
+  "context_read_selection": {
+    "message": "Læs markeret tekst højt"
+  },
+  "error_no_text": {
+    "message": "Fandt ingen tekst at læse, prøv først at markere den tekst, du vil læse"
+  },
+  "error_no_voice": {
+    "message": "Sprog ikke understøttet '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "Brug venligst formularen til at uploade din PDF-fil for at læse højt"
+  },
+  "error_ajax_pdf": {
+    "message": "Gem venligst denne PDF-fil på din computer og åbn den i denne [PDF-fremviser](open-pdf-viewer) for at læse højt"
+  },
+  "error_page_unreadable": {
+    "message": "Kan ikke læse denne webside højt"
+  },
+  "error_file_access": {
+    "message": "Du skal give Read Aloud adgang til fil-URL'er i udvidelsens [indstillinger](open-extension-settings)"
+  },
+  "error_add_permissions": {
+    "message": "Du skal give Read Aloud yderligere [tilladelser](request-permissions) til denne webside"
+  },
+  "error_login_required": {
+    "message": "Venligst [log ind](sign-in) for at bruge Premium-stemmer"
+  },
+  "error_voice_unavailable": {
+    "message": "Stemme ikke tilgængelig, vælg venligst en anden"
+  },
+  "error_payment_required": {
+    "message": "Ingen kreditter tilbage"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Du skal give yderligere [tilladelser](auth-wavenet) for at aktivere Google Wavenet-stemmer"
+  },
+  "error_phone_not_connected": {
+    "message": "Telefon ikke tilsluttet. [Tilslut](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon afbrudt ({reason}). [Tilslut igen](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Klik på højttalerikonet ved siden af hvert svar for at læse det højt"
+  },
+  "languages_heading": {
+    "message": "Sprogindstillinger"
+  },
+  "languages_back_button": {
+    "message": "Tilbage til indstillinger"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud vil gerne bruge Google Oversæt til tekst til tale."
+  },
+  "google_translate_allow_button": {
+    "message": "Tillad"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud bruger Google Oversæt til tekst til tale. Hold venligst denne fane åben."
+  }
+}

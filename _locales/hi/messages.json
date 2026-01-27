@@ -1,0 +1,182 @@
+{
+  "extension_name": {
+    "message": "Read Aloud: टेक्स्ट टू स्पीच वॉइस रीडर"
+  },
+  "extension_short_name": {
+    "message": "Read Aloud"
+  },
+  "extension_description": {
+    "message": "एक क्लिक में वर्तमान वेब-पेज लेख को टेक्स्ट टू स्पीच का उपयोग करके जोर से पढ़ें। 40+ भाषाओं का समर्थन करता है।"
+  },
+  "options_heading": {
+    "message": "विकल्प"
+  },
+  "options_voice_label": {
+    "message": "आवाज़"
+  },
+  "options_voicegroup_offline": {
+    "message": "ऑफ़लाइन आवाज़ें"
+  },
+  "options_voicegroup_experimental": {
+    "message": "प्रायोगिक AI आवाज़ें"
+  },
+  "options_voicegroup_standard": {
+    "message": "मानक आवाज़ें"
+  },
+  "options_voicegroup_premium": {
+    "message": "प्रीमियम आवाज़ें"
+  },
+  "options_voicegroup_additional": {
+    "message": "अतिरिक्त आवाज़ें"
+  },
+  "options_add_more_languages": {
+    "message": "अधिक भाषाएं जोड़ें..."
+  },
+  "options_enable_custom_voices": {
+    "message": "कस्टम आवाज़ें सक्षम करें..."
+  },
+  "options_enable_piper_voices": {
+    "message": "Piper आवाज़ें इंस्टॉल करें..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Supertonic आवाज़ें इंस्टॉल करें..."
+  },
+  "options_rate_label": {
+    "message": "गति"
+  },
+  "options_rate_warning": {
+    "message": "नोट: कुछ आवाज़ें उच्च गति पर काम नहीं कर सकती हैं।"
+  },
+  "options_pitch_label": {
+    "message": "पिच"
+  },
+  "options_volume_label": {
+    "message": "वॉल्यूम"
+  },
+  "options_show_highlighting": {
+    "message": "टेक्स्ट हाइलाइटिंग"
+  },
+  "options_highlighting_off": {
+    "message": "बंद करें"
+  },
+  "options_highlighting_popup": {
+    "message": "पॉपअप में दिखाएं"
+  },
+  "options_highlighting_window": {
+    "message": "अलग विंडो में दिखाएं"
+  },
+  "options_audio_playback": {
+    "message": "ऑडियो प्लेबैक"
+  },
+  "options_audio_playback_standalone": {
+    "message": "अलग टैब का उपयोग करें"
+  },
+  "options_audio_playback_embedded": {
+    "message": "पेज में"
+  },
+  "options_hotkeys_link": {
+    "message": "शॉर्टकट कुंजियां संपादित करें"
+  },
+  "options_test_button": {
+    "message": "टेस्ट"
+  },
+  "options_reset_button": {
+    "message": "रीसेट"
+  },
+  "options_logged_in_as": {
+    "message": "के रूप में लॉग इन"
+  },
+  "options_account_button": {
+    "message": "खाता"
+  },
+  "options_logout_button": {
+    "message": "लॉग आउट"
+  },
+  "player_tab_explanation": {
+    "message": "Read Aloud इस टैब का उपयोग ऑडियो प्लेबैक के लिए करता है। यह टैब 5 मिनट की निष्क्रियता के बाद स्वचालित रूप से बंद हो जाएगा।"
+  },
+  "player_hidethistab_link": {
+    "message": "इस टैब को छुपाएं"
+  },
+  "player_hidethistab_dialog_title": {
+    "message": "इस टैब को छुपाएं?"
+  },
+  "player_hidethistab_dialog_body": {
+    "message": "यदि आप इस टैब को छुपाते हैं, तो Read Aloud वर्तमान वेबपेज के अंदर ऑडियो चलाएगा। इसका मतलब है कि पेज से दूर जाने पर स्पीच रुक जाएगी।\n\n(इस सेटिंग को एक्सटेंशन विकल्प पेज से वापस किया जा सकता है)"
+  },
+  "player_hidethistab_dialog_ok_button": {
+    "message": "छुपाएं"
+  },
+  "player_hidethistab_dialog_cancel_button": {
+    "message": "रद्द करें"
+  },
+  "player_permission_dialog_title": {
+    "message": "अनुमति का अनुरोध"
+  },
+  "player_permission_dialog_body": {
+    "message": "Read Aloud को ऑडियो चलाने की अनुमति दें?"
+  },
+  "player_permission_dialog_ok_button": {
+    "message": "अनुमति दें"
+  },
+  "context_read_selection": {
+    "message": "चयनित टेक्स्ट जोर से पढ़ें"
+  },
+  "error_no_text": {
+    "message": "पढ़ने के लिए कोई टेक्स्ट नहीं मिला, पहले वह टेक्स्ट चुनने का प्रयास करें जिसे आप पढ़ना चाहते हैं"
+  },
+  "error_no_voice": {
+    "message": "भाषा समर्थित नहीं है '{lang}'"
+  },
+  "error_upload_pdf": {
+    "message": "कृपया जोर से पढ़ने के लिए अपनी PDF फ़ाइल अपलोड करने के लिए फॉर्म का उपयोग करें"
+  },
+  "error_ajax_pdf": {
+    "message": "कृपया इस PDF फ़ाइल को अपने कंप्यूटर पर सहेजें और जोर से पढ़ने के लिए इसे इस [PDF व्यूअर](open-pdf-viewer) में खोलें"
+  },
+  "error_page_unreadable": {
+    "message": "इस वेबसाइट को जोर से नहीं पढ़ सकते"
+  },
+  "error_file_access": {
+    "message": "आपको एक्सटेंशन [सेटिंग्स](open-extension-settings) में फ़ाइल URL तक Read Aloud की पहुंच प्रदान करनी होगी"
+  },
+  "error_add_permissions": {
+    "message": "आपको इस वेबसाइट के लिए Read Aloud को अतिरिक्त [अनुमतियां](request-permissions) प्रदान करनी होंगी"
+  },
+  "error_login_required": {
+    "message": "प्रीमियम आवाज़ों का उपयोग करने के लिए कृपया [साइन इन](sign-in) करें"
+  },
+  "error_voice_unavailable": {
+    "message": "आवाज़ उपलब्ध नहीं है, कृपया कोई अन्य चुनें"
+  },
+  "error_payment_required": {
+    "message": "क्रेडिट समाप्त"
+  },
+  "error_wavenet_auth_required": {
+    "message": "Google Wavenet आवाज़ों को सक्षम करने के लिए आपको अतिरिक्त [अनुमतियां](auth-wavenet) प्रदान करनी होंगी"
+  },
+  "error_phone_not_connected": {
+    "message": "फ़ोन कनेक्ट नहीं है। [कनेक्ट करें](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "फ़ोन डिस्कनेक्ट हो गया ({reason})। [पुनः कनेक्ट करें](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "इसे जोर से पढ़ने के लिए प्रत्येक उत्तर के बगल में स्पीकर आइकन पर क्लिक करें"
+  },
+  "languages_heading": {
+    "message": "भाषा विकल्प"
+  },
+  "languages_back_button": {
+    "message": "विकल्पों पर वापस जाएं"
+  },
+  "google_translate_request_permission": {
+    "message": "Read Aloud टेक्स्ट-टू-स्पीच के लिए Google Translate का उपयोग करना चाहता है।"
+  },
+  "google_translate_allow_button": {
+    "message": "अनुमति दें"
+  },
+  "google_translate_keep_page_open": {
+    "message": "Read Aloud टेक्स्ट-टू-स्पीच के लिए Google Translate का उपयोग कर रहा है। कृपया इस टैब को खुला रखें।"
+  }
+}
