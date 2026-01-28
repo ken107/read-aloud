@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "Nulstil"
   },
+  "options_stop_button": {
+    "message": "Stop"
+  },
   "options_success_status": {
     "message": "Ændringer gemt."
   },

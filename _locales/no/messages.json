@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "Tilbakestill"
   },
+  "options_stop_button": {
+    "message": "Stopp"
+  },
   "options_success_status": {
     "message": "Endringer lagret."
   },

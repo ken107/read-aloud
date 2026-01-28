@@ -83,6 +83,9 @@
   "options_test_button": {
     "message": "Test"
   },
+  "options_stop_button": {
+    "message": "Stop"
+  },
   "options_reset_button": {
     "message": "Reset"
   },

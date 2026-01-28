@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "Reiniciar"
   },
+  "options_stop_button": {
+    "message": "Detener"
+  },
   "options_success_status": {
     "message": "Cambios guardados."
   },

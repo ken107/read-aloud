@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "Zurücksetzen"
   },
+  "options_stop_button": {
+    "message": "Stoppen"
+  },
   "options_success_status": {
     "message": "Änderungen gespeichert."
   },

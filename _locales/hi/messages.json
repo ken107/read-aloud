@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "रीसेट"
   },
+  "options_stop_button": {
+    "message": "रोकें"
+  },
   "options_success_status": {
     "message": "परिवर्तन सहेजे गए।"
   },

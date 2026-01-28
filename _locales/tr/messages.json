@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "Sıfırla"
   },
+  "options_stop_button": {
+    "message": "Durdur"
+  },
   "options_success_status": {
     "message": "Değişiklikler kaydedildi."
   },

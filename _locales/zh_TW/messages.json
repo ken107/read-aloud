@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "重設"
   },
+  "options_stop_button": {
+    "message": "停止"
+  },
   "options_success_status": {
     "message": "已儲存。"
   },

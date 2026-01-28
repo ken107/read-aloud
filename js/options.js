@@ -116,55 +116,67 @@ Promise.all([
     })
 
 
-  //buttons
-  var demoSpeech = {};
-  const statusTracker$ = new rxjs.Subject()
-  statusTracker$.pipe(
-    rxjs.switchMap(() =>
-      rxjs.interval(500).pipe(
-        rxjs.exhaustMap(() => Promise.all([
-          bgPageInvoke("getPlaybackState"),
-          bgPageInvoke("getPlaybackError")
-        ])),
-        rxjs.takeWhile(([state]) => state != "STOPPED", true)
+  //voiceTest
+  const demoSpeech = {
+    get(language) {
+      return this[language] || (
+        this[language] = ajaxGet(config.serviceUrl + "/read-aloud/get-demo-speech-text/" + language).then(JSON.parse)
+      )
+    }
+  }
+  const voiceTestSubject = new rxjs.Subject()
+  voiceTestSubject.pipe(
+    rxjs.switchScan(state =>
+      rxjs.iif(
+        () => state == "STOPPED",
+        //play
+        rxjs.defer(() => {
+          return voices$.pipe(rxjs.take(1))
+        }).pipe(
+          rxjs.exhaustMap(voices => {
+            const voiceName = $("#voices").val()
+            const voice = voiceName && findVoiceByName(voices, voiceName)
+            const voiceLang = parseLang(voice && voice.lang || "en-US")
+            return rxjs.defer(() => demoSpeech.get(voiceLang.code)).pipe(
+              rxjs.exhaustMap(speech => bgPageInvoke("playText", [speech.text, {lang: voiceLang.code}]))
+            )
+          }),
+          rxjs.exhaustMap(() =>
+            rxjs.timer(100, 500).pipe(
+              rxjs.exhaustMap(() => bgPageInvoke("getPlaybackState")),
+              rxjs.takeWhile(state => state != "STOPPED", true)
+            )
+          )
+        ),
+        //stop
+        rxjs.defer(() => bgPageInvoke("stop")).pipe(
+          rxjs.map(() => "STOPPED")
+        )
+      ),
+      "STOPPED"
+    ),
+    rxjs.startWith("STOPPED"),
+    rxjs.switchMap(state =>
+      rxjs.iif(
+        () => state == "STOPPED",
+        rxjs.defer(() => bgPageInvoke("getPlaybackError")).pipe(
+          rxjs.map(playbackError => ({state, playbackError}))
+        ),
+        rxjs.of({state})
       )
     )
-  ).subscribe(([state, err]) => {
-    if (err) handleError(err)
+  ).subscribe(({state, playbackError}) => {
+    $("#test-voice .spinner").toggle(state == "LOADING")
+    $("#test-voice [data-i18n]").text(
+      brapi.i18n.getMessage(state == "STOPPED" ? "options_test_button" : "options_stop_button")
+    )
+    if (state == "STOPPED" && playbackError) handleError(playbackError)
+    else $("#status").hide()
   })
 
-  $("#test-voice").click(async function() {
-    var voiceName = $("#voices").val();
-    var voice = voiceName && findVoiceByName(await rxjs.firstValueFrom(voices$), voiceName);
-    var lang = (voice && voice.lang) ? parseLang(voice.lang).code : "en";
-    $("#test-voice .spinner").show();
-    $("#status").hide();
-    Promise.resolve(demoSpeech[lang])
-      .then(function(speech) {
-        if (speech) return speech;
-        return ajaxGet(config.serviceUrl + "/read-aloud/get-demo-speech-text/" + lang)
-          .then(JSON.parse)
-          .then(function(result) {
-            return demoSpeech[lang] = result;
-          })
-      })
-      .then(function(result) {
-        return bgPageInvoke("stop")
-          .then(function() {
-            return bgPageInvoke("playText", [result.text, {lang: lang}]);
-          })
-          .then(() => {
-            statusTracker$.next()
-          })
-      })
-      .catch(function(err) {
-        handleError(err);
-      })
-      .finally(function() {
-        $("#test-voice .spinner").hide();
-      })
-  })
-  $("#test-voice .spinner").hide();
+
+  //buttons
+  $("#test-voice").click(() => voiceTestSubject.next())
 
   $("#reset").click(function() {
     clearSettings().then(function() {

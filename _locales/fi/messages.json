@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "Palauta"
   },
+  "options_stop_button": {
+    "message": "Pysäytä"
+  },
   "options_success_status": {
     "message": "Muutokset tallennettu."
   },

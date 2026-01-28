@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "รีเซ็ต"
   },
+  "options_stop_button": {
+    "message": "หยุด"
+  },
   "options_success_status": {
     "message": "บันทึกการเปลี่ยนแปลงแล้ว"
   },

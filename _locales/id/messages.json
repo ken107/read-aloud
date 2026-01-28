@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "Reset"
   },
+  "options_stop_button": {
+    "message": "Berhenti"
+  },
   "options_success_status": {
     "message": "Perubahan disimpan."
   },

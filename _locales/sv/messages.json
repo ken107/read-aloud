@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "Återställ"
   },
+  "options_stop_button": {
+    "message": "Stoppa"
+  },
   "options_success_status": {
     "message": "Ändringar sparade."
   },

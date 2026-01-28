@@ -86,6 +86,9 @@
   "options_reset_button": {
     "message": "Redefinir"
   },
+  "options_stop_button": {
+    "message": "Parar"
+  },
   "options_success_status": {
     "message": "Alterações salvas."
   },
