@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "초기화"
   },
+  "options_stop_button": {
+    "message": "중지"
+  },
   "options_logged_in_as": {
     "message": "로그인 계정"
   },

@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "重设"
   },
+  "options_stop_button": {
+    "message": "停止"
+  },
   "options_logged_in_as": {
     "message": "登录为"
   },

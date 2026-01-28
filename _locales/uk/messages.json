@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Скинути"
   },
+  "options_stop_button": {
+    "message": "Зупинити"
+  },
   "options_logged_in_as": {
     "message": "Ви увійшли як"
   },

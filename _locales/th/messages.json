@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "รีเซ็ต"
   },
+  "options_stop_button": {
+    "message": "หยุด"
+  },
   "options_logged_in_as": {
     "message": "เข้าสู่ระบบเป็น"
   },

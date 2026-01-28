@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Бозсозӣ"
   },
+  "options_stop_button": {
+    "message": "Қатъ кардан"
+  },
   "options_logged_in_as": {
     "message": "Бо номи зерин ворид шуд:"
   },

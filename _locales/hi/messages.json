@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "रीसेट"
   },
+  "options_stop_button": {
+    "message": "रोकें"
+  },
   "options_logged_in_as": {
     "message": "के रूप में लॉग इन"
   },

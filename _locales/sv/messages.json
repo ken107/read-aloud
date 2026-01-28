@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Återställ"
   },
+  "options_stop_button": {
+    "message": "Stoppa"
+  },
   "options_logged_in_as": {
     "message": "Inloggad som"
   },

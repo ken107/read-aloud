@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Nollaa"
   },
+  "options_stop_button": {
+    "message": "Pysäytä"
+  },
   "options_logged_in_as": {
     "message": "Kirjautunut sisään nimellä"
   },

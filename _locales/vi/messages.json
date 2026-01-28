@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Reset"
   },
+  "options_stop_button": {
+    "message": "Dừng"
+  },
   "options_logged_in_as": {
     "message": "đăng nhập như"
   },

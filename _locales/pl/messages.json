@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Resetuj"
   },
+  "options_stop_button": {
+    "message": "Zatrzymaj"
+  },
   "options_logged_in_as": {
     "message": "Zalogowano jako"
   },

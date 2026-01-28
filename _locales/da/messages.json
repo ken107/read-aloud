@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Nulstil"
   },
+  "options_stop_button": {
+    "message": "Stop"
+  },
   "options_logged_in_as": {
     "message": "Logget ind som"
   },

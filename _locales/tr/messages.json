@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Sıfırla"
   },
+  "options_stop_button": {
+    "message": "Durdur"
+  },
   "options_logged_in_as": {
     "message": "Olarak oturum açtı"
   },

@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Obnovit"
   },
+  "options_stop_button": {
+    "message": "Zastavit"
+  },
   "options_logged_in_as": {
     "message": "Přihlášen jako"
   },

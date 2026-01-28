@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "إعادة تعيين"
   },
+  "options_stop_button": {
+    "message": "إيقاف"
+  },
   "options_logged_in_as": {
     "message": "تسجيل الدخول باسم"
   },

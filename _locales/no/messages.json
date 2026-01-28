@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Tilbakestill"
   },
+  "options_stop_button": {
+    "message": "Stopp"
+  },
   "options_logged_in_as": {
     "message": "Logget inn som"
   },

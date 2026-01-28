@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Сброс"
   },
+  "options_stop_button": {
+    "message": "Остановить"
+  },
   "options_logged_in_as": {
     "message": "Вы вошли как"
   },

@@ -83,6 +83,9 @@
   "options_reset_button": {
     "message": "Reiniciar"
   },
+  "options_stop_button": {
+    "message": "Detener"
+  },
   "options_logged_in_as": {
     "message": "Conectado como"
   },
