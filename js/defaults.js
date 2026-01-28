@@ -543,7 +543,7 @@ const voices$ = rxjs.combineLatest({
 )
 
 function groupVoicesByLang(voices) {
-  return voices.groupBy(voice => voice.lang ? parseLang(voice.lang).code : "<any>")
+  return voices.groupBy(voice => voice.lang ? parseLocaleCode(voice.lang).language : "<any>")
 }
 
 function isOfflineVoice(voice) {
@@ -638,7 +638,7 @@ async function getSpeechVoice(voiceName, lang) {
   //if no specific voice indicated, but a preferred voice was configured for the language
   const preferredVoiceByLang = await getSetting("preferredVoices")
   if (!voice && lang && preferredVoiceByLang) {
-    voiceName = preferredVoiceByLang[parseLang(lang).code];
+    voiceName = preferredVoiceByLang[parseLocaleCode(lang).language];
     if (voiceName) voice = findVoiceByName(voices, voiceName);
   }
   //otherwise, auto-select in order: offline, native, free, any
@@ -662,25 +662,25 @@ function findVoiceByName(voices, name) {
 }
 
 function findVoiceByLang(voices, lang) {
-  var speechLang = parseLang(lang);
+  const speechLocale = parseLocaleCode(lang);
   var match = {};
   voices.forEach(function(voice) {
     if (voice.lang) {
-      var voiceLang = parseLang(voice.lang);
-      if (voiceLang.code == speechLang.code) {
+      const voiceLocale = parseLocaleCode(voice.lang);
+      if (voiceLocale.language == speechLocale.language) {
         //language matches
-        if (voiceLang.dialect == speechLang.dialect) {
-          //dialect matches, prefer female
+        if (voiceLocale.region == speechLocale.region) {
+          //region matches, prefer female
           if (voice.gender == "female") match.first = match.first || voice;
           else match.second = match.second || voice;
         }
-        else if (!voiceLang.dialect) {
-          //voice specifies no dialect
+        else if (!voiceLocale.region) {
+          //voice specifies no region
           match.third = match.third || voice;
         }
         else {
-          //dialect mismatch, prefer en-US (if english)
-          if (voiceLang.code == 'en' && voiceLang.dialect == 'us') match.fourth = match.fourth || voice;
+          //region mismatch, prefer en-US (if english)
+          if (voiceLocale.language == 'en' && voiceLocale.region == 'us') match.fourth = match.fourth || voice;
           else match.sixth = match.sixth || voice;
         }
       }
@@ -835,11 +835,11 @@ function waitMillis(millis) {
   });
 }
 
-function parseLang(lang) {
-  const [code, dialect] = lang.toLowerCase().split(/[-_]/)
+function parseLocaleCode(localeCode) {
+  const [language, region] = localeCode.toLowerCase().split(/[-_]/)
   return {
-    code: config.iso639map[code] || code,
-    dialect
+    language: config.iso639map[language] || language,
+    region
   };
 }
 

@@ -22,7 +22,7 @@ rxjs.combineLatest(
   var selectedLangs = immediate(() => {
     if (settings.languages) return settings.languages.split(',')
     if (settings.languages == '') return []
-    const accept = new Set(acceptLangs.map(x => parseLang(x).code))
+    const accept = new Set(acceptLangs.map(x => parseLocaleCode(x).language))
     const langs = Object.keys(voicesByLang).filter(x => accept.has(x))
     return langs.length ? langs : []
   })

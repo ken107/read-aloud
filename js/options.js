@@ -136,9 +136,9 @@ Promise.all([
           rxjs.exhaustMap(voices => {
             const voiceName = $("#voices").val()
             const voice = voiceName && findVoiceByName(voices, voiceName)
-            const voiceLang = parseLang(voice && voice.lang || "en-US")
-            return rxjs.defer(() => demoSpeech.get(voiceLang.code)).pipe(
-              rxjs.exhaustMap(speech => bgPageInvoke("playText", [speech.text, {lang: voiceLang.code}]))
+            const locale = parseLocaleCode(voice && voice.lang || "en-US")
+            return rxjs.defer(() => demoSpeech.get(locale.language)).pipe(
+              rxjs.exhaustMap(speech => bgPageInvoke("playText", [speech.text, {lang: locale.language}]))
             )
           }),
           rxjs.exhaustMap(() =>
@@ -204,13 +204,13 @@ function populateVoices(allVoices, settings, acceptLangs) {
   var selectedLangs = immediate(() => {
     if (settings.languages) return settings.languages.split(',')
     if (settings.languages == '') return null
-    const accept = new Set(acceptLangs.map(x => parseLang(x).code))
+    const accept = new Set(acceptLangs.map(x => parseLocaleCode(x).language))
     const langs = Object.keys(groupVoicesByLang(allVoices)).filter(x => accept.has(x))
     return langs.length ? langs : null
   })
   var voices = !selectedLangs ? allVoices : allVoices.filter(
     function(voice) {
-      return !voice.lang || selectedLangs.includes(parseLang(voice.lang).code)
+      return !voice.lang || selectedLangs.includes(parseLocaleCode(voice.lang).language)
           || isPiperVoice(voice)
           || isSupertonicVoice(voice)
           || isOpenai(voice)
