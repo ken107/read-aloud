@@ -27,13 +27,15 @@ engineIdle$.pipe(
 })
 
 //keep-it-open billboard
-const ugaDialog = document.createElement("DIV")
-ugaDialog.innerHTML = `
-  <div class="alert alert-warning text-center">
-    Read Aloud uses this tab to synthesize Supertonic voices. It will close automatically after 15 minutes of inactivity.
-  </div>
-`
-document.body.prepend(ugaDialog)
+document.addEventListener("DOMContentLoaded", () => {
+  const ugaDialog = document.createElement("DIV")
+  ugaDialog.innerHTML = `
+    <div class="alert alert-warning text-center">
+      Read Aloud uses this tab to synthesize Supertonic voices. It will close automatically after 15 minutes of inactivity.
+    </div>
+  `
+  document.body.prepend(ugaDialog)
+})
 
 //vars
 let supertonicService
