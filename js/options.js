@@ -165,13 +165,16 @@ Promise.all([
         rxjs.of({state})
       )
     )
-  ).subscribe(({state, playbackError}) => {
-    $("#test-voice .spinner").toggle(state == "LOADING")
-    $("#test-voice [data-i18n]").text(
-      brapi.i18n.getMessage(state == "STOPPED" ? "options_test_button" : "options_stop_button")
-    )
-    if (state == "STOPPED" && playbackError) handleError(playbackError)
-    else $("#status").hide()
+  ).subscribe({
+    next({state, playbackError}) {
+      $("#test-voice .spinner").toggle(state == "LOADING")
+      $("#test-voice [data-i18n]").text(
+        brapi.i18n.getMessage(state == "STOPPED" ? "options_test_button" : "options_stop_button")
+      )
+      if (state == "STOPPED" && playbackError) handleError(playbackError)
+      else $("#status").hide()
+    },
+    error: handleError
   })
 
 
