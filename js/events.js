@@ -248,10 +248,10 @@ brapi.menus.onClicked.addListener(function(info, tab) {
  * Shortcut keys handlers
  */
 function execCommand(command) {
-  if (command == "play") {
+  if (command == "play" || command == "pause") {
     getPlaybackState()
       .then(function(state) {
-        if (state == "PLAYING") return pause();
+        if (state == "PLAYING") return command == "pause" ? pause() : stop()
         else if (state == "STOPPED" || state == "PAUSED") return playTab()
       })
       .catch(console.error)
