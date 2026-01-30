@@ -95,11 +95,11 @@ brapi.contextMenus.onClicked.addListener(function(info, tab) {
  */
 if (brapi.commands)
 brapi.commands.onCommand.addListener(function(command) {
-  if (command == "play") {
+  if (command == "play" || command == "pause") {
     getPlaybackState()
       .then(function(stateInfo) {
         switch (stateInfo.state) {
-          case "PLAYING": return pause()
+          case "PLAYING": return command == "pause" ? pause() : stop()
           case "PAUSED": return resume()
           case "STOPPED": return playTab()
         }
