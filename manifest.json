@@ -85,6 +85,9 @@
     "chrome_style": false
   },
   "commands": {
+    "_execute_browser_action": {
+      "description": "Toggle popup"
+    },
     "play": {
       "suggested_key": {"default": "Alt+O"},
       "description": "Play/Stop"
