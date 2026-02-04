@@ -1,5 +1,5 @@
 
-var browserTtsEngine = typeof speechSynthesis != 'undefined' ? new WebSpeechEngine() : new DummyTtsEngine();
+var browserTtsEngine = new WebSpeechEngine();
 var premiumTtsEngine = new PremiumTtsEngine(config.serviceUrl);
 var googleTranslateTtsEngine = new GoogleTranslateTtsEngine();
 var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
@@ -71,30 +71,18 @@ function WebSpeechEngine() {
   this.isSpeaking = function(callback) {
     callback(speechSynthesis.speaking);
   }
-  this.getVoices = function() {
-    return promiseTimeout(1500, "Timeout WebSpeech getVoices", new Promise(function(fulfill) {
-      var voices = speechSynthesis.getVoices() || [];
-      if (voices.length) fulfill(voices);
-      else speechSynthesis.onvoiceschanged = function() {
-        fulfill(speechSynthesis.getVoices() || []);
-      }
-    }))
-    .then(function(voices) {
-      for (var i=0; i<voices.length; i++) voices[i].voiceName = voices[i].name;
-      return voices;
-    })
-    .catch(function(err) {
-      console.error(err);
-      return [];
-    })
-  }
-}
-
-
-function DummyTtsEngine() {
-  this.getVoices = function() {
-    return Promise.resolve([]);
-  }
+  this.voices$ = rxjs.iif(
+    () => typeof speechSynthesis == 'undefined',
+    rxjs.of([]),
+    rxjs.defer(() => rxjs.fromEvent(speechSynthesis, 'voiceschanged')).pipe(
+      rxjs.startWith(0),
+      rxjs.map(() => {
+        const voices = speechSynthesis.getVoices() || [];
+        for (var i=0; i<voices.length; i++) voices[i].voiceName = voices[i].name;
+        return voices;
+      })
+    )
+  )
 }
 
 

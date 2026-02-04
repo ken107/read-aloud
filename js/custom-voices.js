@@ -1,9 +1,9 @@
 
-Promise.all([
-  browserTtsEngine.getVoices().then(voices => voices.some(isSpeechDispatcher)),
+rxjs.combineLatest([
+  browserTtsEngine.voices$.pipe(rxjs.map(voices => voices.some(isSpeechDispatcher))),
   getSetting('useSpeechDispatcher').then(b => !!b),
   domReady()
-]).then(([hasSpeechdVoices, useSpeechd]) => {
+]).subscribe(([hasSpeechdVoices, useSpeechd]) => {
   $("#speechd-panel").toggle(hasSpeechdVoices || useSpeechd)
   $("#speechd-toggle").prop("checked", useSpeechd)
     .change(function() {
