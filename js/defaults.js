@@ -519,34 +519,24 @@ const voices$ = rxjs.combineLatest({
   supertonicVoices: observeSetting("supertonicVoices"),
   useSpeechDispatcher: observeSetting("useSpeechDispatcher"),
 }).pipe(
-  rxjs.switchMap(settings => rxjs.combineLatest([
-    browserTtsEngine.voices$.pipe(
+  rxjs.switchMap(settings => Promise.all([
+    browserTtsEngine.getVoices().then(voices =>
       settings.useSpeechDispatcher
-        ? rxjs.identity
-        : rxjs.map(voices => voices.filter(voice => !isSpeechDispatcher(voice)))
+        ? voices
+        : voices.filter(voice => !isSpeechDispatcher(voice))
     ),
     googleTranslateTtsEngine.getVoices(),
     premiumTtsEngine.getVoices(),
-    settings.awsCreds
-      ? amazonPollyTtsEngine.getVoices()
-      : rxjs.of([]),
+    settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
     settings.gcpCreds
       ? googleWavenetTtsEngine.getVoices()
-      : (!isMobileOS() ? googleWavenetTtsEngine.getFreeVoices() : rxjs.of([])),
-    settings.ibmCreds
-      ? ibmWatsonTtsEngine.getVoices()
-      : rxjs.of([]),
-    !isMobileOS()
-      ? phoneTtsEngine.getVoices()
-      : rxjs.of([]),
-    settings.openaiCreds
-      ? openaiTtsEngine.getVoices()
-      : rxjs.of([]),
-    settings.azureCreds
-      ? azureTtsEngine.getVoices()
-      : rxjs.of([]),
-    rxjs.of(settings.piperVoices || []),
-    rxjs.of(settings.supertonicVoices || []),
+      : (!isMobileOS() ? googleWavenetTtsEngine.getFreeVoices() : []),
+    settings.ibmCreds ? ibmWatsonTtsEngine.getVoices() : [],
+    !isMobileOS() ? phoneTtsEngine.getVoices() : [],
+    settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
+    settings.azureCreds ? azureTtsEngine.getVoices() : [],
+    settings.piperVoices || [],
+    settings.supertonicVoices || [],
   ])),
   rxjs.map(arr => arr.flat()),
   rxjs.shareReplay(1)
