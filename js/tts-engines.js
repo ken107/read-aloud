@@ -91,7 +91,9 @@ function WebSpeechEngine() {
     callback(speechSynthesis.speaking);
   }
   this.getVoices = function() {
-    return promiseTimeout(1500, "Timeout WebSpeech getVoices", new Promise(function(fulfill) {
+    //browser only starts initializing the TTS engine the first time speechSynthesis is used
+    //the voices don't become available until some time after that
+    return promiseTimeout(4000, "Timeout WebSpeech getVoices", new Promise(function(fulfill) {
       var voices = speechSynthesis.getVoices() || [];
       if (voices.length) fulfill(voices);
       else speechSynthesis.onvoiceschanged = function() {
