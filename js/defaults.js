@@ -20,7 +20,7 @@ var config = {
     iw: 'he'
   },
   unsupportedSites: [
-    'https://chrome.google.com/webstore',
+    'https://chromewebstore.google.com',
     'https://addons.mozilla.org',
     'chrome:',
     'about:',
