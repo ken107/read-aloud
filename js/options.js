@@ -78,6 +78,7 @@
           else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
           else if (voiceName == "@piper") bgPageInvoke("managePiperVoices").catch(console.error)
           else if (voiceName == "@supertonic") bgPageInvoke("manageSupertonicVoices").catch(console.error)
+          else if (voiceName == "@nghitts") bgPageInvoke("manageNghiTtsVoices").catch(console.error)
           else updateSettings({voiceName})
         });
       $("#languages-edit-button")
@@ -326,6 +327,7 @@
           || voiceLanguages.map(parseLang).some(({ lang }) => selectedLangs.includes(lang))
           || isPiperVoice(voice)
           || isSupertonicVoice(voice)
+          || isNghiTtsVoice(voice)
           || isOpenai(voice)
       });
 
@@ -337,7 +339,7 @@
         standard: [],
       },
       voices.groupBy(function(voice) {
-        if (isPiperVoice(voice) || isSupertonicVoice(voice)) return "experimental"
+        if (isPiperVoice(voice) || isSupertonicVoice(voice) || isNghiTtsVoice(voice)) return "experimental"
         if (isOfflineVoice(voice)) return "offline"
         if (isPremiumVoice(voice)) return "premium";
         return "standard"
@@ -374,6 +376,12 @@
       .val("@supertonic")
       .text(brapi.i18n.getMessage("options_enable_supertonic_voices"))
       .appendTo(experimental)
+    if (!selectedLangs || selectedLangs.includes('vi')) {
+      $("<option>")
+        .val("@nghitts")
+        .text(brapi.i18n.getMessage("options_enable_nghitts_voices") || "Install NghiTTS voices...")
+        .appendTo(experimental)
+    }
 
     //create the standard optgroup
     $("<optgroup>").appendTo($("#voices"))
