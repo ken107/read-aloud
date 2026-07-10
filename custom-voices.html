@@ -30,6 +30,7 @@
   <script src="js/aws-sdk.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/tts-engines.js"></script>
+  <script src="js/local-tts-presets.js"></script>
   <script src="js/custom-voices.js"></script>
 </head>
 <body>
@@ -154,10 +155,16 @@
           </div>
           <div class="card-body view-new">
             <div class="form-group">
-              <button type="button" class="btn btn-outline-primary btn-add">Add</button>
+              <div class="text-muted small mb-2">Quick setup for a local OpenAI-compatible TTS server (no cloud API key).</div>
+              <button type="button" class="btn btn-outline-success btn-preset-local me-2">Use local server</button>
+              <button type="button" class="btn btn-outline-primary btn-add">Custom endpoint…</button>
             </div>
           </div>
           <div class="card-body view-exist">
+            <div class="form-group">
+              <div class="text-muted">Connection</div>
+              <div class="endpoint-mode"></div>
+            </div>
             <div class="form-group">
               <div class="text-muted">API URL</div>
               <div class="endpoint-url"></div>
@@ -177,6 +184,21 @@
           </div>
           <div class="card-body view-edit">
             <form>
+              <div class="form-group">
+                <label>Connection</label>
+                <select class="form-control sel-endpoint-mode">
+                  <option value="remote">Cloud / remote API</option>
+                  <option value="local">Local server (optimized for on-device TTS)</option>
+                </select>
+                <small class="form-text text-muted">Local mode uses smaller chunks and queued prefetch for slower on-device synthesis.</small>
+              </div>
+              <div class="form-group">
+                <label>Endpoint preset</label>
+                <select class="form-control sel-local-preset">
+                  <option value="">Custom endpoint…</option>
+                </select>
+                <small class="form-text text-muted">Choose a local server preset or enter URL and voices manually below.</small>
+              </div>
               <div class="form-group">
                 <label>API URL</label>
                 <input type="text" class="form-control txt-endpoint-url">

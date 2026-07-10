@@ -6,7 +6,7 @@ var amazonPollyTtsEngine = new AmazonPollyTtsEngine();
 var googleWavenetTtsEngine = new GoogleWavenetTtsEngine();
 var ibmWatsonTtsEngine = new IbmWatsonTtsEngine();
 var phoneTtsEngine = new PhoneTtsEngine();
-var openaiTtsEngine = new OpenaiTtsEngine();
+var openaiTtsEngine
 var azureTtsEngine = new AzureTtsEngine();
 const piperTtsEngine = new PiperTtsEngine()
 const supertonicTtsEngine = new SupertonicTtsEngine()
@@ -15,18 +15,51 @@ const supertonicTtsEngine = new SupertonicTtsEngine()
 //synthesized audio cache
 const cache = {
   entries: new Map(),
+  inflight: new Map(),
   maxEntries: 5,
   async fetchCached(key, fetchFn, destroyFn) {
     const entry = this.entries.get(key)
     if (entry) return entry.value
-    const value = await fetchFn()
-    this.entries.set(key, {value, destroyFn})
-    while (this.entries.size > this.maxEntries) {
-      const [oldestKey, oldest] = this.entries.entries().next().value
-      oldest.destroyFn?.(oldest.value)
-      this.entries.delete(oldestKey)
-    }
-    return value
+
+    const pending = this.inflight.get(key)
+    if (pending) return pending
+
+    const promise = fetchFn()
+      .then(value => {
+        this.inflight.delete(key)
+        this.entries.set(key, {value, destroyFn})
+        while (this.entries.size > this.maxEntries) {
+          const [oldestKey, oldest] = this.entries.entries().next().value
+          oldest.destroyFn?.(oldest.value)
+          this.entries.delete(oldestKey)
+        }
+        return value
+      })
+      .catch(err => {
+        this.inflight.delete(key)
+        throw err
+      })
+
+    this.inflight.set(key, promise)
+    return promise
+  },
+  has(key) {
+    return this.entries.has(key) || this.inflight.has(key)
+  }
+}
+
+const openaiPrefetchQueue = {
+  tail: Promise.resolve(),
+  fetchFn: null,
+  enqueue(text, options) {
+    if (!this.fetchFn) return
+    const voiceId = options.voice.voiceName.slice(7)
+    const key = JSON.stringify([text, voiceId])
+    if (cache.has(key)) return
+    this.tail = this.tail.then(() => this.fetchFn(text, options)).catch(err => console.error(err))
+  },
+  reset() {
+    this.tail = Promise.resolve()
   }
 }
 
@@ -973,13 +1006,18 @@ function OpenaiTtsEngine() {
     {voice: "sage", langs: ["en-US", "zh-CN"], model: "tts-1"},
     {voice: "shimmer", langs: ["en-US", "zh-CN"], model: "tts-1"},
   ]
-  this.test = async function({apiKey, url, voiceList}) {
+  this.test = async function(creds) {
+    const {apiKey, url} = creds
     const res = await fetch(url + "/models", {
-      headers: {"Authorization": "Bearer " + apiKey}
+      headers: apiKey ? {"Authorization": "Bearer " + apiKey} : {}
     })
     if (!res.ok) {
-      const {error} = await res.json()
-      throw error
+      const body = await res.json().catch(() => ({}))
+      if (body.error) throw body.error
+      const hint = isOpenaiLocalEndpoint(creds)
+        ? "Could not connect to the local TTS server at " + url + " (HTTP " + res.status + "). Is it running?"
+        : "Connection test failed (HTTP " + res.status + ")"
+      throw new Error(hint)
     }
   }
   this.speak = function(utterance, options, playbackState$) {
@@ -987,16 +1025,21 @@ function OpenaiTtsEngine() {
     return playAudio(urlPromise, options, playbackState$)
   }
   this.prefetch = function(utterance, options) {
-    getAudioUrl(utterance, options)
-      .catch(console.error)
+    if (isOpenaiLocalVoice(options.voice)) {
+      openaiPrefetchQueue.enqueue(utterance, options)
+    } else {
+      getAudioUrl(utterance, options).catch(console.error)
+    }
   }
   this.getVoices = async function() {
     const openaiCreds = await getSetting("openaiCreds")
     const voiceList = openaiCreds ? (openaiCreds.voiceList || this.defaultVoiceList) : []
+    const openaiLocal = isOpenaiLocalEndpoint(openaiCreds)
     return voiceList.map(({voice, lang, langs}) => ({
       voiceName: "OpenAI " + voice,
       lang,
-      langs
+      langs,
+      openaiLocal,
     }))
   }
   function getAudioUrl(text, {voice}) {
@@ -1032,7 +1075,10 @@ function OpenaiTtsEngine() {
       blobUrl => URL.revokeObjectURL(blobUrl)
     )
   }
+  openaiPrefetchQueue.fetchFn = getAudioUrl
 }
+
+openaiTtsEngine = new OpenaiTtsEngine()
 
 
 function AzureTtsEngine() {

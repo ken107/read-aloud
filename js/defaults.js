@@ -258,6 +258,26 @@ function isOpenai(voice) {
   return /^OpenAI /.test(voice.voiceName);
 }
 
+function isLocalOpenaiUrl(url) {
+  try {
+    const host = new URL(url).hostname
+    return host === "127.0.0.1" || host === "localhost" || host === "[::1]" || host === "::1"
+  } catch (err) {
+    return false
+  }
+}
+
+function isOpenaiLocalEndpoint(creds) {
+  if (!creds) return false
+  if (creds.endpointMode === "local") return true
+  if (creds.endpointMode === "remote") return false
+  return isLocalOpenaiUrl(creds.url)
+}
+
+function isOpenaiLocalVoice(voice) {
+  return isOpenai(voice) && voice.openaiLocal === true
+}
+
 function isAzure(voice) {
   return /^Azure /.test(voice.voiceName);
 }

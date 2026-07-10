@@ -189,6 +189,20 @@ $(function() {
   const editMode$ = new rxjs.BehaviorSubject(false)
   const status$ = new rxjs.BehaviorSubject({type: "IDLE"})
 
+  const $presetSelect = $(".openai .sel-local-preset")
+  LOCAL_TTS_PRESETS.forEach(preset => {
+    $("<option>").val(preset.id).text(preset.label).appendTo($presetSelect)
+  })
+
+  function detectPresetId(creds) {
+    if (!creds) return ""
+    const match = LOCAL_TTS_PRESETS.find(preset =>
+      preset.url === creds.url &&
+      JSON.stringify(preset.voiceList) === JSON.stringify(creds.voiceList || [])
+    )
+    return match ? match.id : ""
+  }
+
   rxjs.combineLatest(creds$, editMode$).subscribe(([creds, editMode]) => {
     $(".openai .view-new").toggle(creds == null && !editMode)
     $(".openai .view-exist").toggle(creds != null && !editMode)
@@ -199,12 +213,16 @@ $(function() {
     const endpointUrl = creds && creds.url || openaiTtsEngine.defaultEndpointUrl
     const apiKey = creds && creds.apiKey || ""
     const voiceList = creds && creds.voiceList || openaiTtsEngine.defaultVoiceList
+    const endpointMode = resolveOpenaiEndpointMode(creds)
     $(".openai .endpoint-url").text(endpointUrl)
+    $(".openai .endpoint-mode").text(endpointMode === "local" ? "Local server" : "Cloud / remote API")
     $(".openai .api-key").text(apiKey && (apiKey.slice(0,13) + "*****" + apiKey.slice(-5)))
     $(".openai .voice-list").text(voiceList.map(x => x.voice).join(", "))
     $(".openai .txt-endpoint-url").val(endpointUrl)
     $(".openai .txt-api-key").val(apiKey)
     $(".openai .txt-voice-list").val(JSON.stringify(voiceList, null, 2))
+    $(".openai .sel-endpoint-mode").val(endpointMode)
+    $presetSelect.val(detectPresetId(creds))
   })
 
   status$.subscribe(status => {
@@ -217,7 +235,27 @@ $(function() {
   //actions
   $(".openai .btn-add").click(() => {
     status$.next({type: "IDLE"})
+    $presetSelect.val("")
+    $(".openai .sel-endpoint-mode").val("remote")
     editMode$.next(true)
+  })
+  $(".openai .btn-preset-local").click(() => {
+    status$.next({type: "IDLE"})
+    applyLocalTtsPreset(LOCAL_TTS_PRESETS[0].id)
+    editMode$.next(true)
+  })
+  $presetSelect.change(function() {
+    const id = $(this).val()
+    if (id) applyLocalTtsPreset(id)
+  })
+  $(".openai .txt-endpoint-url").on("input", function() {
+    $presetSelect.val("")
+    if (isLocalOpenaiUrl($(this).val().trim())) {
+      $(".openai .sel-endpoint-mode").val("local")
+    }
+  })
+  $(".openai .txt-voice-list").on("input", () => {
+    $presetSelect.val("")
   })
   $(".openai .btn-edit").click(() => {
     status$.next({type: "IDLE"})
@@ -230,9 +268,10 @@ $(function() {
   $(".openai .btn-save").click(async () => {
     try {
       const openaiCreds = {
-        url: $(".openai .txt-endpoint-url").val(),
+        url: $(".openai .txt-endpoint-url").val().trim(),
         apiKey: $(".openai .txt-api-key").val(),
-        voiceList: JSON.parse($(".openai .txt-voice-list").val())
+        voiceList: JSON.parse($(".openai .txt-voice-list").val()),
+        endpointMode: $(".openai .sel-endpoint-mode").val(),
       }
       status$.next({type: "PROGRESS"})
       await openaiTtsEngine.test(openaiCreds)

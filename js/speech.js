@@ -54,6 +54,8 @@ function Speech(texts, options) {
     else {
       if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
       else if (isPiperVoice(options.voice) || isSupertonicVoice(options.voice)) return [text];
+      else if (isOpenaiLocalVoice(options.voice)) return new CharBreaker(200, punctuator, 80).breakText(text);
+      else if (isOpenai(options.voice)) return new CharBreaker(750, punctuator, 200).breakText(text);
       else return new CharBreaker(750, punctuator, 200).breakText(text);
     }
   }
@@ -99,6 +101,19 @@ function Speech(texts, options) {
     rxjs.switchAll(),
     rxjs.shareReplay({bufferSize: 1, refCount: false})
   )
+
+  function prefetchAhead(fromIndex, count) {
+    if (!engine.prefetch) return
+    if (!isOpenaiLocalVoice(options.voice)) {
+      const next = texts[fromIndex + 1]
+      if (next) engine.prefetch(next, options)
+      return
+    }
+    for (let i = 1; i <= count; i++) {
+      const t = texts[fromIndex + i]
+      if (t) engine.prefetch(t, options)
+    }
+  }
 
   cmd$.pipe(
     rxjs.startWith({name: "first"}),
@@ -166,8 +181,7 @@ function Speech(texts, options) {
               index: 0
             }
           } else {
-            const nextText = texts[playlist.getIndex() + 1]
-            if (nextText && engine.prefetch != null) engine.prefetch(nextText, options)
+            prefetchAhead(playlist.getIndex(), isOpenaiLocalVoice(options.voice) ? 3 : 1)
           }
           break
         case "sentence":
