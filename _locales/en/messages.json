@@ -41,6 +41,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ Install Supertonic voices..."
   },
+  "options_enable_nghitts_voices": {
+    "message": "⚡ Install NghiTTS voices..."
+  },
   "options_rate_label": {
     "message": "Speed"
   },

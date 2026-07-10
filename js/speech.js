@@ -27,6 +27,7 @@ function Speech(texts, options) {
   function pickEngine() {
     if (isPiperVoice(options.voice)) return piperTtsEngine;
     if (isSupertonicVoice(options.voice)) return supertonicTtsEngine;
+    if (isNghiTtsVoice(options.voice)) return nghiTtsEngine;
     if (isAzure(options.voice)) return azureTtsEngine;
     if (isOpenai(options.voice)) return openaiTtsEngine;
     if (isUseMyPhone(options.voice)) return phoneTtsEngine;
@@ -53,7 +54,7 @@ function Speech(texts, options) {
     }
     else {
       if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
-      else if (isPiperVoice(options.voice) || isSupertonicVoice(options.voice)) return [text];
+      else if (isPiperVoice(options.voice) || isSupertonicVoice(options.voice) || isNghiTtsVoice(options.voice)) return [text];
       else return new CharBreaker(750, punctuator, 200).breakText(text);
     }
   }
@@ -77,6 +78,7 @@ function Speech(texts, options) {
         switch (engine) {
           case piperTtsEngine: return 'Piper'
           case supertonicTtsEngine: return 'Supertonic'
+          case nghiTtsEngine: return 'NghiTTS'
         }
       })
     }

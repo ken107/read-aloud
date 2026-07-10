@@ -160,6 +160,7 @@ const voices$ = rxjs.combineLatest({
   azureCreds: observeSetting("azureCreds"),
   piperVoices: observeSetting("piperVoices"),
   supertonicVoices: observeSetting("supertonicVoices"),
+  nghiTtsVoices: observeSetting("nghiTtsVoices"),
 }).pipe(
   rxjs.exhaustMap(settings => Promise.all([
     browserTtsEngine.getVoices(),
@@ -167,6 +168,7 @@ const voices$ = rxjs.combineLatest({
     phoneTtsEngine.getVoices(),
     settings.supertonicVoices || [],
     settings.piperVoices || [],
+    settings.nghiTtsVoices || [],
     settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
     settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
     settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
@@ -268,6 +270,10 @@ function isPiperVoice(voice) {
 
 function isSupertonicVoice(voice) {
   return /^Supertonic /.test(voice.voiceName)
+}
+
+function isNghiTtsVoice(voice) {
+  return /^NghiTTS /.test(voice.voiceName)
 }
 
 function isRHVoice(voice) {
