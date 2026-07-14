@@ -168,7 +168,13 @@ var readAloudDoc = new function() {
   }
 
   function addMissingPunctuation(text) {
-    return text.replace(/(\w)(\s*?\r?\n)/g, "$1.$2");
+    text = removeReferences(text);
+    return text.replace(/(\w)(\s*?\r?\n)/g, "$1. $2");
+  }
+
+  // drop references[1] such as those.
+  function removeReferences(text){
+    return text.replace(/\[[0-9]+\]/g, '');
   }
 
   function findHeadingsFor(block, prevBlock) {
