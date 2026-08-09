@@ -125,6 +125,13 @@ You can get the latest version of Read Aloud Extension from the [Mozilla Add-ons
 	- To do so, go to [this page](https://github.com/ken107/read-aloud/issues) and click the *New issue* button.
 
 
+## Community Forks
+
+| Fork | Added Features |
+|------|---------------|
+| [praharshbhatt/read-aloud](https://github.com/praharshbhatt/read-aloud) | ElevenLabs voice support |
+
+
 ## Credits
 
 ### Images
