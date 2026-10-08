@@ -172,9 +172,11 @@ function Speech(texts, options) {
               sentenceStartIndicies: event.sentenceStartIndicies,
               index: 0
             }
-          } else {
-            const nextText = texts[playlist.getIndex() + 1]
-            if (nextText && engine.prefetch != null) engine.prefetch(nextText, options)
+          } else if (engine.prefetch != null) {
+            for (let i = 1; i <= 2; i++) {
+              const nextText = texts[playlist.getIndex() + i]
+              if (nextText) engine.prefetch(nextText, options)
+            }
           }
           break
         case "sentence":
