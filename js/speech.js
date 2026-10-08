@@ -359,14 +359,14 @@ function Speech(texts, options) {
     function breakText(text) {
       return merge(punctuator.getParagraphs(text), breakParagraph, paragraphCombineThreshold);
     }
-    function breakParagraph(text) {
-      return merge(punctuator.getSentences(text), breakSentence);
+    function breakParagraph(text, isFirst) {
+      return merge(punctuator.getSentences(text), breakSentence, null, isFirst ? paragraphCombineThreshold : null);
     }
-    function breakSentence(sentence) {
-      return merge(punctuator.getPhrases(sentence), breakPhrase);
+    function breakSentence(sentence, isFirst) {
+      return merge(punctuator.getPhrases(sentence), breakPhrase, null, isFirst ? paragraphCombineThreshold : null);
     }
-    function breakPhrase(phrase) {
-      return merge(punctuator.getWords(phrase), breakWord);
+    function breakPhrase(phrase, isFirst) {
+      return merge(punctuator.getWords(phrase), breakWord, null, isFirst ? paragraphCombineThreshold : null);
     }
     function breakWord(word) {
       var result = [];
@@ -376,7 +376,7 @@ function Speech(texts, options) {
       }
       return result;
     }
-    function merge(parts, breakPart, combineThreshold) {
+    function merge(parts, breakPart, combineThreshold, firstPartLimit) {
       var result = [];
       var group = {parts: [], charCount: 0};
       var flush = function() {
@@ -387,13 +387,14 @@ function Speech(texts, options) {
       };
       parts.forEach(function(part) {
         var charCount = part.length;
-        if (charCount > charLimit) {
+        if (charCount > (result.length == 0 && group.charCount == 0 && (firstPartLimit || combineThreshold) ? (firstPartLimit || combineThreshold) : charLimit)) {
           flush();
-          var subParts = breakPart(part);
+          var subParts = breakPart(part, result.length == 0);
           for (var i=0; i<subParts.length; i++) result.push(subParts[i]);
         }
         else {
-          if (group.charCount + charCount > (combineThreshold || charLimit)) flush();
+          var limit = (result.length == 0 && firstPartLimit) || combineThreshold || charLimit;
+          if (group.charCount + charCount > limit) flush();
           group.parts.push(part);
           group.charCount += charCount;
         }
