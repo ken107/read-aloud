@@ -46,6 +46,8 @@ function Speech(texts, options) {
       premiumTtsEngine.prepare(options)
       return premiumTtsEngine;
     }
+    // Catch silent playback stalls when the word-based duration estimate misses
+    // Chrome's built-in Google TTS extension's 15-second playback limit.
     if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 3*1000, 16*1000);
     return browserTtsEngine;
   }
@@ -54,12 +56,20 @@ function Speech(texts, options) {
     var isEA = /^zh|ko|ja/.test(options.lang);
     var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
     if (isGoogleNative(options.voice)) {
+      // Historically Chrome's built-in Google TTS extension can go silent after ~15 seconds
+      // without an error or event, through either chrome.tts or Web Speech.
+      // These language/rate-adjusted word budgets approximate that duration;
+      // the 16-second engine timeout catches segments that still run too long.
       var wordLimit = (/^(de|ru|es|pt|id)/.test(options.lang) ? 32 : 36) * (isEA ? 2 : 1) * options.rate;
       return new WordBreaker(wordLimit, punctuator).breakText(text);
     }
     else {
+      // Translate's jQ1olc RPC returns no audio above 200 characters in our
+      // ASCII boundary probe (2026-10-10); see docs/tts-limit-verification.md.
       if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
       else if (isPiperVoice(options.voice) || isSupertonicVoice(options.voice) || isNghiTtsVoice(options.voice)) return [text];
+      // Prefer 750-character synthesis chunks; combine small paragraphs up to
+      // 200 characters to reduce request overhead while retaining boundaries.
       else return new CharBreaker(750, punctuator, 200).breakText(text);
     }
   }
@@ -304,163 +314,190 @@ function Speech(texts, options) {
 
 
 
-  //text breakers
+}
 
-  function WordBreaker(wordLimit, punctuator) {
-    this.breakText = breakText;
-    function breakText(text) {
-      return punctuator.getParagraphs(text).flatMap(breakParagraph)
-    }
-    function breakParagraph(text) {
-      return punctuator.getSentences(text).flatMap(breakSentence)
-    }
-    function breakSentence(sentence) {
-      return merge(punctuator.getPhrases(sentence), breakPhrase);
-    }
-    function breakPhrase(phrase) {
-      var words = punctuator.getWords(phrase);
-      var splitPoint = Math.min(Math.ceil(words.length/2), wordLimit);
-      var result = [];
-      while (words.length) {
-        result.push(words.slice(0, splitPoint).join(""));
-        words = words.slice(splitPoint);
+/**
+ * Keep Google native voice segments below the historically reported ~15-second
+ * cutoff by using a caller-supplied word budget as a duration estimate.
+ *
+ * Split at sentence boundaries, then pack phrases up to wordLimit.
+ * Paragraphs and sentences are never combined. Oversized phrases are emitted
+ * separately in balanced word groups; their leftovers are not packed with the
+ * next phrase. Word tokens retain the separators supplied by the punctuator.
+ */
+function WordBreaker(wordLimit, punctuator) {
+  this.breakText = function(text) {
+    const chunks = createChunkCollector();
+    for (const paragraph of punctuator.getParagraphs(text)) {
+      for (const sentence of punctuator.getSentences(paragraph)) {
+        for (const phrase of punctuator.getPhrases(sentence)) {
+          let words = punctuator.getWords(phrase);
+          if (words.length <= wordLimit) {
+            chunks.append(phrase, words.length, wordLimit);
+            continue;
+          }
+
+          chunks.flush();
+          // Prefer halves over a nearly full chunk followed by a tiny tail.
+          // E.g. 40 words with a limit of 36 become 20 + 20, not 36 + 4.
+          const wordsPerChunk = Math.min(Math.ceil(words.length / 2), wordLimit);
+          while (words.length) {
+            chunks.emit(words.slice(0, wordsPerChunk).join(""));
+            words = words.slice(wordsPerChunk);
+          }
+        }
+        chunks.flush();
       }
-      return result;
     }
-    function merge(parts, breakPart) {
-      var result = [];
-      var group = {parts: [], wordCount: 0};
-      var flush = function() {
-        if (group.parts.length) {
-          result.push(group.parts.join(""));
-          group = {parts: [], wordCount: 0};
+    return chunks.result;
+  };
+}
+
+/**
+ * Create general synthesis chunks, balancing natural boundaries with request
+ * size and network efficiency. The caller selects a preferred or server limit.
+ *
+ * Pack text at the coarsest boundary that fits: paragraphs, sentences, phrases,
+ * then words. Only an oversized word is sliced directly.
+ *
+ * charLimit is measured in JavaScript UTF-16 code units (String.length), not
+ * Unicode code points. paragraphCombineThreshold controls only whether adjacent
+ * paragraphs are combined; a single paragraph may exceed it up to charLimit.
+ * A missing or zero threshold uses charLimit, preserving the existing policy.
+ *
+ * Before splitting an oversized part, flush its preceding neighbors. Flush again
+ * after its children so the final child never combines with the next neighbor.
+ * Limits must be positive; word slicing requires charLimit >= 1.
+ */
+function CharBreaker(charLimit, punctuator, paragraphCombineThreshold) {
+  this.breakText = function(text) {
+    const chunks = createChunkCollector();
+    const paragraphPackingLimit = paragraphCombineThreshold || charLimit;
+    for (const paragraph of punctuator.getParagraphs(text)) {
+      if (paragraph.length <= charLimit) {
+        chunks.append(paragraph, paragraph.length, paragraphPackingLimit);
+        continue;
+      }
+
+      chunks.flush();
+      for (const sentence of punctuator.getSentences(paragraph)) {
+        if (sentence.length <= charLimit) {
+          chunks.append(sentence, sentence.length, charLimit);
+          continue;
         }
-      };
-      parts.forEach(function(part) {
-        var wordCount = punctuator.getWords(part).length;
-        if (wordCount > wordLimit) {
-          flush();
-          var subParts = breakPart(part);
-          for (var i=0; i<subParts.length; i++) result.push(subParts[i]);
+
+        chunks.flush();
+        for (const phrase of punctuator.getPhrases(sentence)) {
+          if (phrase.length <= charLimit) {
+            chunks.append(phrase, phrase.length, charLimit);
+            continue;
+          }
+
+          chunks.flush();
+          for (let word of punctuator.getWords(phrase)) {
+            if (word.length <= charLimit) {
+              chunks.append(word, word.length, charLimit);
+              continue;
+            }
+
+            chunks.flush();
+            while (word) {
+              chunks.emit(word.slice(0, charLimit));
+              word = word.slice(charLimit);
+            }
+          }
+          chunks.flush();
         }
-        else {
-          if (group.wordCount + wordCount > wordLimit) flush();
-          group.parts.push(part);
-          group.wordCount += wordCount;
-        }
-      });
-      flush();
-      return result;
+        chunks.flush();
+      }
+      chunks.flush();
+    }
+    chunks.flush();
+    return chunks.result;
+  };
+}
+
+/** Collect adjacent pieces without deciding how or when to split text. */
+function createChunkCollector() {
+  const result = [];
+  let pendingParts = [];
+  let pendingSize = 0;
+  function flush() {
+    if (pendingParts.length) {
+      result.push(pendingParts.join(""));
+      pendingParts = [];
+      pendingSize = 0;
     }
   }
+  return {
+    result,
+    flush,
+    // Emit an already split chunk without packing it with neighboring pieces.
+    emit(text) { result.push(text); },
+    append(text, size, packingLimit) {
+      if (pendingSize + size > packingLimit) flush();
+      pendingParts.push(text);
+      pendingSize += size;
+    }
+  };
+}
 
-  function CharBreaker(charLimit, punctuator, paragraphCombineThreshold) {
-    this.breakText = breakText;
-    function breakText(text) {
-      return merge(punctuator.getParagraphs(text), breakParagraph, paragraphCombineThreshold);
-    }
-    function breakParagraph(text, isFirst) {
-      return merge(punctuator.getSentences(text), breakSentence, null, isFirst ? paragraphCombineThreshold : null);
-    }
-    function breakSentence(sentence, isFirst) {
-      return merge(punctuator.getPhrases(sentence), breakPhrase, null, isFirst ? paragraphCombineThreshold : null);
-    }
-    function breakPhrase(phrase, isFirst) {
-      return merge(punctuator.getWords(phrase), breakWord, null, isFirst ? paragraphCombineThreshold : null);
-    }
-    function breakWord(word) {
-      var result = [];
-      while (word) {
-        result.push(word.slice(0, charLimit));
-        word = word.slice(charLimit);
-      }
-      return result;
-    }
-    function merge(parts, breakPart, combineThreshold, firstPartLimit) {
-      var result = [];
-      var group = {parts: [], charCount: 0};
-      var flush = function() {
-        if (group.parts.length) {
-          result.push(group.parts.join(""));
-          group = {parts: [], charCount: 0};
-        }
-      };
-      parts.forEach(function(part) {
-        var charCount = part.length;
-        if (charCount > (result.length == 0 && group.charCount == 0 && (firstPartLimit || combineThreshold) ? (firstPartLimit || combineThreshold) : charLimit)) {
-          flush();
-          var subParts = breakPart(part, result.length == 0);
-          for (var i=0; i<subParts.length; i++) result.push(subParts[i]);
-        }
-        else {
-          var limit = (result.length == 0 && firstPartLimit) || combineThreshold || charLimit;
-          if (group.charCount + charCount > limit) flush();
-          group.parts.push(part);
-          group.charCount += charCount;
-        }
-      });
-      flush();
-      return result;
-    }
+function LatinPunctuator() {
+  var nonSentenceEndingAbbrev = /\b(?:[A-Za-z]|Adm|Assn|Ave|Blvd|Bldg|Brig|Capt|Cmdr|Col|Comdr|Corp|Cpl|Ct|Dept|Dr|Drs|Fig|Figs|Fr|Ft|Gen|Gov|Hon|Inc|Jr|Lieut|Ln|Lt|Ltd|Maj|Messrs|Mmes|Mr|Mrs|Ms|Mt|Mx|No|Nos|Pl|Pres|Prof|Rd|Rep|Reps|Rev|Sen|Sens|Sgt|Sr|St|Ste|Univ|Jan|Feb|Mar|Apr|Aug|Sep|Sept|Oct|Nov|Dec|dept|ed|eds|est|fig|figs|misc|pp|ref|refs|vol|vols|vs)\.\s+$/;
+  this.getParagraphs = function(text) {
+    return recombine(text.split(/((?:\r?\n\s*){2,})/));
   }
-
-  function LatinPunctuator() {
-    var nonSentenceEndingAbbrev = /\b(?:[A-Za-z]|Adm|Assn|Ave|Blvd|Bldg|Brig|Capt|Cmdr|Col|Comdr|Corp|Cpl|Ct|Dept|Dr|Drs|Fig|Figs|Fr|Ft|Gen|Gov|Hon|Inc|Jr|Lieut|Ln|Lt|Ltd|Maj|Messrs|Mmes|Mr|Mrs|Ms|Mt|Mx|No|Nos|Pl|Pres|Prof|Rd|Rep|Reps|Rev|Sen|Sens|Sgt|Sr|St|Ste|Univ|Jan|Feb|Mar|Apr|Aug|Sep|Sept|Oct|Nov|Dec|dept|ed|eds|est|fig|figs|misc|pp|ref|refs|vol|vols|vs)\.\s+$/;
-    this.getParagraphs = function(text) {
-      return recombine(text.split(/((?:\r?\n\s*){2,})/));
-    }
-    this.getSentences = function(text) {
-      return recombine(text.split(/([.!?]+[\s\u200b]+)/), nonSentenceEndingAbbrev);
-    }
-    this.getPhrases = function(sentence) {
-      return recombine(sentence.split(/([,;:]\s+|\s-+\s+|—\s*)/));
-    }
-    this.getWords = function(sentence) {
-      var tokens = sentence.split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
-      var result = [];
-      for (var i=0; i<tokens.length; i+=2) {
-        if (tokens[i]) result.push(tokens[i]);
-        if (i+1 < tokens.length) {
-          if (/^[~@#%^*_+=<>]$/.test(tokens[i+1])) result.push(tokens[i+1]);
-          else if (result.length) result[result.length-1] += tokens[i+1];
-        }
-      }
-      return result;
-    }
-    function recombine(tokens, nonPunc) {
-      var result = [];
-      for (var i=0; i<tokens.length; i+=2) {
-        var part = (i+1 < tokens.length) ? (tokens[i] + tokens[i+1]) : tokens[i];
-        if (part) {
-          if (nonPunc && result.length && nonPunc.test(result[result.length-1])) result[result.length-1] += part;
-          else result.push(part);
-        }
-      }
-      return result;
-    }
+  this.getSentences = function(text) {
+    return recombine(text.split(/([.!?]+[\s\u200b]+)/), nonSentenceEndingAbbrev);
   }
-
-  function EastAsianPunctuator() {
-    this.getParagraphs = function(text) {
-      return recombine(text.split(/((?:\r?\n\s*){2,})/));
-    }
-    this.getSentences = function(text) {
-      return recombine(text.split(/([.!?]+[\s\u200b]+|[\u3002\uff01]+)/));
-    }
-    this.getPhrases = function(sentence) {
-      return recombine(sentence.split(/([,;:]\s+|[\u2025\u2026\u3000\u3001\uff0c\uff1b]+)/));
-    }
-    this.getWords = function(sentence) {
-      return sentence.replace(/\s+/g, "").split("");
-    }
-    function recombine(tokens) {
-      var result = [];
-      for (var i=0; i<tokens.length; i+=2) {
-        if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
-        else if (tokens[i]) result.push(tokens[i]);
+  this.getPhrases = function(sentence) {
+    return recombine(sentence.split(/([,;:]\s+|\s-+\s+|—\s*)/));
+  }
+  this.getWords = function(sentence) {
+    var tokens = sentence.split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
+    var result = [];
+    for (var i=0; i<tokens.length; i+=2) {
+      if (tokens[i]) result.push(tokens[i]);
+      if (i+1 < tokens.length) {
+        if (/^[~@#%^*_+=<>]$/.test(tokens[i+1])) result.push(tokens[i+1]);
+        else if (result.length) result[result.length-1] += tokens[i+1];
       }
-      return result;
     }
+    return result;
+  }
+  function recombine(tokens, nonPunc) {
+    var result = [];
+    for (var i=0; i<tokens.length; i+=2) {
+      var part = (i+1 < tokens.length) ? (tokens[i] + tokens[i+1]) : tokens[i];
+      if (part) {
+        if (nonPunc && result.length && nonPunc.test(result[result.length-1])) result[result.length-1] += part;
+        else result.push(part);
+      }
+    }
+    return result;
+  }
+}
+
+function EastAsianPunctuator() {
+  this.getParagraphs = function(text) {
+    return recombine(text.split(/((?:\r?\n\s*){2,})/));
+  }
+  this.getSentences = function(text) {
+    return recombine(text.split(/([.!?]+[\s\u200b]+|[\u3002\uff01]+)/));
+  }
+  this.getPhrases = function(sentence) {
+    return recombine(sentence.split(/([,;:]\s+|[\u2025\u2026\u3000\u3001\uff0c\uff1b]+)/));
+  }
+  this.getWords = function(sentence) {
+    return sentence.replace(/\s+/g, "").split("");
+  }
+  function recombine(tokens) {
+    var result = [];
+    for (var i=0; i<tokens.length; i+=2) {
+      if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
+      else if (tokens[i]) result.push(tokens[i]);
+    }
+    return result;
   }
 }
 

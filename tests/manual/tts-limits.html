@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Native TTS limit probe</title>
+<style>body{font:16px system-ui;max-width:950px;margin:32px auto;padding:0 20px}button,select{font:inherit;margin:6px;padding:8px}pre{white-space:pre-wrap;background:#eee;padding:16px}</style>
+<h1>Native TTS limit probe</h1>
+<p>Tests raw Web Speech utterances without Read Aloud's chunking or timeout. Long playback is cancelled after 35 seconds. Event timestamps alone cannot prove the moment audio becomes silent.</p>
+<label>Voice <select id="voices"></select></label>
+<button id="short">Speak short control</button><button id="long">Speak long test</button><button id="stop">Stop</button>
+<pre id="environment"></pre><pre id="output">Ready</pre>
+<script>
+const voiceSelect = document.querySelector('#voices');
+const output = document.querySelector('#output');
+let voices = [], active, timer, started;
+function populate(){
+ voices = speechSynthesis.getVoices();
+ voiceSelect.replaceChildren(...voices.map((v,i)=>new Option(`${v.name} (${v.lang}, local=${v.localService})`,i)));
+ const index = voices.findIndex(v=>v.name==='Google US English');
+ if(index>=0) voiceSelect.value=index;
+ document.querySelector('#environment').textContent = `${navigator.userAgent}\n${voices.length} voices available`;
+}
+speechSynthesis.addEventListener('voiceschanged',populate); populate();
+function log(message){output.textContent += `\n${((performance.now()-started)/1000).toFixed(3)}s ${message}`;}
+function stop(){clearTimeout(timer); speechSynthesis.cancel();}
+function run(long){
+ stop(); started=performance.now();
+ const sentence = 'The small garden beside the river is quiet this morning. A visitor walks along the path and watches the birds resting in the trees. ';
+ active = new SpeechSynthesisUtterance(long ? sentence.repeat(12) : 'This is a short speech test.');
+ active.voice=voices[Number(voiceSelect.value)];
+ if(!active.voice){output.textContent='No voice is available yet. Wait for the voice list to load.';return;}
+ active.lang=active.voice.lang; active.rate=1;
+ output.textContent = `${long?'LONG':'SHORT'} voice=${active.voice.name}, local=${active.voice.localService}, rate=1, chars=${active.text.length}`;
+ for(const type of ['start','end','error','pause','resume','boundary']) active.addEventListener(type,e=>log(`${type} charIndex=${e.charIndex} elapsedTime=${e.elapsedTime}${e.error?' error='+e.error:''}`));
+ speechSynthesis.speak(active);
+ timer=setTimeout(()=>{log(`35s observation deadline: speaking=${speechSynthesis.speaking}, pending=${speechSynthesis.pending}, paused=${speechSynthesis.paused}; cancelling`); speechSynthesis.cancel();},35000);
+}
+document.querySelector('#short').onclick=()=>run(false);
+document.querySelector('#long').onclick=()=>run(true);
+document.querySelector('#stop').onclick=()=>{log('Manual cancellation');stop();};
+</script>
