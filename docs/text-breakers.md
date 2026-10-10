@@ -62,11 +62,14 @@ larger than the character limit; a larger value retains the legacy behavior of
 allowing combined paragraphs beyond that limit.
 
 Character sizes use UTF-16 code units (`String.length`), including separators.
-Direct slicing backs up to a Unicode code point boundary rather than splitting
-a surrogate pair. A limit of 1 cannot fit a supplementary character and raises
-a RangeError. Production limits (200 and 750) can fit any code point. Combining
-marks and multi-code-point emoji may still span chunks; these are code point,
-not grapheme, boundaries.
+Oversized words are split at grapheme boundaries using `Intl.Segmenter`, keeping
+vowel marks and multi-code-point emoji together where possible. A grapheme larger
+than the entire request limit falls back to code points to honor the hard cap.
+Browsers without `Intl.Segmenter` also fall back to code points. A limit of 1
+cannot fit a supplementary character and raises a RangeError; production limits
+(200 and 750) can fit every individual code point. East Asian word tokenization
+still uses code points for the existing Google-native duration estimate, so it
+does not guarantee grapheme-safe boundaries.
 Use positive limits (at least 1 for direct slicing); invalid limits are not
 validated by these internal helpers.
 
@@ -75,12 +78,42 @@ validated by these internal helpers.
 `createChunkCollector` only appends, flushes, or directly emits chunks. It has no
 knowledge of punctuation or splitting. Each `breakText` call gets a fresh
 collector. Keeping separators on punctuator tokens lets chunks join without
-inserting spaces. Both punctuators preserve the original text at every level, including leading
+inserting spaces. All punctuators preserve the original text at every level, including leading
 separators and whitespace. East Asian word tokens count Unicode code points,
-with whitespace attached to neighboring tokens; Latin word tokens retain
+with whitespace attached to neighboring tokens; space-delimited word tokens retain
 leading separators. Sentence endings include closing quotes and brackets, and
 East Asian endings include the fullwidth question mark. Latin abbreviation
 matching also accepts a zero-width space after the period.
+
+## Language-specific boundaries
+
+`createPunctuator(language)` selects the strategy using the base language tag:
+
+| Strategy | Languages | Behavior |
+| --- | --- | --- |
+| `SpaceDelimitedPunctuator` (formerly `LatinPunctuator`) | Default, including Arabic, Hebrew, Persian, Urdu, Indic languages, and European languages | Keeps space-separated word tokens and recognizes additional script punctuation. |
+| `EastAsianPunctuator` | Chinese, Japanese, Korean | Retains character-based tokens and existing Google-native word budgets. |
+| `DictionaryPunctuator` | Thai, Lao, Khmer, Myanmar | Uses locale-aware `Intl.Segmenter` word boundaries and retains intervening spaces and punctuation. |
+
+Shared sentence rules recognize Arabic `؟`, Urdu `۔`, Hebrew sof pasuq `׃`,
+Indic danda `।` / `॥`, Myanmar `။`, and Khmer `។` / `៕`. Shared phrase rules
+include Arabic/Persian `،` and `؛`, and Myanmar `၊`. Hebrew geresh, gershayim,
+and maqaf remain inside word tokens rather than becoming sentence boundaries.
+These additions are boundary heuristics, not a full linguistic parser; the
+existing abbreviation list is still English-oriented.
+
+Dictionary segmentation depends on the browser's locale data, so exact word
+boundaries can vary between browser versions. If `Intl.Segmenter` is unavailable,
+these languages fall back to space-delimited tokens and code-point-safe slicing.
+Text and the request size cap remain preserved, but word/combining-mark boundaries
+are less precise in that fallback.
+
+This support primarily improves `CharBreaker` cloud synthesis. `WordBreaker`
+remains exclusive to Google native voices. Its existing space-word and East
+Asian character-count strategies and 32/36 budgets have not been recalibrated.
+
+References: [Unicode segmentation guidance](https://unicode.org/reports/tr29/)
+and [Intl.Segmenter documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter).
 
 ## Tests
 

@@ -6,8 +6,8 @@ const vm = require('node:vm');
 // Load the extension's browser script without invoking Speech or its engines.
 const context = vm.createContext({});
 vm.runInContext(readFileSync(require.resolve('../js/speech.js'), 'utf8'), context);
-const {WordBreaker, CharBreaker, LatinPunctuator, EastAsianPunctuator} = context;
-const latin = new LatinPunctuator();
+const {WordBreaker, CharBreaker, SpaceDelimitedPunctuator, EastAsianPunctuator} = context;
+const latin = new SpaceDelimitedPunctuator();
 const eastAsian = new EastAsianPunctuator();
 const breakText = (breaker, text) => Array.from(breaker.breakText(text));
 
@@ -106,4 +106,75 @@ test('both breakers preserve text and Unicode across splitting boundaries', () =
 
 test('an impossible one-unit limit rejects a supplementary character', () => {
   assert.throws(() => new CharBreaker(1, latin).breakText('😀'), {name: 'RangeError'});
+});
+
+for (const [name, language, method, text, expected] of [
+  ['Arabic question mark', 'ar', 'getSentences', 'كيف حالك؟ أنا بخير.', ['كيف حالك؟ ', 'أنا بخير.']],
+  ['Arabic phrase punctuation', 'ar', 'getPhrases', 'أولاً،ثانياً؛ أخيراً', ['أولاً،', 'ثانياً؛ ', 'أخيراً']],
+  ['Urdu full stop', 'ur', 'getSentences', 'یہ ٹھیک ہے۔ اگلا جملہ۔', ['یہ ٹھیک ہے۔ ', 'اگلا جملہ۔']],
+  ['Hebrew sof pasuq', 'he', 'getSentences', 'סוף׃ הבא.', ['סוף׃ ', 'הבא.']],
+  ['Hebrew abbreviations and maqaf', 'he', 'getWords', 'ד״ר ג׳ון בית־ספר', ['ד״ר ', 'ג׳ון ', 'בית־ספר']],
+  ['Devanagari danda', 'hi', 'getSentences', 'नमस्ते। फिर मिलेंगे॥', ['नमस्ते। ', 'फिर मिलेंगे॥']],
+  ['Bengali danda', 'bn', 'getSentences', 'প্রথম। দ্বিতীয়।', ['প্রথম। ', 'দ্বিতীয়।']],
+  ['Myanmar sentence marks', 'my', 'getSentences', 'မင်္ဂလာပါ။ နေကောင်းလား။', ['မင်္ဂလာပါ။ ', 'နေကောင်းလား။']],
+  ['Khmer sentence marks', 'km', 'getSentences', 'សួស្តី។ អរគុណ៕', ['សួស្តី។ ', 'អរគុណ៕']],
+]) {
+  test(name, () => assert.deepEqual(Array.from(context.createPunctuator(language)[method](text)), expected));
+}
+
+test('language routing handles region tags and keeps native voice counting strategies', () => {
+  for (const lang of ['ar-SA', 'he-IL', 'fa', 'ur', 'hi', 'ru', 'en', undefined]) {
+    assert.ok(context.createPunctuator(lang) instanceof SpaceDelimitedPunctuator);
+  }
+  for (const lang of ['zh-CN', 'JA', 'ko-KR']) assert.ok(context.createPunctuator(lang) instanceof EastAsianPunctuator);
+  for (const lang of ['th-TH', 'lo', 'km-KH', 'my']) assert.ok(context.createPunctuator(lang) instanceof context.DictionaryPunctuator);
+});
+
+for (const [lang, input] of [
+  ['th', 'ภาษาไทยเป็นภาษาที่สวยงาม'],
+  ['lo', 'ພາສາລາວແມ່ນພາສາທີ່ສວຍງາມ'],
+  ['km', 'ភាសាខ្មែរជាភាសាដ៏ស្រស់ស្អាត'],
+  ['my', 'မြန်မာဘာသာစကားသည်လှပသည်'],
+]) {
+  test(`${lang} dictionary boundaries preserve text without requiring spaces`, () => {
+    const punctuator = context.createPunctuator(lang);
+    const words = Array.from(punctuator.getWords('  ' + input + '! '));
+    assert.ok(words.length > 1);
+    assert.equal(words.join(''), '  ' + input + '! ');
+    const chunks = breakText(new CharBreaker(12, punctuator), input.repeat(4));
+    assert.equal(chunks.join(''), input.repeat(4));
+    assert.ok(chunks.every(chunk => chunk.length <= 12));
+  });
+}
+
+test('oversized Arabic and Hebrew words retain vowel marks at chunk boundaries', () => {
+  for (const input of ['سَ'.repeat(10), 'שָׁ'.repeat(10), 'क्‍ष'.repeat(10), '👩‍💻'.repeat(10)]) {
+    const chunks = breakText(new CharBreaker(7, context.createPunctuator('ar')), input);
+    const ends = new Set(Array.from(new Intl.Segmenter(undefined, {granularity: 'grapheme'}).segment(input), part => part.index + part.segment.length));
+    let offset = 0;
+    for (const chunk of chunks) {
+      offset += chunk.length;
+      assert.ok(ends.has(offset));
+      assert.ok(chunk.length <= 7);
+    }
+    assert.equal(chunks.join(''), input);
+  }
+});
+
+test('graphemes larger than the request limit fall back without losing text', () => {
+  const input = 'a' + '\u0301'.repeat(20);
+  const chunks = breakText(new CharBreaker(4, latin), input);
+  assert.equal(chunks.join(''), input);
+  assert.ok(chunks.every(chunk => chunk.length <= 4));
+});
+
+test('older browsers without Intl.Segmenter retain a safe fallback', () => {
+  const fallback = vm.createContext({Intl: {}});
+  vm.runInContext(readFileSync(require.resolve('../js/speech.js'), 'utf8'), fallback);
+  const punctuator = fallback.createPunctuator('th');
+  const input = 'ภาษาไทย😀'.repeat(4);
+  const chunks = Array.from(new fallback.CharBreaker(5, punctuator).breakText(input));
+  assert.equal(chunks.join(''), input);
+  assert.ok(chunks.every(chunk => chunk.length <= 5));
+  for (const chunk of chunks) assert.doesNotMatch(chunk, /[\uD800-\uDFFF]/u);
 });

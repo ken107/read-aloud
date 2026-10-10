@@ -53,8 +53,8 @@ function Speech(texts, options) {
   }
 
   function getChunks(text) {
-    var isEA = /^zh|ko|ja/.test(options.lang);
-    var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
+    var isEA = /^(zh|ko|ja)(?:-|$)/i.test(options.lang);
+    var punctuator = createPunctuator(options.lang);
     if (isGoogleNative(options.voice)) {
       // Historically Chrome's built-in Google TTS extension can go silent after ~15 seconds
       // without an error or event, through either chrome.tts or Web Speech.
@@ -401,21 +401,14 @@ function CharBreaker(charLimit, punctuator, paragraphCombineThreshold) {
           }
 
           chunks.flush();
-          for (let word of punctuator.getWords(phrase)) {
+          for (const word of punctuator.getWords(phrase)) {
             if (word.length <= charLimit) {
               chunks.append(word, word.length, charLimit);
               continue;
             }
 
             chunks.flush();
-            while (word) {
-              let end = Math.min(Math.floor(charLimit), word.length);
-              // Back up if the UTF-16 limit falls inside a surrogate pair.
-              if (end < word.length && /[\uD800-\uDBFF]/.test(word[end - 1]) && /[\uDC00-\uDFFF]/.test(word[end])) end--;
-              if (end < 1) throw new RangeError("Character limit cannot fit a Unicode code point");
-              chunks.emit(word.slice(0, end));
-              word = word.slice(end);
-            }
+            for (const part of splitOversizedWord(word, charLimit)) chunks.emit(part);
           }
           chunks.flush();
         }
@@ -453,16 +446,51 @@ function createChunkCollector() {
   };
 }
 
-function LatinPunctuator() {
+/** Choose boundary rules independently of engine-specific duration budgets. */
+function createPunctuator(lang) {
+  const language = (lang || "").toLowerCase().split("-")[0];
+  if (["zh", "ja", "ko"].includes(language)) return new EastAsianPunctuator();
+  if (["th", "lo", "km", "my"].includes(language)) return new DictionaryPunctuator(language);
+  return new SpaceDelimitedPunctuator();
+}
+
+/**
+ * Prefer whole graphemes when slicing an oversized word. The request limit is
+ * still UTF-16 units. A pathological grapheme larger than the limit must fall
+ * back to code points; an individual code point must fit or the limit is invalid.
+ */
+function* splitOversizedWord(word, limit) {
+  const segments = typeof Intl.Segmenter === "function"
+    ? new Intl.Segmenter(undefined, {granularity: "grapheme"}).segment(word)
+    : Array.from(word, segment => ({segment}));
+  let pending = "";
+  for (const {segment} of segments) {
+    const pieces = segment.length > limit ? Array.from(segment) : [segment];
+    for (const piece of pieces) {
+      if (piece.length > limit) throw new RangeError("Character limit cannot fit a Unicode code point");
+      if (pending.length + piece.length > limit) {
+        yield pending;
+        pending = "";
+      }
+      pending += piece;
+    }
+  }
+  if (pending) yield pending;
+}
+
+/** Space-separated text across scripts; punctuation stays with preceding text. */
+function SpaceDelimitedPunctuator() {
   var nonSentenceEndingAbbrev = /\b(?:[A-Za-z]|Adm|Assn|Ave|Blvd|Bldg|Brig|Capt|Cmdr|Col|Comdr|Corp|Cpl|Ct|Dept|Dr|Drs|Fig|Figs|Fr|Ft|Gen|Gov|Hon|Inc|Jr|Lieut|Ln|Lt|Ltd|Maj|Messrs|Mmes|Mr|Mrs|Ms|Mt|Mx|No|Nos|Pl|Pres|Prof|Rd|Rep|Reps|Rev|Sen|Sens|Sgt|Sr|St|Ste|Univ|Jan|Feb|Mar|Apr|Aug|Sep|Sept|Oct|Nov|Dec|dept|ed|eds|est|fig|figs|misc|pp|ref|refs|vol|vols|vs)\.[\s\u200b]+$/;
   this.getParagraphs = function(text) {
     return recombine(text.split(/((?:\r?\n\s*){2,})/));
   }
   this.getSentences = function(text) {
-    return recombine(text.split(/([.!?]+["'”’»）)\]}」』】]*[\s\u200b]+)/), nonSentenceEndingAbbrev);
+    // Also Arabic/Urdu endings, Hebrew sof pasuq, Indic danda, Myanmar and Khmer.
+    // Those marks do not require a following space to establish a boundary.
+    return recombine(text.split(/([.!?]+["'”’»）)\]}」』】]*[\s\u200b]+|[؟۔׃।॥။៕។]+["'”’»）)\]}」』】]*[\s\u200b]*)/), nonSentenceEndingAbbrev);
   }
   this.getPhrases = function(sentence) {
-    return recombine(sentence.split(/([,;:]\s+|\s-+\s+|—\s*)/));
+    return recombine(sentence.split(/([,;:]\s+|[،؛၊]\s*|\s-+\s+|—\s*)/));
   }
   this.getWords = function(sentence) {
     var tokens = sentence.split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
@@ -496,6 +524,27 @@ function LatinPunctuator() {
     }
     return result;
   }
+}
+
+/** Dictionary-backed boundaries for languages that do not separate words by spaces. */
+function DictionaryPunctuator(language) {
+  SpaceDelimitedPunctuator.call(this);
+  // Older engines retain space-based splitting plus safe oversized-word slicing.
+  if (typeof Intl.Segmenter !== "function") return;
+  const segmenter = new Intl.Segmenter(language, {granularity: "word"});
+  this.getWords = function(text) {
+    const result = [];
+    let leading = "";
+    for (const {segment, isWordLike} of segmenter.segment(text)) {
+      if (isWordLike) {
+        result.push(leading + segment);
+        leading = "";
+      } else if (result.length) result[result.length - 1] += segment;
+      else leading += segment;
+    }
+    if (leading) result.push(leading);
+    return result;
+  };
 }
 
 function EastAsianPunctuator() {
