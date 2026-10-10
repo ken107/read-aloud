@@ -62,7 +62,11 @@ larger than the character limit; a larger value retains the legacy behavior of
 allowing combined paragraphs beyond that limit.
 
 Character sizes use UTF-16 code units (`String.length`), including separators.
-Direct slicing can split a surrogate pair. This preserves existing behavior.
+Direct slicing backs up to a Unicode code point boundary rather than splitting
+a surrogate pair. A limit of 1 cannot fit a supplementary character and raises
+a RangeError. Production limits (200 and 750) can fit any code point. Combining
+marks and multi-code-point emoji may still span chunks; these are code point,
+not grapheme, boundaries.
 Use positive limits (at least 1 for direct slicing); invalid limits are not
 validated by these internal helpers.
 
@@ -71,8 +75,12 @@ validated by these internal helpers.
 `createChunkCollector` only appends, flushes, or directly emits chunks. It has no
 knowledge of punctuation or splitting. Each `breakText` call gets a fresh
 collector. Keeping separators on punctuator tokens lets chunks join without
-inserting spaces. The existing East Asian word tokenizer removes whitespace when
-splitting reaches word level; the breakers preserve that policy as well.
+inserting spaces. Both punctuators preserve the original text at every level, including leading
+separators and whitespace. East Asian word tokens count Unicode code points,
+with whitespace attached to neighboring tokens; Latin word tokens retain
+leading separators. Sentence endings include closing quotes and brackets, and
+East Asian endings include the fullwidth question mark. Latin abbreviation
+matching also accepts a zero-width space after the period.
 
 ## Tests
 

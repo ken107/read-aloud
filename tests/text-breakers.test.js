@@ -58,3 +58,52 @@ test('Latin chunks preserve text and satisfy limits across many boundaries', () 
     assert.ok(words.every(chunk => latin.getWords(chunk).length <= limit));
   }
 });
+
+for (const [name, punctuator, method, input, expected] of [
+  ['Latin leading separators', latin, 'getWords', '/usr/local/bin', ['/usr/', 'local/', 'bin']],
+  ['Latin leading whitespace and symbols', latin, 'getWords', '  #tag', ['  #', 'tag']],
+  ['Korean whitespace', eastAsian, 'getWords', ' 저는 학교에 갑니다 ', [' 저', '는 ', '학', '교', '에 ', '갑', '니', '다 ']],
+  ['East Asian supplementary characters', eastAsian, 'getWords', '甲😀𠀀乙', ['甲', '😀', '𠀀', '乙']],
+  ['Latin closing quotes', latin, 'getSentences', 'He said "Hello." Then left.', ['He said "Hello." ', 'Then left.']],
+  ['Latin nested closing punctuation', latin, 'getSentences', '(She said “Go!”) Next.', ['(She said “Go!”) ', 'Next.']],
+  ['East Asian closing quotes', eastAsian, 'getSentences', '「你好。」然后走了。', ['「你好。」', '然后走了。']],
+  ['East Asian fullwidth questions', eastAsian, 'getSentences', '你好吗？我很好。', ['你好吗？', '我很好。']],
+  ['East Asian mixed sentence endings', eastAsian, 'getSentences', '「本当！？」 次。', ['「本当！？」 ', '次。']],
+  ['zero-width abbreviation separator', latin, 'getSentences', 'Dr.\u200bSmith arrived. Next.', ['Dr.\u200bSmith arrived. ', 'Next.']],
+]) {
+  test(name, () => assert.deepEqual(Array.from(punctuator[method](input)), expected));
+}
+
+test('all punctuator stages preserve text exactly', () => {
+  for (const punctuator of [latin, eastAsian]) {
+    for (const method of ['getParagraphs', 'getSentences', 'getPhrases', 'getWords']) {
+      for (const input of ['', ' \t\n', '/-—', '  /usr/local/bin', '  #tag + value', '저는 학교에 갑니다', '甲😀𠀀乙', '「你好。」\n\nNext.\u200bDone!', 'Dr. Smith said “Hi.” Then left.']) {
+        assert.equal(punctuator[method](input).join(''), input, `${method}: ${JSON.stringify(input)}`);
+      }
+    }
+  }
+});
+
+test('both breakers preserve text and Unicode across splitting boundaries', () => {
+  const inputs = [' /usr/local/bin', ' 저는 학교에 갑니다 ', '甲'.repeat(71) + '😀𠀀' + '乙'.repeat(72), 'abc😀def𠀀ghi'];
+  for (const punctuator of [latin, eastAsian]) {
+    for (const input of inputs) {
+      for (const limit of [2, 3, 4, 36, 72]) {
+        for (const Breaker of [WordBreaker, CharBreaker]) {
+          const chunks = breakText(new Breaker(limit, punctuator), input);
+          assert.equal(chunks.join(''), input);
+          for (const chunk of chunks) {
+            // With /u, valid surrogate pairs are consumed as code points and
+            // cannot match this range; only isolated surrogates match.
+            assert.doesNotMatch(chunk, /[\uD800-\uDFFF]/u);
+            if (Breaker === CharBreaker) assert.ok(chunk.length <= limit);
+          }
+        }
+      }
+    }
+  }
+});
+
+test('an impossible one-unit limit rejects a supplementary character', () => {
+  assert.throws(() => new CharBreaker(1, latin).breakText('😀'), {name: 'RangeError'});
+});

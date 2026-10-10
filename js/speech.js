@@ -409,8 +409,12 @@ function CharBreaker(charLimit, punctuator, paragraphCombineThreshold) {
 
             chunks.flush();
             while (word) {
-              chunks.emit(word.slice(0, charLimit));
-              word = word.slice(charLimit);
+              let end = Math.min(Math.floor(charLimit), word.length);
+              // Back up if the UTF-16 limit falls inside a surrogate pair.
+              if (end < word.length && /[\uD800-\uDBFF]/.test(word[end - 1]) && /[\uDC00-\uDFFF]/.test(word[end])) end--;
+              if (end < 1) throw new RangeError("Character limit cannot fit a Unicode code point");
+              chunks.emit(word.slice(0, end));
+              word = word.slice(end);
             }
           }
           chunks.flush();
@@ -450,12 +454,12 @@ function createChunkCollector() {
 }
 
 function LatinPunctuator() {
-  var nonSentenceEndingAbbrev = /\b(?:[A-Za-z]|Adm|Assn|Ave|Blvd|Bldg|Brig|Capt|Cmdr|Col|Comdr|Corp|Cpl|Ct|Dept|Dr|Drs|Fig|Figs|Fr|Ft|Gen|Gov|Hon|Inc|Jr|Lieut|Ln|Lt|Ltd|Maj|Messrs|Mmes|Mr|Mrs|Ms|Mt|Mx|No|Nos|Pl|Pres|Prof|Rd|Rep|Reps|Rev|Sen|Sens|Sgt|Sr|St|Ste|Univ|Jan|Feb|Mar|Apr|Aug|Sep|Sept|Oct|Nov|Dec|dept|ed|eds|est|fig|figs|misc|pp|ref|refs|vol|vols|vs)\.\s+$/;
+  var nonSentenceEndingAbbrev = /\b(?:[A-Za-z]|Adm|Assn|Ave|Blvd|Bldg|Brig|Capt|Cmdr|Col|Comdr|Corp|Cpl|Ct|Dept|Dr|Drs|Fig|Figs|Fr|Ft|Gen|Gov|Hon|Inc|Jr|Lieut|Ln|Lt|Ltd|Maj|Messrs|Mmes|Mr|Mrs|Ms|Mt|Mx|No|Nos|Pl|Pres|Prof|Rd|Rep|Reps|Rev|Sen|Sens|Sgt|Sr|St|Ste|Univ|Jan|Feb|Mar|Apr|Aug|Sep|Sept|Oct|Nov|Dec|dept|ed|eds|est|fig|figs|misc|pp|ref|refs|vol|vols|vs)\.[\s\u200b]+$/;
   this.getParagraphs = function(text) {
     return recombine(text.split(/((?:\r?\n\s*){2,})/));
   }
   this.getSentences = function(text) {
-    return recombine(text.split(/([.!?]+[\s\u200b]+)/), nonSentenceEndingAbbrev);
+    return recombine(text.split(/([.!?]+["'”’»）)\]}」』】]*[\s\u200b]+)/), nonSentenceEndingAbbrev);
   }
   this.getPhrases = function(sentence) {
     return recombine(sentence.split(/([,;:]\s+|\s-+\s+|—\s*)/));
@@ -463,13 +467,22 @@ function LatinPunctuator() {
   this.getWords = function(sentence) {
     var tokens = sentence.split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
     var result = [];
+    var leadingSeparators = "";
     for (var i=0; i<tokens.length; i+=2) {
-      if (tokens[i]) result.push(tokens[i]);
+      if (tokens[i]) {
+        result.push(leadingSeparators + tokens[i]);
+        leadingSeparators = "";
+      }
       if (i+1 < tokens.length) {
-        if (/^[~@#%^*_+=<>]$/.test(tokens[i+1])) result.push(tokens[i+1]);
+        if (/^[~@#%^*_+=<>]$/.test(tokens[i+1])) {
+          result.push(leadingSeparators + tokens[i+1]);
+          leadingSeparators = "";
+        }
         else if (result.length) result[result.length-1] += tokens[i+1];
+        else leadingSeparators += tokens[i+1];
       }
     }
+    if (leadingSeparators) result.push(leadingSeparators);
     return result;
   }
   function recombine(tokens, nonPunc) {
@@ -490,13 +503,27 @@ function EastAsianPunctuator() {
     return recombine(text.split(/((?:\r?\n\s*){2,})/));
   }
   this.getSentences = function(text) {
-    return recombine(text.split(/([.!?]+[\s\u200b]+|[\u3002\uff01]+)/));
+    return recombine(text.split(/([.!?]+["'”’»）)\]}」』】]*[\s\u200b]+|[。！？]+["'”’»）)\]}」』】]*[\s\u200b]*)/));
   }
   this.getPhrases = function(sentence) {
     return recombine(sentence.split(/([,;:]\s+|[\u2025\u2026\u3000\u3001\uff0c\uff1b]+)/));
   }
   this.getWords = function(sentence) {
-    return sentence.replace(/\s+/g, "").split("");
+    // Keep character-based counting, but never split a Unicode code point.
+    // Attach whitespace to a neighboring token instead of deleting it.
+    const result = [];
+    let leadingWhitespace = "";
+    for (const character of sentence) {
+      if (/\s/u.test(character)) {
+        if (result.length) result[result.length - 1] += character;
+        else leadingWhitespace += character;
+      } else {
+        result.push(leadingWhitespace + character);
+        leadingWhitespace = "";
+      }
+    }
+    if (leadingWhitespace) result.push(leadingWhitespace);
+    return result;
   }
   function recombine(tokens) {
     var result = [];
