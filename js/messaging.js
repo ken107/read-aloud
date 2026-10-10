@@ -95,6 +95,7 @@ function RpcPeer(messagingPeer) {
 function registerMessageListener(name, handlers) {
   brapi.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
+      if (sender.id != brapi.runtime.id) return
       if (request.dest == name) {
         handle(request)
           .then(sendResponse, err => sendResponse({error: errorToJson(err)}))
