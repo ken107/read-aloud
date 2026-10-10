@@ -451,7 +451,7 @@ function createPunctuator(lang) {
   const language = (lang || "").toLowerCase().split("-")[0];
   if (["zh", "ja", "ko"].includes(language)) return new EastAsianPunctuator();
   if (["th", "lo", "km", "my"].includes(language)) return new DictionaryPunctuator(language);
-  return new SpaceDelimitedPunctuator();
+  return new SpaceDelimitedPunctuator(language);
 }
 
 /**
@@ -478,16 +478,63 @@ function* splitOversizedWord(word, limit) {
   if (pending) yield pending;
 }
 
+/**
+ * Periods after titles/references usually introduce more text. Ambiguous endings
+ * (etc., company suffixes, degrees, times, acronyms) are joined only before a
+ * lowercase letter or number. This is a speech-boundary heuristic, not grammar.
+ * Keep language-specific entries scoped: e.g. German "Art." is English "art".
+ */
+function createAbbreviationMatcher(language) {
+  const prefixes = {
+    en: "adm assn ave blvd bldg brig capt cmdr col comdr cpl ct dept dr drs fig figs fr ft gen gov hon lieut ln lt maj messrs mmes mr mrs ms mt mx no nos pl pres prof rd rep reps rev sen sens sgt st ste univ jan feb mar apr jun jul aug sep sept oct nov dec ch chap chs eq eqs sec secs vol vols pp ref refs vs cf approx est esp e.g i.e",
+    de: "dr prof dipl ing hr fr frl nr abb abs art kap bd bsp bzgl bzw ca d.h z.b vgl s sog str gebr",
+    fr: "m mm mme mmes mlle mlles dr dre pr prof me mgr no nos réf fig chap vol éd janv févr avr juil sept oct nov déc p.ex",
+    es: "sr sra sres sras srta dr dra prof profr ud uds núm núms pág págs cap caps fig figs ej p.ej aprox avda",
+    pt: "sr sra srs sras srta dr dra prof profa pág págs cap caps fig figs núm aprox av ex",
+    ru: "г гг ул д кв стр рис табл им т.е т.к т.н см напр проф доц акад пер просп",
+  };
+  const ambiguous = {
+    en: "etc inc corp co ltd jr sr ed eds misc al a.m p.m a.d b.c b.c.e c.e ph.d m.d b.a m.a b.sc m.sc d.d.s esq",
+    de: "usw etc u.a",
+    fr: "etc env",
+    es: "etc a.m p.m",
+    pt: "etc",
+    ru: "др пр т.д т.п",
+  };
+  const lang = (language || "en").toLowerCase().split("-")[0];
+  const prefixWords = new Set((prefixes[lang] || "").split(" "));
+  const ambiguousWords = new Set((ambiguous[lang] || "").split(" "));
+  return function(previous, next) {
+    // A Unicode boundary prevents matching an abbreviation inside a longer word.
+    // Dotted forms are matched whole, not as a trailing single-letter initial.
+    const match = previous.match(/(?:^|[^\p{L}\p{M}\p{N}_.])([\p{L}\p{M}]+(?:\.[\p{L}\p{M}]+)*)\.[\s\u200b]+$/u);
+    if (!match) return false;
+    const spaced = previous.match(/(?:^|[^\p{L}\p{M}\p{N}_.])([\p{L}\p{M}]+\.[\s\u200b]+[\p{L}\p{M}]+)\.[\s\u200b]+$/u);
+    if (spaced && prefixWords.has(spaced[1].replace(/[\s\u200b]/g, "").toLowerCase())) return true;
+    const abbreviation = match[1];
+    const normalized = abbreviation.replace(/[\s\u200b]/g, "").toLowerCase();
+    // Join the first boundary of spaced forms such as "e. g." and "z. B.".
+    const nextComponent = next.match(/^([\p{L}\p{M}]+)\./u);
+    if (nextComponent && prefixWords.has(normalized + "." + nextComponent[1].toLowerCase())) return true;
+    if (prefixWords.has(normalized)) return true;
+    const following = next.replace(/^[\s\u200b"'“‘«(\[（]+/u, "");
+    const continues = /^[\p{Ll}\p{N}]/u.test(following);
+    if (ambiguousWords.has(normalized) || /^(?:\p{Lu}\.)+\p{Lu}$/u.test(abbreviation)) return continues;
+    // Personal initials, including Cyrillic and accented Latin letters.
+    return /^\p{Lu}$/u.test(abbreviation) && /^\p{L}/u.test(following);
+  };
+}
+
 /** Space-separated text across scripts; punctuation stays with preceding text. */
-function SpaceDelimitedPunctuator() {
-  var nonSentenceEndingAbbrev = /\b(?:[A-Za-z]|Adm|Assn|Ave|Blvd|Bldg|Brig|Capt|Cmdr|Col|Comdr|Corp|Cpl|Ct|Dept|Dr|Drs|Fig|Figs|Fr|Ft|Gen|Gov|Hon|Inc|Jr|Lieut|Ln|Lt|Ltd|Maj|Messrs|Mmes|Mr|Mrs|Ms|Mt|Mx|No|Nos|Pl|Pres|Prof|Rd|Rep|Reps|Rev|Sen|Sens|Sgt|Sr|St|Ste|Univ|Jan|Feb|Mar|Apr|Aug|Sep|Sept|Oct|Nov|Dec|dept|ed|eds|est|fig|figs|misc|pp|ref|refs|vol|vols|vs)\.[\s\u200b]+$/;
+function SpaceDelimitedPunctuator(language = "en") {
+  const continuesAfterAbbreviation = createAbbreviationMatcher(language);
   this.getParagraphs = function(text) {
     return recombine(text.split(/((?:\r?\n\s*){2,})/));
   }
   this.getSentences = function(text) {
     // Also Arabic/Urdu endings, Hebrew sof pasuq, Indic danda, Myanmar and Khmer.
     // Those marks do not require a following space to establish a boundary.
-    return recombine(text.split(/([.!?]+["'”’»）)\]}」』】]*[\s\u200b]+|[؟۔׃।॥။៕។]+["'”’»）)\]}」』】]*[\s\u200b]*)/), nonSentenceEndingAbbrev);
+    return recombine(text.split(/([.!?]+["'”’»）)\]}」』】]*[\s\u200b]+|[؟۔׃।॥။៕។]+["'”’»）)\]}」』】]*[\s\u200b]*)/), continuesAfterAbbreviation);
   }
   this.getPhrases = function(sentence) {
     return recombine(sentence.split(/([,;:]\s+|[،؛၊]\s*|\s-+\s+|—\s*)/));
@@ -518,7 +565,7 @@ function SpaceDelimitedPunctuator() {
     for (var i=0; i<tokens.length; i+=2) {
       var part = (i+1 < tokens.length) ? (tokens[i] + tokens[i+1]) : tokens[i];
       if (part) {
-        if (nonPunc && result.length && nonPunc.test(result[result.length-1])) result[result.length-1] += part;
+        if (nonPunc && result.length && nonPunc(result[result.length-1], part)) result[result.length-1] += part;
         else result.push(part);
       }
     }
@@ -528,7 +575,7 @@ function SpaceDelimitedPunctuator() {
 
 /** Dictionary-backed boundaries for languages that do not separate words by spaces. */
 function DictionaryPunctuator(language) {
-  SpaceDelimitedPunctuator.call(this);
+  SpaceDelimitedPunctuator.call(this, language);
   // Older engines retain space-based splitting plus safe oversized-word slicing.
   if (typeof Intl.Segmenter !== "function") return;
   const segmenter = new Intl.Segmenter(language, {granularity: "word"});

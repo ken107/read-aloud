@@ -178,3 +178,40 @@ test('older browsers without Intl.Segmenter retain a safe fallback', () => {
   assert.ok(chunks.every(chunk => chunk.length <= 5));
   for (const chunk of chunks) assert.doesNotMatch(chunk, /[\uD800-\uDFFF]/u);
 });
+
+for (const [lang, text, expected] of [
+  ['en', 'Ask DR. Smith. Then leave.', ['Ask DR. Smith. ', 'Then leave.']],
+  ['en', 'See Eq. 2 and Sec. 3. Done.', ['See Eq. 2 and Sec. 3. ', 'Done.']],
+  ['en', 'Try e.g. apples, i.e. fruit. Done.', ['Try e.g. apples, i.e. fruit. ', 'Done.']],
+  ['en', 'Try e. g. apples. Done.', ['Try e. g. apples. ', 'Done.']],
+  ['en', 'A Ph.D. student arrived.', ['A Ph.D. student arrived.']],
+  ['en', 'She has a Ph.D. Next comes work.', ['She has a Ph.D. ', 'Next comes work.']],
+  ['en', 'Meet at 3 p.m. tomorrow.', ['Meet at 3 p.m. tomorrow.']],
+  ['en', 'Meet at 3 p.m. Tomorrow is busy.', ['Meet at 3 p.m. ', 'Tomorrow is busy.']],
+  ['en', 'Fruit etc. is available.', ['Fruit etc. is available.']],
+  ['en', 'Fruit etc. Next topic.', ['Fruit etc. ', 'Next topic.']],
+  ['en', 'Acme Inc. announced news.', ['Acme Inc. announced news.']],
+  ['en', 'Acme Inc. Next topic.', ['Acme Inc. ', 'Next topic.']],
+  ['en', 'The U.S. economy grew.', ['The U.S. economy grew.']],
+  ['en', 'Lives in the U.S. Next topic.', ['Lives in the U.S. ', 'Next topic.']],
+  ['en', 'J. R. Smith arrived.', ['J. R. Smith arrived.']],
+  ['en', 'É. Durand arrived.', ['É. Durand arrived.']],
+  ['de-DE', 'Siehe Abb. 2 bzw. Kap. 3.', ['Siehe Abb. 2 bzw. Kap. 3.']],
+  ['de', 'Zum Beispiel z. B. Berlin.', ['Zum Beispiel z. B. Berlin.']],
+  ['fr', 'Mme. Dupont lit la réf. 2.', ['Mme. Dupont lit la réf. 2.']],
+  ['es', 'La Dra. García lee la pág. 2.', ['La Dra. García lee la pág. 2.']],
+  ['pt-BR', 'A Profa. Silva lê a pág. 2.', ['A Profa. Silva lê a pág. 2.']],
+  ['ru', 'См. рис. 2 на стр. 3.', ['См. рис. 2 на стр. 3.']],
+  ['ru', 'А. С. Пушкин написал текст.', ['А. С. Пушкин написал текст.']],
+  ['en', 'This is art. Next sentence.', ['This is art. ', 'Next sentence.']],
+  ['en', 'An unmappedworddr. Next sentence.', ['An unmappedworddr. ', 'Next sentence.']],
+  ['en', 'Wait... Next sentence.', ['Wait... ', 'Next sentence.']],
+  ['en', 'He said “etc.” Next sentence.', ['He said “etc.” ', 'Next sentence.']],
+  ['en', 'DR.\u200bSmith arrived.', ['DR.\u200bSmith arrived.']],
+]) {
+  test(`abbreviation (${lang}): ${text}`, () => {
+    const result = Array.from(context.createPunctuator(lang).getSentences(text));
+    assert.deepEqual(result, expected);
+    assert.equal(result.join(''), text);
+  });
+}

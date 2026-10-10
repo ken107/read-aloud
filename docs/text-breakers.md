@@ -99,8 +99,7 @@ Shared sentence rules recognize Arabic `؟`, Urdu `۔`, Hebrew sof pasuq `׃`,
 Indic danda `।` / `॥`, Myanmar `။`, and Khmer `។` / `៕`. Shared phrase rules
 include Arabic/Persian `،` and `؛`, and Myanmar `၊`. Hebrew geresh, gershayim,
 and maqaf remain inside word tokens rather than becoming sentence boundaries.
-These additions are boundary heuristics, not a full linguistic parser; the
-existing abbreviation list is still English-oriented.
+These additions are boundary heuristics, not a full linguistic parser.
 
 Dictionary segmentation depends on the browser's locale data, so exact word
 boundaries can vary between browser versions. If `Intl.Segmenter` is unavailable,
@@ -114,6 +113,39 @@ Asian character-count strategies and 32/36 budgets have not been recalibrated.
 
 References: [Unicode segmentation guidance](https://unicode.org/reports/tr29/)
 and [Intl.Segmenter documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter).
+
+## Abbreviations
+
+`createAbbreviationMatcher(language)` replaces the single English-oriented regex
+with explicit prefix and ambiguous-ending lists for English, German, French,
+Spanish, Portuguese, and Russian. Regional tags use their base language. Missing
+language defaults to English; other languages have no borrowed abbreviation
+list. They still receive Unicode initial/acronym handling. Dictionary punctuators
+pass their language through as well.
+
+Titles, references, months, and introductory forms such as `e.g.` and `i.e.`
+suppress a candidate sentence break. Matching is case-insensitive and respects
+Unicode token boundaries. Common two-part spaced forms (`e. g.`, `z. B.`) are
+recognized, as are accented and Cyrillic personal initials. Dotted acronyms are
+matched whole, avoiding the old accidental match on their final letter.
+
+Ambiguous forms such as `etc.`, `Inc.`, `Ph.D.`, `p.m.`, and uppercase dotted
+acronyms suppress a boundary only before lowercase text or a number. For example,
+`3 p.m. tomorrow` stays together but `3 p.m. Tomorrow is busy.` splits. Closing
+quotes and ellipses are not treated as bare abbreviation periods.
+
+The lists are intentionally curated rather than an exhaustive suppression dump.
+Unicode CLDR's [English](https://github.com/unicode-org/cldr/blob/main/common/segments/en.xml),
+[French](https://github.com/unicode-org/cldr/blob/main/common/segments/fr.xml), and
+[German](https://github.com/unicode-org/cldr/blob/main/common/segments/de.xml)
+sentence-break suppression data were consulted as coverage references.
+
+Limitations: context remains ambiguous. `U.S. Army` can split under the
+conservative acronym rule; a prefix abbreviation at a genuine sentence end can
+still join the next sentence. Case-based rules cannot infer grammar or proper
+names reliably, and language-specific lists do not attempt complete
+mixed-language detection. These heuristics affect preferred pauses; both
+breakers still enforce their size budgets independently.
 
 ## Tests
 
