@@ -183,9 +183,16 @@ function Speech(texts, options) {
               index: 0
             }
           } else if (engine.prefetch != null) {
-            for (let i = 1; i <= 2; i++) {
-              const nextText = texts[playlist.getIndex() + i]
-              if (nextText) engine.prefetch(nextText, options)
+            const nextIndex = playlist.getIndex() + 1
+            const nextText = texts[nextIndex]
+            if (nextText) {
+              engine.prefetch(nextText, options)
+              // A short next chunk may finish before its successor can load.
+              // Use the same 200-character threshold as small-paragraph packing.
+              if (nextText.length < 200) {
+                const followingText = texts[nextIndex + 1]
+                if (followingText) engine.prefetch(followingText, options)
+              }
             }
           }
           break
