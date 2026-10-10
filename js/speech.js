@@ -188,8 +188,8 @@ function Speech(texts, options) {
             if (nextText) {
               engine.prefetch(nextText, options)
               // A short next chunk may finish before its successor can load.
-              // Use the same 200-character threshold as small-paragraph packing.
-              if (nextText.length < 200) {
+              // Use a 100-character threshold.
+              if (nextText.length < 100) {
                 const followingText = texts[nextIndex + 1]
                 if (followingText) engine.prefetch(followingText, options)
               }
