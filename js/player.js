@@ -389,6 +389,9 @@ var requestAudioPlaybackPermission = lazy(async function() {
 })
 
 async function createOffscreen() {
+  if (brapi.offscreen.hasDocument && await brapi.offscreen.hasDocument()) {
+    return
+  }
   const readyPromise = new Promise(f => messageHandlers.offscreenCheckIn = f)
   brapi.offscreen.createDocument({
     reasons: ["AUDIO_PLAYBACK"],
