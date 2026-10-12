@@ -215,3 +215,94 @@ for (const [lang, text, expected] of [
     assert.equal(result.join(''), text);
   });
 }
+
+test('estimateSpokenCharOffset returns word-aligned character offsets from elapsed time', () => {
+  const text = 'Alpha beta gamma delta epsilon.';
+  assert.equal(context.estimateSpokenCharOffset(text, 0, {lang: 'en-US', rate: 1}), 0);
+  // At 36 words / 15s (2.4 words/s), 1000ms advances 2 words ('Alpha ' + 'beta ').
+  assert.equal(context.estimateSpokenCharOffset(text, 1000, {lang: 'en-US', rate: 1}), 'Alpha beta '.length);
+  // Clamps to the start of the last word so resume always has something to speak.
+  assert.equal(context.estimateSpokenCharOffset(text, 60000, {lang: 'en-US', rate: 1}), 'Alpha beta gamma delta '.length);
+});
+
+test('Speech resumes Google native voice from spoken word boundary instead of chunk start', () => {
+  const rxjsCode = readFileSync(require.resolve('../js/rxjs.umd.min.js'), 'utf8');
+  const speechCode = readFileSync(require.resolve('../js/speech.js'), 'utf8');
+  let now = 1000;
+  const spoken = [];
+  let currentOnEvent;
+  const sandbox = vm.createContext({
+    console,
+    setTimeout,
+    clearTimeout,
+    Date: {now: () => now},
+    Promise,
+    Map,
+    Set,
+    RegExp,
+    Object,
+    Array,
+    Math,
+    Error,
+    RangeError,
+    Intl,
+    parseWordReplacements: () => ({rules: []}),
+    isGoogleNative: () => true,
+    isChromeOSNative: () => false,
+    isPiperVoice: () => false,
+    isSupertonicVoice: () => false,
+    isNghiTtsVoice: () => false,
+    isAzure: () => false,
+    isOpenai: () => false,
+    isUseMyPhone: () => false,
+    isGoogleTranslate: () => false,
+    isAmazonPolly: () => false,
+    isGoogleWavenet: () => false,
+    isIbmWatson: () => false,
+    isPremiumVoice: () => false,
+    isReadAloudCloud: () => false,
+    immediate: fn => fn(),
+    piperTtsEngine: {},
+    supertonicTtsEngine: {},
+    nghiTtsEngine: {},
+    TimeoutTtsEngine: function(baseEngine) { return baseEngine; },
+    browserTtsEngine: {
+      speak(utterance, options, onEvent) {
+        spoken.push(utterance);
+        currentOnEvent = onEvent;
+        onEvent({type: 'start', charIndex: 0});
+      },
+      stop() {},
+      pause() {},
+      resume() {},
+    },
+  });
+  vm.runInContext(rxjsCode, sandbox);
+  vm.runInContext(speechCode, sandbox);
+
+  // 1) When the engine emits 'word' boundary events, resume slices at event.charIndex.
+  const speechWithEvents = new sandbox.Speech(['One two three four five.'], {
+    voice: {voiceName: 'Google US English'},
+    lang: 'en-US',
+    rate: 1,
+  });
+  speechWithEvents.play();
+  currentOnEvent({type: 'word', charIndex: 8}); // 'three four five.'
+  speechWithEvents.pause();
+  speechWithEvents.play();
+  assert.deepEqual(spoken, ['One two three four five.', 'three four five.']);
+
+  // 2) When no 'word' events are emitted, resume estimates word offset from elapsed time.
+  spoken.length = 0;
+  const speechEstimated = new sandbox.Speech(['Alpha beta gamma delta epsilon.'], {
+    voice: {voiceName: 'Google US English'},
+    lang: 'en-US',
+    rate: 1,
+  });
+  speechEstimated.play();
+  // options.rate is scaled by 0.9 for Google native (2.16 words/s); 1000ms -> 2 words ('Alpha beta ').
+  now += 1000;
+  speechEstimated.pause();
+  speechEstimated.play();
+  assert.deepEqual(spoken, ['Alpha beta gamma delta epsilon.', 'gamma delta epsilon.']);
+});

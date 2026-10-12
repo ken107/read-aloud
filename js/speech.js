@@ -276,6 +276,9 @@ function Speech(texts, options) {
   }
 
   function makePlaybackLegacy(text) {
+    let charIndex = 0
+    let startIndex = 0
+    let startTime = 0
     return playbackState$.pipe(
       rxjs.distinctUntilChanged(),
       rxjs.scan((playing$, state) => {
@@ -284,16 +287,28 @@ function Speech(texts, options) {
             engine.resume()
             return playing$
           } else {
+            startIndex = charIndex
+            startTime = 0
+            const remainingText = text.slice(startIndex)
             return new rxjs.Observable(observer => {
-              engine.speak(text, options, event => {
+              engine.speak(remainingText, options, event => {
                 if (event.type == "error") observer.error(event.error)
-                else observer.next(event)
+                else {
+                  if (event.type == "start") startTime = Date.now()
+                  else if (event.type == "word" && typeof event.charIndex == "number") {
+                    charIndex = startIndex + event.charIndex
+                  }
+                  observer.next(event)
+                }
               })
             })
           }
         } else if (state == "paused") {
           if (playing$) {
             if (isGoogleNative(options.voice) || isChromeOSNative(options.voice)) {
+              if (charIndex == startIndex && startTime > 0) {
+                charIndex += estimateSpokenCharOffset(text.slice(startIndex), Date.now() - startTime, options)
+              }
               engine.stop()
               return null
             } else {
@@ -648,4 +663,22 @@ function createWordReplacer(rules) {
     const key = source.toLowerCase()
     return prefix + (key in lookup ? lookup[key] : source)
   })
+}
+
+/**
+ * Estimate the UTF-16 character offset of the word being spoken when a voice
+ * does not emit word boundary events (such as Chrome's Google native voices).
+ * Uses the same language/rate word-per-second model as getChunks() (~15 seconds
+ * for 32 or 36 words, doubled for East Asian character tokens).
+ */
+function estimateSpokenCharOffset(text, elapsedMs, options) {
+  if (!text || !(elapsedMs > 0)) return 0
+  const isEA = /^(zh|ko|ja)(?:-|$)/i.test(options.lang)
+  const words = createPunctuator(options.lang).getWords(text)
+  if (words.length <= 1) return 0
+  const wordsPerSecond = ((/^(de|ru|es|pt|id)/.test(options.lang) ? 32 : 36) / 15) * (isEA ? 2 : 1) * (options.rate || 1)
+  const wordIndex = Math.min(Math.floor((elapsedMs / 1000) * wordsPerSecond), words.length - 1)
+  let offset = 0
+  for (let i = 0; i < wordIndex; i++) offset += words[i].length
+  return offset
 }
