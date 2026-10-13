@@ -216,15 +216,6 @@ for (const [lang, text, expected] of [
   });
 }
 
-test('estimateSpokenCharOffset returns word-aligned character offsets from elapsed time', () => {
-  const text = 'Alpha beta gamma delta epsilon.';
-  assert.equal(context.estimateSpokenCharOffset(text, 0, {lang: 'en-US', rate: 1}), 0);
-  // At 36 words / 15s (2.4 words/s), 1000ms advances 2 words ('Alpha ' + 'beta ').
-  assert.equal(context.estimateSpokenCharOffset(text, 1000, {lang: 'en-US', rate: 1}), 'Alpha beta '.length);
-  // Clamps to the start of the last word so resume always has something to speak.
-  assert.equal(context.estimateSpokenCharOffset(text, 60000, {lang: 'en-US', rate: 1}), 'Alpha beta gamma delta '.length);
-});
-
 test('Speech resumes Google native voice from spoken word boundary instead of chunk start', () => {
   const rxjsCode = readFileSync(require.resolve('../js/rxjs.umd.min.js'), 'utf8');
   const speechCode = readFileSync(require.resolve('../js/speech.js'), 'utf8');
@@ -287,22 +278,48 @@ test('Speech resumes Google native voice from spoken word boundary instead of ch
     rate: 1,
   });
   speechWithEvents.play();
+  // An explicit boundary at zero means the first word is still being spoken.
+  currentOnEvent({type: 'word', charIndex: 0});
+  now += 1000;
+  speechWithEvents.pause();
+  speechWithEvents.play();
+  assert.deepEqual(spoken, ['One two three four five.', 'One two three four five.']);
+  spoken.length = 0;
   currentOnEvent({type: 'word', charIndex: 8}); // 'three four five.'
   speechWithEvents.pause();
   speechWithEvents.play();
-  assert.deepEqual(spoken, ['One two three four five.', 'three four five.']);
+  assert.deepEqual(spoken, ['three four five.']);
 
-  // 2) When no 'word' events are emitted, resume estimates word offset from elapsed time.
+  // Zero is also a valid boundary relative to the resumed utterance.
+  currentOnEvent({type: 'word', charIndex: 0});
+  now += 1000;
+  speechWithEvents.pause();
+  speechWithEvents.play();
+  assert.deepEqual(spoken, ['three four five.', 'three four five.']);
+
+  // Without new boundaries, replay from the last known position.
+  now += 1000;
+  speechWithEvents.pause();
+  speechWithEvents.play();
+  assert.deepEqual(spoken, ['three four five.', 'three four five.', 'three four five.']);
+  // Subsequent boundaries are relative to the resumed text, not the full chunk.
+  currentOnEvent({type: 'word', charIndex: 6});
+  speechWithEvents.pause();
+  speechWithEvents.play();
+  assert.equal(spoken.at(-1), 'four five.');
+  speechWithEvents.stop();
+
+  // 2) Without word events, elapsed time never advances the resume position.
   spoken.length = 0;
-  const speechEstimated = new sandbox.Speech(['Alpha beta gamma delta epsilon.'], {
+  const speechWithoutEvents = new sandbox.Speech(['Alpha beta gamma delta epsilon.'], {
     voice: {voiceName: 'Google US English'},
     lang: 'en-US',
     rate: 1,
   });
-  speechEstimated.play();
-  // options.rate is scaled by 0.9 for Google native (2.16 words/s); 1000ms -> 2 words ('Alpha beta ').
-  now += 1000;
-  speechEstimated.pause();
-  speechEstimated.play();
-  assert.deepEqual(spoken, ['Alpha beta gamma delta epsilon.', 'gamma delta epsilon.']);
+  speechWithoutEvents.play();
+  now += 10000;
+  speechWithoutEvents.pause();
+  speechWithoutEvents.play();
+  assert.deepEqual(spoken, ['Alpha beta gamma delta epsilon.', 'Alpha beta gamma delta epsilon.']);
+  speechWithoutEvents.stop();
 });
