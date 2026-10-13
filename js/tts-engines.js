@@ -76,7 +76,7 @@ function BrowserTtsEngine() {
       pitch: options.pitch,
       volume: options.volume,
       requiredEventTypes: ["start", "end"],
-      desiredEventTypes: ["start", "end", "word", "error"],
+      desiredEventTypes: ["start", "end", "error"],
       onEvent: onEvent
     })
   }
@@ -113,9 +113,6 @@ function WebSpeechEngine() {
     if (options.volume) utter.volume = options.volume;
     utter.onstart = onEvent.bind(null, {type: 'start', charIndex: 0});
     utter.onend = onEvent.bind(null, {type: 'end', charIndex: text.length});
-    utter.onboundary = function(event) {
-      if (event.name == "word") onEvent({type: 'word', charIndex: event.charIndex, length: event.charLength});
-    };
     utter.onerror = function(event) {
       if (event.error == "canceled" || event.error == "interrupted") return;
       onEvent({type: 'error', error: new Error(event.error)});

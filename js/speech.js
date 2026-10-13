@@ -276,7 +276,6 @@ function Speech(texts, options) {
   }
 
   function makePlaybackLegacy(text) {
-    let charIndex = 0
     return playbackState$.pipe(
       rxjs.distinctUntilChanged(),
       rxjs.scan((playing$, state) => {
@@ -286,15 +285,9 @@ function Speech(texts, options) {
             return playing$
           } else {
             return new rxjs.Observable(observer => {
-              const startIndex = charIndex
-              engine.speak(text.slice(startIndex), options, event => {
+              engine.speak(text, options, event => {
                 if (event.type == "error") observer.error(event.error)
-                else {
-                  if (event.type == "word" && typeof event.charIndex == "number") {
-                    charIndex = startIndex + event.charIndex
-                  }
-                  observer.next(event)
-                }
+                else observer.next(event)
               })
             })
           }
