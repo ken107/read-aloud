@@ -220,10 +220,6 @@ function isChromeOSNative(voice) {
   return /^Chrome\sOS\s/.test(voice.voiceName);
 }
 
-function isMacOSNative(voice) {
-  return /^MacOS /.test(voice.voiceName);
-}
-
 function isGoogleTranslate(voice) {
   return /^GoogleTranslate /.test(voice.voiceName);
 }
