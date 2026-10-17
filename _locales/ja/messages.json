@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "利用できません"
+  },
+  "playback_status_reading_controls": {
+    "message": "読み上げコントロール"
+  },
+  "playback_status_report_issue": {
+    "message": "問題を報告"
+  },
+  "playback_status_smaller_text": {
+    "message": "文字を小さくする"
+  },
+  "playback_status_larger_text": {
+    "message": "文字を大きくする"
+  },
+  "playback_status_smaller_popup": {
+    "message": "ポップアップを小さくする"
+  },
+  "playback_status_larger_popup": {
+    "message": "ポップアップを大きくする"
   }
 }

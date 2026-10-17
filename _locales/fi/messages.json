@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "Ei saatavilla"
+  },
+  "playback_status_reading_controls": {
+    "message": "Lukuasetukset"
+  },
+  "playback_status_report_issue": {
+    "message": "Ilmoita ongelmasta"
+  },
+  "playback_status_smaller_text": {
+    "message": "Pienennä tekstiä"
+  },
+  "playback_status_larger_text": {
+    "message": "Suurenna tekstiä"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Pienennä ponnahdusikkunaa"
+  },
+  "playback_status_larger_popup": {
+    "message": "Suurenna ponnahdusikkunaa"
   }
 }

@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "사용할 수 없음"
+  },
+  "playback_status_reading_controls": {
+    "message": "읽기 설정"
+  },
+  "playback_status_report_issue": {
+    "message": "문제 신고"
+  },
+  "playback_status_smaller_text": {
+    "message": "글자 크기 줄이기"
+  },
+  "playback_status_larger_text": {
+    "message": "글자 크기 늘리기"
+  },
+  "playback_status_smaller_popup": {
+    "message": "팝업 크기 줄이기"
+  },
+  "playback_status_larger_popup": {
+    "message": "팝업 크기 늘리기"
   }
 }

@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "無法使用"
+  },
+  "playback_status_reading_controls": {
+    "message": "閱讀控制項"
+  },
+  "playback_status_report_issue": {
+    "message": "回報問題"
+  },
+  "playback_status_smaller_text": {
+    "message": "縮小文字"
+  },
+  "playback_status_larger_text": {
+    "message": "放大文字"
+  },
+  "playback_status_smaller_popup": {
+    "message": "縮小彈出視窗"
+  },
+  "playback_status_larger_popup": {
+    "message": "放大彈出視窗"
   }
 }

@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "ไม่พร้อมใช้งาน"
+  },
+  "playback_status_reading_controls": {
+    "message": "ตัวควบคุมการอ่าน"
+  },
+  "playback_status_report_issue": {
+    "message": "รายงานปัญหา"
+  },
+  "playback_status_smaller_text": {
+    "message": "ลดขนาดข้อความ"
+  },
+  "playback_status_larger_text": {
+    "message": "เพิ่มขนาดข้อความ"
+  },
+  "playback_status_smaller_popup": {
+    "message": "ลดขนาดป๊อปอัป"
+  },
+  "playback_status_larger_popup": {
+    "message": "เพิ่มขนาดป๊อปอัป"
   }
 }

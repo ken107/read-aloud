@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "Inte tillgänglig"
+  },
+  "playback_status_reading_controls": {
+    "message": "Läsinställningar"
+  },
+  "playback_status_report_issue": {
+    "message": "Rapportera ett problem"
+  },
+  "playback_status_smaller_text": {
+    "message": "Minska textstorleken"
+  },
+  "playback_status_larger_text": {
+    "message": "Öka textstorleken"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Förminska popupfönstret"
+  },
+  "playback_status_larger_popup": {
+    "message": "Förstora popupfönstret"
   }
 }

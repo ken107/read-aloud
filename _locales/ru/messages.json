@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "Недоступно"
+  },
+  "playback_status_reading_controls": {
+    "message": "Настройки чтения"
+  },
+  "playback_status_report_issue": {
+    "message": "Сообщить о проблеме"
+  },
+  "playback_status_smaller_text": {
+    "message": "Уменьшить текст"
+  },
+  "playback_status_larger_text": {
+    "message": "Увеличить текст"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Уменьшить всплывающее окно"
+  },
+  "playback_status_larger_popup": {
+    "message": "Увеличить всплывающее окно"
   }
 }

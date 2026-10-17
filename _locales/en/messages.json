@@ -288,5 +288,23 @@
   },
   "playback_status_unavailable": {
     "message": "Unavailable"
+  },
+  "playback_status_reading_controls": {
+    "message": "Reading controls"
+  },
+  "playback_status_report_issue": {
+    "message": "Report an issue"
+  },
+  "playback_status_smaller_text": {
+    "message": "Decrease text size"
+  },
+  "playback_status_larger_text": {
+    "message": "Increase text size"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Shrink popup"
+  },
+  "playback_status_larger_popup": {
+    "message": "Enlarge popup"
   }
 }

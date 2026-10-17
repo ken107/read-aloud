@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "Kullanılamıyor"
+  },
+  "playback_status_reading_controls": {
+    "message": "Okuma denetimleri"
+  },
+  "playback_status_report_issue": {
+    "message": "Sorun bildir"
+  },
+  "playback_status_smaller_text": {
+    "message": "Metni küçült"
+  },
+  "playback_status_larger_text": {
+    "message": "Metni büyüt"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Açılır pencereyi küçült"
+  },
+  "playback_status_larger_popup": {
+    "message": "Açılır pencereyi büyüt"
   }
 }

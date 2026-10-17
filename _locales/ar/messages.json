@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "غير متاح"
+  },
+  "playback_status_reading_controls": {
+    "message": "أدوات القراءة"
+  },
+  "playback_status_report_issue": {
+    "message": "الإبلاغ عن مشكلة"
+  },
+  "playback_status_smaller_text": {
+    "message": "تصغير النص"
+  },
+  "playback_status_larger_text": {
+    "message": "تكبير النص"
+  },
+  "playback_status_smaller_popup": {
+    "message": "تصغير النافذة المنبثقة"
+  },
+  "playback_status_larger_popup": {
+    "message": "تكبير النافذة المنبثقة"
   }
 }

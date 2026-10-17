@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "उपलब्ध नहीं"
+  },
+  "playback_status_reading_controls": {
+    "message": "पढ़ने के नियंत्रण"
+  },
+  "playback_status_report_issue": {
+    "message": "समस्या की रिपोर्ट करें"
+  },
+  "playback_status_smaller_text": {
+    "message": "टेक्स्ट का आकार घटाएँ"
+  },
+  "playback_status_larger_text": {
+    "message": "टेक्स्ट का आकार बढ़ाएँ"
+  },
+  "playback_status_smaller_popup": {
+    "message": "पॉपअप छोटा करें"
+  },
+  "playback_status_larger_popup": {
+    "message": "पॉपअप बड़ा करें"
   }
 }

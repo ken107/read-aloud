@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "Utilgjengelig"
+  },
+  "playback_status_reading_controls": {
+    "message": "Leseinnstillinger"
+  },
+  "playback_status_report_issue": {
+    "message": "Rapporter et problem"
+  },
+  "playback_status_smaller_text": {
+    "message": "Gjør teksten mindre"
+  },
+  "playback_status_larger_text": {
+    "message": "Gjør teksten større"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Gjør popup-vinduet mindre"
+  },
+  "playback_status_larger_popup": {
+    "message": "Gjør popup-vinduet større"
   }
 }

@@ -60,10 +60,44 @@ async function init() {
   $("#decrease-window-size").click(changeWindowSize.bind(null, -1));
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
   $("#toggle-dark-mode").click(toggleDarkMode);
+  for (const [id, key] of [
+    ["decrease-font-size", "smaller_text"],
+    ["increase-font-size", "larger_text"],
+    ["decrease-window-size", "smaller_popup"],
+    ["increase-window-size", "larger_popup"],
+  ]) {
+    const label = brapi.i18n.getMessage(`playback_status_${key}`)
+    $("#" + id).attr({title: label, "aria-label": label})
+  }
+  const reportLabel = brapi.i18n.getMessage("playback_status_report_issue")
+  $("#report-issue").attr({title: reportLabel, "aria-label": reportLabel})
+    .click(() => { location.href = "report.html?referer=popup.html" })
+
+  const controlsToggle = document.getElementById("toggle-reading-controls")
+  const controlsLabel = brapi.i18n.getMessage("playback_status_reading_controls")
+  controlsToggle.setAttribute("aria-label", controlsLabel)
+  controlsToggle.title = controlsLabel
+  controlsToggle.addEventListener("click", () => {
+    const toolbar = document.getElementById("toolbar")
+    toolbar.hidden = !toolbar.hidden
+    controlsToggle.setAttribute("aria-expanded", String(!toolbar.hidden))
+  })
 
   new ResizeObserver(entries => {
-    document.body.style.setProperty("--playback-status-height", `${entries[0].target.getBoundingClientRect().height}px`)
-  }).observe(document.getElementById("playback-status"));
+    const controls = entries[0].target
+    const height = controls.hidden ? 0 : controls.getBoundingClientRect().height
+      + parseFloat(getComputedStyle(controls).marginTop)
+    document.body.style.setProperty("--playback-status-height", `${height}px`)
+  }).observe(document.getElementById("reading-controls"));
+  const footer = document.getElementById("footer")
+  // Return the former always-visible footer line to the reading pane.
+  document.body.style.setProperty("--footer-line-height", getComputedStyle(footer).lineHeight)
+  new ResizeObserver(() => {
+    const style = getComputedStyle(footer)
+    const height = style.display === "none" ? 0 : footer.getBoundingClientRect().height
+      + parseFloat(style.marginTop)
+    document.body.style.setProperty("--announcement-height", `${height}px`)
+  }).observe(footer)
   refreshSize();
   checkAnnouncements();
 
@@ -158,6 +192,7 @@ async function updateButtons() {
   if (playbackErr) handleError(playbackErr)
   updatePlaybackStatus(state, speech)
 
+  $("body").toggleClass("is-stopped", state == "STOPPED");
   $("#imgLoading").toggle(state == "LOADING");
   $("#btnSettings").toggle(state == "STOPPED");
   $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
@@ -166,11 +201,13 @@ async function updateButtons() {
   $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
 
   if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
-    $("#highlight, #toolbar").show()
+    $("body").addClass("has-highlight")
+    $("#highlight").show()
     updateHighlighting(speech)
   }
   else {
-    $("#highlight, #toolbar").hide()
+    $("body").removeClass("has-highlight")
+    $("#highlight").hide()
   }
 }
 
@@ -334,7 +371,7 @@ function refreshSize() {
       })
       if (queryString.isPopup) $("#highlight").css({
         width: isMobileOS() ? "100%" : windowSize[0],
-        height: `calc(${windowSize[1]}px - var(--playback-status-height, 0px))`
+        height: `calc(${windowSize[1]}px - 8px + var(--footer-line-height, 0px) - var(--playback-status-height, 0px) - var(--announcement-height, 0px))`
       })
     })
   function getFontSize(settings) {
@@ -408,9 +445,12 @@ function updatePlaybackStatus(state, speech) {
   const active = state === "PLAYING" || state === "PAUSED" || state === "LOADING"
   const panel = document.getElementById("playback-status")
   panel.hidden = !active
+  document.getElementById("reading-controls").hidden = !active
   const estimate = playbackEstimate.update(state, speech, performance.now())
   if (!active) {
     panel.open = false
+    document.getElementById("toolbar").hidden = true
+    document.getElementById("toggle-reading-controls").setAttribute("aria-expanded", "false")
     return
   }
   const message = (key, value) => brapi.i18n.getMessage(`playback_status_${key}`, value)

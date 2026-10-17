@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "Tidak tersedia"
+  },
+  "playback_status_reading_controls": {
+    "message": "Kontrol pembacaan"
+  },
+  "playback_status_report_issue": {
+    "message": "Laporkan masalah"
+  },
+  "playback_status_smaller_text": {
+    "message": "Perkecil teks"
+  },
+  "playback_status_larger_text": {
+    "message": "Perbesar teks"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Perkecil popup"
+  },
+  "playback_status_larger_popup": {
+    "message": "Perbesar popup"
   }
 }

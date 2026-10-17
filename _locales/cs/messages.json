@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "Nedostupné"
+  },
+  "playback_status_reading_controls": {
+    "message": "Ovládání čtení"
+  },
+  "playback_status_report_issue": {
+    "message": "Nahlásit problém"
+  },
+  "playback_status_smaller_text": {
+    "message": "Zmenšit text"
+  },
+  "playback_status_larger_text": {
+    "message": "Zvětšit text"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Zmenšit vyskakovací okno"
+  },
+  "playback_status_larger_popup": {
+    "message": "Zvětšit vyskakovací okno"
   }
 }

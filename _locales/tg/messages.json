@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "Дастнорас"
+  },
+  "playback_status_reading_controls": {
+    "message": "Танзимоти хониш"
+  },
+  "playback_status_report_issue": {
+    "message": "Хабар додан дар бораи мушкилот"
+  },
+  "playback_status_smaller_text": {
+    "message": "Хурд кардани матн"
+  },
+  "playback_status_larger_text": {
+    "message": "Калон кардани матн"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Хурд кардани равзанаи поп-ап"
+  },
+  "playback_status_larger_popup": {
+    "message": "Калон кардани равзанаи поп-ап"
   }
 }

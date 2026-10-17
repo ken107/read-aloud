@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "Niet beschikbaar"
+  },
+  "playback_status_reading_controls": {
+    "message": "Leesinstellingen"
+  },
+  "playback_status_report_issue": {
+    "message": "Een probleem melden"
+  },
+  "playback_status_smaller_text": {
+    "message": "Tekst verkleinen"
+  },
+  "playback_status_larger_text": {
+    "message": "Tekst vergroten"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Pop-up verkleinen"
+  },
+  "playback_status_larger_popup": {
+    "message": "Pop-up vergroten"
   }
 }

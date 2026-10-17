@@ -250,5 +250,23 @@
   },
   "playback_status_unavailable": {
     "message": "Non disponibile"
+  },
+  "playback_status_reading_controls": {
+    "message": "Controlli di lettura"
+  },
+  "playback_status_report_issue": {
+    "message": "Segnala un problema"
+  },
+  "playback_status_smaller_text": {
+    "message": "Riduci il testo"
+  },
+  "playback_status_larger_text": {
+    "message": "Ingrandisci il testo"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Riduci la finestra popup"
+  },
+  "playback_status_larger_popup": {
+    "message": "Ingrandisci la finestra popup"
   }
 }
