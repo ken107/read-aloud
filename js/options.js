@@ -67,6 +67,11 @@
 
 
 
+  domReadyPromise.then(() => {
+    initSettingInfoPopup("voice-info-button", "voice-info", "voices", "options_voice_information")
+    initSettingInfoPopup("rate-info-button", "rate-warning", "rate", "options_rate_information")
+  })
+
   //voice
   domReadyPromise
     .then(() => {
@@ -107,7 +112,9 @@
     observeSetting("gcpCreds"),
     domReadyPromise
   ).subscribe(([voiceName, gcpCreds]) => {
-    $("#voice-info").toggle(!!voiceName && isGoogleWavenet({voiceName}) && !gcpCreds)
+    document.getElementById("voice-info-button").hidden = !(voiceName && isGoogleWavenet({voiceName}) && !gcpCreds)
+    document.getElementById("voice-info").hidden = true
+    document.getElementById("voice-info-button").setAttribute("aria-expanded", "false")
   })
 
 
@@ -151,7 +158,9 @@
 
   rxjs.combineLatest([observeSetting("voiceName"), rateObservable, domReadyPromise])
     .subscribe(([voiceName, rate]) => {
-      $("#rate-warning").toggle((!voiceName || isNativeVoice({voiceName})) && rate > 2)
+      document.getElementById("rate-info-button").hidden = !((!voiceName || isNativeVoice({voiceName})) && rate > 2)
+      document.getElementById("rate-warning").hidden = true
+      document.getElementById("rate-info-button").setAttribute("aria-expanded", "false")
     })
 
 
@@ -583,3 +592,45 @@
     }
   }
 })();
+
+function initSettingInfoPopup(buttonId, popupId, anchorId, labelKey) {
+  const button = document.getElementById(buttonId)
+  const popup = document.getElementById(popupId)
+  const label = brapi.i18n.getMessage(labelKey)
+  button.setAttribute("aria-label", label)
+  button.title = label
+  const close = () => {
+    popup.hidden = true
+    button.setAttribute("aria-expanded", "false")
+  }
+  button.addEventListener("click", () => {
+    if (!popup.hidden) return close()
+    // A fixed, viewport-bounded overlay must not affect extension auto-sizing.
+    const anchorElement = document.getElementById(anchorId)
+    const anchor = (anchorElement.getClientRects().length ? anchorElement : button).getBoundingClientRect()
+    const width = Math.min(320, window.innerWidth - 32)
+    popup.style.width = `${width}px`
+    popup.style.left = `${Math.max(16, Math.min(anchor.right - width, window.innerWidth - width - 16))}px`
+    popup.style.top = "16px"
+    popup.hidden = false
+    const height = popup.getBoundingClientRect().height
+    popup.style.top = `${Math.max(16, Math.min(anchor.bottom + 8, window.innerHeight - height - 16))}px`
+    button.setAttribute("aria-expanded", "true")
+  })
+  document.addEventListener("click", event => {
+    if (!button.contains(event.target) && !popup.contains(event.target)) close()
+  })
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !popup.hidden) {
+      close()
+      button.focus()
+      event.preventDefault()
+    }
+  })
+  document.addEventListener("focusin", event => {
+    if (!button.contains(event.target) && !popup.contains(event.target)) close()
+  })
+  window.addEventListener("resize", close)
+  window.addEventListener("scroll", close)
+  document.getElementById("voices").addEventListener("change", close)
+}

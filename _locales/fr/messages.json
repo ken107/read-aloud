@@ -268,5 +268,14 @@
   },
   "playback_status_larger_popup": {
     "message": "Agrandir la fenêtre"
+  },
+  "options_voice_information": {
+    "message": "Informations sur la voix"
+  },
+  "options_rate_information": {
+    "message": "Informations sur la vitesse"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Activer ou désactiver le mode sombre"
   }
 }

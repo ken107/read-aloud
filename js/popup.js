@@ -65,13 +65,13 @@ async function init() {
     ["increase-font-size", "larger_text"],
     ["decrease-window-size", "smaller_popup"],
     ["increase-window-size", "larger_popup"],
+    ["toggle-dark-mode", "toggle_dark_mode"],
   ]) {
     const label = brapi.i18n.getMessage(`playback_status_${key}`)
     $("#" + id).attr({title: label, "aria-label": label})
   }
   const reportLabel = brapi.i18n.getMessage("playback_status_report_issue")
-  $("#report-issue").attr({title: reportLabel, "aria-label": reportLabel})
-    .click(() => { location.href = "report.html?referer=popup.html" })
+  $("#report-issue").text(reportLabel)
 
   const controlsToggle = document.getElementById("toggle-reading-controls")
   const controlsLabel = brapi.i18n.getMessage("playback_status_reading_controls")
@@ -388,9 +388,9 @@ function refreshSize() {
   }
   function getWindowSize(settings) {
     switch (settings.highlightWindowSize || defaults.highlightWindowSize) {
-      case 1: return [430, 330];
-      case 2: return [550, 420];
-      default: return [750, 450];
+      case 1: return [430, 380];
+      case 2: return [550, 470];
+      default: return [750, 500];
     }
   }
 }

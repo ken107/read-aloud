@@ -22,7 +22,7 @@ body {
 }
 body.is-stopped #buttons {
   margin-top: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 #buttons > img {
   vertical-align: top;
@@ -95,9 +95,6 @@ body.is-popup #highlight {
   border-radius: 6px;
   box-shadow: inset 0 0 0 1px var(--control-border);
 }
-#toolbar .btn-group:last-child {
-  margin-left: auto;
-}
 #toolbar .btn {
   appearance: none;
   position: relative;
@@ -158,7 +155,9 @@ body:not(.is-popup) #toolbar .btn-group.window-size {
   white-space: nowrap;
 }
 #footer:not(:empty) { margin-top: 8px; }
-#footer:empty { display: none; }
+#footer:empty, #footer:not(.announcement) { display: none; }
+body.is-stopped #footer:not(.announcement) { display: block; }
+#report-issue { color: inherit; }
 
 #status {
   min-width: 250px;
@@ -169,6 +168,9 @@ body:not(.is-popup) #toolbar .btn-group.window-size {
 }
 .dark-mode #status {
   color: #f88;
+}
+body.is-stopped #status {
+  margin-top: 20px;
 }
 
 #attribution {

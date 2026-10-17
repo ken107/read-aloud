@@ -268,5 +268,14 @@
   },
   "playback_status_larger_popup": {
     "message": "Açılır pencereyi büyüt"
+  },
+  "options_voice_information": {
+    "message": "Ses bilgileri"
+  },
+  "options_rate_information": {
+    "message": "Hız bilgileri"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Koyu modu değiştir"
   }
 }

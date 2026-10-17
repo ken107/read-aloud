@@ -268,5 +268,14 @@
   },
   "playback_status_larger_popup": {
     "message": "放大彈出視窗"
+  },
+  "options_voice_information": {
+    "message": "語音資訊"
+  },
+  "options_rate_information": {
+    "message": "語速資訊"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "切換深色模式"
   }
 }

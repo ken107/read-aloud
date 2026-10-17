@@ -268,5 +268,14 @@
   },
   "playback_status_larger_popup": {
     "message": "Zvětšit vyskakovací okno"
+  },
+  "options_voice_information": {
+    "message": "Informace o hlasu"
+  },
+  "options_rate_information": {
+    "message": "Informace o rychlosti"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Přepnout tmavý režim"
   }
 }

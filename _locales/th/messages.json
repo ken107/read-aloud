@@ -268,5 +268,14 @@
   },
   "playback_status_larger_popup": {
     "message": "เพิ่มขนาดป๊อปอัป"
+  },
+  "options_voice_information": {
+    "message": "ข้อมูลเสียง"
+  },
+  "options_rate_information": {
+    "message": "ข้อมูลความเร็ว"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "สลับโหมดมืด"
   }
 }

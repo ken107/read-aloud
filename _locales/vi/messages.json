@@ -271,5 +271,14 @@
   },
   "playback_status_larger_popup": {
     "message": "Phóng to cửa sổ bật lên"
+  },
+  "options_voice_information": {
+    "message": "Thông tin giọng đọc"
+  },
+  "options_rate_information": {
+    "message": "Thông tin tốc độ"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Bật/tắt chế độ tối"
   }
 }

@@ -268,5 +268,14 @@
   },
   "playback_status_larger_popup": {
     "message": "Suurenna ponnahdusikkunaa"
+  },
+  "options_voice_information": {
+    "message": "Äänen tiedot"
+  },
+  "options_rate_information": {
+    "message": "Nopeuden tiedot"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Vaihda tumma tila"
   }
 }

@@ -268,5 +268,14 @@
   },
   "playback_status_larger_popup": {
     "message": "Perbesar popup"
+  },
+  "options_voice_information": {
+    "message": "Informasi suara"
+  },
+  "options_rate_information": {
+    "message": "Informasi kecepatan"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Beralih mode gelap"
   }
 }

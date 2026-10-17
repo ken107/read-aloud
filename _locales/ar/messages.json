@@ -268,5 +268,14 @@
   },
   "playback_status_larger_popup": {
     "message": "تكبير النافذة المنبثقة"
+  },
+  "options_voice_information": {
+    "message": "معلومات الصوت"
+  },
+  "options_rate_information": {
+    "message": "معلومات السرعة"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "تبديل الوضع الداكن"
   }
 }

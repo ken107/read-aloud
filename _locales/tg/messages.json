@@ -268,5 +268,14 @@
   },
   "playback_status_larger_popup": {
     "message": "Калон кардани равзанаи поп-ап"
+  },
+  "options_voice_information": {
+    "message": "Маълумот дар бораи овоз"
+  },
+  "options_rate_information": {
+    "message": "Маълумот дар бораи суръат"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Иваз кардани ҳолати торик"
   }
 }
