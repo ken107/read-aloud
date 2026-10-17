@@ -11,6 +11,8 @@ function Speech(texts, options) {
   if (texts.length) texts = getChunks(texts.join("\n\n"));
 
   const engine = pickEngine()
+  const statusId = crypto.randomUUID()
+  let navigationRevision = 0
   let enginePlaybackState
 
   this.options = options;
@@ -21,13 +23,14 @@ function Speech(texts, options) {
   this.getInfo = getInfo;
   this.canForward = () => engine.forward != null || playlist.canForward()
   this.canRewind = () => engine.rewind != null || playlist.canRewind()
-  this.forward = () => cmd$.next({name: "forward", delay: 750})
-  this.rewind = () => cmd$.next({name: "rewind", delay: 750})
+  this.forward = () => { navigationRevision++; cmd$.next({name: "forward", delay: 750}) }
+  this.rewind = () => { navigationRevision++; cmd$.next({name: "rewind", delay: 750}) }
   this.seek = index => {
+    navigationRevision++
     cmd$.next({name: "seek", index})
     playbackState$.next("resumed")
   }
-  this.gotoEnd = () => cmd$.next({name: "gotoEnd"})
+  this.gotoEnd = () => { navigationRevision++; cmd$.next({name: "gotoEnd"}) }
 
   function pickEngine() {
     if (isPiperVoice(options.voice)) return piperTtsEngine;
@@ -88,6 +91,12 @@ function Speech(texts, options) {
       position: {
         index: enginePlaybackState ? enginePlaybackState.index : playlist.getIndex()
       },
+      statusId,
+      navigationRevision,
+      voiceName: options.voice.voiceName,
+      voiceLocation: isOfflineVoice(options.voice) ? "offline" : "cloud",
+      detectedLang: options.lang,
+      voiceLanguages: getVoiceLanguages(options.voice),
       isRTL: /^(ar|az|dv|he|iw|ku|fa|ur)\b/.test(options.lang),
       engine: immediate(() => {
         switch (engine) {

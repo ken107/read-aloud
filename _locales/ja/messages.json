@@ -181,5 +181,74 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloudは、テキスト読み上げにGoogle翻訳を使用しています。このタブは開いたままにしてください。"
+  },
+  "playback_status_detected_language": {
+    "message": "検出された言語: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "読み上げ言語: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "音声: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "処理: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "オフライン"
+  },
+  "playback_status_cloud": {
+    "message": "クラウド"
+  },
+  "playback_status_preparing_voice": {
+    "message": "音声を準備中…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "残り1分未満"
+  },
+  "playback_status_minutes_left": {
+    "message": "残り約$value$分",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "読み込み中…"
+  },
+  "playback_status_loading_engine": {
+    "message": "$value$を読み込み中…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "一時停止中"
+  },
+  "playback_status_unavailable": {
+    "message": "利用できません"
   }
 }

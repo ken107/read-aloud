@@ -13,6 +13,7 @@
   <script src="js/jquery-3.7.1.min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/messaging.js"></script>
+  <script src="js/playback-status.js"></script>
   <script src="js/popup.js"></script>
 </head>
 <body>
@@ -27,6 +28,10 @@
     <i class="material-icons button-1" id="btnSettings">settings</i>
     <i class="material-icons button-1" id="btnForward">&#xe01f;</i>
   </div>
+  <details id="playback-status" hidden>
+    <summary><span id="playback-voice"></span><span id="playback-progress"></span></summary>
+    <div id="playback-details"></div>
+  </details>
   <div id="highlight">
   </div>
   <div id="toolbar">

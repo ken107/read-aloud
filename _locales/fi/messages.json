@@ -181,5 +181,74 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud käyttää Google-kääntäjää tekstistä puheeksi -toimintoon. Pidä tämä välilehti auki."
+  },
+  "playback_status_detected_language": {
+    "message": "Tunnistettu kieli: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Lukukieli: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Ääni: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Käsittely: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Pilvi"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Valmistellaan ääntä…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Alle 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "~$value$ min jäljellä",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Ladataan…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Ladataan: $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Keskeytetty"
+  },
+  "playback_status_unavailable": {
+    "message": "Ei saatavilla"
   }
 }

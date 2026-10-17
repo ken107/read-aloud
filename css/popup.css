@@ -175,3 +175,53 @@ body:not(.is-popup) #toolbar .btn-group.window-size {
 .google-logo span:nth-child(5) {
   color: #3cba54;
 }
+
+/* Both collapsed and expanded status borrow space from the reading pane. */
+#playback-status {
+  font-size: 11px;
+  color: #606060;
+  box-sizing: border-box;
+  width: 0;
+  min-width: 100%;
+}
+#playback-status[hidden] { display: none; }
+#playback-status summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  cursor: pointer;
+  list-style: none;
+}
+#playback-status summary::-webkit-details-marker { display: none; }
+#playback-status summary::before {
+  content: '';
+  flex: none;
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
+  transform-origin: 2px center;
+  transition: transform 150ms ease;
+}
+#playback-status[open] summary::before { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) {
+  #playback-status summary::before { transition: none; }
+}
+#playback-status summary:focus-visible { outline: 2px solid #4885ed; outline-offset: -2px; }
+#playback-voice { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#playback-progress { flex-shrink: 0; white-space: nowrap; }
+#playback-details {
+  height: 88px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 18px;
+  padding: 0 12px 8px;
+  box-sizing: border-box;
+}
+.dark-mode #playback-status { color: #bbb; }
+body:not(.is-popup) #highlight {
+  height: calc(100vh - 150px - var(--playback-status-height, 0px));
+}

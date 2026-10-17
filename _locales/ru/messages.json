@@ -181,5 +181,74 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud использует Google Translate для преобразования текста в речь.  Пожалуйста, держите эту вкладку открытой."
+  },
+  "playback_status_detected_language": {
+    "message": "Определённый язык: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Язык чтения: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Голос: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Обработка: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Офлайн"
+  },
+  "playback_status_cloud": {
+    "message": "В облаке"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Подготовка голоса…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Менее 1 мин"
+  },
+  "playback_status_minutes_left": {
+    "message": "Осталось ~$value$ мин",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Загрузка…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Загрузка $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Приостановлено"
+  },
+  "playback_status_unavailable": {
+    "message": "Недоступно"
   }
 }

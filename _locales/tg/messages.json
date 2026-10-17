@@ -181,5 +181,74 @@
   },
   "google_translate_keep_page_open": {
     "message": "Барои табдил кардани матн ба нутқ, барномаи «Баланд хонед» аз технологияи «Google Translate» истифода мебарад.  Лутфан, ин варақаро кушода нигоҳ доред."
+  },
+  "playback_status_detected_language": {
+    "message": "Забони муайяншуда: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Забони хониш: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Овоз: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Коркард: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Бе интернет"
+  },
+  "playback_status_cloud": {
+    "message": "Абрӣ"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Омодасозии овоз…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Камтар аз 1 дақиқа"
+  },
+  "playback_status_minutes_left": {
+    "message": "Тақрибан $value$ дақиқа мондааст",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Боргирӣ…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Боргирии $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Таваққуф шудааст"
+  },
+  "playback_status_unavailable": {
+    "message": "Дастнорас"
   }
 }

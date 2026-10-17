@@ -181,5 +181,74 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud正在使用Google Translate进行语音合成。 请保持此标签打开。"
+  },
+  "playback_status_detected_language": {
+    "message": "检测到的语言：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "朗读语言：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "语音：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "处理方式：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "离线"
+  },
+  "playback_status_cloud": {
+    "message": "云端"
+  },
+  "playback_status_preparing_voice": {
+    "message": "正在准备语音…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "剩余不到1分钟"
+  },
+  "playback_status_minutes_left": {
+    "message": "剩余约$value$分钟",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "正在加载…"
+  },
+  "playback_status_loading_engine": {
+    "message": "正在加载$value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "已暂停"
+  },
+  "playback_status_unavailable": {
+    "message": "不可用"
   }
 }

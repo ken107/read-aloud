@@ -181,5 +181,74 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud bruger Google Oversæt til tekst til tale. Hold venligst denne fane åben."
+  },
+  "playback_status_detected_language": {
+    "message": "Registreret sprog: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Oplæsningssprog: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Stemme: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Behandling: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Cloud"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Forbereder stemme…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Under 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "~$value$ min tilbage",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Indlæser…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Indlæser $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Sat på pause"
+  },
+  "playback_status_unavailable": {
+    "message": "Ikke tilgængelig"
   }
 }

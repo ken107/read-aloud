@@ -181,5 +181,74 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud menggunakan Google Terjemahan untuk teks ke ucapan. Harap biarkan tab ini tetap terbuka."
+  },
+  "playback_status_detected_language": {
+    "message": "Bahasa terdeteksi: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Bahasa pembacaan: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Suara: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Pemrosesan: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Cloud"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Menyiapkan suara…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Kurang dari 1 menit"
+  },
+  "playback_status_minutes_left": {
+    "message": "Sisa ~$value$ menit",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Memuat…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Memuat $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Dijeda"
+  },
+  "playback_status_unavailable": {
+    "message": "Tidak tersedia"
   }
 }

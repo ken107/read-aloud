@@ -181,5 +181,74 @@
   },
   "google_translate_keep_page_open": {
     "message": "يستخدم Read Aloud ترجمة Google لتحويل النص إلى كلام. يرجى إبقاء علامة التبويب هذه مفتوحة."
+  },
+  "playback_status_detected_language": {
+    "message": "اللغة المكتشفة: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "لغة القراءة: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "الصوت: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "المعالجة: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "دون اتصال"
+  },
+  "playback_status_cloud": {
+    "message": "سحابية"
+  },
+  "playback_status_preparing_voice": {
+    "message": "جارٍ تجهيز الصوت…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "أقل من دقيقة"
+  },
+  "playback_status_minutes_left": {
+    "message": "متبقٍ نحو $value$ دقيقة",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "جارٍ التحميل…"
+  },
+  "playback_status_loading_engine": {
+    "message": "جارٍ تحميل $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "متوقف مؤقتًا"
+  },
+  "playback_status_unavailable": {
+    "message": "غير متاح"
   }
 }

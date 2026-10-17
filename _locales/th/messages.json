@@ -181,5 +181,74 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud กำลังใช้ Google แปลภาษาสำหรับการแปลงข้อความเป็นเสียง กรุณาเปิดแท็บนี้ไว้"
+  },
+  "playback_status_detected_language": {
+    "message": "ภาษาที่ตรวจพบ: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "ภาษาที่อ่าน: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "เสียง: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "การประมวลผล: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "ออฟไลน์"
+  },
+  "playback_status_cloud": {
+    "message": "คลาวด์"
+  },
+  "playback_status_preparing_voice": {
+    "message": "กำลังเตรียมเสียง…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "เหลือน้อยกว่า 1 นาที"
+  },
+  "playback_status_minutes_left": {
+    "message": "เหลือประมาณ $value$ นาที",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "กำลังโหลด…"
+  },
+  "playback_status_loading_engine": {
+    "message": "กำลังโหลด $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "หยุดชั่วคราว"
+  },
+  "playback_status_unavailable": {
+    "message": "ไม่พร้อมใช้งาน"
   }
 }

@@ -181,5 +181,74 @@
   },
   "google_translate_keep_page_open": {
     "message": "O Read Aloud está usando o Google Tradutor para texto para fala. Por favor, mantenha esta aba aberta."
+  },
+  "playback_status_detected_language": {
+    "message": "Idioma detectado: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Idioma de leitura: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Voz: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Processamento: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Nuvem"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Preparando voz…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Menos de 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "Restam ~$value$ min",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Carregando…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Carregando $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Pausado"
+  },
+  "playback_status_unavailable": {
+    "message": "Indisponível"
   }
 }

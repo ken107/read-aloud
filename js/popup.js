@@ -8,15 +8,7 @@ registerMessageListener("popup", {
   }
 })
 
-const engineInitializingSubject = new rxjs.Subject()
-engineInitializingSubject
-  .pipe(
-    rxjs.distinctUntilChanged()
-  )
-  .subscribe(engine => {
-    if (engine) $("#status").text(`${engine} TTS engine initializing...`).show()
-    else $("#status").hide()
-  })
+const playbackEstimate = createPlaybackEstimate()
 
 $(function() {
   if (queryString.isPopup) $("body").addClass("is-popup")
@@ -69,6 +61,9 @@ async function init() {
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
   $("#toggle-dark-mode").click(toggleDarkMode);
 
+  new ResizeObserver(entries => {
+    document.body.style.setProperty("--playback-status-height", `${entries[0].target.getBoundingClientRect().height}px`)
+  }).observe(document.getElementById("playback-status"));
   refreshSize();
   checkAnnouncements();
 
@@ -161,7 +156,7 @@ async function updateButtons() {
   var playbackErr = stateInfo.playbackError
 
   if (playbackErr) handleError(playbackErr)
-  engineInitializingSubject.next(state == "LOADING" && speech?.engine)
+  updatePlaybackStatus(state, speech)
 
   $("#imgLoading").toggle(state == "LOADING");
   $("#btnSettings").toggle(state == "STOPPED");
@@ -339,7 +334,7 @@ function refreshSize() {
       })
       if (queryString.isPopup) $("#highlight").css({
         width: isMobileOS() ? "100%" : windowSize[0],
-        height: windowSize[1]
+        height: `calc(${windowSize[1]}px - var(--playback-status-height, 0px))`
       })
     })
   function getFontSize(settings) {
@@ -407,4 +402,38 @@ function showAnnouncement(ann) {
 function toggleDarkMode() {
   const darkMode = document.body.classList.toggle("dark-mode")
   updateSettings({darkMode})
+}
+
+function updatePlaybackStatus(state, speech) {
+  const active = state === "PLAYING" || state === "PAUSED" || state === "LOADING"
+  const panel = document.getElementById("playback-status")
+  panel.hidden = !active
+  const estimate = playbackEstimate.update(state, speech, performance.now())
+  if (!active) {
+    panel.open = false
+    return
+  }
+  const message = (key, value) => brapi.i18n.getMessage(`playback_status_${key}`, value)
+  const uiLanguage = brapi.i18n.getUILanguage()
+  const voice = speech?.voiceName || message("preparing_voice")
+  $("#playback-voice").text(voice)
+  let progress = estimate ? new Intl.NumberFormat(uiLanguage, {style: "percent"}).format(estimate.percent / 100) : ""
+  if (estimate?.seconds != null) {
+    progress = estimate.seconds < 60 ? message("less_than_minute")
+      : message("minutes_left", new Intl.NumberFormat(uiLanguage).format(Math.ceil(estimate.seconds / 60)))
+  }
+  if (state === "LOADING") progress = speech?.engine ? message("loading_engine", speech.engine) : message("loading")
+  else if (state === "PAUSED") progress = message("paused") + (progress ? ` · ${progress}` : "")
+  $("#playback-progress").text(progress)
+  const languageName = code => {
+    if (!code) return message("unavailable")
+    try { return new Intl.DisplayNames([uiLanguage], {type: "language"}).of(code) }
+    catch { return code }
+  }
+  $("#playback-details").text([
+    message("detected_language", languageName(speech?.detectedLang)),
+    speech?.voiceLanguages?.length ? message("reading_language", new Intl.ListFormat(uiLanguage).format(speech.voiceLanguages.map(languageName))) : null,
+    message("voice", voice),
+    speech?.voiceLocation ? message("processing", message(speech.voiceLocation)) : null,
+  ].filter(Boolean).join("\n"))
 }
