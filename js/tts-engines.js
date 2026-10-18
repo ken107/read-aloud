@@ -17,17 +17,24 @@ const nghiTtsEngine = new NghiTtsEngine()
 const cache = {
   entries: new Map(),
   maxEntries: 5,
-  async fetchCached(key, fetchFn, destroyFn) {
+  fetchCached(key, fetchFn, destroyFn) {
     const entry = this.entries.get(key)
-    if (entry) return entry.value
-    const value = await fetchFn()
-    this.entries.set(key, {value, destroyFn})
+    if (entry) {
+      this.entries.delete(key)
+      this.entries.set(key, entry)
+      return entry.promise
+    }
+    const promise = Promise.resolve().then(fetchFn).catch(err => {
+      if (this.entries.get(key)?.promise === promise) this.entries.delete(key)
+      throw err
+    })
+    this.entries.set(key, {promise, destroyFn})
     while (this.entries.size > this.maxEntries) {
       const [oldestKey, oldest] = this.entries.entries().next().value
-      oldest.destroyFn?.(oldest.value)
+      oldest.promise.then(value => oldest.destroyFn?.(value)).catch(() => {})
       this.entries.delete(oldestKey)
     }
-    return value
+    return promise
   }
 }
 

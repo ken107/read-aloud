@@ -165,9 +165,18 @@ function Speech(texts, options) {
               sentenceStartIndicies: event.sentenceStartIndicies,
               index: 0
             }
-          } else {
-            const nextText = texts[playlist.getIndex() + 1]
-            if (nextText && engine.prefetch != null) engine.prefetch(nextText, options)
+          } else if (engine.prefetch != null) {
+            const nextIndex = playlist.getIndex() + 1
+            const nextText = texts[nextIndex]
+            if (nextText) {
+              engine.prefetch(nextText, options)
+              // A short next chunk may finish before its successor can load.
+              // Use a 100-character threshold.
+              if (nextText.length < 100) {
+                const followingText = texts[nextIndex + 1]
+                if (followingText) engine.prefetch(followingText, options)
+              }
+            }
           }
           break
         case "sentence":
