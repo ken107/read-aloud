@@ -10,6 +10,7 @@ var openaiTtsEngine = new OpenaiTtsEngine();
 var azureTtsEngine = new AzureTtsEngine();
 const piperTtsEngine = new PiperTtsEngine()
 const supertonicTtsEngine = new SupertonicTtsEngine()
+const nghiTtsEngine = new NghiTtsEngine()
 
 
 //synthesized audio cache
@@ -1323,6 +1324,90 @@ function SupertonicTtsEngine() {
         }),
         rxjs.ignoreElements(),
         rxjs.mergeWith(supertonicHost.eventSubject),
+        rxjs.map(event => {
+          if (event.type == "error") throw event.error
+          return event
+        }),
+        rxjs.takeWhile(event => event.type != "end")
+      )
+      .subscribe({
+        next(event) {
+          if (event.type == "start") isSpeaking = true
+          onEvent(event)
+        },
+        complete() {
+          onEvent({type: "end"})
+        },
+        error(err) {
+          if (err.name != "interrupted") onEvent({type: "error", error: err})
+        }
+      })
+      .add(() => {
+        isSpeaking = false
+        control = null
+      })
+  }
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking)
+  }
+  this.pause = function() {
+    control?.next("pause")
+  }
+  this.resume = function() {
+    control?.next("resume")
+  }
+  this.stop = function() {
+    control?.next("stop")
+  }
+  this.forward = function() {
+    control?.next("forward")
+  }
+  this.rewind = function() {
+    control?.next("rewind")
+  }
+  this.seek = function(index) {
+    control?.next({type: "seek", index})
+  }
+}
+
+
+function NghiTtsEngine() {
+  let control = null
+  let isSpeaking = false
+  this.speak = function(utterance, options, onEvent) {
+    control = new rxjs.Subject()
+    control
+      .pipe(
+        rxjs.startWith("speak"),
+        rxjs.concatMap(async cmd => {
+          switch (typeof cmd == "string" ? cmd : cmd.type) {
+            case "speak":
+              await nghiTtsHost.ready({requestFocus: false})
+              return nghiTtsHost.sendRequest("speak", {
+                utterance,
+                voiceName: options.voice.voiceName,
+                pitch: options.pitch,
+                rate: options.rate,
+                volume: options.volume,
+                externalPlayback: true,
+              })
+            case "pause":
+              return nghiTtsHost.sendRequest("pause")
+            case "resume":
+              return nghiTtsHost.sendRequest("resume")
+            case "stop":
+              return nghiTtsHost.sendRequest("stop")
+                .then(() => Promise.reject({name: "interrupted", message: "Playback interrupted"}))
+            case "forward":
+              return nghiTtsHost.sendRequest("forward")
+            case "rewind":
+              return nghiTtsHost.sendRequest("rewind")
+            case "seek":
+              return nghiTtsHost.sendRequest("seek", {index: cmd.index})
+          }
+        }),
+        rxjs.ignoreElements(),
+        rxjs.mergeWith(nghiTtsHost.eventSubject),
         rxjs.map(event => {
           if (event.type == "error") throw event.error
           return event

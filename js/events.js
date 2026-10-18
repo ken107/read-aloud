@@ -132,6 +132,51 @@ const supertonicHost = immediate(() => {
 })
 
 
+const nghiTtsHost = immediate(() => {
+  const tabSubject = new rxjs.BehaviorSubject(null)
+  return {
+    setTab(tab) {
+      tabSubject.next(tab)
+    },
+    async ready({requestFocus}) {
+      if (requestFocus) {
+        const windows = brapi.extension.getViews({type: "popup"})
+        for (const w of windows) w.close()
+      }
+      try {
+        const tab = tabSubject.getValue()
+        if (!tab) throw "Absent"
+        const status = await this.sendRequest("areYouThere")
+        if (status != true) throw "Absent"
+        if (requestFocus) {
+          await Promise.all([
+            chrome.windows.update(tab.windowId, {focused: true}),
+            chrome.tabs.update(tab.id, {active: true})
+          ])
+        }
+      }
+      catch (err) {
+        tabSubject.next(null)
+        await brapi.tabs.create({url: "https://nghitts.ttstool.com/?embed=1", pinned: true, active: requestFocus})
+        await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
+      }
+    },
+    async sendRequest(method, args) {
+      const tab = tabSubject.getValue()
+      const {error, result} = await brapi.tabs.sendMessage(tab.id, {
+        to: "nghitts-host",
+        type: "request",
+        id: String(Math.random()),
+        method,
+        args
+      })
+      return error ? Promise.reject(error) : result
+    },
+    eventSubject: new rxjs.Subject()
+  }
+})
+
+
 /**
  * IPC handlers
  */
@@ -185,6 +230,15 @@ var handlers = {
   },
   onSupertonicEvent(event) {
     supertonicHost.eventSubject.next(event)
+  },
+  manageNghiTtsVoices() {
+    return nghiTtsHost.ready({requestFocus: true})
+  },
+  nghiTtsServiceReady() {
+    nghiTtsHost.setTab(this.sender.tab)
+  },
+  onNghiTtsEvent(event) {
+    nghiTtsHost.eventSubject.next(event)
   },
   audioPlay: audioPlayer.play,
   audioPause: audioPlayer.pause,
