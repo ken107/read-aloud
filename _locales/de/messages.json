@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud verwendet Google Translate für Text-zu-Sprache. Bitte lassen Sie diesen Tab geöffnet."
+  },
+  "playback_status_detected_language": {
+    "message": "Erkannte Sprache: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Vorlesesprache: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Stimme: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Verarbeitung: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Cloud"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Stimme wird vorbereitet…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Weniger als 1 Min."
+  },
+  "playback_status_minutes_left": {
+    "message": "Noch ~$value$ Min.",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Wird geladen…"
+  },
+  "playback_status_loading_engine": {
+    "message": "$value$ wird geladen…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Pausiert"
+  },
+  "playback_status_unavailable": {
+    "message": "Nicht verfügbar"
+  },
+  "playback_status_reading_controls": {
+    "message": "Leseeinstellungen"
+  },
+  "playback_status_report_issue": {
+    "message": "Problem melden"
+  },
+  "playback_status_smaller_text": {
+    "message": "Text verkleinern"
+  },
+  "playback_status_larger_text": {
+    "message": "Text vergrößern"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Popup verkleinern"
+  },
+  "playback_status_larger_popup": {
+    "message": "Popup vergrößern"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Dunkelmodus umschalten"
   }
 }

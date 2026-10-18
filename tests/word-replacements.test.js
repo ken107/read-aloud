@@ -39,7 +39,7 @@ test('default settings load and reset include word replacements', async () => {
 
 test('speech applies replacements before chunking and highlighting', () => {
   const engine = {};
-  const environment = {rxjs:require('../js/rxjs.umd.min.js'), console,
+  const environment = {crypto:require("node:crypto"), isOfflineVoice:()=>true, rxjs:require('../js/rxjs.umd.min.js'), console,
     parseWordReplacements:context.parseWordReplacements,
     immediate:fn=>fn(), isPiperVoice:()=>true, isSupertonicVoice:()=>false, isNghiTtsVoice:()=>false,
     isGoogleTranslate:()=>false, piperTtsEngine:engine, supertonicTtsEngine:{}, nghiTtsEngine:{}};

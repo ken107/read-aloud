@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud sta usando Google Translate per la sintesi vocale. Si prega di tenere questa scheda aperta."
+  },
+  "playback_status_detected_language": {
+    "message": "Lingua rilevata: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Lingua di lettura: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Voce: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Elaborazione: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Cloud"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Preparazione della voce…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Meno di 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "~$value$ min rimanenti",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Caricamento…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Caricamento di $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "In pausa"
+  },
+  "playback_status_unavailable": {
+    "message": "Non disponibile"
+  },
+  "playback_status_reading_controls": {
+    "message": "Controlli di lettura"
+  },
+  "playback_status_report_issue": {
+    "message": "Segnala un problema"
+  },
+  "playback_status_smaller_text": {
+    "message": "Riduci il testo"
+  },
+  "playback_status_larger_text": {
+    "message": "Ingrandisci il testo"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Riduci la finestra popup"
+  },
+  "playback_status_larger_popup": {
+    "message": "Ingrandisci la finestra popup"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Attiva o disattiva la modalità scura"
   }
 }

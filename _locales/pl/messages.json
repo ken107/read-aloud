@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud używa Tłumacza Google do syntezy mowy. Nie zamykaj tej karty."
+  },
+  "playback_status_detected_language": {
+    "message": "Wykryty język: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Język czytania: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Głos: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Przetwarzanie: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Chmura"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Przygotowywanie głosu…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Mniej niż 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "Pozostało ~$value$ min",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Ładowanie…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Ładowanie $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Wstrzymano"
+  },
+  "playback_status_unavailable": {
+    "message": "Niedostępne"
+  },
+  "playback_status_reading_controls": {
+    "message": "Ustawienia czytania"
+  },
+  "playback_status_report_issue": {
+    "message": "Zgłoś problem"
+  },
+  "playback_status_smaller_text": {
+    "message": "Zmniejsz tekst"
+  },
+  "playback_status_larger_text": {
+    "message": "Powiększ tekst"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Zmniejsz okno"
+  },
+  "playback_status_larger_popup": {
+    "message": "Powiększ okno"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Przełącz tryb ciemny"
   }
 }

@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud가 텍스트 음성 변환을 위해 Google 번역을 사용 중입니다. 이 탭을 열어 두세요."
+  },
+  "playback_status_detected_language": {
+    "message": "감지된 언어: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "읽기 언어: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "음성: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "처리: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "오프라인"
+  },
+  "playback_status_cloud": {
+    "message": "클라우드"
+  },
+  "playback_status_preparing_voice": {
+    "message": "음성 준비 중…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "1분 미만 남음"
+  },
+  "playback_status_minutes_left": {
+    "message": "약 $value$분 남음",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "로딩 중…"
+  },
+  "playback_status_loading_engine": {
+    "message": "$value$ 로딩 중…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "일시 정지됨"
+  },
+  "playback_status_unavailable": {
+    "message": "사용할 수 없음"
+  },
+  "playback_status_reading_controls": {
+    "message": "읽기 설정"
+  },
+  "playback_status_report_issue": {
+    "message": "문제 신고"
+  },
+  "playback_status_smaller_text": {
+    "message": "글자 크기 줄이기"
+  },
+  "playback_status_larger_text": {
+    "message": "글자 크기 늘리기"
+  },
+  "playback_status_smaller_popup": {
+    "message": "팝업 크기 줄이기"
+  },
+  "playback_status_larger_popup": {
+    "message": "팝업 크기 늘리기"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "다크 모드 전환"
   }
 }

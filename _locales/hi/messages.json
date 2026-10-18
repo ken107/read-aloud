@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud टेक्स्ट-टू-स्पीच के लिए Google Translate का उपयोग कर रहा है। कृपया इस टैब को खुला रखें।"
+  },
+  "playback_status_detected_language": {
+    "message": "पहचानी गई भाषा: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "पढ़ने की भाषा: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "आवाज़: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "प्रोसेसिंग: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "ऑफ़लाइन"
+  },
+  "playback_status_cloud": {
+    "message": "क्लाउड"
+  },
+  "playback_status_preparing_voice": {
+    "message": "आवाज़ तैयार हो रही है…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "1 मिनट से कम"
+  },
+  "playback_status_minutes_left": {
+    "message": "लगभग $value$ मिनट बाकी",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "लोड हो रहा है…"
+  },
+  "playback_status_loading_engine": {
+    "message": "$value$ लोड हो रहा है…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "रुका हुआ"
+  },
+  "playback_status_unavailable": {
+    "message": "उपलब्ध नहीं"
+  },
+  "playback_status_reading_controls": {
+    "message": "पढ़ने के नियंत्रण"
+  },
+  "playback_status_report_issue": {
+    "message": "समस्या की रिपोर्ट करें"
+  },
+  "playback_status_smaller_text": {
+    "message": "टेक्स्ट का आकार घटाएँ"
+  },
+  "playback_status_larger_text": {
+    "message": "टेक्स्ट का आकार बढ़ाएँ"
+  },
+  "playback_status_smaller_popup": {
+    "message": "पॉपअप छोटा करें"
+  },
+  "playback_status_larger_popup": {
+    "message": "पॉपअप बड़ा करें"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "डार्क मोड बदलें"
   }
 }

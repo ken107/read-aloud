@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud utilise Google Traduction pour la synthèse vocale. Veuillez garder cet onglet ouvert."
+  },
+  "playback_status_detected_language": {
+    "message": "Langue détectée : $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Langue de lecture : $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Voix : $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Traitement : $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Hors ligne"
+  },
+  "playback_status_cloud": {
+    "message": "Cloud"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Préparation de la voix…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Moins de 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "~$value$ min restantes",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Chargement…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Chargement de $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "En pause"
+  },
+  "playback_status_unavailable": {
+    "message": "Indisponible"
+  },
+  "playback_status_reading_controls": {
+    "message": "Commandes de lecture"
+  },
+  "playback_status_report_issue": {
+    "message": "Signaler un problème"
+  },
+  "playback_status_smaller_text": {
+    "message": "Réduire la taille du texte"
+  },
+  "playback_status_larger_text": {
+    "message": "Agrandir le texte"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Réduire la fenêtre"
+  },
+  "playback_status_larger_popup": {
+    "message": "Agrandir la fenêtre"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Activer ou désactiver le mode sombre"
   }
 }

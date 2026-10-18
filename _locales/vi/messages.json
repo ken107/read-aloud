@@ -169,5 +169,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud đang sử dụng Google Dịch để tổng hợp giọng nói. Vui lòng giữ tab này mở."
+  },
+  "playback_status_detected_language": {
+    "message": "Ngôn ngữ phát hiện: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Ngôn ngữ đọc: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Giọng đọc: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Xử lý: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Ngoại tuyến"
+  },
+  "playback_status_cloud": {
+    "message": "Đám mây"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Đang chuẩn bị giọng đọc…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Còn dưới 1 phút"
+  },
+  "playback_status_minutes_left": {
+    "message": "Còn khoảng $value$ phút",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Đang tải…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Đang tải $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Đã tạm dừng"
+  },
+  "playback_status_unavailable": {
+    "message": "Không có"
+  },
+  "playback_status_reading_controls": {
+    "message": "Điều khiển đọc"
+  },
+  "playback_status_report_issue": {
+    "message": "Báo cáo sự cố"
+  },
+  "playback_status_smaller_text": {
+    "message": "Giảm cỡ chữ"
+  },
+  "playback_status_larger_text": {
+    "message": "Tăng cỡ chữ"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Thu nhỏ cửa sổ bật lên"
+  },
+  "playback_status_larger_popup": {
+    "message": "Phóng to cửa sổ bật lên"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Bật/tắt chế độ tối"
   }
 }

@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud používá Google Překladač pro převod textu na řeč. Prosím nechte tuto kartu otevřenou."
+  },
+  "playback_status_detected_language": {
+    "message": "Rozpoznaný jazyk: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Jazyk čtení: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Hlas: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Zpracování: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Cloud"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Příprava hlasu…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Méně než 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "Zbývá ~$value$ min",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Načítání…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Načítání $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Pozastaveno"
+  },
+  "playback_status_unavailable": {
+    "message": "Nedostupné"
+  },
+  "playback_status_reading_controls": {
+    "message": "Ovládání čtení"
+  },
+  "playback_status_report_issue": {
+    "message": "Nahlásit problém"
+  },
+  "playback_status_smaller_text": {
+    "message": "Zmenšit text"
+  },
+  "playback_status_larger_text": {
+    "message": "Zvětšit text"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Zmenšit vyskakovací okno"
+  },
+  "playback_status_larger_popup": {
+    "message": "Zvětšit vyskakovací okno"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Přepnout tmavý režim"
   }
 }

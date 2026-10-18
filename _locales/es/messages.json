@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud está usando el Traductor de Google para síntesis de voz. Por favor, mantenga esta pestaña abierta."
+  },
+  "playback_status_detected_language": {
+    "message": "Idioma detectado: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Idioma de lectura: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Voz: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Procesamiento: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Sin conexión"
+  },
+  "playback_status_cloud": {
+    "message": "Nube"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Preparando voz…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Menos de 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "Quedan ~$value$ min",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Cargando…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Cargando $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "En pausa"
+  },
+  "playback_status_unavailable": {
+    "message": "No disponible"
+  },
+  "playback_status_reading_controls": {
+    "message": "Controles de lectura"
+  },
+  "playback_status_report_issue": {
+    "message": "Informar de un problema"
+  },
+  "playback_status_smaller_text": {
+    "message": "Reducir el tamaño del texto"
+  },
+  "playback_status_larger_text": {
+    "message": "Aumentar el tamaño del texto"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Reducir la ventana emergente"
+  },
+  "playback_status_larger_popup": {
+    "message": "Ampliar la ventana emergente"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Alternar modo oscuro"
   }
 }

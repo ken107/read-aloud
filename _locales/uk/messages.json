@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud використовує Google Перекладач для синтезу мовлення. Будь ласка, тримайте цю вкладку відкритою."
+  },
+  "playback_status_detected_language": {
+    "message": "Визначена мова: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Мова читання: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Голос: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Обробка: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Офлайн"
+  },
+  "playback_status_cloud": {
+    "message": "У хмарі"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Підготовка голосу…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Менше ніж 1 хв"
+  },
+  "playback_status_minutes_left": {
+    "message": "Залишилося ~$value$ хв",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Завантаження…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Завантаження $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Призупинено"
+  },
+  "playback_status_unavailable": {
+    "message": "Недоступно"
+  },
+  "playback_status_reading_controls": {
+    "message": "Налаштування читання"
+  },
+  "playback_status_report_issue": {
+    "message": "Повідомити про проблему"
+  },
+  "playback_status_smaller_text": {
+    "message": "Зменшити текст"
+  },
+  "playback_status_larger_text": {
+    "message": "Збільшити текст"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Зменшити спливне вікно"
+  },
+  "playback_status_larger_popup": {
+    "message": "Збільшити спливне вікно"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Перемкнути темний режим"
   }
 }

@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud gebruikt Google Translate voor tekst naar spraak. Houd dit tabblad open."
+  },
+  "playback_status_detected_language": {
+    "message": "Gedetecteerde taal: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Voorleestaal: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Stem: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Verwerking: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Cloud"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Stem voorbereiden…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Minder dan 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "Nog ~$value$ min",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Laden…"
+  },
+  "playback_status_loading_engine": {
+    "message": "$value$ laden…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Gepauzeerd"
+  },
+  "playback_status_unavailable": {
+    "message": "Niet beschikbaar"
+  },
+  "playback_status_reading_controls": {
+    "message": "Leesinstellingen"
+  },
+  "playback_status_report_issue": {
+    "message": "Een probleem melden"
+  },
+  "playback_status_smaller_text": {
+    "message": "Tekst verkleinen"
+  },
+  "playback_status_larger_text": {
+    "message": "Tekst vergroten"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Pop-up verkleinen"
+  },
+  "playback_status_larger_popup": {
+    "message": "Pop-up vergroten"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Donkere modus wisselen"
   }
 }

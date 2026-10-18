@@ -166,5 +166,95 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud använder Google Översätt för text till tal. Håll denna flik öppen."
+  },
+  "playback_status_detected_language": {
+    "message": "Identifierat språk: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Uppläsningsspråk: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Röst: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Bearbetning: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Moln"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Förbereder röst…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Mindre än 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "~$value$ min kvar",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Läser in…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Läser in $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Pausad"
+  },
+  "playback_status_unavailable": {
+    "message": "Inte tillgänglig"
+  },
+  "playback_status_reading_controls": {
+    "message": "Läsinställningar"
+  },
+  "playback_status_report_issue": {
+    "message": "Rapportera ett problem"
+  },
+  "playback_status_smaller_text": {
+    "message": "Minska textstorleken"
+  },
+  "playback_status_larger_text": {
+    "message": "Öka textstorleken"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Förminska popupfönstret"
+  },
+  "playback_status_larger_popup": {
+    "message": "Förstora popupfönstret"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Växla mörkt läge"
   }
 }
