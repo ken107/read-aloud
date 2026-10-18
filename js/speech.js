@@ -50,8 +50,7 @@ function Speech(texts, options) {
   }
 
   function getChunks(text) {
-    var isEA = /^zh|ko|ja/.test(options.lang);
-    var punctuator = isEA ? new EastAsianPunctuator() : new LatinPunctuator();
+    var punctuator = createPunctuator(options.lang);
     if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
     else if (isPiperVoice(options.voice) || isSupertonicVoice(options.voice) || isNghiTtsVoice(options.voice)) return [text];
     else return new CharBreaker(750, punctuator, 200).breakText(text);
@@ -304,113 +303,313 @@ function Speech(texts, options) {
 
 
 
-  //text breakers
+}
 
-  function CharBreaker(charLimit, punctuator, paragraphCombineThreshold) {
-    this.breakText = breakText;
-    function breakText(text) {
-      return merge(punctuator.getParagraphs(text), breakParagraph, paragraphCombineThreshold);
-    }
-    function breakParagraph(text) {
-      return merge(punctuator.getSentences(text), breakSentence);
-    }
-    function breakSentence(sentence) {
-      return merge(punctuator.getPhrases(sentence), breakPhrase);
-    }
-    function breakPhrase(phrase) {
-      return merge(punctuator.getWords(phrase), breakWord);
-    }
-    function breakWord(word) {
-      var result = [];
-      while (word) {
-        result.push(word.slice(0, charLimit));
-        word = word.slice(charLimit);
+/**
+ * Keep Google native voice segments below the historically reported ~15-second
+ * cutoff by using a caller-supplied word budget as a duration estimate.
+ *
+ * Split at sentence boundaries, then pack phrases up to wordLimit.
+ * Paragraphs and sentences are never combined. Oversized phrases are emitted
+ * separately in balanced word groups; their leftovers are not packed with the
+ * next phrase. Word tokens retain the separators supplied by the punctuator.
+ */
+function WordBreaker(wordLimit, punctuator) {
+  this.breakText = function(text) {
+    const chunks = createChunkCollector();
+    for (const paragraph of punctuator.getParagraphs(text)) {
+      for (const sentence of punctuator.getSentences(paragraph)) {
+        for (const phrase of punctuator.getPhrases(sentence)) {
+          let words = punctuator.getWords(phrase);
+          if (words.length <= wordLimit) {
+            chunks.append(phrase, words.length, wordLimit);
+            continue;
+          }
+
+          chunks.flush();
+          // Prefer halves over a nearly full chunk followed by a tiny tail.
+          // E.g. 40 words with a limit of 36 become 20 + 20, not 36 + 4.
+          const wordsPerChunk = Math.min(Math.ceil(words.length / 2), wordLimit);
+          while (words.length) {
+            chunks.emit(words.slice(0, wordsPerChunk).join(""));
+            words = words.slice(wordsPerChunk);
+          }
+        }
+        chunks.flush();
       }
-      return result;
     }
-    function merge(parts, breakPart, combineThreshold) {
-      var result = [];
-      var group = {parts: [], charCount: 0};
-      var flush = function() {
-        if (group.parts.length) {
-          result.push(group.parts.join(""));
-          group = {parts: [], charCount: 0};
+    return chunks.result;
+  };
+}
+
+/**
+ * Create general synthesis chunks, balancing natural boundaries with request
+ * size and network efficiency. The caller selects a preferred or server limit.
+ *
+ * Pack text at the coarsest boundary that fits: paragraphs, sentences, phrases,
+ * then words. Only an oversized word is sliced directly.
+ *
+ * charLimit is measured in JavaScript UTF-16 code units (String.length), not
+ * Unicode code points. paragraphCombineThreshold controls only whether adjacent
+ * paragraphs are combined; a single paragraph may exceed it up to charLimit.
+ * A missing or zero threshold uses charLimit, preserving the existing policy.
+ *
+ * Before splitting an oversized part, flush its preceding neighbors. Flush again
+ * after its children so the final child never combines with the next neighbor.
+ * Limits must be positive; word slicing requires charLimit >= 1.
+ */
+function CharBreaker(charLimit, punctuator, paragraphCombineThreshold) {
+  this.breakText = function(text) {
+    const chunks = createChunkCollector();
+    const paragraphPackingLimit = paragraphCombineThreshold || charLimit;
+    for (const paragraph of punctuator.getParagraphs(text)) {
+      if (paragraph.length <= charLimit) {
+        chunks.append(paragraph, paragraph.length, paragraphPackingLimit);
+        continue;
+      }
+
+      chunks.flush();
+      for (const sentence of punctuator.getSentences(paragraph)) {
+        if (sentence.length <= charLimit) {
+          chunks.append(sentence, sentence.length, charLimit);
+          continue;
         }
-      };
-      parts.forEach(function(part) {
-        var charCount = part.length;
-        if (charCount > charLimit) {
-          flush();
-          var subParts = breakPart(part);
-          for (var i=0; i<subParts.length; i++) result.push(subParts[i]);
+
+        chunks.flush();
+        for (const phrase of punctuator.getPhrases(sentence)) {
+          if (phrase.length <= charLimit) {
+            chunks.append(phrase, phrase.length, charLimit);
+            continue;
+          }
+
+          chunks.flush();
+          for (const word of punctuator.getWords(phrase)) {
+            if (word.length <= charLimit) {
+              chunks.append(word, word.length, charLimit);
+              continue;
+            }
+
+            chunks.flush();
+            for (const part of splitOversizedWord(word, charLimit)) chunks.emit(part);
+          }
+          chunks.flush();
         }
-        else {
-          if (group.charCount + charCount > (combineThreshold || charLimit)) flush();
-          group.parts.push(part);
-          group.charCount += charCount;
-        }
-      });
-      flush();
-      return result;
+        chunks.flush();
+      }
+      chunks.flush();
+    }
+    chunks.flush();
+    return chunks.result;
+  };
+}
+
+/** Collect adjacent pieces without deciding how or when to split text. */
+function createChunkCollector() {
+  const result = [];
+  let pendingParts = [];
+  let pendingSize = 0;
+  function flush() {
+    if (pendingParts.length) {
+      result.push(pendingParts.join(""));
+      pendingParts = [];
+      pendingSize = 0;
     }
   }
+  return {
+    result,
+    flush,
+    // Emit an already split chunk without packing it with neighboring pieces.
+    emit(text) { result.push(text); },
+    append(text, size, packingLimit) {
+      if (pendingSize + size > packingLimit) flush();
+      pendingParts.push(text);
+      pendingSize += size;
+    }
+  };
+}
 
-  function LatinPunctuator() {
-    this.getParagraphs = function(text) {
-      return recombine(text.split(/((?:\r?\n\s*){2,})/));
-    }
-    this.getSentences = function(text) {
-      return recombine(text.split(/([.!?]+[\s\u200b]+)/), /\b(\w|[A-Z][a-z]|Assn|Ave|Capt|Col|Comdr|Corp|Cpl|Gen|Gov|Hon|Inc|Lieut|Ltd|Rev|Univ|Jan|Feb|Mar|Apr|Aug|Sept|Oct|Nov|Dec|dept|ed|est|vol|vs)\.\s+$/);
-    }
-    this.getPhrases = function(sentence) {
-      return recombine(sentence.split(/([,;:]\s+|\s-+\s+|—\s*)/));
-    }
-    this.getWords = function(sentence) {
-      var tokens = sentence.trim().split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
-      var result = [];
-      for (var i=0; i<tokens.length; i+=2) {
-        if (tokens[i]) result.push(tokens[i]);
-        if (i+1 < tokens.length) {
-          if (/^[~@#%^*_+=<>]$/.test(tokens[i+1])) result.push(tokens[i+1]);
-          else if (result.length) result[result.length-1] += tokens[i+1];
-        }
+/** Choose boundary rules independently of engine-specific duration budgets. */
+function createPunctuator(lang) {
+  const language = (lang || "").toLowerCase().split("-")[0];
+  if (["zh", "ja", "ko"].includes(language)) return new EastAsianPunctuator();
+  if (["th", "lo", "km", "my"].includes(language)) return new DictionaryPunctuator(language);
+  return new SpaceDelimitedPunctuator(language);
+}
+
+/**
+ * Prefer whole graphemes when slicing an oversized word. The request limit is
+ * still UTF-16 units. A pathological grapheme larger than the limit must fall
+ * back to code points; an individual code point must fit or the limit is invalid.
+ */
+function* splitOversizedWord(word, limit) {
+  const segments = typeof Intl.Segmenter === "function"
+    ? new Intl.Segmenter(undefined, {granularity: "grapheme"}).segment(word)
+    : Array.from(word, segment => ({segment}));
+  let pending = "";
+  for (const {segment} of segments) {
+    const pieces = segment.length > limit ? Array.from(segment) : [segment];
+    for (const piece of pieces) {
+      if (piece.length > limit) throw new RangeError("Character limit cannot fit a Unicode code point");
+      if (pending.length + piece.length > limit) {
+        yield pending;
+        pending = "";
       }
-      return result;
-    }
-    function recombine(tokens, nonPunc) {
-      var result = [];
-      for (var i=0; i<tokens.length; i+=2) {
-        var part = (i+1 < tokens.length) ? (tokens[i] + tokens[i+1]) : tokens[i];
-        if (part) {
-          if (nonPunc && result.length && nonPunc.test(result[result.length-1])) result[result.length-1] += part;
-          else result.push(part);
-        }
-      }
-      return result;
+      pending += piece;
     }
   }
+  if (pending) yield pending;
+}
 
-  function EastAsianPunctuator() {
-    this.getParagraphs = function(text) {
-      return recombine(text.split(/((?:\r?\n\s*){2,})/));
-    }
-    this.getSentences = function(text) {
-      return recombine(text.split(/([.!?]+[\s\u200b]+|[\u3002\uff01]+)/));
-    }
-    this.getPhrases = function(sentence) {
-      return recombine(sentence.split(/([,;:]\s+|[\u2025\u2026\u3000\u3001\uff0c\uff1b]+)/));
-    }
-    this.getWords = function(sentence) {
-      return sentence.replace(/\s+/g, "").split("");
-    }
-    function recombine(tokens) {
-      var result = [];
-      for (var i=0; i<tokens.length; i+=2) {
-        if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
-        else if (tokens[i]) result.push(tokens[i]);
+/**
+ * Periods after titles/references usually introduce more text. Ambiguous endings
+ * (etc., company suffixes, degrees, times, acronyms) are joined only before a
+ * lowercase letter or number. This is a speech-boundary heuristic, not grammar.
+ * Keep language-specific entries scoped: e.g. German "Art." is English "art".
+ */
+function createAbbreviationMatcher(language) {
+  const prefixes = {
+    en: "adm assn ave blvd bldg brig capt cmdr col comdr cpl ct dept dr drs fig figs fr ft gen gov hon lieut ln lt maj messrs mmes mr mrs ms mt mx no nos pl pres prof rd rep reps rev sen sens sgt st ste univ jan feb mar apr jun jul aug sep sept oct nov dec ch chap chs eq eqs sec secs vol vols pp ref refs vs cf approx est esp e.g i.e",
+    de: "dr prof dipl ing hr fr frl nr abb abs art kap bd bsp bzgl bzw ca d.h z.b vgl s sog str gebr",
+    fr: "m mm mme mmes mlle mlles dr dre pr prof me mgr no nos réf fig chap vol éd janv févr avr juil sept oct nov déc p.ex",
+    es: "sr sra sres sras srta dr dra prof profr ud uds núm núms pág págs cap caps fig figs ej p.ej aprox avda",
+    pt: "sr sra srs sras srta dr dra prof profa pág págs cap caps fig figs núm aprox av ex",
+    ru: "г гг ул д кв стр рис табл им т.е т.к т.н см напр проф доц акад пер просп",
+  };
+  const ambiguous = {
+    en: "etc inc corp co ltd jr sr ed eds misc al a.m p.m a.d b.c b.c.e c.e ph.d m.d b.a m.a b.sc m.sc d.d.s esq",
+    de: "usw etc u.a",
+    fr: "etc env",
+    es: "etc a.m p.m",
+    pt: "etc",
+    ru: "др пр т.д т.п",
+  };
+  const lang = (language || "en").toLowerCase().split("-")[0];
+  const prefixWords = new Set((prefixes[lang] || "").split(" "));
+  const ambiguousWords = new Set((ambiguous[lang] || "").split(" "));
+  return function(previous, next) {
+    // A Unicode boundary prevents matching an abbreviation inside a longer word.
+    // Dotted forms are matched whole, not as a trailing single-letter initial.
+    const match = previous.match(/(?:^|[^\p{L}\p{M}\p{N}_.])([\p{L}\p{M}]+(?:\.[\p{L}\p{M}]+)*)\.[\s\u200b]+$/u);
+    if (!match) return false;
+    const spaced = previous.match(/(?:^|[^\p{L}\p{M}\p{N}_.])([\p{L}\p{M}]+\.[\s\u200b]+[\p{L}\p{M}]+)\.[\s\u200b]+$/u);
+    if (spaced && prefixWords.has(spaced[1].replace(/[\s\u200b]/g, "").toLowerCase())) return true;
+    const abbreviation = match[1];
+    const normalized = abbreviation.replace(/[\s\u200b]/g, "").toLowerCase();
+    // Join the first boundary of spaced forms such as "e. g." and "z. B.".
+    const nextComponent = next.match(/^([\p{L}\p{M}]+)\./u);
+    if (nextComponent && prefixWords.has(normalized + "." + nextComponent[1].toLowerCase())) return true;
+    if (prefixWords.has(normalized)) return true;
+    const following = next.replace(/^[\s\u200b"'“‘«(\[（]+/u, "");
+    const continues = /^[\p{Ll}\p{N}]/u.test(following);
+    if (ambiguousWords.has(normalized) || /^(?:\p{Lu}\.)+\p{Lu}$/u.test(abbreviation)) return continues;
+    // Personal initials, including Cyrillic and accented Latin letters.
+    return /^\p{Lu}$/u.test(abbreviation) && /^\p{L}/u.test(following);
+  };
+}
+
+/** Space-separated text across scripts; punctuation stays with preceding text. */
+function SpaceDelimitedPunctuator(language = "en") {
+  const continuesAfterAbbreviation = createAbbreviationMatcher(language);
+  this.getParagraphs = function(text) {
+    return recombine(text.split(/((?:\r?\n\s*){2,})/));
+  }
+  this.getSentences = function(text) {
+    // Also Arabic/Urdu endings, Hebrew sof pasuq, Indic danda, Myanmar and Khmer.
+    // Those marks do not require a following space to establish a boundary.
+    return recombine(text.split(/([.!?]+["'”’»）)\]}」』】]*[\s\u200b]+|[؟۔׃।॥။៕។]+["'”’»）)\]}」』】]*[\s\u200b]*)/), continuesAfterAbbreviation);
+  }
+  this.getPhrases = function(sentence) {
+    return recombine(sentence.split(/([,;:]\s+|[،؛၊]\s*|\s-+\s+|—\s*)/));
+  }
+  this.getWords = function(sentence) {
+    var tokens = sentence.split(/([~@#%^*_+=<>]|[\s\-—/]+|\.(?=\w{2,})|,(?=[0-9]))/);
+    var result = [];
+    var leadingSeparators = "";
+    for (var i=0; i<tokens.length; i+=2) {
+      if (tokens[i]) {
+        result.push(leadingSeparators + tokens[i]);
+        leadingSeparators = "";
       }
-      return result;
+      if (i+1 < tokens.length) {
+        if (/^[~@#%^*_+=<>]$/.test(tokens[i+1])) {
+          result.push(leadingSeparators + tokens[i+1]);
+          leadingSeparators = "";
+        }
+        else if (result.length) result[result.length-1] += tokens[i+1];
+        else leadingSeparators += tokens[i+1];
+      }
     }
+    if (leadingSeparators) result.push(leadingSeparators);
+    return result;
+  }
+  function recombine(tokens, nonPunc) {
+    var result = [];
+    for (var i=0; i<tokens.length; i+=2) {
+      var part = (i+1 < tokens.length) ? (tokens[i] + tokens[i+1]) : tokens[i];
+      if (part) {
+        if (nonPunc && result.length && nonPunc(result[result.length-1], part)) result[result.length-1] += part;
+        else result.push(part);
+      }
+    }
+    return result;
+  }
+}
+
+/** Dictionary-backed boundaries for languages that do not separate words by spaces. */
+function DictionaryPunctuator(language) {
+  SpaceDelimitedPunctuator.call(this, language);
+  // Older engines retain space-based splitting plus safe oversized-word slicing.
+  if (typeof Intl.Segmenter !== "function") return;
+  const segmenter = new Intl.Segmenter(language, {granularity: "word"});
+  this.getWords = function(text) {
+    const result = [];
+    let leading = "";
+    for (const {segment, isWordLike} of segmenter.segment(text)) {
+      if (isWordLike) {
+        result.push(leading + segment);
+        leading = "";
+      } else if (result.length) result[result.length - 1] += segment;
+      else leading += segment;
+    }
+    if (leading) result.push(leading);
+    return result;
+  };
+}
+
+function EastAsianPunctuator() {
+  this.getParagraphs = function(text) {
+    return recombine(text.split(/((?:\r?\n\s*){2,})/));
+  }
+  this.getSentences = function(text) {
+    return recombine(text.split(/([.!?]+["'”’»）)\]}」』】]*[\s\u200b]+|[。！？]+["'”’»）)\]}」』】]*[\s\u200b]*)/));
+  }
+  this.getPhrases = function(sentence) {
+    return recombine(sentence.split(/([,;:]\s+|[\u2025\u2026\u3000\u3001\uff0c\uff1b]+)/));
+  }
+  this.getWords = function(sentence) {
+    // Keep character-based counting, but never split a Unicode code point.
+    // Attach whitespace to a neighboring token instead of deleting it.
+    const result = [];
+    let leadingWhitespace = "";
+    for (const character of sentence) {
+      if (/\s/u.test(character)) {
+        if (result.length) result[result.length - 1] += character;
+        else leadingWhitespace += character;
+      } else {
+        result.push(leadingWhitespace + character);
+        leadingWhitespace = "";
+      }
+    }
+    if (leadingWhitespace) result.push(leadingWhitespace);
+    return result;
+  }
+  function recombine(tokens) {
+    var result = [];
+    for (var i=0; i<tokens.length; i+=2) {
+      if (i+1 < tokens.length) result.push(tokens[i] + tokens[i+1]);
+      else if (tokens[i]) result.push(tokens[i]);
+    }
+    return result;
   }
 }
 
