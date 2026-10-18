@@ -1116,6 +1116,8 @@ function OpenaiTtsEngine() {
         const {openaiCreds} = await getSettings(["openaiCreds"])
         const voiceInfo = openaiCreds.voiceList.find(x => x.voice == voiceId)
         assert(voiceInfo, "Voice not found " + voiceId)
+        // Language metadata is for voice selection, not the speech endpoint.
+        const {lang, langs, ...requestParams} = voiceInfo
         const res = await fetch(openaiCreds.url + "/audio/speech", {
           method: "POST",
           headers: {
@@ -1127,9 +1129,8 @@ function OpenaiTtsEngine() {
             )
           },
           body: JSON.stringify({
-            model: voiceInfo.model,
+            ...requestParams,
             input: text,
-            voice: voiceInfo.voice,
             response_format: "wav",
           })
         })
