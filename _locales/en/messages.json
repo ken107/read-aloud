@@ -169,5 +169,67 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud is using Google Translate for text-to-speech.  Please keep this tab open."
+  },
+  "advanced_word_replacements_title": {
+    "message": "Word replacements"
+  },
+  "advanced_word_replacements_help": {
+    "message": "How to use word replacements"
+  },
+  "advanced_word_replacements_instructions": {
+    "message": "One per line, in the form “word = replacement”, case insensitive. Leave the replacement empty to skip the word.\n\nGIF = jif\ne.g. = for example\n[citation needed] ="
+  },
+  "advanced_word_replacements_saving": {
+    "message": "Saving…"
+  },
+  "advanced_word_replacements_saved": {
+    "message": "Saved"
+  },
+  "advanced_word_replacements_save_failed": {
+    "message": "Couldn’t save"
+  },
+  "advanced_word_replacements_error_separator": {
+    "message": "Line $LINE$: missing “=”",
+    "placeholders": {
+      "line": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "advanced_word_replacements_error_missing_word": {
+    "message": "Line $LINE$: add a word before “=”",
+    "placeholders": {
+      "line": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "advanced_word_replacements_error_duplicate": {
+    "message": "Line $LINE$: “$WORD$” is already replaced on line $FIRST_LINE$",
+    "placeholders": {
+      "line": {
+        "content": "$1",
+        "example": "5"
+      },
+      "word": {
+        "content": "$2",
+        "example": "GIF"
+      },
+      "first_line": {
+        "content": "$3",
+        "example": "2"
+      }
+    }
+  },
+  "options_advanced_link": {
+    "message": "Advanced…"
+  },
+  "advanced_options_heading": {
+    "message": "Advanced Options"
+  },
+  "advanced_back_to_options": {
+    "message": "← Options"
   }
 }

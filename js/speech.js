@@ -2,6 +2,11 @@
 function Speech(texts, options) {
   options.rate = (options.rate || 1);
 
+  const wordReplacements = parseWordReplacements(options.wordReplacements).rules
+  if (wordReplacements.length) {
+    const replaceWords = createWordReplacer(wordReplacements)
+    texts = texts.map(replaceWords)
+  }
   for (var i=0; i<texts.length; i++) if (/[\w)]$/.test(texts[i])) texts[i] += '.';
   if (texts.length) texts = getChunks(texts.join("\n\n"));
 
@@ -398,4 +403,23 @@ function Speech(texts, options) {
       return result;
     }
   }
+}
+
+function createWordReplacer(rules) {
+  const lookup = Object.create(null)
+  rules.forEach(rule => lookup[rule.from.toLowerCase()] = rule.to)
+
+  const sources = rules
+    .map(rule => rule.from)
+    .sort((a, b) => b.length - a.length)
+    .map(from => from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+
+  const pattern = new RegExp(
+    "(^|[^\\p{L}\\p{N}_])(" + sources.join("|") + ")(?=$|[^\\p{L}\\p{N}_])",
+    "giu"
+  )
+  return text => text.replace(pattern, (match, prefix, source) => {
+    const key = source.toLowerCase()
+    return prefix + (key in lookup ? lookup[key] : source)
+  })
 }

@@ -28,6 +28,21 @@ Promise.all([
   setI18nText();
   updateDependents(settings);
 
+  const optionsMenu = document.getElementById("options-menu")
+  document.addEventListener("click", event => {
+    if (!optionsMenu.contains(event.target)) optionsMenu.open = false
+  })
+  document.addEventListener("focusin", event => {
+    if (!optionsMenu.contains(event.target)) optionsMenu.open = false
+  })
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && optionsMenu.open) {
+      optionsMenu.open = false
+      optionsMenu.querySelector("summary").focus()
+      event.preventDefault()
+    }
+  })
+
   //close button
   if (queryString.referer) {
     $("button.close").show()

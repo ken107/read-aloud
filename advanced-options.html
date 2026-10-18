@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Read Aloud Advanced Options</title>
+  <link rel="stylesheet" type="text/css" href="css/common.css">
+  <link rel="stylesheet" type="text/css" href="css/options.css">
+
+  <script src="js/rxjs.umd.min.js"></script>
+  <script src="js/jquery-3.7.1.min.js"></script>
+  <script src="js/defaults.js"></script>
+  <script src="js/advanced-options.js"></script>
+</head>
+<body class="advanced-options-page">
+  <div class="container-fluid">
+    <p class="advanced-navigation"><a class="quiet-link" href="options.html" data-i18n="advanced_back_to_options"></a></p>
+    <h2 data-i18n="advanced_options_heading"></h2>
+
+    <div id="advanced-options">
+      <section id="word-replacements-section">
+        <div id="word-replacements-header">
+          <div class="word-replacements-heading">
+            <h3 id="word-replacements-title" data-i18n="advanced_word_replacements_title"></h3>
+            <div class="word-replacements-help">
+              <button type="button" id="word-replacements-info" aria-expanded="false" aria-controls="word-replacements-instructions">
+                <span class="material-icons" aria-hidden="true">info_outline</span>
+              </button>
+              <div id="word-replacements-instructions" hidden data-i18n="advanced_word_replacements_instructions"></div>
+            </div>
+          </div>
+          <span id="word-replacements-status" class="text-muted" role="status"></span>
+        </div>
+        <textarea id="word-replacements" class="form-control" rows="8" spellcheck="false"
+          aria-labelledby="word-replacements-title"
+          aria-describedby="word-replacements-errors"></textarea>
+        <ul id="word-replacements-errors" aria-live="polite"></ul>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

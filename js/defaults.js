@@ -468,7 +468,7 @@ const settingsChange$ = rxjs.fromEventPattern(
 
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices"], fulfill);
+    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "wordReplacements"], fulfill);
   });
 }
 
@@ -480,7 +480,7 @@ function updateSettings(items) {
 
 function clearSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices"], fulfill);
+    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "wordReplacements"], fulfill);
   });
 }
 
@@ -1093,6 +1093,41 @@ function setI18nText() {
     if ($(this).is("input")) $(this).val(text);
     else $(this).text(text);
   })
+}
+
+/**
+ * Parse word replacements entered one per line as "word = replacement".
+ * An empty replacement means the word is skipped.
+ * Invalid and duplicate lines are skipped and reported in errors.
+ */
+function parseWordReplacements(text) {
+  const rules = []
+  const errors = []
+  const seen = Object.create(null)
+  if (typeof text != "string") return {rules, errors}
+  text.split(/\r?\n/).forEach((line, index) => {
+    const lineNumber = index + 1
+    if (!line.trim()) return
+    const separator = line.indexOf("=")
+    if (separator == -1) {
+      errors.push({line: lineNumber, code: "missing_separator"})
+      return
+    }
+    const from = line.slice(0, separator).trim()
+    const to = line.slice(separator + 1).trim()
+    if (!from) {
+      errors.push({line: lineNumber, code: "missing_word"})
+      return
+    }
+    const key = from.toLowerCase()
+    if (key in seen) {
+      errors.push({line: lineNumber, code: "duplicate", from, firstLine: seen[key]})
+      return
+    }
+    seen[key] = lineNumber
+    rules.push({from, to})
+  })
+  return {rules, errors}
 }
 
 function escapeHtml(text) {

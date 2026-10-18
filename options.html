@@ -18,7 +18,12 @@
     <button type="button" class="close" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
-    <h2 data-i18n="options_heading"></h2>
+    <details id="options-menu" class="options-menu">
+      <summary><h2><span data-i18n="options_heading"></span><span class="options-menu-arrow" aria-hidden="true">▾</span></h2></summary>
+      <nav class="options-menu-panel">
+        <a href="advanced-options.html" data-i18n="advanced_options_heading"></a>
+      </nav>
+    </details>
 
     <div class="form-group" id="account-info">
       <div class="alert alert-info">
