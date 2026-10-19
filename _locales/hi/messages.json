@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "डार्क मोड बदलें"
+  },
+  "options_voice_information": {
+    "message": "आवाज़ की जानकारी"
+  },
+  "options_rate_information": {
+    "message": "गति की जानकारी"
   }
 }

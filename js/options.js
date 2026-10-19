@@ -26,6 +26,8 @@ Promise.all([
 ])
   .then(([settings]) => {
   setI18nText();
+  initSettingInfoPopup("voice-info-button", "voice-info", "voices", "options_voice_information")
+  initSettingInfoPopup("rate-info-button", "rate-warning", "rate", "options_rate_information")
   updateDependents(settings);
 
   const optionsMenu = document.getElementById("options-menu")
@@ -382,14 +384,16 @@ function showConfirmation() {
 }
 
 async function updateDependents(settings) {
-  if (settings.voiceName && isGoogleWavenet(settings) && !await getSetting("gcpCreds")) $("#voice-info").show();
-  else $("#voice-info").hide();
+  document.getElementById("voice-info-button").hidden = !(settings.voiceName && isGoogleWavenet(settings) && !await getSetting("gcpCreds"))
+  document.getElementById("voice-info").hidden = true
+  document.getElementById("voice-info-button").setAttribute("aria-expanded", "false")
 
   if (settings.voiceName && !isNativeVoice(settings) && !isGoogleWavenet(settings)) $(".pitch-visible").hide();
   else $(".pitch-visible").show();
 
-  if ((!settings.voiceName || isNativeVoice(settings)) && settings.rate > 2) $("#rate-warning").show();
-  else $("#rate-warning").hide();
+  document.getElementById("rate-info-button").hidden = !((!settings.voiceName || isNativeVoice(settings)) && settings.rate > 2)
+  document.getElementById("rate-warning").hidden = true
+  document.getElementById("rate-info-button").setAttribute("aria-expanded", "false")
 }
 
 function handleError(err) {
@@ -523,4 +527,52 @@ function onSlideStart(onSlideMove, onSlideStop) {
     if (onSlideStop) onSlideStop(e);
     return false;
   }
+}
+
+function initSettingInfoPopup(buttonId, popupId, anchorId, labelKey) {
+  const button = document.getElementById(buttonId)
+  const popup = document.getElementById(popupId)
+  const label = brapi.i18n.getMessage(labelKey)
+  button.setAttribute("aria-label", label)
+  button.title = label
+  const close = () => {
+    popup.hidden = true
+    button.setAttribute("aria-expanded", "false")
+  }
+  const position = () => {
+    if (popup.hidden) return
+    // A fixed, viewport-bounded overlay must not affect extension auto-sizing.
+    const anchorElement = document.getElementById(anchorId)
+    const anchor = (anchorElement.getClientRects().length ? anchorElement : button).getBoundingClientRect()
+    const width = Math.min(320, window.innerWidth - 32)
+    popup.style.width = `${width}px`
+    popup.style.left = `${Math.max(16, Math.min(anchor.right - width, window.innerWidth - width - 16))}px`
+    popup.style.top = "16px"
+    const height = popup.getBoundingClientRect().height
+    popup.style.top = `${Math.max(16, Math.min(anchor.bottom + 8, window.innerHeight - height - 16))}px`
+  }
+  button.addEventListener("click", () => {
+    if (!popup.hidden) return close()
+    popup.hidden = false
+    position()
+    button.setAttribute("aria-expanded", "true")
+  })
+  document.addEventListener("click", event => {
+    if (!button.contains(event.target) && !popup.contains(event.target)) close()
+  })
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !popup.hidden) {
+      close()
+      button.focus()
+      event.preventDefault()
+    }
+  })
+  document.addEventListener("focusin", event => {
+    if (!button.contains(event.target) && !popup.contains(event.target)) close()
+  })
+  // Firefox can resize the toolbar panel after an overlay opens.
+  // Keep the help visible and reposition it inside the new viewport.
+  window.addEventListener("resize", position)
+  window.addEventListener("scroll", position)
+  document.getElementById("voices").addEventListener("change", close)
 }

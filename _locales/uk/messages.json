@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "Перемкнути темний режим"
+  },
+  "options_voice_information": {
+    "message": "Інформація про голос"
+  },
+  "options_rate_information": {
+    "message": "Інформація про швидкість"
   }
 }

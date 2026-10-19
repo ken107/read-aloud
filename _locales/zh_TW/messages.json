@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "切換深色模式"
+  },
+  "options_voice_information": {
+    "message": "語音資訊"
+  },
+  "options_rate_information": {
+    "message": "語速資訊"
   }
 }

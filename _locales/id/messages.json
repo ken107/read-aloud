@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "Beralih mode gelap"
+  },
+  "options_voice_information": {
+    "message": "Informasi suara"
+  },
+  "options_rate_information": {
+    "message": "Informasi kecepatan"
   }
 }

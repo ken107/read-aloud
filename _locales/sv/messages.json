@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "Växla mörkt läge"
+  },
+  "options_voice_information": {
+    "message": "Röstinformation"
+  },
+  "options_rate_information": {
+    "message": "Hastighetsinformation"
   }
 }

@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "다크 모드 전환"
+  },
+  "options_voice_information": {
+    "message": "음성 정보"
+  },
+  "options_rate_information": {
+    "message": "속도 정보"
   }
 }

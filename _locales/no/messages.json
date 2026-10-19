@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "Slå mørk modus av eller på"
+  },
+  "options_voice_information": {
+    "message": "Stemmeinformasjon"
+  },
+  "options_rate_information": {
+    "message": "Informasjon om hastighet"
   }
 }

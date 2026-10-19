@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "Przełącz tryb ciemny"
+  },
+  "options_voice_information": {
+    "message": "Informacje o głosie"
+  },
+  "options_rate_information": {
+    "message": "Informacje o szybkości"
   }
 }

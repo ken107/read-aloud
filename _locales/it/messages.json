@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "Attiva o disattiva la modalità scura"
+  },
+  "options_voice_information": {
+    "message": "Informazioni sulla voce"
+  },
+  "options_rate_information": {
+    "message": "Informazioni sulla velocità"
   }
 }

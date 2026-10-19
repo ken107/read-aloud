@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "تبديل الوضع الداكن"
+  },
+  "options_voice_information": {
+    "message": "معلومات الصوت"
+  },
+  "options_rate_information": {
+    "message": "معلومات السرعة"
   }
 }

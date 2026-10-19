@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "Donkere modus wisselen"
+  },
+  "options_voice_information": {
+    "message": "Steminformatie"
+  },
+  "options_rate_information": {
+    "message": "Snelheidsinformatie"
   }
 }

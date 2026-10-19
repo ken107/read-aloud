@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "สลับโหมดมืด"
+  },
+  "options_voice_information": {
+    "message": "ข้อมูลเสียง"
+  },
+  "options_rate_information": {
+    "message": "ข้อมูลความเร็ว"
   }
 }

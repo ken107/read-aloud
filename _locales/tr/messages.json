@@ -256,5 +256,11 @@
   },
   "playback_status_toggle_dark_mode": {
     "message": "Koyu modu değiştir"
+  },
+  "options_voice_information": {
+    "message": "Ses bilgileri"
+  },
+  "options_rate_information": {
+    "message": "Hız bilgileri"
   }
 }
