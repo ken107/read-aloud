@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "优质的声音"
   },
+  "options_voicegroup_experimental": {
+    "message": "实验性AI语音"
+  },
   "options_voicegroup_additional": {
     "message": "额外的声音"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "启用自定义语音"
+  },
+  "options_enable_piper_voices": {
+    "message": "安装Piper语音..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "安装Supertonic语音..."
   },
   "options_rate_label": {
     "message": "朗读速度"
@@ -73,6 +82,9 @@
   },
   "options_reset_button": {
     "message": "重设"
+  },
+  "options_stop_button": {
+    "message": "停止"
   },
   "options_logged_in_as": {
     "message": "登录为"
@@ -146,6 +158,15 @@
   "error_wavenet_auth_required": {
     "message": "您需要授予额外的[权限](auth-wavenet) 才能启用 Google Wavenet 语音"
   },
+  "error_phone_not_connected": {
+    "message": "手机未连接。[连接](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "手机已断开连接（{reason}）。[重新连接](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "点击每个回答旁边的扬声器图标进行朗读"
+  },
   "languages_heading": {
     "message": "语言选项"
   },
@@ -160,5 +181,101 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud正在使用Google Translate进行语音合成。 请保持此标签打开。"
+  },
+  "playback_status_detected_language": {
+    "message": "检测到的语言：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "朗读语言：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "语音：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "处理方式：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "离线"
+  },
+  "playback_status_cloud": {
+    "message": "云端"
+  },
+  "playback_status_preparing_voice": {
+    "message": "正在准备语音…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "剩余不到1分钟"
+  },
+  "playback_status_minutes_left": {
+    "message": "剩余约$value$分钟",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "正在加载…"
+  },
+  "playback_status_loading_engine": {
+    "message": "正在加载$value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "已暂停"
+  },
+  "playback_status_unavailable": {
+    "message": "不可用"
+  },
+  "playback_status_reading_controls": {
+    "message": "阅读控件"
+  },
+  "playback_status_report_issue": {
+    "message": "报告问题"
+  },
+  "playback_status_smaller_text": {
+    "message": "缩小文字"
+  },
+  "playback_status_larger_text": {
+    "message": "放大文字"
+  },
+  "playback_status_smaller_popup": {
+    "message": "缩小弹出窗口"
+  },
+  "playback_status_larger_popup": {
+    "message": "放大弹出窗口"
+  },
+  "options_voice_information": {
+    "message": "语音信息"
+  },
+  "options_rate_information": {
+    "message": "语速信息"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "切换深色模式"
   }
 }

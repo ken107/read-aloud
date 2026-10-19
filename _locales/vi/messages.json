@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "Giọng đọc chất lượng cao"
   },
+  "options_voicegroup_experimental": {
+    "message": "Giọng AI thử nghiệm"
+  },
   "options_voicegroup_additional": {
     "message": "Bổ sung thêm giọng đọc"
   },
@@ -31,6 +34,15 @@
   },
   "options_enable_custom_voices": {
     "message": "Bật giọng nói tùy chỉnh"
+  },
+  "options_enable_piper_voices": {
+    "message": "Cài đặt giọng Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Cài đặt giọng Supertonic..."
+  },
+  "options_enable_nghitts_voices": {
+    "message": "Cài đặt giọng NghiTTS..."
   },
   "options_rate_label": {
     "message": "Tốc độ đọc"
@@ -73,6 +85,9 @@
   },
   "options_reset_button": {
     "message": "Reset"
+  },
+  "options_stop_button": {
+    "message": "Dừng"
   },
   "options_logged_in_as": {
     "message": "đăng nhập như"
@@ -146,6 +161,15 @@
   "error_wavenet_auth_required": {
     "message": "Bạn cần cấp thêm [quyền](auth-wavenet) để bật giọng nói của Google Wavenet"
   },
+  "error_phone_not_connected": {
+    "message": "Điện thoại chưa kết nối. [Kết nối](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Điện thoại đã ngắt kết nối ({reason}). [Kết nối lại](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Nhấp vào biểu tượng loa bên cạnh mỗi câu trả lời để đọc to"
+  },
   "languages_heading": {
     "message": "Lựa chọn ngôn ngữ"
   },
@@ -160,5 +184,101 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud đang sử dụng Google Dịch để tổng hợp giọng nói. Vui lòng giữ tab này mở."
+  },
+  "playback_status_detected_language": {
+    "message": "Ngôn ngữ phát hiện: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Ngôn ngữ đọc: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Giọng đọc: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Xử lý: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Ngoại tuyến"
+  },
+  "playback_status_cloud": {
+    "message": "Đám mây"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Đang chuẩn bị giọng đọc…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Còn dưới 1 phút"
+  },
+  "playback_status_minutes_left": {
+    "message": "Còn khoảng $value$ phút",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Đang tải…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Đang tải $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Đã tạm dừng"
+  },
+  "playback_status_unavailable": {
+    "message": "Không có"
+  },
+  "playback_status_reading_controls": {
+    "message": "Điều khiển đọc"
+  },
+  "playback_status_report_issue": {
+    "message": "Báo cáo sự cố"
+  },
+  "playback_status_smaller_text": {
+    "message": "Giảm cỡ chữ"
+  },
+  "playback_status_larger_text": {
+    "message": "Tăng cỡ chữ"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Thu nhỏ cửa sổ bật lên"
+  },
+  "playback_status_larger_popup": {
+    "message": "Phóng to cửa sổ bật lên"
+  },
+  "options_voice_information": {
+    "message": "Thông tin giọng đọc"
+  },
+  "options_rate_information": {
+    "message": "Thông tin tốc độ"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Bật/tắt chế độ tối"
   }
 }

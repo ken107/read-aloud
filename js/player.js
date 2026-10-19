@@ -57,12 +57,35 @@ const supertonicDispatcher = makeDispatcher("supertonic-host", {
 })
 
 
+const nghiTtsSubject = new rxjs.Subject()
+const nghiTtsObservable = rxjs.defer(() => {
+  createNghiTtsFrame()
+  return nghiTtsSubject
+}).pipe(
+  rxjs.shareReplay({bufferSize: 1, refCount: false}),
+  rxjs.tap(raiseNghiTtsFrame)
+)
+const nghiTtsCallbacks = new rxjs.Subject()
+const nghiTtsDispatcher = makeDispatcher("nghitts-host", {
+  advertiseVoices({voices}, sender) {
+    updateSettings({nghiTtsVoices: voices})
+    nghiTtsSubject.next(sender)
+  },
+  onStart: args => nghiTtsCallbacks.next({type: "start", ...args}),
+  onSentence: args => nghiTtsCallbacks.next({type: "sentence", ...args}),
+  onParagraph: args => nghiTtsCallbacks.next({type: "paragraph", ...args}),
+  onEnd: args => nghiTtsCallbacks.next({type: "end", ...args}),
+  onError: args => nghiTtsCallbacks.next({type: "error", ...args}),
+})
+
+
 const audioPlayer = immediate(() => {
   let current
   return {
     play(src, rate, volume) {
       if (current) current.playback.unsubscribe()
-      const url = (src instanceof Blob) ? URL.createObjectURL(src) : src
+      const isBlob = src instanceof Blob
+      const url = isBlob ? URL.createObjectURL(src) : src
       const playbackState$ = new rxjs.BehaviorSubject("resumed")
       return new Promise((fulfill, reject) => {
         current = {
@@ -72,6 +95,7 @@ const audioPlayer = immediate(() => {
             error: reject
           })
         }
+        if (isBlob) current.playback.add(() => URL.revokeObjectURL(url))
       })
     },
     pause() {
@@ -119,6 +143,14 @@ window.addEventListener("message", event => {
     }
   }, send)
 
+  nghiTtsDispatcher.dispatch(event.data, {
+    sendRequest(method, args) {
+      const id = String(Math.random())
+      send({from: "nghitts-host", to: "nghitts-service", type: "request", id, method, args})
+      return nghiTtsDispatcher.waitForResponse(id)
+    }
+  }, send)
+
   fasttextDispatcher.dispatch(event.data, {
     sendRequest(method, args) {
       const id = String(Math.random())
@@ -135,12 +167,13 @@ if (queryString.has("autoclose")) {
   rxjs.combineLatest(
     idleSubject,
     piperSubject.pipe(rxjs.startWith(null)),
-    supertonicSubject.pipe(rxjs.startWith(null))
+    supertonicSubject.pipe(rxjs.startWith(null)),
+    nghiTtsSubject.pipe(rxjs.startWith(null))
   ).pipe(
-    rxjs.switchMap(([isIdle, piper, supertonic]) =>
+    rxjs.switchMap(([isIdle, piper, supertonic, nghiTts]) =>
       rxjs.iif(
         () => isIdle,
-        rxjs.timer(queryString.get("autoclose") == "long" || piper || supertonic ? 15*60*1000 : 5*60*1000),
+        rxjs.timer(queryString.get("autoclose") == "long" || piper || supertonic || nghiTts ? 15*60*1000 : 5*60*1000),
         rxjs.EMPTY
       )
     )
@@ -164,6 +197,7 @@ var messageHandlers = {
   isPaired: () => phoneTtsEngine.isPaired(),
   managePiperVoices,
   manageSupertonicVoices,
+  manageNghiTtsVoices,
   getLastUrl: () => lastUrlPromise,
 }
 
@@ -519,6 +553,42 @@ function raiseSupertonicFrame() {
   const maxZ = $('iframe').get().reduce((max, f) => Math.max(max, Number(f.style.zIndex) || 0), 0)
   $('#supertonic-frame').css('z-index', maxZ + 1)
 }
+
+function manageNghiTtsVoices() {
+  if (isEmbedded) {
+    return "POPOUT"
+  } else {
+    rxjs.firstValueFrom(nghiTtsObservable)
+      .catch(console.error)
+    brapi.tabs.getCurrent()
+      .then(tab => Promise.all([
+        brapi.windows.update(tab.windowId, {focused: true}),
+        brapi.tabs.update(tab.id, {active: true})
+      ]))
+      .catch(console.error)
+    return "OK"
+  }
+}
+
+function createNghiTtsFrame() {
+  const f = document.createElement("iframe")
+  f.id = "nghitts-frame"
+  f.src = "https://nghitts.ttstool.com/?embed=1"
+  f.allow = "cross-origin-isolated"
+  f.style.position = "absolute"
+  f.style.left =
+  f.style.top = "0"
+  f.style.width =
+  f.style.height = "100%"
+  f.style.borderWidth = "0"
+  document.body.appendChild(f)
+}
+
+function raiseNghiTtsFrame() {
+  const maxZ = $('iframe').get().reduce((max, f) => Math.max(max, Number(f.style.zIndex) || 0), 0)
+  $('#nghitts-frame').css('z-index', maxZ + 1)
+}
+
 
 function createFasttextFrame() {
   const f = document.createElement("iframe")

@@ -23,6 +23,17 @@
     <div id="advanced-options">
       <input type="checkbox" id="fix-bt-silence-gap"
       ><label for="fix-bt-silence-gap">Fix missing first few words of each paragraph when using Bluetooth headset</label>
+
+      <section id="word-replacements-section">
+        <div id="word-replacements-header">
+          <h3 id="word-replacements-title" data-i18n="advanced_word_replacements_title"></h3>
+          <span id="word-replacements-status" class="text-muted" role="status"></span>
+        </div>
+        <textarea id="word-replacements" class="form-control" rows="8" spellcheck="false"
+          aria-labelledby="word-replacements-title"
+          aria-describedby="word-replacements-errors"></textarea>
+        <ul id="word-replacements-errors" aria-live="polite"></ul>
+      </section>
     </div>
   </div>
 </body>

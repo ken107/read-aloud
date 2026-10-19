@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "Премиум-голоса"
   },
+  "options_voicegroup_experimental": {
+    "message": "Экспериментальные AI-голоса"
+  },
   "options_voicegroup_additional": {
     "message": "Дополнительные голоса"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "Включить пользовательские голоса"
+  },
+  "options_enable_piper_voices": {
+    "message": "Установить голоса Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Установить голоса Supertonic..."
   },
   "options_rate_label": {
     "message": "Скорость"
@@ -73,6 +82,9 @@
   },
   "options_reset_button": {
     "message": "Сброс"
+  },
+  "options_stop_button": {
+    "message": "Остановить"
   },
   "options_logged_in_as": {
     "message": "Вы вошли как"
@@ -146,6 +158,15 @@
   "error_wavenet_auth_required": {
     "message": "Вам необходимо предоставить дополнительные [разрешения](auth-wavenet), чтобы включить голоса Google Wavenet."
   },
+  "error_phone_not_connected": {
+    "message": "Телефон не подключен. [Подключить](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Телефон отключен ({reason}). [Переподключить](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Нажмите на значок динамика рядом с каждым ответом, чтобы прочитать его вслух"
+  },
   "languages_heading": {
     "message": "Параметры языка"
   },
@@ -160,5 +181,101 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud использует Google Translate для преобразования текста в речь.  Пожалуйста, держите эту вкладку открытой."
+  },
+  "playback_status_detected_language": {
+    "message": "Определённый язык: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Язык чтения: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Голос: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Обработка: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Офлайн"
+  },
+  "playback_status_cloud": {
+    "message": "В облаке"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Подготовка голоса…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Менее 1 мин"
+  },
+  "playback_status_minutes_left": {
+    "message": "Осталось ~$value$ мин",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Загрузка…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Загрузка $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Приостановлено"
+  },
+  "playback_status_unavailable": {
+    "message": "Недоступно"
+  },
+  "playback_status_reading_controls": {
+    "message": "Настройки чтения"
+  },
+  "playback_status_report_issue": {
+    "message": "Сообщить о проблеме"
+  },
+  "playback_status_smaller_text": {
+    "message": "Уменьшить текст"
+  },
+  "playback_status_larger_text": {
+    "message": "Увеличить текст"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Уменьшить всплывающее окно"
+  },
+  "playback_status_larger_popup": {
+    "message": "Увеличить всплывающее окно"
+  },
+  "options_voice_information": {
+    "message": "Информация о голосе"
+  },
+  "options_rate_information": {
+    "message": "Информация о скорости"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Переключить тёмный режим"
   }
 }

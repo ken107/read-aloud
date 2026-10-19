@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "プレミアム音声"
   },
+  "options_voicegroup_experimental": {
+    "message": "実験的なAI音声"
+  },
   "options_voicegroup_additional": {
     "message": "追加の音声"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "カスタム音声を有効にする"
+  },
+  "options_enable_piper_voices": {
+    "message": "Piper音声をインストール..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Supertonic音声をインストール..."
   },
   "options_rate_label": {
     "message": "スピード"
@@ -73,6 +82,9 @@
   },
   "options_reset_button": {
     "message": "リセット"
+  },
+  "options_stop_button": {
+    "message": "停止"
   },
   "options_logged_in_as": {
     "message": "次のユーザーとしてログイン"
@@ -146,6 +158,15 @@
   "error_wavenet_auth_required": {
     "message": "Google Wavenetの音声を有効にするには、追加の[権限](auth-wavenet)を付与する必要があります"
   },
+  "error_phone_not_connected": {
+    "message": "電話が接続されていません。[接続](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "電話が切断されました（{reason}）。[再接続](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "各回答の横にあるスピーカーアイコンをクリックして読み上げます"
+  },
   "languages_heading": {
     "message": "言語オプション"
   },
@@ -160,5 +181,101 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloudは、テキスト読み上げにGoogle翻訳を使用しています。このタブは開いたままにしてください。"
+  },
+  "playback_status_detected_language": {
+    "message": "検出された言語: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "読み上げ言語: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "音声: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "処理: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "オフライン"
+  },
+  "playback_status_cloud": {
+    "message": "クラウド"
+  },
+  "playback_status_preparing_voice": {
+    "message": "音声を準備中…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "残り1分未満"
+  },
+  "playback_status_minutes_left": {
+    "message": "残り約$value$分",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "読み込み中…"
+  },
+  "playback_status_loading_engine": {
+    "message": "$value$を読み込み中…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "一時停止中"
+  },
+  "playback_status_unavailable": {
+    "message": "利用できません"
+  },
+  "playback_status_reading_controls": {
+    "message": "読み上げコントロール"
+  },
+  "playback_status_report_issue": {
+    "message": "問題を報告"
+  },
+  "playback_status_smaller_text": {
+    "message": "文字を小さくする"
+  },
+  "playback_status_larger_text": {
+    "message": "文字を大きくする"
+  },
+  "playback_status_smaller_popup": {
+    "message": "ポップアップを小さくする"
+  },
+  "playback_status_larger_popup": {
+    "message": "ポップアップを大きくする"
+  },
+  "options_voice_information": {
+    "message": "音声情報"
+  },
+  "options_rate_information": {
+    "message": "速度情報"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "ダークモードを切り替え"
   }
 }

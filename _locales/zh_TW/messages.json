@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "高級的語音"
   },
+  "options_voicegroup_experimental": {
+    "message": "實驗性AI語音"
+  },
   "options_voicegroup_additional": {
     "message": "額外的語音"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "啟用客製化語音"
+  },
+  "options_enable_piper_voices": {
+    "message": "安裝Piper語音..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "安裝Supertonic語音..."
   },
   "options_rate_label": {
     "message": "朗讀速度"
@@ -73,6 +82,9 @@
   },
   "options_reset_button": {
     "message": "重設"
+  },
+  "options_stop_button": {
+    "message": "停止"
   },
   "options_logged_in_as": {
     "message": "登錄為"
@@ -146,6 +158,15 @@
   "error_wavenet_auth_required": {
     "message": "您需要授予額外的[權限](auth-wavenet) 才能啟用 Google Wavenet 語音"
   },
+  "error_phone_not_connected": {
+    "message": "手機未連接。[連接](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "手機已斷開連接（{reason}）。[重新連接](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "點擊每個回答旁邊的揚聲器圖標進行朗讀"
+  },
   "languages_heading": {
     "message": "語言選項"
   },
@@ -160,5 +181,101 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud 正在使用 Google Translate 進行語音合成。請保持此標籤打開。"
+  },
+  "playback_status_detected_language": {
+    "message": "偵測到的語言：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "朗讀語言：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "語音：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "處理方式：$value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "離線"
+  },
+  "playback_status_cloud": {
+    "message": "雲端"
+  },
+  "playback_status_preparing_voice": {
+    "message": "正在準備語音…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "剩餘不到1分鐘"
+  },
+  "playback_status_minutes_left": {
+    "message": "剩餘約$value$分鐘",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "正在載入…"
+  },
+  "playback_status_loading_engine": {
+    "message": "正在載入$value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "已暫停"
+  },
+  "playback_status_unavailable": {
+    "message": "無法使用"
+  },
+  "playback_status_reading_controls": {
+    "message": "閱讀控制項"
+  },
+  "playback_status_report_issue": {
+    "message": "回報問題"
+  },
+  "playback_status_smaller_text": {
+    "message": "縮小文字"
+  },
+  "playback_status_larger_text": {
+    "message": "放大文字"
+  },
+  "playback_status_smaller_popup": {
+    "message": "縮小彈出視窗"
+  },
+  "playback_status_larger_popup": {
+    "message": "放大彈出視窗"
+  },
+  "options_voice_information": {
+    "message": "語音資訊"
+  },
+  "options_rate_information": {
+    "message": "語速資訊"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "切換深色模式"
   }
 }

@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "Voces Premium"
   },
+  "options_voicegroup_experimental": {
+    "message": "Voces de IA experimentales"
+  },
   "options_voicegroup_additional": {
     "message": "Voces adicionales"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "Habilitar voces personalizadas"
+  },
+  "options_enable_piper_voices": {
+    "message": "Instalar voces Piper..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Instalar voces Supertonic..."
   },
   "options_rate_label": {
     "message": "Velocidad"
@@ -73,6 +82,9 @@
   },
   "options_reset_button": {
     "message": "Reiniciar"
+  },
+  "options_stop_button": {
+    "message": "Detener"
   },
   "options_logged_in_as": {
     "message": "Conectado como"
@@ -146,6 +158,15 @@
   "error_wavenet_auth_required": {
     "message": "Debe conceder [permisos](auth-wavenet) adicionales para habilitar las voces de Google Wavenet"
   },
+  "error_phone_not_connected": {
+    "message": "Teléfono no conectado. [Conectar](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Teléfono desconectado ({reason}). [Reconectar](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Haga clic en el icono del altavoz junto a cada respuesta para leerla en voz alta"
+  },
   "languages_heading": {
     "message": "Opciones de lenguaje"
   },
@@ -160,5 +181,101 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud está usando el Traductor de Google para síntesis de voz. Por favor, mantenga esta pestaña abierta."
+  },
+  "playback_status_detected_language": {
+    "message": "Idioma detectado: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Idioma de lectura: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Voz: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Procesamiento: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Sin conexión"
+  },
+  "playback_status_cloud": {
+    "message": "Nube"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Preparando voz…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Menos de 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "Quedan ~$value$ min",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Cargando…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Cargando $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "En pausa"
+  },
+  "playback_status_unavailable": {
+    "message": "No disponible"
+  },
+  "playback_status_reading_controls": {
+    "message": "Controles de lectura"
+  },
+  "playback_status_report_issue": {
+    "message": "Informar de un problema"
+  },
+  "playback_status_smaller_text": {
+    "message": "Reducir el tamaño del texto"
+  },
+  "playback_status_larger_text": {
+    "message": "Aumentar el tamaño del texto"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Reducir la ventana emergente"
+  },
+  "playback_status_larger_popup": {
+    "message": "Ampliar la ventana emergente"
+  },
+  "options_voice_information": {
+    "message": "Información de la voz"
+  },
+  "options_rate_information": {
+    "message": "Información sobre la velocidad"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Alternar modo oscuro"
   }
 }

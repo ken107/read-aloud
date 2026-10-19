@@ -46,14 +46,17 @@
         <button id="languages-edit-button" type="button" class="btn btn-sm btn-light">
           <i class="material-icons">filter_alt</i>
         </button>
+        <button id="voice-info-button" class="setting-info-button" type="button" aria-expanded="false" aria-controls="voice-info" hidden>
+          <i class="material-icons" aria-hidden="true">info_outline</i>
+        </button>
       </div>
-      <div>
+      <div class="voice-selector">
         <select id="voices" class="form-control">
         </select>
-        <small id="voice-info" class="form-text text-muted">
+        <div id="voice-info" class="setting-info-popup" role="region" aria-labelledby="voice-info-button" hidden>
           Note: This voice may become unavailable at any time.
           <a href='http://blog.readaloud.app/2018/10/the-state-of-text-to-speech-technology.html' target='_blank'>Read more</a> about it on our blog.
-        </small>
+        </div>
       </div>
 
       <div>
@@ -61,13 +64,16 @@
         <button id="rate-edit-button" type="button" class="btn btn-sm btn-light">
           <i class="material-icons">mode_edit</i>
         </button>
+        <button id="rate-info-button" class="setting-info-button" type="button" aria-expanded="false" aria-controls="rate-warning" hidden>
+          <i class="material-icons" aria-hidden="true">info_outline</i>
+        </button>
       </div>
       <div>
         <div id="rate" class="slider" data-min="-1" data-max="1" data-steps="40" data-pow="3"></div>
         <div id="rate-input-div">
           <input id="rate-input" class="form-control" type="text" maxlength="5" />
         </div>
-        <small id="rate-warning" class="form-text warning" data-i18n="options_rate_warning"></small>
+        <div id="rate-warning" class="setting-info-popup" role="region" aria-labelledby="rate-info-button" data-i18n="options_rate_warning" hidden></div>
       </div>
 
       <div class="pitch-visible">

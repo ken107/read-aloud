@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "Premium Sesler"
   },
+  "options_voicegroup_experimental": {
+    "message": "Deneysel AI Sesleri"
+  },
   "options_voicegroup_additional": {
     "message": "Ek Sesler"
   },
@@ -31,6 +34,12 @@
   },
   "options_enable_custom_voices": {
     "message": "Özel Sesleri Etkinleştirme"
+  },
+  "options_enable_piper_voices": {
+    "message": "Piper seslerini yükle..."
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Supertonic seslerini yükle..."
   },
   "options_rate_label": {
     "message": "Hız"
@@ -73,6 +82,9 @@
   },
   "options_reset_button": {
     "message": "Sıfırla"
+  },
+  "options_stop_button": {
+    "message": "Durdur"
   },
   "options_logged_in_as": {
     "message": "Olarak oturum açtı"
@@ -146,6 +158,15 @@
   "error_wavenet_auth_required": {
     "message": "Google Wavenet seslerini etkinleştirmek için ek [izinler](auth-wavenet) vermeniz gerekir"
   },
+  "error_phone_not_connected": {
+    "message": "Telefon bağlı değil. [Bağlan](connect-phone)"
+  },
+  "error_phone_disconnected": {
+    "message": "Telefon bağlantısı kesildi ({reason}). [Yeniden bağlan](connect-phone)"
+  },
+  "error_chatgpt": {
+    "message": "Her yanıtın yanındaki hoparlör simgesine tıklayarak sesli okuyun"
+  },
   "languages_heading": {
     "message": "Dil Seçenekleri"
   },
@@ -160,5 +181,101 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud, metinden seslendirme için Google Çeviri'yi kullanıyor. Lütfen bu sekmeyi açık tutun."
+  },
+  "playback_status_detected_language": {
+    "message": "Algılanan dil: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Okuma dili: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Ses: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "İşleme: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Çevrimdışı"
+  },
+  "playback_status_cloud": {
+    "message": "Bulut"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Ses hazırlanıyor…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "1 dakikadan az"
+  },
+  "playback_status_minutes_left": {
+    "message": "~$value$ dk kaldı",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Yükleniyor…"
+  },
+  "playback_status_loading_engine": {
+    "message": "$value$ yükleniyor…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Duraklatıldı"
+  },
+  "playback_status_unavailable": {
+    "message": "Kullanılamıyor"
+  },
+  "playback_status_reading_controls": {
+    "message": "Okuma denetimleri"
+  },
+  "playback_status_report_issue": {
+    "message": "Sorun bildir"
+  },
+  "playback_status_smaller_text": {
+    "message": "Metni küçült"
+  },
+  "playback_status_larger_text": {
+    "message": "Metni büyüt"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Açılır pencereyi küçült"
+  },
+  "playback_status_larger_popup": {
+    "message": "Açılır pencereyi büyüt"
+  },
+  "options_voice_information": {
+    "message": "Ses bilgileri"
+  },
+  "options_rate_information": {
+    "message": "Hız bilgileri"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Koyu modu değiştir"
   }
 }

@@ -23,6 +23,9 @@
   "options_voicegroup_premium": {
     "message": "Овозҳои баландсифат"
   },
+  "options_voicegroup_experimental": {
+    "message": "Овозҳои таҷрибавии AI"
+  },
   "options_voicegroup_additional": {
     "message": "Овозҳои иловагӣ"
   },
@@ -34,6 +37,9 @@
   },
   "options_enable_piper_voices": {
     "message": "Идоракунии овозҳои «Пайпер»"
+  },
+  "options_enable_supertonic_voices": {
+    "message": "Насб кардани овозҳои Supertonic..."
   },
   "options_rate_label": {
     "message": "Суръат"
@@ -76,6 +82,9 @@
   },
   "options_reset_button": {
     "message": "Бозсозӣ"
+  },
+  "options_stop_button": {
+    "message": "Қатъ кардан"
   },
   "options_logged_in_as": {
     "message": "Бо номи зерин ворид шуд:"
@@ -172,5 +181,101 @@
   },
   "google_translate_keep_page_open": {
     "message": "Барои табдил кардани матн ба нутқ, барномаи «Баланд хонед» аз технологияи «Google Translate» истифода мебарад.  Лутфан, ин варақаро кушода нигоҳ доред."
+  },
+  "playback_status_detected_language": {
+    "message": "Забони муайяншуда: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Забони хониш: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Овоз: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Коркард: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Бе интернет"
+  },
+  "playback_status_cloud": {
+    "message": "Абрӣ"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Омодасозии овоз…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Камтар аз 1 дақиқа"
+  },
+  "playback_status_minutes_left": {
+    "message": "Тақрибан $value$ дақиқа мондааст",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Боргирӣ…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Боргирии $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Таваққуф шудааст"
+  },
+  "playback_status_unavailable": {
+    "message": "Дастнорас"
+  },
+  "playback_status_reading_controls": {
+    "message": "Танзимоти хониш"
+  },
+  "playback_status_report_issue": {
+    "message": "Хабар додан дар бораи мушкилот"
+  },
+  "playback_status_smaller_text": {
+    "message": "Хурд кардани матн"
+  },
+  "playback_status_larger_text": {
+    "message": "Калон кардани матн"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Хурд кардани равзанаи поп-ап"
+  },
+  "playback_status_larger_popup": {
+    "message": "Калон кардани равзанаи поп-ап"
+  },
+  "options_voice_information": {
+    "message": "Маълумот дар бораи овоз"
+  },
+  "options_rate_information": {
+    "message": "Маълумот дар бораи суръат"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Иваз кардани ҳолати торик"
   }
 }

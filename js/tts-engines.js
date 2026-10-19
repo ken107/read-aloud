@@ -10,6 +10,33 @@ var openaiTtsEngine = new OpenaiTtsEngine();
 var azureTtsEngine = new AzureTtsEngine();
 const piperTtsEngine = new PiperTtsEngine()
 const supertonicTtsEngine = new SupertonicTtsEngine()
+const nghiTtsEngine = new NghiTtsEngine()
+
+
+//synthesized audio cache
+const cache = {
+  entries: new Map(),
+  maxEntries: 5,
+  fetchCached(key, fetchFn, destroyFn) {
+    const entry = this.entries.get(key)
+    if (entry) {
+      this.entries.delete(key)
+      this.entries.set(key, entry)
+      return entry.promise
+    }
+    const promise = Promise.resolve().then(fetchFn).catch(err => {
+      if (this.entries.get(key)?.promise === promise) this.entries.delete(key)
+      throw err
+    })
+    this.entries.set(key, {promise, destroyFn})
+    while (this.entries.size > this.maxEntries) {
+      const [oldestKey, oldest] = this.entries.entries().next().value
+      oldest.promise.then(value => oldest.destroyFn?.(value)).catch(() => {})
+      this.entries.delete(oldestKey)
+    }
+    return promise
+  }
+}
 
 
 /*
@@ -43,7 +70,7 @@ function BrowserTtsEngine() {
   brapi.tts.stop()    //workaround: chrome.tts.speak doesn't work first time on cold start for some reason
   this.speak = function(text, options, onEvent) {
     brapi.tts.speak(text, {
-      voiceName: options.voice.voiceId || options.voice.voiceName,
+      voiceName: options.voice.voiceName,
       lang: options.lang,
       rate: options.rate,
       pitch: options.pitch,
@@ -59,15 +86,6 @@ function BrowserTtsEngine() {
   this.isSpeaking = brapi.tts.isSpeaking;
   this.getVoices = async function() {
     const voices = await new Promise(f => brapi.tts.getVoices(f)) || []
-    const platform = await brapi.runtime.getPlatformInfo()
-    if (platform.os == "mac") {
-      for (const voice of voices) {
-          if (voice.remote == false && !voice.voiceName.includes(" ")) {
-            voice.voiceId = voice.voiceName
-            voice.voiceName = "MacOS " + (languageTable.getNameFromCode(voice.lang) || voice.lang) + " [" + voice.voiceId + "]"
-          }
-      }
-    }
     return voices
       .filter(voice => !isPiperVoice(voice) && !isSupertonicVoice(voice))
   }
@@ -115,7 +133,10 @@ function WebSpeechEngine() {
       }
     }))
     .then(function(voices) {
-      for (var i=0; i<voices.length; i++) voices[i].voiceName = voices[i].name;
+      for (const voice of voices) {
+        voice.voiceName = voice.name
+        voice.remote = !voice.localService
+      }
       return voices;
     })
     .catch(function(err) {
@@ -176,7 +197,6 @@ function TimeoutTtsEngine(baseEngine, startTimeout, endTimeout) {
 
 function PremiumTtsEngine(serviceUrl) {
   var readyPromise;
-  var prefetchAudio;
   var nextStartTime = 0;
   this.prepare = function(options) {
     readyPromise = immediate(async () => {
@@ -195,11 +215,7 @@ function PremiumTtsEngine(serviceUrl) {
     })
   }
   this.speak = function(utterance, options, playbackState$) {
-    const urlPromise = Promise.resolve()
-      .then(() => {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
-        else return getAudioUrl(utterance, options)
-      })
+    const urlPromise = getAudioUrl(utterance, options)
     return playAudio(urlPromise, {...options, startTime: nextStartTime}, playbackState$).pipe(
       rxjs.tap(event => {
         if (event.type == "end") nextStartTime = Date.now() + 650 / options.rate
@@ -208,7 +224,6 @@ function PremiumTtsEngine(serviceUrl) {
   }
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options)
-      .then(url => prefetchAudio = [utterance, options, url])
       .catch(console.error)
   }
   this.getVoices = async function() {
@@ -232,13 +247,19 @@ function PremiumTtsEngine(serviceUrl) {
   async function getAudioUrl(utterance, {lang, voice}) {
     const {authToken, clientId, manifest} = await readyPromise
     const url = serviceUrl + "/read-aloud/speak/" + lang + "/" + encodeURIComponent(voice.voiceName) + "?c=" + encodeURIComponent(clientId) + "&t=" + encodeURIComponent(authToken) + (voice.autoSelect ? '&a=1' : '') + "&v=" + manifest.version + "&q=" + encodeURIComponent(utterance)
-    const res = await fetch(url)
-    if (!res.ok) {
-      const msg = await res.text().catch(err => "")
-      throw new Error(msg || (res.status + " " + res.statusText))
-    }
-    const blob = await res.blob()
-    return URL.createObjectURL(blob)
+    return cache.fetchCached(
+      url,
+      async () => {
+        const res = await fetch(url)
+        if (!res.ok) {
+          const msg = await res.text().catch(err => "")
+          throw new Error(msg || (res.status + " " + res.statusText))
+        }
+        const blob = await res.blob()
+        return URL.createObjectURL(blob)
+      },
+      blobUrl => URL.revokeObjectURL(blobUrl)
+    )
   }
   var voices = [
       {"voice_name": "Amazon Australian English (Nicole)", "lang": "en-AU", "gender": "female", "event_types": ["start", "end", "error"]},
@@ -370,32 +391,28 @@ function PremiumTtsEngine(serviceUrl) {
 
 
 function GoogleTranslateTtsEngine() {
-  var prefetchAudio;
   this.ready = function() {
     return googleTranslateReady();
   };
   this.speak = function(utterance, options, playbackState$) {
     options.rateAdjust = 1.1
-    const urlPromise = Promise.resolve()
-      .then(function() {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
-        else return getAudioUrl(utterance, options.voice.lang);
-      })
+    const urlPromise = getAudioUrl(utterance, options)
     return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = function(utterance, options) {
-    getAudioUrl(utterance, options.voice.lang)
-      .then(function(url) {
-        prefetchAudio = [utterance, options, url];
-      })
+    getAudioUrl(utterance, options)
       .catch(console.error)
   };
   this.getVoices = function() {
     return voices;
   }
-  function getAudioUrl(text, lang) {
+  function getAudioUrl(text, {voice: {lang}}) {
     assert(text && lang);
-    return googleTranslateSynthesizeSpeech(text, lang);
+    return cache.fetchCached(
+      JSON.stringify([text, lang]),
+      () => googleTranslateSynthesizeSpeech(text, lang)
+      //data URL, no destroy()
+    )
   }
   var voices = [
       {"voice_name": "GoogleTranslate Afrikaans", "lang": "af", "event_types": ["start", "end", "error"]},
@@ -469,20 +486,12 @@ function GoogleTranslateTtsEngine() {
 
 function AmazonPollyTtsEngine() {
   var getPolly = lazy(createPolly)
-  var prefetchAudio;
   this.speak = function(utterance, options, playbackState$) {
-    const urlPromise = Promise.resolve()
-      .then(function() {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
-        else return getAudioUrl(utterance, options.lang, options.voice, options.pitch);
-      })
+    const urlPromise = getAudioUrl(utterance, options)
     return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = function(utterance, options) {
-    getAudioUrl(utterance, options.lang, options.voice, options.pitch)
-      .then(function(url) {
-        prefetchAudio = [utterance, options, url];
-      })
+    getAudioUrl(utterance, options)
       .catch(console.error)
   };
   this.getVoices = async function() {
@@ -517,18 +526,27 @@ function AmazonPollyTtsEngine() {
       return {
         voiceName,
         lang: voice.LanguageCode,
+        langs: voice.AdditionalLanguageCodes
+          ? [voice.LanguageCode, ...voice.AdditionalLanguageCodes]
+          : undefined,
         gender: voice.Gender.toLowerCase(),
       }
     })
   }
-  async function getAudioUrl(text, lang, voice, pitch) {
+  function getAudioUrl(text, {lang, voice}) {
     assert(text && lang && voice);
     var matches = voice.voiceName.match(/^AmazonPolly .* \((\w+)\)( \+\w+)?$/);
     var voiceId = matches[1];
     var style = matches[2] && matches[2].substr(2);
-    const polly = await getPolly()
-    const blob = await polly.synthesizeSpeech(getOpts(text, voiceId, style)).promise()
-    return URL.createObjectURL(blob);
+    return cache.fetchCached(
+      JSON.stringify([text, voiceId, style]),
+      async () => {
+        const polly = await getPolly()
+        const blob = await polly.synthesizeSpeech(getOpts(text, voiceId, style)).promise()
+        return URL.createObjectURL(blob);
+      },
+      blobUrl => URL.revokeObjectURL(blobUrl)
+    )
   }
   function createPolly() {
     return getSettings(["awsCreds"])
@@ -578,20 +596,12 @@ function AmazonPollyTtsEngine() {
 
 
 function GoogleWavenetTtsEngine() {
-  var prefetchAudio;
   this.speak = function(utterance, options, playbackState$) {
-    const urlPromise = Promise.resolve()
-      .then(function() {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2];
-        else return getAudioUrl(utterance, options.voice, options.pitch);
-      })
+    const urlPromise = getAudioUrl(utterance, options)
     return playAudio(urlPromise, options, playbackState$)
   };
   this.prefetch = function(utterance, options) {
-    getAudioUrl(utterance, options.voice, options.pitch)
-      .then(function(url) {
-        prefetchAudio = [utterance, options, url];
-      })
+    getAudioUrl(utterance, options)
       .catch(console.error)
   };
   this.getVoices = function() {
@@ -623,39 +633,45 @@ function GoogleWavenetTtsEngine() {
         updateSettings({wavenetVoices: list});
       })
   }
-  function getAudioUrl(text, voice, pitch) {
+  function getAudioUrl(text, {voice, pitch}) {
     assert(text && voice);
-    var matches = voice.voiceName.match(/^Google(\S+) .* \((\w+)\)$/);
-    const voiceType = matches[1];
-    const speakerId = voiceType == "Chirp3-HD" ? matches[2] : matches[2][0];
-    var endpoint = matches[1] == "Neural2" ? "us-central1-texttospeech.googleapis.com" : "texttospeech.googleapis.com";
-    return getSettings(["gcpCreds", "gcpToken"])
-      .then(function(settings) {
-        var postData = {
-          input: {
-            text: text
-          },
-          voice: {
-            languageCode: voice.lang,
-            name: voice.lang + "-" + voiceType + "-" + speakerId
-          },
-          audioConfig: {
-            audioEncoding: "OGG_OPUS",
-          }
-        }
-        if (!voiceType.startsWith("Chirp")) postData.audioConfig.pitch = ((pitch || 1) -1) *20;
-        if (settings.gcpCreds) return ajaxPost("https://" + endpoint + "/v1/text:synthesize?key=" + settings.gcpCreds.apiKey, postData, "json");
-        if (!settings.gcpToken) throw new Error(JSON.stringify({code: "error_wavenet_auth_required"}));
-        return ajaxPost("https://cxl-services.appspot.com/proxy?url=https://texttospeech.googleapis.com/v1beta1/text:synthesize&token=" + settings.gcpToken, postData, "json")
-          .catch(function(err) {
-            console.error(err);
-            throw new Error(JSON.stringify({code: "error_wavenet_auth_required"}));
+    return cache.fetchCached(
+      JSON.stringify([text, voice.voiceName, voice.lang, pitch]),
+      () => {
+        var matches = voice.voiceName.match(/^Google(\S+) .* \((\w+)\)$/);
+        const voiceType = matches[1];
+        const speakerId = voiceType == "Chirp3-HD" ? matches[2] : matches[2][0];
+        var endpoint = matches[1] == "Neural2" ? "us-central1-texttospeech.googleapis.com" : "texttospeech.googleapis.com";
+        return getSettings(["gcpCreds", "gcpToken"])
+          .then(function(settings) {
+            var postData = {
+              input: {
+                text: text
+              },
+              voice: {
+                languageCode: voice.lang,
+                name: voice.lang + "-" + voiceType + "-" + speakerId
+              },
+              audioConfig: {
+                audioEncoding: "OGG_OPUS",
+              }
+            }
+            if (!voiceType.startsWith("Chirp")) postData.audioConfig.pitch = ((pitch || 1) -1) *20;
+            if (settings.gcpCreds) return ajaxPost("https://" + endpoint + "/v1/text:synthesize?key=" + settings.gcpCreds.apiKey, postData, "json");
+            if (!settings.gcpToken) throw new Error(JSON.stringify({code: "error_wavenet_auth_required"}));
+            return ajaxPost("https://cxl-services.appspot.com/proxy?url=https://texttospeech.googleapis.com/v1beta1/text:synthesize&token=" + settings.gcpToken, postData, "json")
+              .catch(function(err) {
+                console.error(err);
+                throw new Error(JSON.stringify({code: "error_wavenet_auth_required"}));
+              })
           })
-      })
-      .then(function(responseText) {
-        var data = JSON.parse(responseText);
-        return "data:audio/ogg;codecs=opus;base64," + data.audioContent;
-      })
+          .then(function(responseText) {
+            var data = JSON.parse(responseText);
+            return "data:audio/ogg;codecs=opus;base64," + data.audioContent;
+          })
+      }
+      //data URL, no destroy()
+    )
   }
   var voices = [
     {"voiceName":"GoogleStandard Spanish; Castilian (Anna)","lang":"es-ES","gender":"female"},
@@ -760,23 +776,13 @@ function GoogleWavenetTtsEngine() {
 
 
 function IbmWatsonTtsEngine() {
-  var prefetchAudio;
   this.speak = function(utterance, options, playbackState$) {
-    const urlPromise = Promise.resolve()
-      .then(() => {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
-        else return getAudioUrl(utterance, options.voice)
-      })
+    const urlPromise = getAudioUrl(utterance, options)
     return playAudio(urlPromise, options, playbackState$)
   };
-  this.prefetch = async function(utterance, options) {
-    try {
-      const url = await getAudioUrl(utterance, options.voice)
-      prefetchAudio = [utterance, options, url]
-    }
-    catch (err) {
-      console.error(err)
-    }
+  this.prefetch = function(utterance, options) {
+    getAudioUrl(utterance, options)
+      .catch(console.error)
   };
   this.getVoices = function() {
     return getSettings(["watsonVoices", "ibmCreds"])
@@ -797,23 +803,25 @@ function IbmWatsonTtsEngine() {
   }
   this.fetchVoices = fetchVoices;
 
-  function getAudioUrl(text, voice) {
+  function getAudioUrl(text, {voice}) {
     assert(text && voice);
     var matches = voice.voiceName.match(/^IBM-Watson .* \((\w+)\)$/);
     var voiceName = voice.lang + "_" + matches[1] + "Voice";
-    return getSettings(["ibmCreds"])
-      .then(function(settings) {
-        return ajaxGet({
+    return cache.fetchCached(
+      JSON.stringify([text, voiceName]),
+      async () => {
+        const settings = await getSettings(["ibmCreds"])
+        const blob = await ajaxGet({
           url: settings.ibmCreds.url + "/v1/synthesize?text=" + encodeURIComponent(escapeHtml(text)) + "&voice=" + encodeURIComponent(voiceName) + "&accept=" + encodeURIComponent("audio/ogg;codecs=opus"),
           headers: {
             Authorization: "Basic " + btoa("apikey:" + settings.ibmCreds.apiKey)
           },
           responseType: "blob"
         })
-      })
-      .then(function(blob) {
         return URL.createObjectURL(blob);
-      })
+      },
+      blobUrl => URL.revokeObjectURL(blobUrl)
+    )
   }
   function fetchVoices(apiKey, url) {
     return ajaxGet({
@@ -957,14 +965,16 @@ function PhoneTtsEngine() {
 function OpenaiTtsEngine() {
   this.defaultEndpointUrl = "https://api.openai.com/v1"
   this.defaultVoiceList = [
-    {voice: "alloy", lang: "en-US", model: "tts-1"},
-    {voice: "echo", lang: "en-US", model: "tts-1"},
-    {voice: "fable", lang: "en-US", model: "tts-1"},
-    {voice: "onyx", lang: "en-US", model: "tts-1"},
-    {voice: "nova", lang: "en-US", model: "tts-1"},
-    {voice: "shimmer", lang: "en-US", model: "tts-1"},
+    {voice: "alloy", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "ash", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "coral", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "echo", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "fable", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "onyx", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "nova", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "sage", langs: ["en-US", "zh-CN"], model: "tts-1"},
+    {voice: "shimmer", langs: ["en-US", "zh-CN"], model: "tts-1"},
   ]
-  var prefetchAudio
   this.test = async function({apiKey, url, voiceList}) {
     const res = await fetch(url + "/models", {
       headers: {"Authorization": "Bearer " + apiKey}
@@ -975,78 +985,66 @@ function OpenaiTtsEngine() {
     }
   }
   this.speak = function(utterance, options, playbackState$) {
-    const urlPromise = Promise.resolve()
-      .then(() => {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
-        else return getAudioUrl(utterance, options.voice, options.pitch)
-      })
+    const urlPromise = getAudioUrl(utterance, options)
     return playAudio(urlPromise, options, playbackState$)
   }
-  this.prefetch = async function(utterance, options) {
-    try {
-      const url = await getAudioUrl(utterance, options.voice, options.pitch)
-      prefetchAudio = [utterance, options, url]
-    }
-    catch (err) {
-      console.error(err)
-    }
+  this.prefetch = function(utterance, options) {
+    getAudioUrl(utterance, options)
+      .catch(console.error)
   }
   this.getVoices = async function() {
     const openaiCreds = await getSetting("openaiCreds")
     const voiceList = openaiCreds ? (openaiCreds.voiceList || this.defaultVoiceList) : []
-    return voiceList.map(({voice, lang}) => ({
+    return voiceList.map(({voice, lang, langs}) => ({
       voiceName: "OpenAI " + voice,
-      lang
+      lang,
+      langs
     }))
   }
-  async function getAudioUrl(text, voice, pitch) {
+  function getAudioUrl(text, {voice}) {
     assert(text && voice)
-    const {openaiCreds} = await getSettings(["openaiCreds"])
     const voiceId = voice.voiceName.slice(7)
-    const voiceInfo = openaiCreds.voiceList.find(x => x.voice == voiceId)
-    assert(voiceInfo, "Voice not found " + voiceId)
-    const res = await fetch(openaiCreds.url + "/audio/speech", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(
-          openaiCreds.apiKey ? {
-            "Authorization": "Bearer " + openaiCreds.apiKey
-          } : null
-        )
+    return cache.fetchCached(
+      JSON.stringify([text, voiceId]),
+      async () => {
+        const {openaiCreds} = await getSettings(["openaiCreds"])
+        const voiceInfo = openaiCreds.voiceList.find(x => x.voice == voiceId)
+        assert(voiceInfo, "Voice not found " + voiceId)
+        // Language metadata is for voice selection, not the speech endpoint.
+        const {lang, langs, ...requestParams} = voiceInfo
+        const res = await fetch(openaiCreds.url + "/audio/speech", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(
+              openaiCreds.apiKey ? {
+                "Authorization": "Bearer " + openaiCreds.apiKey
+              } : null
+            )
+          },
+          body: JSON.stringify({
+            ...requestParams,
+            input: text,
+            response_format: "mp3",
+          })
+        })
+        if (!res.ok) throw await res.json().then(x => x.error)
+        return URL.createObjectURL(await res.blob())
       },
-      body: JSON.stringify({
-        model: voiceInfo.model,
-        input: text,
-        voice: voiceInfo.voice,
-        instructions: voiceInfo.instructions,
-        response_format: "mp3",
-      })
-    })
-    if (!res.ok) throw await res.json().then(x => x.error)
-    return URL.createObjectURL(await res.blob())
+      blobUrl => URL.revokeObjectURL(blobUrl)
+    )
   }
 }
 
 
 function AzureTtsEngine() {
-  var prefetchAudio;
   this.speak = function(utterance, options, playbackState$) {
-    const urlPromise = Promise.resolve()
-      .then(() => {
-        if (prefetchAudio && prefetchAudio[0] == utterance && prefetchAudio[1] == options) return prefetchAudio[2]
-        else return getAudioUrl(utterance, options.lang, options.voice)
-      })
+    const urlPromise = getAudioUrl(utterance, options)
     return playAudio(urlPromise, options, playbackState$)
   };
-  this.prefetch = async function(utterance, options) {
-    try {
-      const url = await getAudioUrl(utterance, options.lang, options.voice)
-      prefetchAudio = [utterance, options, url]
-    }
-    catch (err) {
-      console.error(err)
-    }
+  this.prefetch = function(utterance, options) {
+    getAudioUrl(utterance, options)
+      .catch(console.error)
   };
   this.getVoices = async function() {
     try {
@@ -1080,23 +1078,29 @@ function AzureTtsEngine() {
       }
     })
   }
-  async function getAudioUrl(text, lang, voice) {
+  function getAudioUrl(text, {lang, voice}) {
     const matches = voice.voiceName.match(/^Azure .* - (\w+)$/)
     const voiceName = voice.lang + "-" + matches[1]
-    const {azureCreds} = await getSettings(["azureCreds"])
-    const {region, key} = azureCreds
-    const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
-      method: "POST",
-      headers: {
-        "Ocp-Apim-Subscription-Key": key,
-        "Content-Type": "application/ssml+xml",
-        "X-Microsoft-OutputFormat": "ogg-48khz-16bit-mono-opus",
+    return cache.fetchCached(
+      JSON.stringify([text, lang, voiceName]),
+      async () => {
+        const {azureCreds} = await getSettings(["azureCreds"])
+        const {region, key} = azureCreds
+        const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+          method: "POST",
+          headers: {
+            "Ocp-Apim-Subscription-Key": key,
+            "Content-Type": "application/ssml+xml",
+            "X-Microsoft-OutputFormat": "ogg-48khz-16bit-mono-opus",
+          },
+          body: `<speak version='1.0' xml:lang='${lang}'><voice name='${voiceName}'>${escapeXml(text)}</voice></speak>`
+        })
+        if (!res.ok) throw new Error("Server return " + res.status)
+        const blob = await res.blob()
+        return URL.createObjectURL(blob)
       },
-      body: `<speak version='1.0' xml:lang='${lang}'><voice name='${voiceName}'>${escapeXml(text)}</voice></speak>`
-    })
-    if (!res.ok) throw new Error("Server return " + res.status)
-    const blob = await res.blob()
-    return URL.createObjectURL(blob)
+      blobUrl => URL.revokeObjectURL(blobUrl)
+    )
   }
 }
 
@@ -1223,6 +1227,89 @@ function SupertonicTtsEngine() {
       }),
       rxjs.ignoreElements(),
       rxjs.mergeWith(supertonicCallbacks),
+      rxjs.map(event => {
+        if (event.type == "error") throw event.error
+        return event
+      }),
+      rxjs.takeWhile(event => event.type != "end")
+    )
+    .subscribe({
+      next(event) {
+        if (event.type == "start") isSpeaking = true
+        onEvent(event)
+      },
+      complete() {
+        onEvent({type: "end"})
+      },
+      error(err) {
+        if (err.name != "interrupted") onEvent({type: "error", error: err})
+      }
+    })
+    .add(() => {
+      isSpeaking = false
+      control = null
+    })
+  }
+  this.isSpeaking = function(callback) {
+    callback(isSpeaking)
+  }
+  this.pause = function() {
+    control?.next("pause")
+  }
+  this.resume = function() {
+    control?.next("resume")
+  }
+  this.stop = function() {
+    control?.next("stop")
+  }
+  this.forward = function() {
+    control?.next("forward")
+  }
+  this.rewind = function() {
+    control?.next("rewind")
+  }
+  this.seek = function(index) {
+    control?.next({type: "seek", index})
+  }
+}
+
+
+function NghiTtsEngine() {
+  let control = null
+  let isSpeaking = false
+  this.speak = function(utterance, options, onEvent) {
+    const nghiTtsPromise = rxjs.firstValueFrom(nghiTtsObservable)
+    control = new rxjs.Subject()
+    control.pipe(
+      rxjs.startWith("speak"),
+      rxjs.concatMap(async cmd => {
+        const nghiTts = await nghiTtsPromise
+        switch (typeof cmd == "string" ? cmd : cmd.type) {
+          case "speak":
+            return nghiTts.sendRequest("speak", {
+              utterance,
+              voiceName: options.voice.voiceName,
+              pitch: options.pitch,
+              rate: options.rate,
+              volume: options.volume,
+            })
+          case "pause":
+            return nghiTts.sendRequest("pause")
+          case "resume":
+            return nghiTts.sendRequest("resume")
+          case "stop":
+            return nghiTts.sendRequest("stop")
+              .then(() => Promise.reject({name: "interrupted", message: "Playback interrupted"}))
+          case "forward":
+            return nghiTts.sendRequest("forward")
+          case "rewind":
+            return nghiTts.sendRequest("rewind")
+          case "seek":
+            return nghiTts.sendRequest("seek", {index: cmd.index})
+        }
+      }),
+      rxjs.ignoreElements(),
+      rxjs.mergeWith(nghiTtsCallbacks),
       rxjs.map(event => {
         if (event.type == "error") throw event.error
         return event

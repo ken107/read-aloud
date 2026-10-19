@@ -319,6 +319,7 @@ function Doc(source, onEnd) {
       rate: settings.rate || defaults.rate,
       pitch: settings.pitch || defaults.pitch,
       volume: settings.volume || defaults.volume,
+      wordReplacements: settings.wordReplacements,
       lang: config.langMap[lang] || lang || 'en-US',
     }
     const voice = await getSpeechVoice(settings.voiceName, options.lang)

@@ -20,7 +20,7 @@ var config = {
     iw: 'he'
   },
   unsupportedSites: [
-    'https://chrome.google.com/webstore',
+    'https://chromewebstore.google.com',
     'https://addons.mozilla.org',
     'chrome:',
     'about:',
@@ -111,7 +111,7 @@ const settingsChange$ = rxjs.fromEventPattern(
 
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "darkMode"], fulfill);
+    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "wordReplacements", "darkMode"], fulfill);
   });
 }
 
@@ -123,7 +123,7 @@ function updateSettings(items) {
 
 function clearSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "darkMode"], fulfill);
+    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "wordReplacements", "darkMode"], fulfill);
   });
 }
 
@@ -160,6 +160,7 @@ const voices$ = rxjs.combineLatest({
   azureCreds: observeSetting("azureCreds"),
   piperVoices: observeSetting("piperVoices"),
   supertonicVoices: observeSetting("supertonicVoices"),
+  nghiTtsVoices: observeSetting("nghiTtsVoices"),
 }).pipe(
   rxjs.exhaustMap(settings => Promise.all([
     browserTtsEngine.getVoices(),
@@ -167,6 +168,7 @@ const voices$ = rxjs.combineLatest({
     phoneTtsEngine.getVoices(),
     settings.supertonicVoices || [],
     settings.piperVoices || [],
+    settings.nghiTtsVoices || [],
     settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
     settings.awsCreds ? amazonPollyTtsEngine.getVoices() : [],
     settings.gcpCreds ? googleWavenetTtsEngine.getVoices() : googleWavenetTtsEngine.getFreeVoices(),
@@ -180,18 +182,30 @@ const voices$ = rxjs.combineLatest({
 
 function groupVoicesByLang(voices) {
   return voices.groupBy(function(voice) {
-    if (voice.lang) {
-      var code = voice.lang.split('-',1)[0]
+    const voiceLanguages = getVoiceLanguages(voice)
+    if (voiceLanguages) {
       var alias = {
         yue: "zh",
         cmn: "zh",
       }
-      return alias[code] || code
+      return voiceLanguages.map(parseLang).map(({ lang }) => alias[lang] || lang)
     }
     else {
+      //voice declares no language, assume can handle any lang
       return "<any>"
     }
   })
+}
+
+function getVoiceLanguages(voice) {
+  if (voice.langs) return voice.langs
+  else if (voice.lang) return [voice.lang]
+  else return undefined
+}
+
+function getFirstLanguage(voice) {
+  if (voice.langs) return voice.langs[0]
+  else return voice.lang
 }
 
 function isOfflineVoice(voice) {
@@ -204,10 +218,6 @@ function isGoogleNative(voice) {
 
 function isChromeOSNative(voice) {
   return /^Chrome\sOS\s/.test(voice.voiceName);
-}
-
-function isMacOSNative(voice) {
-  return /^MacOS /.test(voice.voiceName);
 }
 
 function isGoogleTranslate(voice) {
@@ -258,6 +268,10 @@ function isSupertonicVoice(voice) {
   return /^Supertonic /.test(voice.voiceName)
 }
 
+function isNghiTtsVoice(voice) {
+  return /^NghiTTS /.test(voice.voiceName)
+}
+
 function isRHVoice(voice) {
   return /^RHVoice /.test(voice.voiceName)
 }
@@ -293,7 +307,7 @@ async function getSpeechVoice(voiceName, lang) {
   //if no specific voice indicated, but a preferred voice was configured for the language
   if (!voice && lang) {
     const preferredVoiceByLang = (await getSetting("preferredVoices")) || {}
-    voiceName = preferredVoiceByLang[lang.split("-")[0]];
+    voiceName = preferredVoiceByLang[parseLang(lang).lang]
     if (voiceName) voice = findVoiceByName(voices, voiceName);
   }
   //otherwise, auto-select in order: offline, native, free, any
@@ -323,23 +337,25 @@ function findVoiceByLang(voices, lang) {
   var speechLang = parseLang(lang);
   var match = {};
   voices.forEach(function(voice) {
-    if (voice.lang) {
-      var voiceLang = parseLang(voice.lang);
-      if (voiceLang.lang == speechLang.lang) {
-        //language matches
-        if (voiceLang.rest == speechLang.rest) {
-          //dialect matches, prefer female
-          if (voice.gender == "female") match.first = match.first || voice;
-          else match.second = match.second || voice;
-        }
-        else if (!voiceLang.rest) {
-          //voice specifies no dialect
-          match.third = match.third || voice;
-        }
-        else {
-          //dialect mismatch, prefer en-US (if english)
-          if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = match.fourth || voice;
-          else match.sixth = match.sixth || voice;
+    const voiceLanguages = getVoiceLanguages(voice)
+    if (voiceLanguages) {
+      for (const voiceLang of voiceLanguages.map(parseLang)) {
+        if (voiceLang.lang == speechLang.lang) {
+          //language matches
+          if (voiceLang.rest == speechLang.rest) {
+            //dialect matches, prefer female
+            if (voice.gender == "female") match.first = match.first || voice;
+            else match.second = match.second || voice;
+          }
+          else if (!voiceLang.rest) {
+            //voice specifies no dialect
+            match.third = match.third || voice;
+          }
+          else {
+            //dialect mismatch, prefer en-US (if english)
+            if (voiceLang.lang == 'en' && voiceLang.rest == 'us') match.fourth = match.fourth || voice;
+            else match.sixth = match.sixth || voice;
+          }
         }
       }
     }
@@ -516,11 +532,13 @@ function polyfills() {
       }
       var result = {};
       for (var i=0; i<this.length; i++) {
-        var key = keySelector(this[i]);
-        if (key != null) {
-          var value = valueReducer(result[key], this[i]);
-          if (value !== undefined) result[key] = value;
-          else delete result[key];
+        const keys = keySelector(this[i])
+        if (keys != null) {
+          for (const key of Array.isArray(keys) ? keys : [keys]) {
+            var value = valueReducer(result[key], this[i]);
+            if (value !== undefined) result[key] = value;
+            else delete result[key];
+          }
         }
       }
       return result;
@@ -547,6 +565,41 @@ function setI18nText() {
     if ($(this).is("input")) $(this).val(text);
     else $(this).text(text);
   })
+}
+
+/**
+ * Parse word replacements entered one per line as "word = replacement".
+ * An empty replacement means the word is skipped.
+ * Invalid and duplicate lines are skipped and reported in errors.
+ */
+function parseWordReplacements(text) {
+  const rules = []
+  const errors = []
+  const seen = Object.create(null)
+  if (typeof text != "string") return {rules, errors}
+  text.split(/\r?\n/).forEach((line, index) => {
+    const lineNumber = index + 1
+    if (!line.trim()) return
+    const separator = line.indexOf("=")
+    if (separator == -1) {
+      errors.push({line: lineNumber, code: "missing_separator"})
+      return
+    }
+    const from = line.slice(0, separator).trim()
+    const to = line.slice(separator + 1).trim()
+    if (!from) {
+      errors.push({line: lineNumber, code: "missing_word"})
+      return
+    }
+    const key = from.toLowerCase()
+    if (key in seen) {
+      errors.push({line: lineNumber, code: "duplicate", from, firstLine: seen[key]})
+      return
+    }
+    seen[key] = lineNumber
+    rules.push({from, to})
+  })
+  return {rules, errors}
 }
 
 function escapeHtml(text) {

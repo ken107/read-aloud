@@ -4,7 +4,7 @@
   "name": "__MSG_extension_name__",
   "short_name": "__MSG_extension_short_name__",
   "description": "__MSG_extension_description__",
-  "version": "2.22.0",
+  "version": "2.25.0",
   "default_locale": "en",
   "minimum_chrome_version": "99",
 
@@ -60,20 +60,23 @@
   },
   "commands": {
     "play": {
+      "suggested_key": {"default": "Alt+O"},
+      "description": "Play/Stop"
+    },
+    "pause": {
       "suggested_key": {"default": "Alt+P"},
-      "description": "play/pause"
+      "description": "Play/Pause"
     },
     "stop": {
-      "suggested_key": {"default": "Alt+O"},
-      "description": "stop"
+      "description": "Stop"
     },
     "forward": {
       "suggested_key": {"default": "Alt+Period"},
-      "description": "forward"
+      "description": "Forward"
     },
     "rewind": {
       "suggested_key": {"default": "Alt+Comma"},
-      "description": "rewind"
+      "description": "Rewind"
     }
   }
 }

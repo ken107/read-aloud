@@ -67,6 +67,11 @@
 
 
 
+  domReadyPromise.then(() => {
+    initSettingInfoPopup("voice-info-button", "voice-info", "voices", "options_voice_information")
+    initSettingInfoPopup("rate-info-button", "rate-warning", "rate", "options_rate_information")
+  })
+
   //voice
   domReadyPromise
     .then(() => {
@@ -78,6 +83,7 @@
           else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
           else if (voiceName == "@piper") bgPageInvoke("managePiperVoices").catch(console.error)
           else if (voiceName == "@supertonic") bgPageInvoke("manageSupertonicVoices").catch(console.error)
+          else if (voiceName == "@nghitts") bgPageInvoke("manageNghiTtsVoices").catch(console.error)
           else updateSettings({voiceName})
         });
       $("#languages-edit-button")
@@ -106,7 +112,9 @@
     observeSetting("gcpCreds"),
     domReadyPromise
   ).subscribe(([voiceName, gcpCreds]) => {
-    $("#voice-info").toggle(!!voiceName && isGoogleWavenet({voiceName}) && !gcpCreds)
+    document.getElementById("voice-info-button").hidden = !(voiceName && isGoogleWavenet({voiceName}) && !gcpCreds)
+    document.getElementById("voice-info").hidden = true
+    document.getElementById("voice-info-button").setAttribute("aria-expanded", "false")
   })
 
 
@@ -150,7 +158,9 @@
 
   rxjs.combineLatest([observeSetting("voiceName"), rateObservable, domReadyPromise])
     .subscribe(([voiceName, rate]) => {
-      $("#rate-warning").toggle((!voiceName || isNativeVoice({voiceName})) && rate > 2)
+      document.getElementById("rate-info-button").hidden = !((!voiceName || isNativeVoice({voiceName})) && rate > 2)
+      document.getElementById("rate-warning").hidden = true
+      document.getElementById("rate-info-button").setAttribute("aria-expanded", "false")
     })
 
 
@@ -218,44 +228,68 @@
 
 
 
+  //voiceTest
+  const demoSpeech = {
+    get(lang) {
+      return this[lang] || (
+        this[lang] = ajaxGet(config.serviceUrl + "/read-aloud/get-demo-speech-text/" + lang).then(JSON.parse)
+      )
+    }
+  }
+  const voiceTestSubject = new rxjs.Subject()
+  rxjs.defer(() => domReadyPromise).pipe(
+    rxjs.exhaustMap(() =>
+      voiceTestSubject.pipe(
+        rxjs.switchScan(({state}) =>
+          rxjs.iif(
+            () => state == "STOPPED",
+            //play
+            rxjs.defer(() => {
+              return voices$.pipe(rxjs.take(1))
+            }).pipe(
+              rxjs.exhaustMap(voices => {
+                const voiceName = $("#voices").val()
+                const voice = voiceName && findVoiceByName(voices, voiceName)
+                const {lang} = parseLang(voice && getFirstLanguage(voice) || "en-US")
+                return rxjs.defer(() => demoSpeech.get(lang)).pipe(
+                  rxjs.exhaustMap(({text}) => bgPageInvoke("playText", [text, {lang}]))
+                )
+              }),
+              rxjs.exhaustMap(() =>
+                rxjs.timer(100, 500).pipe(
+                  rxjs.exhaustMap(() => bgPageInvoke("getPlaybackState")),
+                  rxjs.takeWhile(({state}) => state != "STOPPED", true)
+                )
+              )
+            ),
+            //stop
+            rxjs.defer(() => bgPageInvoke("stop")).pipe(
+              rxjs.map(() => ({state: "STOPPED"}))
+            )
+          ),
+          {state: "STOPPED"}
+        ),
+        rxjs.startWith({state: "STOPPED"})
+      )
+    )
+  ).subscribe({
+    next({state, playbackError}) {
+      $("#test-voice .spinner").toggle(state == "LOADING")
+      $("#test-voice [data-i18n]").text(
+        brapi.i18n.getMessage(state == "STOPPED" ? "options_test_button" : "options_stop_button")
+      )
+      if (state == "STOPPED" && playbackError) handleError(playbackError)
+      else $("#status").parent().hide()
+    },
+    error: handleError
+  })
+
+
+
   //buttons
   domReadyPromise
     .then(() => {
-      var demoSpeech = {};
-      const statusTracker$ = new rxjs.Subject()
-      statusTracker$.pipe(
-        rxjs.switchMap(() =>
-          rxjs.interval(500).pipe(
-            rxjs.exhaustMap(() => bgPageInvoke("getPlaybackState")),
-            rxjs.takeWhile(({state}) => state != "STOPPED", true)
-          )
-        )
-      ).subscribe(({playbackError}) => {
-        if (playbackError) handleError(playbackError)
-      })
-
-      $("#test-voice")
-        .click(async function() {
-          try {
-            var voiceName = $("#voices").val();
-            var voice = voiceName && findVoiceByName(await rxjs.firstValueFrom(voices$), voiceName);
-            var lang = (voice && voice.lang || "en-US").split("-")[0];
-            $("#test-voice .spinner").show();
-            $("#status").parent().hide();
-            if (!demoSpeech[lang]) {
-              demoSpeech[lang] = await ajaxGet(config.serviceUrl + "/read-aloud/get-demo-speech-text/" + lang).then(JSON.parse)
-            }
-            await bgPageInvoke("playText", [demoSpeech[lang].text, {lang: lang}])
-            statusTracker$.next()
-          }
-          catch (err) {
-            handleError(err);
-          }
-          finally {
-            $("#test-voice .spinner").hide();
-          }
-        })
-      $("#test-voice .spinner").hide();
+      $("#test-voice").click(() => voiceTestSubject.next())
       $("#reset")
         .click(function() {
           clearSettings()
@@ -297,9 +331,12 @@
     })
     var voices = !selectedLangs ? allVoices : allVoices.filter(
       function(voice) {
-        return !voice.lang || selectedLangs.includes(voice.lang.split('-',1)[0])
+        const voiceLanguages = getVoiceLanguages(voice)
+        return !voiceLanguages
+          || voiceLanguages.map(parseLang).some(({ lang }) => selectedLangs.includes(lang))
           || isPiperVoice(voice)
           || isSupertonicVoice(voice)
+          || isNghiTtsVoice(voice)
           || isOpenai(voice)
       });
 
@@ -311,7 +348,7 @@
         standard: [],
       },
       voices.groupBy(function(voice) {
-        if (isPiperVoice(voice) || isSupertonicVoice(voice)) return "experimental"
+        if (isPiperVoice(voice) || isSupertonicVoice(voice) || isNghiTtsVoice(voice)) return "experimental"
         if (isOfflineVoice(voice)) return "offline"
         if (isPremiumVoice(voice)) return "premium";
         return "standard"
@@ -348,6 +385,12 @@
       .val("@supertonic")
       .text(brapi.i18n.getMessage("options_enable_supertonic_voices"))
       .appendTo(experimental)
+    if (!selectedLangs || selectedLangs.includes('vi')) {
+      $("<option>")
+        .val("@nghitts")
+        .text(brapi.i18n.getMessage("options_enable_nghitts_voices") || "Install NghiTTS voices...")
+        .appendTo(experimental)
+    }
 
     //create the standard optgroup
     $("<optgroup>").appendTo($("#voices"))
@@ -549,3 +592,45 @@
     }
   }
 })();
+
+function initSettingInfoPopup(buttonId, popupId, anchorId, labelKey) {
+  const button = document.getElementById(buttonId)
+  const popup = document.getElementById(popupId)
+  const label = brapi.i18n.getMessage(labelKey)
+  button.setAttribute("aria-label", label)
+  button.title = label
+  const close = () => {
+    popup.hidden = true
+    button.setAttribute("aria-expanded", "false")
+  }
+  button.addEventListener("click", () => {
+    if (!popup.hidden) return close()
+    // A fixed, viewport-bounded overlay must not affect extension auto-sizing.
+    const anchorElement = document.getElementById(anchorId)
+    const anchor = (anchorElement.getClientRects().length ? anchorElement : button).getBoundingClientRect()
+    const width = Math.min(320, window.innerWidth - 32)
+    popup.style.width = `${width}px`
+    popup.style.left = `${Math.max(16, Math.min(anchor.right - width, window.innerWidth - width - 16))}px`
+    popup.style.top = "16px"
+    popup.hidden = false
+    const height = popup.getBoundingClientRect().height
+    popup.style.top = `${Math.max(16, Math.min(anchor.bottom + 8, window.innerHeight - height - 16))}px`
+    button.setAttribute("aria-expanded", "true")
+  })
+  document.addEventListener("click", event => {
+    if (!button.contains(event.target) && !popup.contains(event.target)) close()
+  })
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !popup.hidden) {
+      close()
+      button.focus()
+      event.preventDefault()
+    }
+  })
+  document.addEventListener("focusin", event => {
+    if (!button.contains(event.target) && !popup.contains(event.target)) close()
+  })
+  window.addEventListener("resize", close)
+  window.addEventListener("scroll", close)
+  document.getElementById("voices").addEventListener("change", close)
+}

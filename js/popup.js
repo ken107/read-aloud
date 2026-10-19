@@ -8,15 +8,7 @@ registerMessageListener("popup", {
   }
 })
 
-const engineInitializingSubject = new rxjs.Subject()
-engineInitializingSubject
-  .pipe(
-    rxjs.distinctUntilChanged()
-  )
-  .subscribe(engine => {
-    if (engine) $("#status").text(`${engine} TTS engine initializing...`).show()
-    else $("#status").hide()
-  })
+const playbackEstimate = createPlaybackEstimate()
 
 $(function() {
   if (queryString.isPopup) $("body").addClass("is-popup")
@@ -68,7 +60,44 @@ async function init() {
   $("#decrease-window-size").click(changeWindowSize.bind(null, -1));
   $("#increase-window-size").click(changeWindowSize.bind(null, +1));
   $("#toggle-dark-mode").click(toggleDarkMode);
+  for (const [id, key] of [
+    ["decrease-font-size", "smaller_text"],
+    ["increase-font-size", "larger_text"],
+    ["decrease-window-size", "smaller_popup"],
+    ["increase-window-size", "larger_popup"],
+    ["toggle-dark-mode", "toggle_dark_mode"],
+  ]) {
+    const label = brapi.i18n.getMessage(`playback_status_${key}`)
+    $("#" + id).attr({title: label, "aria-label": label})
+  }
+  const reportLabel = brapi.i18n.getMessage("playback_status_report_issue")
+  $("#report-issue").text(reportLabel)
 
+  const controlsToggle = document.getElementById("toggle-reading-controls")
+  const controlsLabel = brapi.i18n.getMessage("playback_status_reading_controls")
+  controlsToggle.setAttribute("aria-label", controlsLabel)
+  controlsToggle.title = controlsLabel
+  controlsToggle.addEventListener("click", () => {
+    const toolbar = document.getElementById("toolbar")
+    toolbar.hidden = !toolbar.hidden
+    controlsToggle.setAttribute("aria-expanded", String(!toolbar.hidden))
+  })
+
+  new ResizeObserver(entries => {
+    const controls = entries[0].target
+    const height = controls.hidden ? 0 : controls.getBoundingClientRect().height
+      + parseFloat(getComputedStyle(controls).marginTop)
+    document.body.style.setProperty("--playback-status-height", `${height}px`)
+  }).observe(document.getElementById("reading-controls"));
+  const footer = document.getElementById("footer")
+  // Return the former always-visible footer line to the reading pane.
+  document.body.style.setProperty("--footer-line-height", getComputedStyle(footer).lineHeight)
+  new ResizeObserver(() => {
+    const style = getComputedStyle(footer)
+    const height = style.display === "none" ? 0 : footer.getBoundingClientRect().height
+      + parseFloat(style.marginTop)
+    document.body.style.setProperty("--announcement-height", `${height}px`)
+  }).observe(footer)
   refreshSize();
   checkAnnouncements();
 
@@ -161,8 +190,9 @@ async function updateButtons() {
   var playbackErr = stateInfo.playbackError
 
   if (playbackErr) handleError(playbackErr)
-  engineInitializingSubject.next(state == "LOADING" && speech?.engine)
+  updatePlaybackStatus(state, speech)
 
+  $("body").toggleClass("is-stopped", state == "STOPPED");
   $("#imgLoading").toggle(state == "LOADING");
   $("#btnSettings").toggle(state == "STOPPED");
   $("#btnPlay").toggle(state == "PAUSED" || state == "STOPPED");
@@ -171,11 +201,13 @@ async function updateButtons() {
   $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
 
   if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
-    $("#highlight, #toolbar").show()
+    $("body").addClass("has-highlight")
+    $("#highlight").show()
     updateHighlighting(speech)
   }
   else {
-    $("#highlight, #toolbar").hide()
+    $("body").removeClass("has-highlight")
+    $("#highlight").hide()
   }
 }
 
@@ -339,7 +371,7 @@ function refreshSize() {
       })
       if (queryString.isPopup) $("#highlight").css({
         width: isMobileOS() ? "100%" : windowSize[0],
-        height: windowSize[1]
+        height: `calc(${windowSize[1]}px - 8px + var(--footer-line-height, 0px) - var(--playback-status-height, 0px) - var(--announcement-height, 0px))`
       })
     })
   function getFontSize(settings) {
@@ -356,9 +388,9 @@ function refreshSize() {
   }
   function getWindowSize(settings) {
     switch (settings.highlightWindowSize || defaults.highlightWindowSize) {
-      case 1: return [430, 330];
-      case 2: return [550, 420];
-      default: return [750, 450];
+      case 1: return [430, 380];
+      case 2: return [550, 470];
+      default: return [750, 500];
     }
   }
 }
@@ -407,4 +439,41 @@ function showAnnouncement(ann) {
 function toggleDarkMode() {
   const darkMode = document.body.classList.toggle("dark-mode")
   updateSettings({darkMode})
+}
+
+function updatePlaybackStatus(state, speech) {
+  const active = state === "PLAYING" || state === "PAUSED" || state === "LOADING"
+  const panel = document.getElementById("playback-status")
+  panel.hidden = !active
+  document.getElementById("reading-controls").hidden = !active
+  const estimate = playbackEstimate.update(state, speech, performance.now())
+  if (!active) {
+    panel.open = false
+    document.getElementById("toolbar").hidden = true
+    document.getElementById("toggle-reading-controls").setAttribute("aria-expanded", "false")
+    return
+  }
+  const message = (key, value) => brapi.i18n.getMessage(`playback_status_${key}`, value)
+  const uiLanguage = brapi.i18n.getUILanguage()
+  const voice = speech?.voiceName || message("preparing_voice")
+  $("#playback-voice").text(voice)
+  let progress = estimate ? new Intl.NumberFormat(uiLanguage, {style: "percent"}).format(estimate.percent / 100) : ""
+  if (estimate?.seconds != null) {
+    progress = estimate.seconds < 60 ? message("less_than_minute")
+      : message("minutes_left", new Intl.NumberFormat(uiLanguage).format(Math.ceil(estimate.seconds / 60)))
+  }
+  if (state === "LOADING") progress = speech?.engine ? message("loading_engine", speech.engine) : message("loading")
+  else if (state === "PAUSED") progress = message("paused") + (progress ? ` · ${progress}` : "")
+  $("#playback-progress").text(progress)
+  const languageName = code => {
+    if (!code) return message("unavailable")
+    try { return new Intl.DisplayNames([uiLanguage], {type: "language"}).of(code) }
+    catch { return code }
+  }
+  $("#playback-details").text([
+    message("detected_language", languageName(speech?.detectedLang)),
+    speech?.voiceLanguages?.length ? message("reading_language", new Intl.ListFormat(uiLanguage).format(speech.voiceLanguages.map(languageName))) : null,
+    message("voice", voice),
+    speech?.voiceLocation ? message("processing", message(speech.voiceLocation)) : null,
+  ].filter(Boolean).join("\n"))
 }

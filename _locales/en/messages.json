@@ -41,6 +41,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ Install Supertonic voices..."
   },
+  "options_enable_nghitts_voices": {
+    "message": "⚡ Install NghiTTS voices..."
+  },
   "options_rate_label": {
     "message": "Speed"
   },
@@ -74,11 +77,49 @@
   "options_audio_playback_embedded": {
     "message": "In page"
   },
+  "advanced_word_replacements_title": {
+    "message": "Word replacements"
+  },
+  "advanced_word_replacements_placeholder": {
+    "message": "One per line, in the form “word = replacement”, case insensitive. Leave the replacement empty to skip the word.\n\nGIF = jif\ne.g. = for example\n[citation needed] ="
+  },
+  "advanced_word_replacements_saving": {
+    "message": "Saving…"
+  },
+  "advanced_word_replacements_saved": {
+    "message": "Saved"
+  },
+  "advanced_word_replacements_save_failed": {
+    "message": "Couldn’t save"
+  },
+  "advanced_word_replacements_error_separator": {
+    "message": "Line $LINE$: missing “=”",
+    "placeholders": {
+      "line": {"content": "$1", "example": "3"}
+    }
+  },
+  "advanced_word_replacements_error_missing_word": {
+    "message": "Line $LINE$: add a word before “=”",
+    "placeholders": {
+      "line": {"content": "$1", "example": "3"}
+    }
+  },
+  "advanced_word_replacements_error_duplicate": {
+    "message": "Line $LINE$: “$WORD$” is already replaced on line $FIRST_LINE$",
+    "placeholders": {
+      "line": {"content": "$1", "example": "5"},
+      "word": {"content": "$2", "example": "GIF"},
+      "first_line": {"content": "$3", "example": "2"}
+    }
+  },
   "options_hotkeys_link": {
     "message": "Edit shortcut keys"
   },
   "options_test_button": {
     "message": "Test"
+  },
+  "options_stop_button": {
+    "message": "Stop"
   },
   "options_reset_button": {
     "message": "Reset"
@@ -178,5 +219,101 @@
   },
   "google_translate_keep_page_open": {
     "message": "Read Aloud is using Google Translate for text-to-speech.  Please keep this tab open."
+  },
+  "playback_status_detected_language": {
+    "message": "Detected language: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_reading_language": {
+    "message": "Reading language: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_voice": {
+    "message": "Voice: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_processing": {
+    "message": "Processing: $value$",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_offline": {
+    "message": "Offline"
+  },
+  "playback_status_cloud": {
+    "message": "Cloud"
+  },
+  "playback_status_preparing_voice": {
+    "message": "Preparing voice…"
+  },
+  "playback_status_less_than_minute": {
+    "message": "Less than 1 min"
+  },
+  "playback_status_minutes_left": {
+    "message": "~$value$ min left",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_loading": {
+    "message": "Loading…"
+  },
+  "playback_status_loading_engine": {
+    "message": "Loading $value$…",
+    "placeholders": {
+      "value": {
+        "content": "$1"
+      }
+    }
+  },
+  "playback_status_paused": {
+    "message": "Paused"
+  },
+  "playback_status_unavailable": {
+    "message": "Unavailable"
+  },
+  "playback_status_reading_controls": {
+    "message": "Reading controls"
+  },
+  "playback_status_report_issue": {
+    "message": "Report an issue"
+  },
+  "playback_status_smaller_text": {
+    "message": "Decrease text size"
+  },
+  "playback_status_larger_text": {
+    "message": "Increase text size"
+  },
+  "playback_status_smaller_popup": {
+    "message": "Shrink popup"
+  },
+  "playback_status_larger_popup": {
+    "message": "Enlarge popup"
+  },
+  "options_voice_information": {
+    "message": "Voice information"
+  },
+  "options_rate_information": {
+    "message": "Speed information"
+  },
+  "playback_status_toggle_dark_mode": {
+    "message": "Toggle dark mode"
   }
 }
