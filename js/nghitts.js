@@ -22,9 +22,25 @@ engineIdle$.pipe(
       )
     )
   )
-).subscribe(() => {
-  window.close()
+).subscribe(closeSelf)
+
+//orphan detection: close if Read Aloud has replaced this tab with another, or is no longer reachable
+rxjs.interval(60*1000).pipe(
+  rxjs.filter(() => engineIdle$.getValue()),
+  rxjs.exhaustMap(() => requestServiceWorker("isEngineTabSuperseded", ["nghitts"])
+    .then(isSuperseded => isSuperseded === true, () => true))
+).subscribe(isOrphaned => {
+  if (isOrphaned) closeSelf()
 })
+
+function closeSelf() {
+  //window.close() is refused for tabs not opened by script (e.g. restored by session restore), so ask the background page to remove the tab
+  requestServiceWorker("closeEngineTab")
+    .then(res => {
+      if (res?.error) throw res.error
+    })
+    .catch(() => window.close())
+}
 
 //keep-it-open billboard
 document.addEventListener("DOMContentLoaded", () => {
