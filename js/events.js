@@ -43,7 +43,13 @@ const piperHost = immediate(() => {
   const tabSubject = new rxjs.BehaviorSubject(null)
   return {
     setTab(tab) {
+      const prevTab = tabSubject.getValue()
+      if (prevTab && prevTab.id != tab.id) closeStaleEngineTab(prevTab, "piper-host")
       tabSubject.next(tab)
+    },
+    isSuperseded(tab) {
+      const currentTab = tabSubject.getValue()
+      return currentTab != null && currentTab.id != tab.id
     },
     async ready({requestFocus}) {
       if (requestFocus) {
@@ -63,6 +69,8 @@ const piperHost = immediate(() => {
         }
       }
       catch (err) {
+        const staleTab = tabSubject.getValue()
+        if (staleTab) closeStaleEngineTab(staleTab, "piper-host")
         tabSubject.next(null)
         await brapi.tabs.create({url: "https://piper.ttstool.com/", pinned: true, active: requestFocus})
         await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
@@ -91,7 +99,13 @@ const supertonicHost = immediate(() => {
   const tabSubject = new rxjs.BehaviorSubject(null)
   return {
     setTab(tab) {
+      const prevTab = tabSubject.getValue()
+      if (prevTab && prevTab.id != tab.id) closeStaleEngineTab(prevTab, "supertonic-host")
       tabSubject.next(tab)
+    },
+    isSuperseded(tab) {
+      const currentTab = tabSubject.getValue()
+      return currentTab != null && currentTab.id != tab.id
     },
     async ready({requestFocus}) {
       if (requestFocus) {
@@ -111,6 +125,8 @@ const supertonicHost = immediate(() => {
         }
       }
       catch (err) {
+        const staleTab = tabSubject.getValue()
+        if (staleTab) closeStaleEngineTab(staleTab, "supertonic-host")
         tabSubject.next(null)
         await brapi.tabs.create({url: "https://supertonic.ttstool.com/", pinned: true, active: requestFocus})
         await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
@@ -136,7 +152,13 @@ const nghiTtsHost = immediate(() => {
   const tabSubject = new rxjs.BehaviorSubject(null)
   return {
     setTab(tab) {
+      const prevTab = tabSubject.getValue()
+      if (prevTab && prevTab.id != tab.id) closeStaleEngineTab(prevTab, "nghitts-host")
       tabSubject.next(tab)
+    },
+    isSuperseded(tab) {
+      const currentTab = tabSubject.getValue()
+      return currentTab != null && currentTab.id != tab.id
     },
     async ready({requestFocus}) {
       if (requestFocus) {
@@ -156,6 +178,8 @@ const nghiTtsHost = immediate(() => {
         }
       }
       catch (err) {
+        const staleTab = tabSubject.getValue()
+        if (staleTab) closeStaleEngineTab(staleTab, "nghitts-host")
         tabSubject.next(null)
         await brapi.tabs.create({url: "https://nghitts.ttstool.com/?embed=1", pinned: true, active: requestFocus})
         await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
@@ -175,6 +199,31 @@ const nghiTtsHost = immediate(() => {
     eventSubject: new rxjs.Subject()
   }
 })
+
+
+/**
+ * Close an engine tab that has been replaced by a newer one, or that was unloaded and can no longer respond.
+ * A live tab is only closed if it still answers as the engine host, so a tab the user navigated elsewhere is left alone.
+ */
+async function closeStaleEngineTab(tab, to) {
+  try {
+    const {discarded} = await brapi.tabs.get(tab.id)
+    if (!discarded) {
+      const res = await brapi.tabs.sendMessage(tab.id, {to, type: "request", id: String(Math.random()), method: "areYouThere"})
+      if (res?.result !== true) return
+    }
+    await brapi.tabs.remove(tab.id)
+  }
+  catch (err) {
+    console.debug("Stale engine tab not closed", tab.id, err)
+  }
+}
+
+const engineHosts = {
+  piper: piperHost,
+  supertonic: supertonicHost,
+  nghitts: nghiTtsHost,
+}
 
 
 /**
@@ -239,6 +288,12 @@ var handlers = {
   },
   onNghiTtsEvent(event) {
     nghiTtsHost.eventSubject.next(event)
+  },
+  isEngineTabSuperseded(engine) {
+    return engineHosts[engine].isSuperseded(this.sender.tab)
+  },
+  closeEngineTab() {
+    return brapi.tabs.remove(this.sender.tab.id)
   },
   audioPlay: audioPlayer.play,
   audioPause: audioPlayer.pause,
