@@ -453,7 +453,10 @@ function reportError(err) {
   }
 }
 
-function reportIssue(url, comment) {
+async function reportIssue(url, comment) {
+  const permissions = await brapi.permissions.getAll();
+  // Older Firefox versions do not expose built-in data consent.
+  if (permissions.data_collection && !permissions.data_collection.includes("technicalAndInteraction")) return false;
   var manifest = brapi.runtime.getManifest();
   return getSettings()
     .then(function(settings) {
@@ -463,7 +466,7 @@ function reportIssue(url, comment) {
       return ajaxPost(config.serviceUrl + "/read-aloud/report-issue", {
         url: JSON.stringify(settings),
         comment: comment
-      })
+      }).then(() => true)
     })
 }
 
