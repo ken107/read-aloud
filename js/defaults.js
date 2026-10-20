@@ -30,6 +30,7 @@ var config = {
     origins: ["https://*/"]
   },
   browserId: getBrowser(),
+  chromeNaturalVoicesExtensionId: "gjjabgpgjpampikjhjpfhneeoapjbjaf",
 }
 
 var defaults = {
@@ -161,6 +162,10 @@ const voices$ = rxjs.combineLatest({
   piperVoices: observeSetting("piperVoices"),
   supertonicVoices: observeSetting("supertonicVoices"),
   nghiTtsVoices: observeSetting("nghiTtsVoices"),
+  ttsVoicesChanged: brapi.tts?.onVoicesChanged
+    ? rxjs.fromEventPattern(h => brapi.tts.onVoicesChanged.addListener(h), h => brapi.tts.onVoicesChanged.removeListener(h))
+      .pipe(rxjs.debounceTime(500), rxjs.startWith(null))
+    : rxjs.of(null),
 }).pipe(
   rxjs.exhaustMap(settings => Promise.all([
     browserTtsEngine.getVoices(),
@@ -214,6 +219,11 @@ function isOfflineVoice(voice) {
 
 function isGoogleNative(voice) {
   return /^Google\s/.test(voice.voiceName);
+}
+
+function isGoogleNaturalVoice(voice) {
+  return voice.extensionId == config.chromeNaturalVoicesExtensionId
+    || /^Google\s.*\(Natural\)$/.test(voice.voiceName)
 }
 
 function isChromeOSNative(voice) {

@@ -80,6 +80,7 @@
           var voiceName = $(this).val();
           if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
           else if (voiceName == "@languages") brapi.tabs.create({url: "languages.html"});
+          else if (voiceName == "@natural") brapi.tabs.create({url: "natural-voices.html"});
           else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
           else if (voiceName == "@piper") bgPageInvoke("managePiperVoices").catch(console.error)
           else if (voiceName == "@supertonic") bgPageInvoke("manageSupertonicVoices").catch(console.error)
@@ -365,6 +366,12 @@
         .text(voice.voiceName)
         .appendTo(offline)
     }
+    if (canEnableGoogleNaturalVoices()) {
+      $("<option>")
+        .val("@natural")
+        .text("✨ " + (brapi.i18n.getMessage("options_enable_natural_voices") || "Enable Google Natural voices..."))
+        .appendTo(offline)
+    }
 
     //create experimental group
     $("<optgroup>").appendTo("#voices")
@@ -431,6 +438,10 @@
       .appendTo(additional)
   }
 
+  function canEnableGoogleNaturalVoices() {
+    return config.browserId == "chrome" && !/\bCrOS\b/.test(navigator.userAgent)
+  }
+
   function voiceSorter(a, b) {
     function getWeight(voice) {
       var weight = 0
@@ -442,7 +453,10 @@
       if (isUseMyPhone(voice)) weight += 1
       return weight
     }
-    return getWeight(a)-getWeight(b) || a.voiceName.localeCompare(b.voiceName)
+    return getWeight(a)-getWeight(b)
+      //group voices provided by the same extension (e.g. Google Natural voices) together
+      || (a.extensionId || "").localeCompare(b.extensionId || "")
+      || a.voiceName.localeCompare(b.voiceName)
   }
 
 
