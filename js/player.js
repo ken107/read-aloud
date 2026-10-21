@@ -388,82 +388,99 @@ var requestAudioPlaybackPermission = lazy(async function() {
   await brapi.tabs.update(prevTab.id, {active: true})
 })
 
-async function createOffscreen() {
-  if (brapi.offscreen.hasDocument && await brapi.offscreen.hasDocument()) {
-    return
-  }
-  const readyPromise = new Promise(f => messageHandlers.offscreenCheckIn = f)
-  brapi.offscreen.createDocument({
-    reasons: ["AUDIO_PLAYBACK"],
-    justification: "Read Aloud would like to play audio in the background",
-    url: brapi.runtime.getURL("offscreen.html")
-  })
-  await readyPromise
+// Commands are ordered even when RxJS cancels a pending asynchronous start.
+// Session IDs make late cleanup and events harmless to subsequent playback.
+var offscreenCommandQueue = Promise.resolve()
+var offscreenEventHandlers = new Map()
+messageHandlers.offscreenPlaybackEvent = (event, id) => {
+  const handler = offscreenEventHandlers.get(id)
+  if (handler) handler(event, id)
+}
+function queueOffscreenCommand(command) {
+  const result = offscreenCommandQueue.then(command)
+  offscreenCommandQueue = result.catch(() => {})
+  return result
 }
 
 function playAudioOffscreen(urlPromise, options, playbackState$) {
-  return rxjs.from(urlPromise).pipe(
-    rxjs.exhaustMap(url =>
-      playbackState$.pipe(
-        rxjs.distinctUntilChanged(),
-        rxjs.skipWhile(state => state != "resumed"),
-        rxjs.scan((playback$, state) => {
-          if (state == "resumed") {
-            return rxjs.defer(async () => {
-              if (!playback$) {
-                const result = await sendToOffscreen({method: "play", args: [url, options]})
-                if (result != true) throw "Offscreen doc not present"
-              } else {
-                const result = await sendToOffscreen({method: "resume"})
-                if (result != true) throw "Offscreen doc gone"
+  return new rxjs.Observable(observer => {
+    const id = crypto.randomUUID()
+    let disposed = false
+    let revision = 0
+    let subscription
+    const eventHandler = (event, sessionId) => {
+      if (sessionId != id || disposed) return
+      if (event.type == "error") observer.error(event.error)
+      else {
+        observer.next(event)
+        if (event.type == "end") observer.complete()
+      }
+    }
+    offscreenEventHandlers.set(id, eventHandler)
+
+    Promise.resolve(urlPromise).then(url => {
+      if (disposed) return
+      subscription = playbackState$.pipe(rxjs.distinctUntilChanged()).subscribe({
+        next(state) {
+          const request = ++revision
+          queueOffscreenCommand(async () => {
+            if (disposed || request != revision) return
+            if (state != "resumed") {
+              await sendToOffscreen({method: "pause", args: [id]}).catch(() => {})
+              return
+            }
+            for (let attempt = 0; attempt < 2; attempt++) {
+              try {
+                await offscreenTimeout(() => bgPageInvoke("ensureOffscreen"), 45000)
+                if (disposed || request != revision) return
+                // Idempotent for this session: resume existing audio, or start
+                // again if Chrome discarded the document while it was paused.
+                const result = await sendToOffscreen({method: "play", args: [url, options, id]})
+                if (result !== true) throw new Error("Offscreen document inaccessible")
+                return
+              } catch (err) {
+                if (disposed || request != revision) return
+                if (attempt || err.offscreenApplicationError) throw err
               }
-            }).pipe(
-              rxjs.catchError(err => {
-                console.debug(err)
-                return rxjs.defer(createOffscreen).pipe(
-                  rxjs.exhaustMap(async () => {
-                    const result = await sendToOffscreen({method: "play", args: [url, options]})
-                    if (result != true) throw new Error("Offscreen doc inaccessible")
-                  })
-                )
-              }),
-              rxjs.exhaustMap(() =>
-                rxjs.NEVER.pipe(
-                  rxjs.finalize(() => {
-                    sendToOffscreen({method: "pause"})
-                      .catch(console.error)
-                  })
-                )
-              )
-            )
-          } else {
-            return rxjs.EMPTY
-          }
-        }, null),
-        rxjs.switchAll()
-      )
-    ),
-    rxjs.mergeWith(
-      new rxjs.Observable(observer => {
-        messageHandlers.offscreenPlaybackEvent = function(event) {
-          if (event.type == "error") observer.error(event.error)
-          else observer.next(event)
-        }
+            }
+          }).catch(err => {
+            if (!disposed && request == revision) observer.error(err)
+          })
+        },
+        error: err => observer.error(err)
       })
-    ),
-    rxjs.takeWhile(event => event.type != "end", true)
-  )
+    }, err => observer.error(err))
+
+    return () => {
+      disposed = true
+      revision++
+      if (subscription) subscription.unsubscribe()
+      offscreenEventHandlers.delete(id)
+      queueOffscreenCommand(() => sendToOffscreen({method: "stop", args: [id]})).catch(() => {})
+    }
+  })
+}
+
+async function offscreenTimeout(operation, timeout = 5000) {
+  let timer
+  try {
+    return await Promise.race([
+      Promise.resolve().then(operation),
+      new Promise((_, reject) => timer = setTimeout(() => reject(new Error("Offscreen operation timed out")), timeout))
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 async function sendToOffscreen(message) {
-  message.dest = "offscreen"
-  const result = await brapi.runtime.sendMessage(message)
-    .catch(err => {
-      if (/^(A listener indicated|Could not establish)/.test(err.message)) throw new Error(err.message + " " + message.method)
-      throw err
-    })
-  if (result && result.error) throw result.error
-  else return result
+  const result = await offscreenTimeout(() => brapi.runtime.sendMessage({...message, dest: "offscreen"}))
+  if (result && result.error) {
+    const err = new Error(result.error.message || String(result.error))
+    err.offscreenApplicationError = true
+    throw err
+  }
+  return result
 }
 
 async function shouldPlaySilence(providerId) {
