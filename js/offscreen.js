@@ -1,16 +1,5 @@
 
 (function() {
-  registerMessageListener("offscreen", {
-    play: play,
-    pause: pause,
-    resume: resume,
-  })
-
-  sendToPlayer({method: "offscreenCheckIn"})
-    .catch(console.error)
-
-
-
   const current$ = new rxjs.BehaviorSubject(null)
 
   current$.pipe(
@@ -19,7 +8,7 @@
         return playAudioHere(Promise.resolve(current.url), current.options, current.playbackState$).pipe(
           rxjs.catchError(err => rxjs.of({type: "error", error: errorToJson(err)})),
           rxjs.tap(event => {
-            sendToPlayer({method: "offscreenPlaybackEvent", args: [event]})
+            sendToPlayer({method: "offscreenPlaybackEvent", args: [event, current.id]})
               .catch(console.error)
           })
         )
@@ -31,8 +20,13 @@
 
 
 
-  function play(url, options) {
+  function play(url, options, id) {
+    if (current$.value && current$.value.id == id) {
+      current$.value.playbackState$.next("resumed")
+      return true
+    }
     current$.next({
+      id,
       url,
       options,
       playbackState$: new rxjs.BehaviorSubject("resumed")
@@ -40,17 +34,18 @@
     return true
   }
 
-  function pause() {
-    current$.value.playbackState$.next("paused")
+  function pause(id) {
+    if (current$.value && current$.value.id == id) current$.value.playbackState$.next("paused")
     return true
   }
 
-  function resume() {
-    current$.value.playbackState$.next("resumed")
+  function stop(id) {
+    if (current$.value && current$.value.id == id) current$.next(null)
     return true
   }
 
-
+  // Register only after state and the audio subscription are initialized.
+  registerMessageListener("offscreen", {ping: () => true, play, pause, stop})
 
   async function sendToPlayer(message) {
     message.dest = "player"

@@ -9,6 +9,7 @@ brapi.runtime.onInstalled.addListener(function() {
  * IPC handlers
  */
 var handlers = {
+  ensureOffscreen: makeOffscreenManager(brapi, self.clients),
   playText: playText,
   playTab: playTab,
   reloadAndPlayTab: reloadAndPlayTab,

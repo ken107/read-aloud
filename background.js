@@ -4,6 +4,7 @@ try {
     "js/defaults.js",
     "js/messaging.js",
     "js/content-handlers.js",
+    "js/offscreen-manager.js",
     "js/events.js"
   )
 }
