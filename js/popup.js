@@ -153,7 +153,7 @@ function handleError(err) {
       }
     })
   }
-  else if (config.browserId == "opera" && /locked fullscreen/.test(err.message)) {
+  else if (isOpera() && /locked fullscreen/.test(err.message)) {
     $("#status").html("Click <a href='#open-player-tab'>here</a> to start read aloud.").show()
     $("#status a").click(async function() {
       try {

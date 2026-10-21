@@ -439,7 +439,7 @@
   }
 
   function canEnableGoogleNaturalVoices() {
-    return config.browserId == "chrome" && !/\bCrOS\b/.test(navigator.userAgent)
+    return isGoogleChrome() && !isChromeOS()
   }
 
   function voiceSorter(a, b) {
@@ -495,7 +495,7 @@
         }
       })
     }
-    else if (config.browserId == "opera" && /locked fullscreen/.test(err.message)) {
+    else if (isOpera() && /locked fullscreen/.test(err.message)) {
       $("#status").html("Click <a href='#open-player-tab'>here</a> to start read aloud.").parent().show()
       $("#status a").click(async function() {
         try {
