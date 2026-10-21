@@ -217,8 +217,9 @@ function isOfflineVoice(voice) {
   return voice.remote == false
 }
 
-function isGoogleNative(voice) {
-  return /^Google\s/.test(voice.voiceName);
+//legacy "Google US English" etc. voices from Chrome's built-in Google Network Speech extension
+function isGoogleNetworkVoice(voice) {
+  return /^Google\s/.test(voice.voiceName) && !isGoogleNaturalVoice(voice);
 }
 
 function isGoogleNaturalVoice(voice) {
@@ -320,11 +321,12 @@ async function getSpeechVoice(voiceName, lang) {
     voiceName = preferredVoiceByLang[parseLang(lang).lang]
     if (voiceName) voice = findVoiceByName(voices, voiceName);
   }
-  //otherwise, auto-select in order: offline, native, free, any
+  //otherwise, auto-select in order: Google Natural, offline, native, free, any
   if (!voice && lang) {
     voices = voices.filter(voice => !isUseMyPhone(voice))
-    voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
-      || findVoiceByLang(voices.filter(isGoogleNative), lang)
+    voice = findVoiceByLang(voices.filter(isGoogleNaturalVoice), lang)
+      || findVoiceByLang(voices.filter(isOfflineVoice), lang)
+      || findVoiceByLang(voices.filter(isGoogleNetworkVoice), lang)
       || findVoiceByLang(voices.filter(isNativeVoice), lang)
 
     if (!voice) {
