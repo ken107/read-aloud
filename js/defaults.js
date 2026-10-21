@@ -30,7 +30,6 @@ var config = {
     origins: ["https://*/"]
   },
   browserId: getBrowser(),
-  chromeNaturalVoicesExtensionId: "gjjabgpgjpampikjhjpfhneeoapjbjaf",
 }
 
 var defaults = {
@@ -223,8 +222,8 @@ function isGoogleNetworkVoice(voice) {
 }
 
 function isGoogleNaturalVoice(voice) {
-  return voice.extensionId == config.chromeNaturalVoicesExtensionId
-    || /^Google\s.*\(Natural\)$/.test(voice.voiceName)
+  //the Natural voices extension also provides lower-quality "Chrome OS ..." voices, so match by name
+  return /^Google\s.*\(Natural\)$/.test(voice.voiceName)
 }
 
 function isChromeOSNative(voice) {
