@@ -80,10 +80,6 @@ $(function() {
           })
           .then(window.close)
       }
-      else if (queryString.tab) {
-        return bgPageInvoke("stop")
-          .then(function() {$("#btnPlay").click()})
-      }
       else {
         return bgPageInvoke("getPlaybackState")
           .then(function(state) {
