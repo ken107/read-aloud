@@ -58,6 +58,9 @@ function Speech(texts, options) {
   function getChunks(text) {
     var isEA = /^(zh|ko|ja)(?:-|$)/i.test(options.lang);
     var punctuator = createPunctuator(options.lang);
+    if (isOfflineVoice(options.voice) && !isUseMyPhone(options.voice)) {
+      return punctuator.getParagraphs(text).flatMap(paragraph => punctuator.getSentences(paragraph));
+    }
     if (isGoogleNetworkVoice(options.voice)) {
       // Historically Chrome's built-in Google TTS extension can go silent after ~15 seconds
       // without an error or event, through either chrome.tts or Web Speech.
