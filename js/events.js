@@ -2,6 +2,19 @@
 brapi.runtime.onInstalled.addListener(function() {
   installContentScripts()
   installContextMenus()
+  syncActionPopup().catch(console.error)
+})
+
+brapi.runtime.onStartup.addListener(function() {
+  syncActionPopup().catch(console.error)
+})
+
+settingsChange$.pipe(rxjs.filter(changes => changes.showHighlighting))
+  .subscribe(() => syncActionPopup().catch(console.error))
+
+brapi.action.onClicked.addListener(function(tab) {
+  activateReader(tab.id)
+    .catch(handleHeadlessError)
 })
 
 
@@ -25,6 +38,10 @@ var handlers = {
   managePiperVoices,
   manageSupertonicVoices,
   manageNghiTtsVoices,
+  activateReader,
+  openPopupWindow,
+  openOptionsPage,
+  getReaderFonts,
 }
 
 registerMessageListener("serviceWorker", handlers)
@@ -181,6 +198,7 @@ var currentTask = {
 }
 
 async function playText(text, opts) {
+  await brapi.storage.local.remove("playingTabId")
   const hasPlayer = await stop().then(res => res == true, err => false)
   if (!hasPlayer) await injectPlayer(await getActiveTab())
   await sendToPlayer({method: "playText", args: [text, opts]})
@@ -189,6 +207,7 @@ async function playText(text, opts) {
 async function playTab(tabId) {
   const tab = tabId ? await getTab(tabId) : await getActiveTab()
   if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}))
+  await brapi.storage.local.set({playingTabId: tab.id})
 
   const task = currentTask.begin()
   try {
@@ -205,6 +224,11 @@ async function playTab(tabId) {
   }
   finally {
     task.end()
+  }
+
+  if (await isReaderMode()) {
+    await showReader(tab)
+      .catch(err => console.warn("Cannot show reader", err))
   }
 
   const hasPlayer = await stop().then(res => res == true, err => false)

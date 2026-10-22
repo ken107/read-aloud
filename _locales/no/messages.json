@@ -65,6 +65,75 @@
   "options_highlighting_window": {
     "message": "Vis i eget vindu"
   },
+  "options_highlighting_reader": {
+    "message": "Vis i lesemodus"
+  },
+  "reader_play": {
+    "message": "Spill av"
+  },
+  "reader_pause": {
+    "message": "Pause"
+  },
+  "reader_stop": {
+    "message": "Stopp"
+  },
+  "reader_forward": {
+    "message": "Fremover"
+  },
+  "reader_rewind": {
+    "message": "Bakover"
+  },
+  "reader_settings": {
+    "message": "Innstillinger"
+  },
+  "reader_display_settings": {
+    "message": "Visningsinnstillinger"
+  },
+  "reader_expand": {
+    "message": "Utvid"
+  },
+  "reader_close": {
+    "message": "Lukk"
+  },
+  "reader_text_size": {
+    "message": "Tekststørrelse"
+  },
+  "reader_size_small": {
+    "message": "Liten"
+  },
+  "reader_size_medium": {
+    "message": "Middels"
+  },
+  "reader_size_large": {
+    "message": "Stor"
+  },
+  "reader_typography": {
+    "message": "Skrift"
+  },
+  "reader_serif": {
+    "message": "Serif"
+  },
+  "reader_sans": {
+    "message": "Sans"
+  },
+  "reader_theme": {
+    "message": "Tema"
+  },
+  "reader_theme_light": {
+    "message": "Lyst"
+  },
+  "reader_theme_dark": {
+    "message": "Mørkt"
+  },
+  "reader_by": {
+    "message": "Av $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
+  },
   "options_audio_playback": {
     "message": "Lydavspilling"
   },
