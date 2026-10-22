@@ -70,7 +70,6 @@ var readAloudReader = readAloudReader || immediate(() => {
     }
     for (const [name, value] of Object.entries(hostStyles)) host.style.setProperty(name, value, "important")
     const shadow = host.attachShadow({mode: "closed"})
-    applyStyles(shadow)
     shadow.innerHTML = `
       <div class="ra-root" part="root">
         <div class="ra-scroller" tabindex="-1">
@@ -102,6 +101,7 @@ var readAloudReader = readAloudReader || immediate(() => {
           ${button("close", "reader_close")}
         </div>
       </div>`
+    applyStyles(shadow)
     const $ = selector => shadow.querySelector(selector)
     els = {
       root: $(".ra-root"),

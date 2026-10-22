@@ -67,6 +67,7 @@ async function activateReader(tabId) {
     await onActionClicked(tab)
   }
   catch (err) {
+    if (err.name == "CancellationException") return
     console.error(err)
     const shown = await sendToReader(tab.id, {method: "showError", args: [errorToJson(err)]}).then(() => true, () => false)
     if (!shown) await openPopupWindow(tab.id)
@@ -96,13 +97,26 @@ async function sendToReader(tabId, message) {
 }
 
 async function openPopupWindow(tabId) {
-  await createWindow({
-    url: brapi.runtime.getURL("popup.html?tab=" + tabId),
-    focused: true,
-    type: "popup",
-    width: 500,
-    height: 600,
-  })
+  const url = brapi.runtime.getURL("popup.html?tab=" + tabId)
+  //reuse an already open popup page rather than stacking windows
+  const contexts = brapi.runtime.getContexts
+    ? await brapi.runtime.getContexts({contextTypes: ["TAB"]}).catch(err => [])
+    : []
+  const existing = contexts.find(context => context.documentUrl && context.documentUrl.startsWith(brapi.runtime.getURL("popup.html")))
+  if (existing) {
+    if (existing.documentUrl != url) await updateTab(existing.tabId, {url})
+    await updateTab(existing.tabId, {active: true})
+    await updateWindow(existing.windowId, {focused: true}).catch(console.error)
+  }
+  else {
+    await createWindow({
+      url,
+      focused: true,
+      type: "popup",
+      width: 500,
+      height: 600,
+    })
+  }
 }
 
 function openOptionsPage() {
