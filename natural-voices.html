@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Google Natural Voices</title>
+
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <style>
+      body {
+        user-select: text;
+      }
+      .container {
+        min-width: 400px;
+        max-width: 800px;
+        padding-bottom: 15px;
+      }
+      h2 {
+        margin-top: 15px;
+        margin-bottom: 20px;
+      }
+      #status {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+      #status.enabled {
+        color: green;
+      }
+      .dark-mode #status.enabled {
+        color: #6fdc7a;
+      }
+      /* the status is kept selected for Reading mode, so the selection must be readable */
+      .dark-mode #status::selection {
+        background-color: #3a4f6e;
+      }
+      #voice-list {
+        display: none;
+      }
+      .dark-mode .close {
+        color: white;
+      }
+    </style>
+
+    <script src="js/rxjs.umd.min.js"></script>
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="js/defaults.js"></script>
+    <script src="js/natural-voices.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <button type="button" class="close" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <h2>Google Natural Voices</h2>
+
+      <p>Chrome comes with high-quality "Google (Natural)" voices that run on your computer.
+        Chrome only turns them on after you open Reading mode, so Read Aloud can't enable them by itself.</p>
+
+      <p id="status">Google Natural voices are not enabled yet.</p>
+
+      <h4>To enable them</h4>
+      <ol>
+        <li>Open Reading mode on this page: press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>
+          (<kbd>&#8997;</kbd>+<kbd>&#8984;</kbd>+<kbd>R</kbd> on Mac).
+          You can also right-click anywhere on this page and choose <b>Open in reading mode</b>.</li>
+        <li>Wait a few seconds while Chrome downloads the voices for your language.
+          The status above updates by itself.</li>
+        <li>When the status says the voices are enabled, you can close Reading mode and this tab.</li>
+      </ol>
+
+      <h4>To add other languages</h4>
+      <p>In Reading mode, open the voice menu, choose <b>Languages</b>, and turn on the languages you want.
+        Chrome downloads the voices for each language you turn on.</p>
+
+      <h4>After restarting Chrome</h4>
+      <p>Chrome turns the voices off again when it restarts.
+        Downloaded languages are kept, so opening Reading mode once brings them back right away.</p>
+
+      <div id="voice-list">
+        <h4>Available voices</h4>
+        <ul></ul>
+      </div>
+    </div>
+  </body>
+</html>
