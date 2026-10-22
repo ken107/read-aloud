@@ -65,6 +65,75 @@
   "options_highlighting_window": {
     "message": "แสดงในหน้าต่างแยก"
   },
+  "options_highlighting_reader": {
+    "message": "แสดงในโหมดอ่าน"
+  },
+  "reader_play": {
+    "message": "เล่น"
+  },
+  "reader_pause": {
+    "message": "หยุดชั่วคราว"
+  },
+  "reader_stop": {
+    "message": "หยุด"
+  },
+  "reader_forward": {
+    "message": "ไปข้างหน้า"
+  },
+  "reader_rewind": {
+    "message": "ย้อนกลับ"
+  },
+  "reader_settings": {
+    "message": "การตั้งค่า"
+  },
+  "reader_display_settings": {
+    "message": "การตั้งค่าการแสดงผล"
+  },
+  "reader_expand": {
+    "message": "ขยาย"
+  },
+  "reader_close": {
+    "message": "ปิด"
+  },
+  "reader_text_size": {
+    "message": "ขนาดตัวอักษร"
+  },
+  "reader_size_small": {
+    "message": "เล็ก"
+  },
+  "reader_size_medium": {
+    "message": "กลาง"
+  },
+  "reader_size_large": {
+    "message": "ใหญ่"
+  },
+  "reader_typography": {
+    "message": "แบบอักษร"
+  },
+  "reader_serif": {
+    "message": "มีเชิง"
+  },
+  "reader_sans": {
+    "message": "ไม่มีเชิง"
+  },
+  "reader_theme": {
+    "message": "ธีม"
+  },
+  "reader_theme_light": {
+    "message": "สว่าง"
+  },
+  "reader_theme_dark": {
+    "message": "มืด"
+  },
+  "reader_by": {
+    "message": "โดย $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
+  },
   "options_audio_playback": {
     "message": "การเล่นเสียง"
   },

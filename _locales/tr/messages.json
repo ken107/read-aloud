@@ -65,6 +65,75 @@
   "options_highlighting_window": {
     "message": "Ayrı bir pencerede göster"
   },
+  "options_highlighting_reader": {
+    "message": "Okuma modunda göster"
+  },
+  "reader_play": {
+    "message": "Oynat"
+  },
+  "reader_pause": {
+    "message": "Duraklat"
+  },
+  "reader_stop": {
+    "message": "Durdur"
+  },
+  "reader_forward": {
+    "message": "İleri"
+  },
+  "reader_rewind": {
+    "message": "Geri"
+  },
+  "reader_settings": {
+    "message": "Ayarlar"
+  },
+  "reader_display_settings": {
+    "message": "Görüntü ayarları"
+  },
+  "reader_expand": {
+    "message": "Genişlet"
+  },
+  "reader_close": {
+    "message": "Kapat"
+  },
+  "reader_text_size": {
+    "message": "Metin boyutu"
+  },
+  "reader_size_small": {
+    "message": "Küçük"
+  },
+  "reader_size_medium": {
+    "message": "Orta"
+  },
+  "reader_size_large": {
+    "message": "Büyük"
+  },
+  "reader_typography": {
+    "message": "Yazı tipi"
+  },
+  "reader_serif": {
+    "message": "Serif"
+  },
+  "reader_sans": {
+    "message": "Sans"
+  },
+  "reader_theme": {
+    "message": "Tema"
+  },
+  "reader_theme_light": {
+    "message": "Açık"
+  },
+  "reader_theme_dark": {
+    "message": "Koyu"
+  },
+  "reader_by": {
+    "message": "Yazar: $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
+  },
   "options_audio_playback": {
     "message": "Ses Çalma"
   },

@@ -65,6 +65,75 @@
   "options_highlighting_window": {
     "message": "Mostrar en una ventana separada"
   },
+  "options_highlighting_reader": {
+    "message": "Mostrar en modo lectura"
+  },
+  "reader_play": {
+    "message": "Reproducir"
+  },
+  "reader_pause": {
+    "message": "Pausar"
+  },
+  "reader_stop": {
+    "message": "Detener"
+  },
+  "reader_forward": {
+    "message": "Avanzar"
+  },
+  "reader_rewind": {
+    "message": "Retroceder"
+  },
+  "reader_settings": {
+    "message": "Configuración"
+  },
+  "reader_display_settings": {
+    "message": "Opciones de visualización"
+  },
+  "reader_expand": {
+    "message": "Expandir"
+  },
+  "reader_close": {
+    "message": "Cerrar"
+  },
+  "reader_text_size": {
+    "message": "Tamaño del texto"
+  },
+  "reader_size_small": {
+    "message": "Pequeño"
+  },
+  "reader_size_medium": {
+    "message": "Mediano"
+  },
+  "reader_size_large": {
+    "message": "Grande"
+  },
+  "reader_typography": {
+    "message": "Tipografía"
+  },
+  "reader_serif": {
+    "message": "Serif"
+  },
+  "reader_sans": {
+    "message": "Sans"
+  },
+  "reader_theme": {
+    "message": "Tema"
+  },
+  "reader_theme_light": {
+    "message": "Claro"
+  },
+  "reader_theme_dark": {
+    "message": "Oscuro"
+  },
+  "reader_by": {
+    "message": "Por $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
+  },
   "options_audio_playback": {
     "message": "Reproducción de audio"
   },

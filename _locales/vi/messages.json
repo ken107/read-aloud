@@ -68,6 +68,75 @@
   "options_highlighting_window": {
     "message": "Hiển thị trong cửa sổ riêng"
   },
+  "options_highlighting_reader": {
+    "message": "Hiển thị ở chế độ đọc"
+  },
+  "reader_play": {
+    "message": "Phát"
+  },
+  "reader_pause": {
+    "message": "Tạm dừng"
+  },
+  "reader_stop": {
+    "message": "Dừng"
+  },
+  "reader_forward": {
+    "message": "Tiến tới"
+  },
+  "reader_rewind": {
+    "message": "Lùi lại"
+  },
+  "reader_settings": {
+    "message": "Cài đặt"
+  },
+  "reader_display_settings": {
+    "message": "Cài đặt hiển thị"
+  },
+  "reader_expand": {
+    "message": "Mở rộng"
+  },
+  "reader_close": {
+    "message": "Đóng"
+  },
+  "reader_text_size": {
+    "message": "Cỡ chữ"
+  },
+  "reader_size_small": {
+    "message": "Nhỏ"
+  },
+  "reader_size_medium": {
+    "message": "Vừa"
+  },
+  "reader_size_large": {
+    "message": "Lớn"
+  },
+  "reader_typography": {
+    "message": "Kiểu chữ"
+  },
+  "reader_serif": {
+    "message": "Có chân"
+  },
+  "reader_sans": {
+    "message": "Không chân"
+  },
+  "reader_theme": {
+    "message": "Giao diện"
+  },
+  "reader_theme_light": {
+    "message": "Sáng"
+  },
+  "reader_theme_dark": {
+    "message": "Tối"
+  },
+  "reader_by": {
+    "message": "Tác giả: $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
+  },
   "options_audio_playback": {
     "message": "Phát thanh"
   },
