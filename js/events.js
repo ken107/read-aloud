@@ -2,6 +2,19 @@
 brapi.runtime.onInstalled.addListener(function() {
   installContentScripts()
   installContextMenus()
+  syncActionPopup().catch(console.error)
+})
+
+brapi.runtime.onStartup.addListener(function() {
+  syncActionPopup().catch(console.error)
+})
+
+settingsChange$.pipe(rxjs.filter(changes => changes.showHighlighting))
+  .subscribe(() => syncActionPopup().catch(console.error))
+
+brapi.action.onClicked.addListener(function(tab) {
+  activateReader(tab.id)
+    .catch(handleHeadlessError)
 })
 
 
@@ -25,6 +38,10 @@ var handlers = {
   managePiperVoices,
   manageSupertonicVoices,
   manageNghiTtsVoices,
+  activateReader,
+  openPopupWindow,
+  openOptionsPage,
+  getReaderFonts,
 }
 
 registerMessageListener("serviceWorker", handlers)
@@ -159,15 +176,20 @@ var currentTask = {
   isActive() {
     return this.task && this.task.isActive
   },
-  begin() {
+  begin(onCancel) {
     if (this.task) this.task.cancel()
     return this.task = {
       isActive: true,
       cancel() {
+        if (!this.isActive) return
         this.isActive = false
+        if (onCancel) onCancel()
+      },
+      check() {
+        if (!this.isActive) throw Object.assign(new Error("Canceled"), {name: "CancellationException"})
       },
       end() {
-        if (!this.isActive) throw new Error("Canceled")
+        this.check()
         this.isActive = false
       }
     }
@@ -181,6 +203,7 @@ var currentTask = {
 }
 
 async function playText(text, opts) {
+  await brapi.storage.local.remove("playingTabId")
   const hasPlayer = await stop().then(res => res == true, err => false)
   if (!hasPlayer) await injectPlayer(await getActiveTab())
   await sendToPlayer({method: "playText", args: [text, opts]})
@@ -190,26 +213,64 @@ async function playTab(tabId) {
   const tab = tabId ? await getTab(tabId) : await getActiveTab()
   if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}))
 
-  const task = currentTask.begin()
+  // Join repeated starts until preparation is canceled or playback reaches the player.
+  let pending = pendingPlayTabs.get(tab.id)
+  if (!pending) {
+    const release = () => {
+      if (pendingPlayTabs.get(tab.id) === pending) pendingPlayTabs.delete(tab.id)
+    }
+    pending = startPlayTab(tab, release).finally(release)
+    pendingPlayTabs.set(tab.id, pending)
+  }
+  return pending
+}
+
+const pendingPlayTabs = new Map()
+
+async function startPlayTab(tab, release) {
+  const task = currentTask.begin(release)
+  // Browser operations may finish after cancellation. Never continue the startup
+  // or touch the player on behalf of a canceled request.
+  async function checked(promise) {
+    const result = await promise
+    task.check()
+    return result
+  }
+  let readerUnavailable = false
   try {
     const handler = contentHandlers.find(h => h.match(tab.url || "", tab.title))
-    if (handler.validate) await handler.validate(tab)
+    if (handler.validate) await checked(handler.validate(tab))
     if (handler.getSourceUri) {
-      await brapi.storage.local.set({"sourceUri": handler.getSourceUri(tab)})
+      await checked(brapi.storage.local.set({"sourceUri": handler.getSourceUri(tab)}))
     }
     else {
-      const frameId = handler.getFrameId && await getAllFrames(tab.id).then(frames => handler.getFrameId(frames))
-      if (!await contentScriptAlreadyInjected(tab, frameId)) await injectContentScript(tab, frameId, handler.extraScripts)
-      await brapi.storage.local.set({"sourceUri": "contentscript:" + tab.id})
+      const frameId = handler.getFrameId && await checked(getAllFrames(tab.id).then(frames => handler.getFrameId(frames)))
+      if (!await checked(contentScriptAlreadyInjected(tab, frameId))) {
+        await checked(injectContentScript(tab, frameId, handler.extraScripts))
+      }
+      await checked(brapi.storage.local.set({"sourceUri": "contentscript:" + tab.id}))
     }
+
+    if (await checked(isReaderMode())) {
+      await checked(showReader(tab).catch(err => {
+        console.warn("Cannot show reader", err)
+        readerUnavailable = true
+      }))
+    }
+
+    // Stop the old audio without canceling this startup task, as public stop() does.
+    const hasPlayer = await checked(sendToPlayer({method: "stop"}).then(res => res == true, err => false))
+    if (!hasPlayer) await checked(injectPlayer(tab))
+    // The reader must not attribute the previous player's speech to this tab.
+    await checked(brapi.storage.local.set({playingTabId: tab.id}))
   }
   finally {
     task.end()
   }
-
-  const hasPlayer = await stop().then(res => res == true, err => false)
-  if (!hasPlayer) await injectPlayer(tab)
+  // No async gap between releasing startup and handing cancellation to the player.
+  release()
   await sendToPlayer({method: "playTab"})
+  if (readerUnavailable) await openPopupWindow(tab.id)
 }
 
 async function reloadAndPlayTab(tabId) {
@@ -430,7 +491,18 @@ async function injectContentScript(tab, frameId, extraScripts) {
   console.info("Content handler", files)
 }
 
-async function injectPlayer(tab) {
+let pendingPlayerInjection
+
+function injectPlayer(tab) {
+  // A canceled start may still be creating the shared player. Reuse that work
+  // instead of replacing its check-in listener or creating another player.
+  if (!pendingPlayerInjection) {
+    pendingPlayerInjection = createPlayer(tab).finally(() => pendingPlayerInjection = null)
+  }
+  return pendingPlayerInjection
+}
+
+async function createPlayer(tab) {
   const settings = await getSettings(["useEmbeddedPlayer", "piperVoices", "supertonicVoices", "nghiTtsVoices"])
   const promise = new Promise(f => handlers.playerCheckIn = f)
   if (tab && settings.useEmbeddedPlayer

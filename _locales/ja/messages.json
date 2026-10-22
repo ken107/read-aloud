@@ -65,6 +65,75 @@
   "options_highlighting_window": {
     "message": "別ウィンドウで表示"
   },
+  "options_highlighting_reader": {
+    "message": "リーダーモードで表示"
+  },
+  "reader_play": {
+    "message": "再生"
+  },
+  "reader_pause": {
+    "message": "一時停止"
+  },
+  "reader_stop": {
+    "message": "停止"
+  },
+  "reader_forward": {
+    "message": "早送り"
+  },
+  "reader_rewind": {
+    "message": "巻き戻し"
+  },
+  "reader_settings": {
+    "message": "設定"
+  },
+  "reader_display_settings": {
+    "message": "表示設定"
+  },
+  "reader_expand": {
+    "message": "展開"
+  },
+  "reader_close": {
+    "message": "閉じる"
+  },
+  "reader_text_size": {
+    "message": "文字サイズ"
+  },
+  "reader_size_small": {
+    "message": "小"
+  },
+  "reader_size_medium": {
+    "message": "中"
+  },
+  "reader_size_large": {
+    "message": "大"
+  },
+  "reader_typography": {
+    "message": "書体"
+  },
+  "reader_serif": {
+    "message": "明朝"
+  },
+  "reader_sans": {
+    "message": "ゴシック"
+  },
+  "reader_theme": {
+    "message": "テーマ"
+  },
+  "reader_theme_light": {
+    "message": "ライト"
+  },
+  "reader_theme_dark": {
+    "message": "ダーク"
+  },
+  "reader_by": {
+    "message": "$author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
+  },
   "options_audio_playback": {
     "message": "オーディオ再生"
   },

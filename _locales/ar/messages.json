@@ -65,6 +65,75 @@
   "options_highlighting_window": {
     "message": "عرض في نافذة منفصلة"
   },
+  "options_highlighting_reader": {
+    "message": "عرض في وضع القراءة"
+  },
+  "reader_play": {
+    "message": "تشغيل"
+  },
+  "reader_pause": {
+    "message": "إيقاف مؤقت"
+  },
+  "reader_stop": {
+    "message": "إيقاف"
+  },
+  "reader_forward": {
+    "message": "تقديم"
+  },
+  "reader_rewind": {
+    "message": "إرجاع"
+  },
+  "reader_settings": {
+    "message": "الإعدادات"
+  },
+  "reader_display_settings": {
+    "message": "إعدادات العرض"
+  },
+  "reader_expand": {
+    "message": "توسيع"
+  },
+  "reader_close": {
+    "message": "إغلاق"
+  },
+  "reader_text_size": {
+    "message": "حجم النص"
+  },
+  "reader_size_small": {
+    "message": "صغير"
+  },
+  "reader_size_medium": {
+    "message": "متوسط"
+  },
+  "reader_size_large": {
+    "message": "كبير"
+  },
+  "reader_typography": {
+    "message": "الخط"
+  },
+  "reader_serif": {
+    "message": "مذيّل"
+  },
+  "reader_sans": {
+    "message": "بلا تذييل"
+  },
+  "reader_theme": {
+    "message": "السمة"
+  },
+  "reader_theme_light": {
+    "message": "فاتح"
+  },
+  "reader_theme_dark": {
+    "message": "داكن"
+  },
+  "reader_by": {
+    "message": "بقلم $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
+  },
   "options_audio_playback": {
     "message": "تشغيل الصوت"
   },
