@@ -641,6 +641,17 @@ function EastAsianPunctuator() {
 }
 
 function createWordReplacer(rules) {
+  const regexRules = rules.filter(rule => rule.pattern)
+  const replaceLiteralWords = createLiteralWordReplacer(rules.filter(rule => !rule.pattern))
+  return text => {
+    text = replaceLiteralWords(text)
+    for (const rule of regexRules) text = text.replace(rule.pattern, rule.to)
+    return text
+  }
+}
+
+function createLiteralWordReplacer(rules) {
+  if (!rules.length) return text => text
   const lookup = Object.create(null)
   rules.forEach(rule => lookup[rule.from.toLowerCase()] = rule.to)
 

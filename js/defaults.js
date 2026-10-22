@@ -582,32 +582,49 @@ function setI18nText() {
  * An empty replacement means the word is skipped.
  * Invalid and duplicate lines are skipped and reported in errors.
  */
+function normalizeWordReplacements(value) {
+  if (Array.isArray(value)) return value.map(rule => ({...rule}))
+  if (typeof value != "string") return []
+  return value.split(/\r?\n/).filter(line => line.trim()).map(line => {
+    const regexPrefix = /^\s*\/((?:\\.|\[(?:\\.|[^\]\\])*\]|[^/\\])*)\/\s*=/.exec(line)
+    const separator = regexPrefix ? regexPrefix[0].length - 1 : line.indexOf("=")
+    const from = (separator < 0 ? line : line.slice(0, separator)).trim()
+    const regex = from.startsWith("/") && from.endsWith("/") && from.length >= 2
+    return {type: regex ? "regex" : "text", from: regex ? from.slice(1, -1) : from,
+      to: separator < 0 ? "" : line.slice(separator + 1).trim(),
+      ...(separator < 0 ? {invalid: "missing_separator"} : {})}
+  })
+}
+
 function parseWordReplacements(text) {
   const rules = []
   const errors = []
   const seen = Object.create(null)
-  if (typeof text != "string") return {rules, errors}
-  text.split(/\r?\n/).forEach((line, index) => {
+  normalizeWordReplacements(text).forEach((rule, index) => {
     const lineNumber = index + 1
-    if (!line.trim()) return
-    const separator = line.indexOf("=")
-    if (separator == -1) {
-      errors.push({line: lineNumber, code: "missing_separator"})
+    const {from, to} = rule
+    if (rule.invalid || !from) {
+      errors.push({line: lineNumber, code: rule.invalid || "missing_word"})
       return
     }
-    const from = line.slice(0, separator).trim()
-    const to = line.slice(separator + 1).trim()
-    if (!from) {
-      errors.push({line: lineNumber, code: "missing_word"})
-      return
+    const isRegex = rule.type == "regex"
+    let pattern
+    if (isRegex) {
+      try {
+        pattern = new RegExp(from, "g")
+      }
+      catch (err) {
+        errors.push({line: lineNumber, code: "invalid_regex"})
+        return
+      }
     }
-    const key = from.toLowerCase()
+    const key = isRegex ? "regex:" + from : "literal:" + from.toLowerCase()
     if (key in seen) {
       errors.push({line: lineNumber, code: "duplicate", from, firstLine: seen[key]})
       return
     }
     seen[key] = lineNumber
-    rules.push({from, to})
+    rules.push(pattern ? {from, to, pattern} : {from, to})
   })
   return {rules, errors}
 }
