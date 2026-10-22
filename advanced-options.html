@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Read Aloud Advanced Options</title>
   <link rel="stylesheet" type="text/css" href="css/common.css">
-  <link rel="stylesheet" type="text/css" href="css/options.css">
+  <link rel="stylesheet" type="text/css" href="css/advanced-options.css">
 
   <script src="js/rxjs.umd.min.js"></script>
   <script src="js/jquery-3.7.1.min.js"></script>
@@ -14,9 +14,7 @@
 </head>
 <body>
   <div class="container-fluid">
-    <button type="button" class="close" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
+    <p class="advanced-navigation"><a href="options.html" data-i18n="advanced_back_to_options"></a></p>
 
     <h2>Advanced Options</h2>
 
@@ -26,13 +24,32 @@
 
       <section id="word-replacements-section">
         <div id="word-replacements-header">
-          <h3 id="word-replacements-title" data-i18n="advanced_word_replacements_title"></h3>
+          <div class="word-replacements-heading">
+            <h3 id="word-replacements-title" data-i18n="advanced_word_replacements_title"></h3>
+            <div class="word-replacements-help">
+              <button type="button" id="word-replacements-info" aria-expanded="false" aria-controls="word-replacements-instructions">
+                <span class="material-icons" aria-hidden="true">info_outline</span>
+              </button>
+              <div id="word-replacements-instructions" hidden tabindex="0" role="region" aria-labelledby="word-replacements-title">
+              <section class="rule-help-section"><h4 data-i18n="wr_help_matching"></h4><p data-i18n="wr_help_matching_body"></p></section>
+              <section class="rule-help-section"><h4 data-i18n="wr_help_patterns"></h4><p data-i18n="wr_help_patterns_body"></p></section>
+              <section class="rule-help-section"><h4 data-i18n="wr_help_order"></h4><p data-i18n="wr_help_order_body"></p></section>
+              <section class="rule-help-section"><h4 data-i18n="wr_help_examples"></h4><div class="rule-help-examples">
+              <article class="rule-help-example"><h5 data-i18n="wr_example_pronunciation"></h5><dl><dt data-i18n="wr_type"></dt><dd data-i18n="wr_text"></dd><dt data-i18n="wr_find"></dt><dd><code>GIF</code></dd><dt data-i18n="wr_replace"></dt><dd><code>jif</code></dd></dl></article>
+              <article class="rule-help-example"><h5 data-i18n="wr_example_abbreviation"></h5><dl><dt data-i18n="wr_type"></dt><dd data-i18n="wr_text"></dd><dt data-i18n="wr_find"></dt><dd><code>e.g.</code></dd><dt data-i18n="wr_replace"></dt><dd><code>for example</code></dd></dl></article>
+              <article class="rule-help-example"><h5 data-i18n="wr_example_references"></h5><dl><dt data-i18n="wr_type"></dt><dd data-i18n="wr_regex"></dd><dt data-i18n="wr_find"></dt><dd><code>\[\d+\]</code></dd><dt data-i18n="wr_replace"></dt><dd><em data-i18n="wr_example_empty"></em></dd></dl></article>
+              <article class="rule-help-example"><h5 data-i18n="wr_example_units"></h5><dl><dt data-i18n="wr_type"></dt><dd data-i18n="wr_regex"></dd><dt data-i18n="wr_find"></dt><dd><code>\b(\d+)\s*kg\b</code></dd><dt data-i18n="wr_replace"></dt><dd><code data-i18n="wr_example_capture"></code></dd></dl><p data-i18n="wr_example_result"></p></article>
+              </div></section></div>
+            </div>
+          </div>
           <span id="word-replacements-status" class="text-muted" role="status"></span>
         </div>
-        <textarea id="word-replacements" class="form-control" rows="8" spellcheck="false"
-          aria-labelledby="word-replacements-title"
-          aria-describedby="word-replacements-errors"></textarea>
-        <ul id="word-replacements-errors" aria-live="polite"></ul>
+        <table id="word-replacements-table" aria-labelledby="word-replacements-title">
+          <colgroup><col class="match-type"><col><col><col class="rule-actions"></colgroup>
+          <thead><tr><th data-i18n="wr_type"></th><th data-i18n="wr_find"></th><th data-i18n="wr_replace"></th><th><span class="rule-visually-hidden" data-i18n="wr_actions"></span></th></tr></thead>
+          <tbody id="word-replacements-rows"></tbody>
+        </table>
+        <div id="word-replacements-notice" role="status"></div>
       </section>
     </div>
   </div>

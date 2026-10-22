@@ -315,67 +315,6 @@ input[type=checkbox] + label {
   font-size: smaller;
 }
 
-#advanced-options {
-  min-width: 500px;
-  margin-top: 1.5rem;
-  display: grid;
-  grid-template-columns: min-content auto;
-  align-items: start;
-}
-
-#word-replacements-section {
-  grid-column: 1 / -1;
-  margin-top: 1.5rem;
-}
-
-#word-replacements-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: .5rem;
-}
-
-#word-replacements-section h3 {
-  margin: 0;
-  font-size: 1.25rem;
-}
-
-#word-replacements-status {
-  font-size: .875rem;
-  opacity: 0;
-  transition: opacity .3s;
-}
-#word-replacements-status.visible {
-  opacity: 1;
-}
-
-#word-replacements {
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: .875rem;
-  resize: vertical;
-  user-select: text;
-}
-.dark-mode #word-replacements {
-  background-color: #323232;
-  border-color: #555;
-  color: #ddd;
-}
-
-#word-replacements-errors {
-  list-style: none;
-  margin: .5rem 0 0;
-  padding: 0;
-  font-size: .875rem;
-  color: #b02a37;
-}
-#word-replacements-errors:empty {
-  display: none;
-}
-.dark-mode #word-replacements-errors {
-  color: #ff8a80;
-}
-
 .voice-selector { display: flex; align-items: center; gap: 8px; position: relative; min-width: 0; }
 .voice-selector #voices { flex: 1; min-width: 0; }
 .setting-info-button {
