@@ -350,6 +350,7 @@ function installContextMenus() {
   }
 }
 
+if (brapi.menus)
 brapi.menus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId == "read-selection")
     stop()

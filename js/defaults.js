@@ -790,6 +790,8 @@ function updateTab(tabId, details) {
 }
 
 function createWindow(details) {
+  //Firefox for Android has no windows API, open a tab instead
+  if (!brapi.windows) return createTab(details.url)
   return new Promise(function(fulfill, reject) {
     brapi.windows.create(details, function(window) {
       if (window) fulfill(window)
@@ -799,6 +801,7 @@ function createWindow(details) {
 }
 
 function updateWindow(windowId, details) {
+  if (!brapi.windows) return Promise.resolve()
   return new Promise(function(fulfill, reject) {
     brapi.windows.update(windowId, details, function(window) {
       if (window) fulfill(window)
