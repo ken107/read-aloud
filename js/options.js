@@ -306,9 +306,17 @@
     })
 
   settingsChange$
-    .subscribe(() => {
+    .subscribe(changes => {
       showConfirmation()
-      bgPageInvoke("stop").catch(err => "OK")
+      // Playback state, reader preferences, and voice discovery also write to
+      // storage. Only changes to speech settings should interrupt playback.
+      if (Object.keys(changes).some(key =>
+        (["voiceName", "pitch", "volume", "wordReplacements", "preferredVoices"].includes(key)
+          || key.startsWith("rate"))
+        && JSON.stringify(changes[key].oldValue) != JSON.stringify(changes[key].newValue)
+      )) {
+        bgPageInvoke("stop").catch(err => "OK")
+      }
     })
 
 
