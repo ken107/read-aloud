@@ -262,5 +262,74 @@
   },
   "options_rate_information": {
     "message": "Snelheidsinformatie"
+  },
+  "options_highlighting_reader": {
+    "message": "Weergeven in leesmodus"
+  },
+  "reader_play": {
+    "message": "Afspelen"
+  },
+  "reader_pause": {
+    "message": "Pauzeren"
+  },
+  "reader_stop": {
+    "message": "Stoppen"
+  },
+  "reader_forward": {
+    "message": "Vooruit"
+  },
+  "reader_rewind": {
+    "message": "Terug"
+  },
+  "reader_settings": {
+    "message": "Instellingen"
+  },
+  "reader_display_settings": {
+    "message": "Weergave-instellingen"
+  },
+  "reader_expand": {
+    "message": "Uitvouwen"
+  },
+  "reader_close": {
+    "message": "Sluiten"
+  },
+  "reader_text_size": {
+    "message": "Tekstgrootte"
+  },
+  "reader_size_small": {
+    "message": "Klein"
+  },
+  "reader_size_medium": {
+    "message": "Middel"
+  },
+  "reader_size_large": {
+    "message": "Groot"
+  },
+  "reader_typography": {
+    "message": "Lettertype"
+  },
+  "reader_serif": {
+    "message": "Serif"
+  },
+  "reader_sans": {
+    "message": "Sans"
+  },
+  "reader_theme": {
+    "message": "Thema"
+  },
+  "reader_theme_light": {
+    "message": "Licht"
+  },
+  "reader_theme_dark": {
+    "message": "Donker"
+  },
+  "reader_by": {
+    "message": "Door $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
   }
 }

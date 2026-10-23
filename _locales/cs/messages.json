@@ -262,5 +262,74 @@
   },
   "options_rate_information": {
     "message": "Informace o rychlosti"
+  },
+  "options_highlighting_reader": {
+    "message": "Zobrazit v režimu čtečky"
+  },
+  "reader_play": {
+    "message": "Přehrát"
+  },
+  "reader_pause": {
+    "message": "Pozastavit"
+  },
+  "reader_stop": {
+    "message": "Zastavit"
+  },
+  "reader_forward": {
+    "message": "Vpřed"
+  },
+  "reader_rewind": {
+    "message": "Zpět"
+  },
+  "reader_settings": {
+    "message": "Nastavení"
+  },
+  "reader_display_settings": {
+    "message": "Nastavení zobrazení"
+  },
+  "reader_expand": {
+    "message": "Rozbalit"
+  },
+  "reader_close": {
+    "message": "Zavřít"
+  },
+  "reader_text_size": {
+    "message": "Velikost textu"
+  },
+  "reader_size_small": {
+    "message": "Malý"
+  },
+  "reader_size_medium": {
+    "message": "Střední"
+  },
+  "reader_size_large": {
+    "message": "Velký"
+  },
+  "reader_typography": {
+    "message": "Písmo"
+  },
+  "reader_serif": {
+    "message": "Patkové"
+  },
+  "reader_sans": {
+    "message": "Bezpatkové"
+  },
+  "reader_theme": {
+    "message": "Motiv"
+  },
+  "reader_theme_light": {
+    "message": "Světlý"
+  },
+  "reader_theme_dark": {
+    "message": "Tmavý"
+  },
+  "reader_by": {
+    "message": "Autor: $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
   }
 }

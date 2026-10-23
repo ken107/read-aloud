@@ -61,6 +61,11 @@ $(function() {
   updateButtons()
     .then(getSettings.bind(null, ["showHighlighting", "readAloudTab"]))
     .then(function(settings) {
+      if (settings.showHighlighting == 3 && queryString.isPopup) {
+        return getActiveTab()
+          .then(tab => bgPageInvoke("activateReader", [tab.id]))
+          .then(window.close)
+      }
       if (settings.showHighlighting == 2 && queryString.isPopup) {
         return getActiveTab()
           .then(function(activeTab) {
@@ -83,7 +88,7 @@ $(function() {
       else {
         return bgPageInvoke("getPlaybackState")
           .then(function(state) {
-            if (state == "PAUSED" || state == "STOPPED") $("#btnPlay").click()
+            if (queryString.autoplay != "0" && (state == "PAUSED" || state == "STOPPED")) $("#btnPlay").click()
           })
       }
     })
@@ -170,7 +175,7 @@ function updateButtons() {
     $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
     $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
 
-    if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
+    if ((showHighlighting == 1 || showHighlighting == 2) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
       $("body").addClass("has-highlight")
       $("#highlight").show()
       updateHighlighting(speech)

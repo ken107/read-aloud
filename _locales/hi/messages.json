@@ -262,5 +262,74 @@
   },
   "options_rate_information": {
     "message": "गति की जानकारी"
+  },
+  "options_highlighting_reader": {
+    "message": "रीडर मोड में दिखाएँ"
+  },
+  "reader_play": {
+    "message": "चलाएँ"
+  },
+  "reader_pause": {
+    "message": "रोकें"
+  },
+  "reader_stop": {
+    "message": "बंद करें"
+  },
+  "reader_forward": {
+    "message": "आगे"
+  },
+  "reader_rewind": {
+    "message": "पीछे"
+  },
+  "reader_settings": {
+    "message": "सेटिंग्स"
+  },
+  "reader_display_settings": {
+    "message": "प्रदर्शन सेटिंग्स"
+  },
+  "reader_expand": {
+    "message": "बड़ा करें"
+  },
+  "reader_close": {
+    "message": "बंद करें"
+  },
+  "reader_text_size": {
+    "message": "टेक्स्ट का आकार"
+  },
+  "reader_size_small": {
+    "message": "छोटा"
+  },
+  "reader_size_medium": {
+    "message": "मध्यम"
+  },
+  "reader_size_large": {
+    "message": "बड़ा"
+  },
+  "reader_typography": {
+    "message": "टाइपोग्राफी"
+  },
+  "reader_serif": {
+    "message": "सेरिफ़"
+  },
+  "reader_sans": {
+    "message": "सैंस"
+  },
+  "reader_theme": {
+    "message": "थीम"
+  },
+  "reader_theme_light": {
+    "message": "हल्की"
+  },
+  "reader_theme_dark": {
+    "message": "गहरी"
+  },
+  "reader_by": {
+    "message": "लेखक: $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
   }
 }

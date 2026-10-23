@@ -262,5 +262,74 @@
   },
   "options_rate_information": {
     "message": "語速資訊"
+  },
+  "options_highlighting_reader": {
+    "message": "在閱讀模式中顯示"
+  },
+  "reader_play": {
+    "message": "播放"
+  },
+  "reader_pause": {
+    "message": "暫停"
+  },
+  "reader_stop": {
+    "message": "停止"
+  },
+  "reader_forward": {
+    "message": "快轉"
+  },
+  "reader_rewind": {
+    "message": "倒轉"
+  },
+  "reader_settings": {
+    "message": "設定"
+  },
+  "reader_display_settings": {
+    "message": "顯示設定"
+  },
+  "reader_expand": {
+    "message": "展開"
+  },
+  "reader_close": {
+    "message": "關閉"
+  },
+  "reader_text_size": {
+    "message": "文字大小"
+  },
+  "reader_size_small": {
+    "message": "小"
+  },
+  "reader_size_medium": {
+    "message": "中"
+  },
+  "reader_size_large": {
+    "message": "大"
+  },
+  "reader_typography": {
+    "message": "字型"
+  },
+  "reader_serif": {
+    "message": "襯線"
+  },
+  "reader_sans": {
+    "message": "無襯線"
+  },
+  "reader_theme": {
+    "message": "主題"
+  },
+  "reader_theme_light": {
+    "message": "淺色"
+  },
+  "reader_theme_dark": {
+    "message": "深色"
+  },
+  "reader_by": {
+    "message": "作者：$author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
   }
 }

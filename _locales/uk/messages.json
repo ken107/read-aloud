@@ -262,5 +262,74 @@
   },
   "options_rate_information": {
     "message": "Інформація про швидкість"
+  },
+  "options_highlighting_reader": {
+    "message": "Показати в режимі читання"
+  },
+  "reader_play": {
+    "message": "Відтворити"
+  },
+  "reader_pause": {
+    "message": "Пауза"
+  },
+  "reader_stop": {
+    "message": "Стоп"
+  },
+  "reader_forward": {
+    "message": "Вперед"
+  },
+  "reader_rewind": {
+    "message": "Назад"
+  },
+  "reader_settings": {
+    "message": "Налаштування"
+  },
+  "reader_display_settings": {
+    "message": "Налаштування відображення"
+  },
+  "reader_expand": {
+    "message": "Розгорнути"
+  },
+  "reader_close": {
+    "message": "Закрити"
+  },
+  "reader_text_size": {
+    "message": "Розмір тексту"
+  },
+  "reader_size_small": {
+    "message": "Малий"
+  },
+  "reader_size_medium": {
+    "message": "Середній"
+  },
+  "reader_size_large": {
+    "message": "Великий"
+  },
+  "reader_typography": {
+    "message": "Шрифт"
+  },
+  "reader_serif": {
+    "message": "З засічками"
+  },
+  "reader_sans": {
+    "message": "Без засічок"
+  },
+  "reader_theme": {
+    "message": "Тема"
+  },
+  "reader_theme_light": {
+    "message": "Світла"
+  },
+  "reader_theme_dark": {
+    "message": "Темна"
+  },
+  "reader_by": {
+    "message": "Автор: $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
   }
 }

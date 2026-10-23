@@ -262,5 +262,74 @@
   },
   "options_rate_information": {
     "message": "속도 정보"
+  },
+  "options_highlighting_reader": {
+    "message": "읽기 모드로 표시"
+  },
+  "reader_play": {
+    "message": "재생"
+  },
+  "reader_pause": {
+    "message": "일시정지"
+  },
+  "reader_stop": {
+    "message": "정지"
+  },
+  "reader_forward": {
+    "message": "앞으로"
+  },
+  "reader_rewind": {
+    "message": "뒤로"
+  },
+  "reader_settings": {
+    "message": "설정"
+  },
+  "reader_display_settings": {
+    "message": "표시 설정"
+  },
+  "reader_expand": {
+    "message": "펼치기"
+  },
+  "reader_close": {
+    "message": "닫기"
+  },
+  "reader_text_size": {
+    "message": "글자 크기"
+  },
+  "reader_size_small": {
+    "message": "작게"
+  },
+  "reader_size_medium": {
+    "message": "보통"
+  },
+  "reader_size_large": {
+    "message": "크게"
+  },
+  "reader_typography": {
+    "message": "글꼴"
+  },
+  "reader_serif": {
+    "message": "세리프"
+  },
+  "reader_sans": {
+    "message": "산세리프"
+  },
+  "reader_theme": {
+    "message": "테마"
+  },
+  "reader_theme_light": {
+    "message": "밝게"
+  },
+  "reader_theme_dark": {
+    "message": "어둡게"
+  },
+  "reader_by": {
+    "message": "$author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
   }
 }

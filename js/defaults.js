@@ -408,10 +408,12 @@ var getSingletonAudio = lazy(() => {
 
 var getSilenceTrack = lazy(() => makeSilenceTrack())
 
-immediate(async () => {
+// Only extension pages inherit the Options theme; content scripts must not
+// restyle the article or wait for an already-fired DOMContentLoaded event.
+if (location.protocol == "moz-extension:") immediate(async () => {
   const [darkMode] = await Promise.all([
     getSetting("darkMode"),
-    new Promise(f => document.addEventListener("DOMContentLoaded", f))
+    domReady()
   ])
   if (typeof darkMode == "boolean") {
     document.body.classList.toggle("dark-mode", darkMode)
@@ -1082,7 +1084,8 @@ if (!Promise.prototype.finally) {
  */
 function domReady() {
   return new Promise(function(fulfill) {
-    $(fulfill);
+    if (document.readyState != "loading") fulfill();
+    else document.addEventListener("DOMContentLoaded", fulfill, {once: true});
   })
 }
 

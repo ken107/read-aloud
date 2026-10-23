@@ -262,5 +262,74 @@
   },
   "options_rate_information": {
     "message": "Informasi kecepatan"
+  },
+  "options_highlighting_reader": {
+    "message": "Tampilkan dalam mode baca"
+  },
+  "reader_play": {
+    "message": "Putar"
+  },
+  "reader_pause": {
+    "message": "Jeda"
+  },
+  "reader_stop": {
+    "message": "Berhenti"
+  },
+  "reader_forward": {
+    "message": "Maju"
+  },
+  "reader_rewind": {
+    "message": "Mundur"
+  },
+  "reader_settings": {
+    "message": "Setelan"
+  },
+  "reader_display_settings": {
+    "message": "Setelan tampilan"
+  },
+  "reader_expand": {
+    "message": "Perluas"
+  },
+  "reader_close": {
+    "message": "Tutup"
+  },
+  "reader_text_size": {
+    "message": "Ukuran teks"
+  },
+  "reader_size_small": {
+    "message": "Kecil"
+  },
+  "reader_size_medium": {
+    "message": "Sedang"
+  },
+  "reader_size_large": {
+    "message": "Besar"
+  },
+  "reader_typography": {
+    "message": "Tipografi"
+  },
+  "reader_serif": {
+    "message": "Serif"
+  },
+  "reader_sans": {
+    "message": "Sans"
+  },
+  "reader_theme": {
+    "message": "Tema"
+  },
+  "reader_theme_light": {
+    "message": "Terang"
+  },
+  "reader_theme_dark": {
+    "message": "Gelap"
+  },
+  "reader_by": {
+    "message": "Oleh $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
   }
 }

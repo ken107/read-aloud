@@ -364,22 +364,33 @@ function TabSource(tabId) {
   var tabPromise = tabId ? getTab(tabId) : getActiveTab();
   var tab, handler, frameId, peer;
   var waiting = true;
+  var closed = false;
+  var cancelConnect;
+  var cancelReady;
+  const canceled = new Promise((resolve, reject) => { cancelReady = reject });
+  function checkOpen() {
+    if (closed) throw Object.assign(new Error("Playback canceled"), {name: "CancellationException"});
+  }
 
   this.ready = tabPromise
     .then(function(res) {
+      checkOpen();
       if (!res) throw new Error(JSON.stringify({code: "error_page_unreadable"}));
       tab = res;
       handler = handlers.find(function(h) {return h.match(tab.url || "")});
       return handler.validate(tab);
     })
     .then(function() {
+      checkOpen();
       if (handler.getFrameId)
         return getAllFrames(tab.id).then(handler.getFrameId).then(function(res) {frameId = res});
     })
     .then(function() {
+      checkOpen();
       if (handler.connect) return handler.connect();
       return waitForConnect()
         .then(function(port) {
+      if (closed) { port.disconnect(); checkOpen(); }
       return new Promise(function(fulfill) {
         peer = new RpcPeer(new ExtensionMessagingPeer(port));
         peer.onInvoke = function(method, arg0) {
@@ -393,6 +404,7 @@ function TabSource(tabId) {
         })
     })
     .then(extraAction(function(info) {
+      checkOpen();
       if (info.requireJs) {
         var tasks = info.requireJs.map(function(file) {return inject.bind(null, file)});
         return inSequence(tasks);
@@ -401,6 +413,8 @@ function TabSource(tabId) {
     .finally(function() {
       waiting = false;
     })
+
+  this.ready = Promise.race([this.ready, canceled]).finally(() => { waiting = false });
 
   this.isWaiting = function() {
     return waiting;
@@ -421,6 +435,9 @@ function TabSource(tabId) {
       .finally(function() {waiting = false})
   }
   this.close = function() {
+    closed = true;
+    cancelReady(Object.assign(new Error("Playback canceled"), {name: "CancellationException"}));
+    if (cancelConnect) cancelConnect();
     if (peer) peer.disconnect();
     return Promise.resolve();
   }
@@ -431,7 +448,7 @@ function TabSource(tabId) {
   function waitForConnect() {
     return new Promise(function(fulfill, reject) {
       function onConnect(port) {
-        if (port.name == "ReadAloudContentScript") {
+        if (port.name == "ReadAloudContentScript" && port.sender?.tab?.id == tab.id && (port.sender.frameId || 0) == (frameId || 0)) {
           brapi.runtime.onConnect.removeListener(onConnect);
           clearTimeout(timer);
           fulfill(port);
@@ -446,6 +463,7 @@ function TabSource(tabId) {
         brapi.runtime.onConnect.removeListener(onConnect);
         reject(new Error("Timeout waiting for content script to connect"));
       }
+      cancelConnect = () => onError(Object.assign(new Error("Playback canceled"), {name: "CancellationException"}));
       brapi.runtime.onConnect.addListener(onConnect);
       injectScripts().catch(onError);
       var timer = setTimeout(onTimeout, 15000);
@@ -463,6 +481,7 @@ function TabSource(tabId) {
       .then(inject.bind(null, "js/content.js"))
   }
   function inject(file) {
+    checkOpen();
     var details = {file: file, tabId: tab.id};
     if (frameId) details.frameId = frameId;
     return executeScript(details);
@@ -471,6 +490,10 @@ function TabSource(tabId) {
 
 
 function Doc(source, onEnd) {
+  var closed = false;
+  function checkOpen() {
+    if (closed) throw Object.assign(new Error("Playback canceled"), {name: "CancellationException"});
+  }
   var info;
   var currentIndex;
   var activeSpeech;
@@ -492,21 +515,19 @@ function Doc(source, onEnd) {
 
   //method close
   function close() {
-    return ready
-      .catch(function() {})
-      .then(function() {
-        if (activeSpeech) {
-          activeSpeech.stop()
-          activeSpeech = null
-        }
-        source.close();
-      })
+    closed = true;
+    if (activeSpeech) {
+      activeSpeech.stop();
+      activeSpeech = null;
+    }
+    return source.close();
   }
 
   //method play
   function play() {
     return ready
       .then(function() {
+        checkOpen();
         if (activeSpeech) return activeSpeech.play();
         else {
           return source.getCurrentIndex()
@@ -517,11 +538,13 @@ function Doc(source, onEnd) {
   }
 
   function readCurrent(rewinded) {
+    checkOpen();
     return source.getTexts(currentIndex)
       .catch(function() {
         return null;
       })
       .then(function(texts) {
+        checkOpen();
         if (texts) {
           if (texts.length) {
             foundText = true;
@@ -547,11 +570,13 @@ function Doc(source, onEnd) {
                 info.detectedLang = lang || "";
               })
         })
-        .then(getSpeech.bind(null, texts))
+        .then(() => { checkOpen(); return getSpeech(texts) })
         .then(function(speech) {
+          checkOpen();
           if (activeSpeech) return;
           activeSpeech = speech;
           activeSpeech.onEnd = function(err) {
+            if (closed) return;
             if (err) {
               if (onEnd) onEnd(err);
             }
@@ -669,6 +694,7 @@ function Doc(source, onEnd) {
         }
         return getSpeechVoice(settings.voiceName, options.lang)
           .then(function(voice) {
+            checkOpen();
             if (!voice) throw new Error(JSON.stringify({code: "error_no_voice", lang: options.lang}));
             options.voice = voice;
             return new Speech(texts, options);

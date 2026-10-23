@@ -34,6 +34,10 @@ const audioPlayer = immediate(() => {
 })
 
 installContextMenus()
+syncActionPopup().catch(console.error)
+settingsChange$.pipe(rxjs.filter(changes => changes.showHighlighting))
+  .subscribe(() => syncActionPopup().catch(console.error))
+brapi.browserAction.onClicked.addListener(tab => activateReader(tab.id).catch(console.error))
 
 
 /**
@@ -230,6 +234,12 @@ const engineHosts = {
  * IPC handlers
  */
 var handlers = {
+  activateReader,
+  getReaderState,
+  openPopupWindow,
+  openOptionsPage,
+  getReaderFonts,
+  resume,
   playText: playText,
   playTab: playTab,
   stop: stop,
@@ -305,6 +315,7 @@ var handlers = {
 
 brapi.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
+    if (request.dest) return;
     var handler = handlers[request.method];
     if (handler) {
       Promise.resolve(handler.apply({sender}, request.args))
@@ -383,6 +394,8 @@ brapi.commands.onCommand.addListener(function(command) {
  * METHODS
  */
 function playText(text, opts) {
+  cancelStartup()
+  playingTabId = null
   opts = opts || {}
   playbackError = null
   if (!activeDoc) {
@@ -390,36 +403,107 @@ function playText(text, opts) {
       if (err) playbackError = err
     })
   }
-  return activeDoc.play()
-    .catch(function(err) {
-      handleError(err);
-      closeDoc();
-      throw err;
-    })
+  return playDocument(activeDoc)
+}
+
+let playingTabId = null
+let pendingStart = null
+
+function cancelStartup() {
+  if (pendingStart) {
+    pendingStart.canceled = true
+    if (pendingStart.source) pendingStart.source.close()
+    if (pendingStart.doc && activeDoc === pendingStart.doc) closeDoc()
+    pendingStart = null
+  }
 }
 
 function playTab(tabId) {
-  playbackError = null
-  if (!activeDoc) {
-    openDoc(new TabSource(tabId), function(err) {
-      if (err) playbackError = err
-    })
+  // Popup and keyboard commands resume the current document as before.
+  if (pendingStart && (tabId == null || tabId == pendingStart.tabId)) return pendingStart.promise
+  if (activeDoc && (tabId == null || tabId == playingTabId)) return resume()
+  cancelStartup()
+  const task = {tabId, canceled: false}
+  pendingStart = task
+  task.promise = startTab(task).finally(() => {
+    if (pendingStart === task) pendingStart = null
+  })
+  return task.promise
+}
+
+async function startTab(task) {
+  function check() {
+    if (task.canceled) throw Object.assign(new Error("Playback canceled"), {name: "CancellationException"})
   }
-  return activeDoc.play()
-    .catch(function(err) {
-      handleError(err);
-      closeDoc();
-      throw err;
-    })
+  let doc
+  try {
+    const tab = task.tabId != null ? await getTab(task.tabId) : await getActiveTab()
+    check()
+    if (!tab) throw new Error(JSON.stringify({code: "error_page_unreadable"}))
+    task.tabId = tab.id
+    const source = task.source = new TabSource(tab.id)
+    await source.ready
+    check()
+    let fallback = false
+    const readerMode = await isReaderMode()
+    check()
+    if (readerMode) {
+      await showReader(tab).catch(err => { console.warn("Cannot show reader", err); fallback = true })
+      check()
+    }
+    // Transfer ownership only after source preparation succeeds.
+    closeDoc()
+    playingTabId = tab.id
+    playbackError = null
+    openDoc(source, err => { if (err) playbackError = err })
+    task.source = null
+    doc = task.doc = activeDoc
+    await doc.play()
+    check()
+    if (fallback) await openPopupWindow(tab.id)
+  }
+  catch (err) {
+    if (task.source) task.source.close()
+    if (task.canceled || err.name == "CancellationException") return
+    if (doc && activeDoc === doc) closeDoc()
+    playbackError = err
+    handleError(err)
+    throw err
+  }
 }
 
 function stop() {
-  if (activeDoc) {
-    activeDoc.stop();
-    closeDoc();
-    return Promise.resolve();
+  cancelStartup()
+  closeDoc()
+  return Promise.resolve()
+}
+
+function resume() {
+  return activeDoc ? playDocument(activeDoc) : playTab()
+}
+
+function playDocument(doc) {
+  return doc.play().catch(err => {
+    if (err.name == "CancellationException" || activeDoc !== doc) return
+    playbackError = err
+    handleError(err)
+    closeDoc()
+    throw err
+  })
+}
+
+async function getReaderState() {
+  const doc = activeDoc
+  const owner = playingTabId
+  const state = pendingStart ? "LOADING" : await getPlaybackState()
+  const speech = doc && await doc.getActiveSpeech()
+  if (doc !== activeDoc) return getReaderState()
+  return {
+    state,
+    playingTabId: pendingStart ? pendingStart.tabId : owner,
+    speechInfo: pendingStart ? null : speech && speech.getInfo(),
+    playbackError: playbackError && errorToJson(playbackError),
   }
-  else return Promise.resolve();
 }
 
 function pause() {
@@ -428,6 +512,7 @@ function pause() {
 }
 
 function getPlaybackState() {
+  if (pendingStart) return Promise.resolve("LOADING")
   if (activeDoc) return activeDoc.getState();
   else return Promise.resolve("STOPPED");
 }
@@ -438,12 +523,14 @@ function getActiveSpeech() {
 }
 
 function openDoc(source, onEnd) {
-  activeDoc = new Doc(source, function(err) {
-    handleError(err);
-    closeDoc();
-    if (typeof onEnd == "function") onEnd(err);
+  const doc = new Doc(source, function(err) {
+    if (activeDoc !== doc) return
+    handleError(err)
+    closeDoc()
+    if (typeof onEnd == "function") onEnd(err)
   })
-  silenceLoop.play();
+  activeDoc = doc
+  silenceLoop.play().catch(console.error)
 }
 
 function closeDoc() {
@@ -470,6 +557,7 @@ function seek(n) {
 }
 
 function handleError(err) {
+  if (err && err.name == "CancellationException") return
   if (err) {
     if (/^{/.test(err.message)) {
       const errInfo = JSON.parse(err.message)

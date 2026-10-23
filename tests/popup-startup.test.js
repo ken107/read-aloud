@@ -61,3 +61,9 @@ for (const state of ['PLAYING', 'LOADING', 'PAUSED', 'STOPPED']) {
     ])
   })
 }
+
+for (const state of ['PAUSED', 'STOPPED']) {
+  test(`reader fallback does not automatically restart ${state} playback`, async () => {
+    assert.deepEqual(await openPopup(state, {tab: '42', autoplay: '0'}), [{method: 'getPlaybackState'}])
+  })
+}

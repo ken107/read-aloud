@@ -262,5 +262,74 @@
   },
   "options_rate_information": {
     "message": "Informazioni sulla velocità"
+  },
+  "options_highlighting_reader": {
+    "message": "Mostra in modalità lettura"
+  },
+  "reader_play": {
+    "message": "Riproduci"
+  },
+  "reader_pause": {
+    "message": "Pausa"
+  },
+  "reader_stop": {
+    "message": "Interrompi"
+  },
+  "reader_forward": {
+    "message": "Avanti"
+  },
+  "reader_rewind": {
+    "message": "Indietro"
+  },
+  "reader_settings": {
+    "message": "Impostazioni"
+  },
+  "reader_display_settings": {
+    "message": "Impostazioni di visualizzazione"
+  },
+  "reader_expand": {
+    "message": "Espandi"
+  },
+  "reader_close": {
+    "message": "Chiudi"
+  },
+  "reader_text_size": {
+    "message": "Dimensione testo"
+  },
+  "reader_size_small": {
+    "message": "Piccolo"
+  },
+  "reader_size_medium": {
+    "message": "Medio"
+  },
+  "reader_size_large": {
+    "message": "Grande"
+  },
+  "reader_typography": {
+    "message": "Tipografia"
+  },
+  "reader_serif": {
+    "message": "Serif"
+  },
+  "reader_sans": {
+    "message": "Sans"
+  },
+  "reader_theme": {
+    "message": "Tema"
+  },
+  "reader_theme_light": {
+    "message": "Chiaro"
+  },
+  "reader_theme_dark": {
+    "message": "Scuro"
+  },
+  "reader_by": {
+    "message": "Di $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
   }
 }
