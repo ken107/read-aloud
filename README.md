@@ -116,6 +116,30 @@ You can get the latest version of Read Aloud Extension from the [Mozilla Add-ons
 6. Click on "This Firefox" then click "Load Unpackaged Extension"
 7. Select the `manifest.json` file produced earlier.
 
+## Packaging
+
+Run `npm run package` to package the current checkout. Requires Node.js and the
+`zip` command. The browser label is inferred from the branch: `master`/`main`
+means Chrome; `firefox`, `firefox-mv3`, `edge`, `brave`, and `thunderbird` use
+their respective browser names. For feature branches, detached checkouts, or
+exported source trees, provide the label explicitly:
+
+```sh
+npm run package -- --browser=firefox
+```
+
+The browser option labels the package; it does not switch branches or convert
+the extension to another browser. Use the appropriate source checkout.
+Output is `build/read-aloud-<browser>-<manifest-version>.zip`. Each run creates
+a fresh archive and replaces that output only after ZIP creation succeeds,
+so deleted files cannot remain from an earlier build. Source maps and
+`.DS_Store` files are excluded. Existing packages for other browsers or versions
+are retained.
+
+The same `tools/package.js` and npm `package` script can be merged or copied
+to each browser branch. The root `background.js` is included when present,
+supporting both service-worker and script-based background implementations.
+
 ## Contribute
 
 - Star this GitHub repo :star:
@@ -123,6 +147,13 @@ You can get the latest version of Read Aloud Extension from the [Mozilla Add-ons
 - Leave a positive review on the [Chrome Web Store](https://chromewebstore.google.com/detail/read-aloud-a-text-to-spee/hdhinadidafjejdhmfkjgnolgimiaplp) or [Firefox Addon](https://addons.mozilla.org/en-US/firefox/addon/read-aloud/) pages.
 - Create pull requests, submit bugs, suggest new features or documentation updates 🛠 
 	- To do so, go to [this page](https://github.com/ken107/read-aloud/issues) and click the *New issue* button.
+
+
+## Community Forks
+
+| Fork | Added Features |
+|------|---------------|
+| [praharshbhatt/read-aloud](https://github.com/praharshbhatt/read-aloud) | ElevenLabs voice support |
 
 
 ## Credits

@@ -67,8 +67,14 @@ interface TtsEngine {
 */
 
 function BrowserTtsEngine() {
-  brapi.tts.stop()    //workaround: chrome.tts.speak doesn't work first time on cold start for some reason
+  let initialized = false
   this.speak = function(text, options, onEvent) {
+    // Keep the cold-start workaround out of construction: Options also creates
+    // this engine just to list voices, while another page may be speaking.
+    if (!initialized) {
+      brapi.tts.stop()
+      initialized = true
+    }
     brapi.tts.speak(text, {
       voiceName: options.voice.voiceName,
       lang: options.lang,

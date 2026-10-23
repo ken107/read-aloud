@@ -65,6 +65,75 @@
   "options_highlighting_window": {
     "message": "在单独的窗口中显示"
   },
+  "options_highlighting_reader": {
+    "message": "在阅读模式中显示"
+  },
+  "reader_play": {
+    "message": "播放"
+  },
+  "reader_pause": {
+    "message": "暂停"
+  },
+  "reader_stop": {
+    "message": "停止"
+  },
+  "reader_forward": {
+    "message": "快进"
+  },
+  "reader_rewind": {
+    "message": "快退"
+  },
+  "reader_settings": {
+    "message": "设置"
+  },
+  "reader_display_settings": {
+    "message": "显示设置"
+  },
+  "reader_expand": {
+    "message": "展开"
+  },
+  "reader_close": {
+    "message": "关闭"
+  },
+  "reader_text_size": {
+    "message": "文字大小"
+  },
+  "reader_size_small": {
+    "message": "小"
+  },
+  "reader_size_medium": {
+    "message": "中"
+  },
+  "reader_size_large": {
+    "message": "大"
+  },
+  "reader_typography": {
+    "message": "字体"
+  },
+  "reader_serif": {
+    "message": "衬线"
+  },
+  "reader_sans": {
+    "message": "无衬线"
+  },
+  "reader_theme": {
+    "message": "主题"
+  },
+  "reader_theme_light": {
+    "message": "浅色"
+  },
+  "reader_theme_dark": {
+    "message": "深色"
+  },
+  "reader_by": {
+    "message": "作者：$author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
+  },
   "options_audio_playback": {
     "message": "音频播放"
   },

@@ -20,6 +20,11 @@ $(function() {
 getSettings(["showHighlighting", "readAloudTab"]).then(async settings => {
   if (settings.showHighlighting == 2 && queryString.isPopup) {
     await popout(settings.readAloudTab)
+  } else if (settings.showHighlighting == 3 && queryString.isPopup) {
+    //reader mode replaces the popup; normally the toolbar button has no popup at all
+    const activeTab = await getActiveTab()
+    await bgPageInvoke("activateReader", [activeTab.id])
+    window.close()
   } else {
     await init()
   }
@@ -153,7 +158,7 @@ function handleError(err) {
       }
     })
   }
-  else if (config.browserId == "opera" && /locked fullscreen/.test(err.message)) {
+  else if (isOpera() && /locked fullscreen/.test(err.message)) {
     $("#status").html("Click <a href='#open-player-tab'>here</a> to start read aloud.").show()
     $("#status a").click(async function() {
       try {
@@ -200,7 +205,7 @@ async function updateButtons() {
   $("#btnStop").toggle(state == "PAUSED" || state == "PLAYING" || state == "LOADING");
   $("#btnForward, #btnRewind").toggle(state == "PLAYING" || state == "PAUSED");
 
-  if (showHighlighting && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
+  if ((showHighlighting == 1 || showHighlighting == 2) && (state == "LOADING" || state == "PAUSED" || state == "PLAYING") && speech) {
     $("body").addClass("has-highlight")
     $("#highlight").show()
     updateHighlighting(speech)

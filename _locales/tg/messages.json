@@ -65,6 +65,75 @@
   "options_highlighting_window": {
     "message": "Намоиш дар равзанаи алоҳида"
   },
+  "options_highlighting_reader": {
+    "message": "Нишон додан дар реҷаи хониш"
+  },
+  "reader_play": {
+    "message": "Пахш"
+  },
+  "reader_pause": {
+    "message": "Таваққуф"
+  },
+  "reader_stop": {
+    "message": "Қатъ"
+  },
+  "reader_forward": {
+    "message": "Ба пеш"
+  },
+  "reader_rewind": {
+    "message": "Ба қафо"
+  },
+  "reader_settings": {
+    "message": "Танзимот"
+  },
+  "reader_display_settings": {
+    "message": "Танзимоти намоиш"
+  },
+  "reader_expand": {
+    "message": "Васеъ кардан"
+  },
+  "reader_close": {
+    "message": "Пӯшидан"
+  },
+  "reader_text_size": {
+    "message": "Андозаи матн"
+  },
+  "reader_size_small": {
+    "message": "Хурд"
+  },
+  "reader_size_medium": {
+    "message": "Миёна"
+  },
+  "reader_size_large": {
+    "message": "Калон"
+  },
+  "reader_typography": {
+    "message": "Ҳуруф"
+  },
+  "reader_serif": {
+    "message": "Бо зеб"
+  },
+  "reader_sans": {
+    "message": "Бе зеб"
+  },
+  "reader_theme": {
+    "message": "Мавзӯъ"
+  },
+  "reader_theme_light": {
+    "message": "Равшан"
+  },
+  "reader_theme_dark": {
+    "message": "Торик"
+  },
+  "reader_by": {
+    "message": "Муаллиф: $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
+  },
   "options_audio_playback": {
     "message": "Пахши аудиоӣ"
   },

@@ -29,7 +29,6 @@ var config = {
     permissions: ["webRequest"],
     origins: ["https://*/"]
   },
-  browserId: getBrowser(),
 }
 
 var defaults = {
@@ -161,6 +160,10 @@ const voices$ = rxjs.combineLatest({
   piperVoices: observeSetting("piperVoices"),
   supertonicVoices: observeSetting("supertonicVoices"),
   nghiTtsVoices: observeSetting("nghiTtsVoices"),
+  ttsVoicesChanged: brapi.tts?.onVoicesChanged
+    ? rxjs.fromEventPattern(h => brapi.tts.onVoicesChanged.addListener(h), h => brapi.tts.onVoicesChanged.removeListener(h))
+      .pipe(rxjs.debounceTime(500), rxjs.startWith(null))
+    : rxjs.of(null),
 }).pipe(
   rxjs.exhaustMap(settings => Promise.all([
     browserTtsEngine.getVoices(),
@@ -212,8 +215,14 @@ function isOfflineVoice(voice) {
   return voice.remote == false
 }
 
-function isGoogleNative(voice) {
-  return /^Google\s/.test(voice.voiceName);
+//legacy "Google US English" etc. voices from Chrome's built-in Google Network Speech extension
+function isGoogleNetworkVoice(voice) {
+  return /^Google\s/.test(voice.voiceName) && !isGoogleNaturalVoice(voice);
+}
+
+function isGoogleNaturalVoice(voice) {
+  //the Natural voices extension also provides lower-quality "Chrome OS ..." voices, so match by name
+  return /^Google\s.*\(Natural\)$/.test(voice.voiceName)
 }
 
 function isChromeOSNative(voice) {
@@ -310,11 +319,12 @@ async function getSpeechVoice(voiceName, lang) {
     voiceName = preferredVoiceByLang[parseLang(lang).lang]
     if (voiceName) voice = findVoiceByName(voices, voiceName);
   }
-  //otherwise, auto-select in order: offline, native, free, any
+  //otherwise, auto-select in order: Google Natural, offline, native, free, any
   if (!voice && lang) {
     voices = voices.filter(voice => !isUseMyPhone(voice))
-    voice = findVoiceByLang(voices.filter(isOfflineVoice), lang)
-      || findVoiceByLang(voices.filter(isGoogleNative), lang)
+    voice = findVoiceByLang(voices.filter(isGoogleNaturalVoice), lang)
+      || findVoiceByLang(voices.filter(isOfflineVoice), lang)
+      || findVoiceByLang(voices.filter(isGoogleNetworkVoice), lang)
       || findVoiceByLang(voices.filter(isNativeVoice), lang)
 
     if (!voice) {
@@ -572,32 +582,49 @@ function setI18nText() {
  * An empty replacement means the word is skipped.
  * Invalid and duplicate lines are skipped and reported in errors.
  */
+function normalizeWordReplacements(value) {
+  if (Array.isArray(value)) return value.map(rule => ({...rule}))
+  if (typeof value != "string") return []
+  return value.split(/\r?\n/).filter(line => line.trim()).map(line => {
+    const regexPrefix = /^\s*\/((?:\\.|\[(?:\\.|[^\]\\])*\]|[^/\\])*)\/\s*=/.exec(line)
+    const separator = regexPrefix ? regexPrefix[0].length - 1 : line.indexOf("=")
+    const from = (separator < 0 ? line : line.slice(0, separator)).trim()
+    const regex = from.startsWith("/") && from.endsWith("/") && from.length >= 2
+    return {type: regex ? "regex" : "text", from: regex ? from.slice(1, -1) : from,
+      to: separator < 0 ? "" : line.slice(separator + 1).trim(),
+      ...(separator < 0 ? {invalid: "missing_separator"} : {})}
+  })
+}
+
 function parseWordReplacements(text) {
   const rules = []
   const errors = []
   const seen = Object.create(null)
-  if (typeof text != "string") return {rules, errors}
-  text.split(/\r?\n/).forEach((line, index) => {
+  normalizeWordReplacements(text).forEach((rule, index) => {
     const lineNumber = index + 1
-    if (!line.trim()) return
-    const separator = line.indexOf("=")
-    if (separator == -1) {
-      errors.push({line: lineNumber, code: "missing_separator"})
+    const {from, to} = rule
+    if (rule.invalid || !from) {
+      errors.push({line: lineNumber, code: rule.invalid || "missing_word"})
       return
     }
-    const from = line.slice(0, separator).trim()
-    const to = line.slice(separator + 1).trim()
-    if (!from) {
-      errors.push({line: lineNumber, code: "missing_word"})
-      return
+    const isRegex = rule.type == "regex"
+    let pattern
+    if (isRegex) {
+      try {
+        pattern = new RegExp(from, "g")
+      }
+      catch (err) {
+        errors.push({line: lineNumber, code: "invalid_regex"})
+        return
+      }
     }
-    const key = from.toLowerCase()
+    const key = isRegex ? "regex:" + from : "literal:" + from.toLowerCase()
     if (key in seen) {
       errors.push({line: lineNumber, code: "duplicate", from, firstLine: seen[key]})
       return
     }
     seen[key] = lineNumber
-    rules.push({from, to})
+    rules.push(pattern ? {from, to, pattern} : {from, to})
   })
   return {rules, errors}
 }
@@ -624,10 +651,27 @@ function getUniqueClientId() {
   }
 }
 
-function getBrowser() {
-  if (/Opera|OPR\//.test(navigator.userAgent)) return 'opera';
-  if (/firefox/i.test(navigator.userAgent)) return 'firefox';
-  return 'chrome';
+function isOpera() {
+  return /Opera|OPR\//.test(navigator.userAgent);
+}
+
+function isFirefox() {
+  return /firefox/i.test(navigator.userAgent);
+}
+
+//Google Chrome itself, not other Chromium-based browsers like Edge or Brave
+function isGoogleChrome() {
+  return navigator.userAgentData?.brands.some(brand => brand.brand == "Google Chrome") ?? false;
+}
+
+function isChromeOS() {
+  return /\bCrOS\b/.test(navigator.userAgent);
+}
+
+function isMobileOS() {
+  var check = false;
+  (function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
+  return check;
 }
 
 function getHotkeySettingsUrl() {
@@ -741,12 +785,6 @@ async function getAccountInfo(authToken) {
       throw new Error("Can't fetch account info, server returns " + res.status)
     }
   }
-}
-
-function isMobileOS() {
-  var check = false;
-  (function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
-  return check;
 }
 
 function getAllFrames(tabId) {

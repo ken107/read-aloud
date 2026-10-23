@@ -80,6 +80,7 @@
           var voiceName = $(this).val();
           if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
           else if (voiceName == "@languages") brapi.tabs.create({url: "languages.html"});
+          else if (voiceName == "@natural") brapi.tabs.create({url: "natural-voices.html"});
           else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
           else if (voiceName == "@piper") bgPageInvoke("managePiperVoices").catch(console.error)
           else if (voiceName == "@supertonic") bgPageInvoke("manageSupertonicVoices").catch(console.error)
@@ -305,9 +306,17 @@
     })
 
   settingsChange$
-    .subscribe(() => {
+    .subscribe(changes => {
       showConfirmation()
-      bgPageInvoke("stop").catch(err => "OK")
+      // Playback state, reader preferences, and voice discovery also write to
+      // storage. Only changes to speech settings should interrupt playback.
+      if (Object.keys(changes).some(key =>
+        (["voiceName", "pitch", "volume", "wordReplacements", "preferredVoices"].includes(key)
+          || key.startsWith("rate"))
+        && JSON.stringify(changes[key].oldValue) != JSON.stringify(changes[key].newValue)
+      )) {
+        bgPageInvoke("stop").catch(err => "OK")
+      }
     })
 
 
@@ -363,6 +372,12 @@
       $("<option>")
         .val(voice.voiceName)
         .text(voice.voiceName)
+        .appendTo(offline)
+    }
+    if (canEnableGoogleNaturalVoices()) {
+      $("<option>")
+        .val("@natural")
+        .text("✨ " + (brapi.i18n.getMessage("options_enable_natural_voices") || "Enable Google Natural voices..."))
         .appendTo(offline)
     }
 
@@ -431,6 +446,10 @@
       .appendTo(additional)
   }
 
+  function canEnableGoogleNaturalVoices() {
+    return isGoogleChrome() && !isChromeOS()
+  }
+
   function voiceSorter(a, b) {
     function getWeight(voice) {
       var weight = 0
@@ -442,7 +461,10 @@
       if (isUseMyPhone(voice)) weight += 1
       return weight
     }
-    return getWeight(a)-getWeight(b) || a.voiceName.localeCompare(b.voiceName)
+    return getWeight(a)-getWeight(b)
+      //group voices provided by the same extension (e.g. Google Natural voices) together
+      || (a.extensionId || "").localeCompare(b.extensionId || "")
+      || a.voiceName.localeCompare(b.voiceName)
   }
 
 
@@ -481,7 +503,7 @@
         }
       })
     }
-    else if (config.browserId == "opera" && /locked fullscreen/.test(err.message)) {
+    else if (isOpera() && /locked fullscreen/.test(err.message)) {
       $("#status").html("Click <a href='#open-player-tab'>here</a> to start read aloud.").parent().show()
       $("#status a").click(async function() {
         try {

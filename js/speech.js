@@ -1,6 +1,6 @@
 
 function Speech(texts, options) {
-  options.rate = (options.rate || 1) * (isGoogleNative(options.voice) ? 0.9 : 1);
+  options.rate = (options.rate || 1) * (isGoogleNetworkVoice(options.voice) ? 0.9 : 1);
 
   const wordReplacements = parseWordReplacements(options.wordReplacements).rules
   if (wordReplacements.length) {
@@ -51,14 +51,17 @@ function Speech(texts, options) {
     }
     // Catch silent playback stalls when the word-based duration estimate misses
     // Chrome's built-in Google TTS extension's 15-second playback limit.
-    if (isGoogleNative(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 3*1000, 16*1000);
+    if (isGoogleNetworkVoice(options.voice)) return new TimeoutTtsEngine(browserTtsEngine, 3*1000, 16*1000);
     return browserTtsEngine;
   }
 
   function getChunks(text) {
     var isEA = /^(zh|ko|ja)(?:-|$)/i.test(options.lang);
     var punctuator = createPunctuator(options.lang);
-    if (isGoogleNative(options.voice)) {
+    if (isOfflineVoice(options.voice) && !isUseMyPhone(options.voice)) {
+      return punctuator.getParagraphs(text).flatMap(paragraph => punctuator.getSentences(paragraph));
+    }
+    if (isGoogleNetworkVoice(options.voice)) {
       // Historically Chrome's built-in Google TTS extension can go silent after ~15 seconds
       // without an error or event, through either chrome.tts or Web Speech.
       // These language/rate-adjusted word budgets approximate that duration;
@@ -302,7 +305,7 @@ function Speech(texts, options) {
           }
         } else if (state == "paused") {
           if (playing$) {
-            if (isGoogleNative(options.voice) || isChromeOSNative(options.voice)) {
+            if (isGoogleNetworkVoice(options.voice) || isChromeOSNative(options.voice)) {
               engine.stop()
               return null
             } else {
@@ -641,6 +644,17 @@ function EastAsianPunctuator() {
 }
 
 function createWordReplacer(rules) {
+  const regexRules = rules.filter(rule => rule.pattern)
+  const replaceLiteralWords = createLiteralWordReplacer(rules.filter(rule => !rule.pattern))
+  return text => {
+    text = replaceLiteralWords(text)
+    for (const rule of regexRules) text = text.replace(rule.pattern, rule.to)
+    return text
+  }
+}
+
+function createLiteralWordReplacer(rules) {
+  if (!rules.length) return text => text
   const lookup = Object.create(null)
   rules.forEach(rule => lookup[rule.from.toLowerCase()] = rule.to)
 

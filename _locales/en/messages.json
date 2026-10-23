@@ -1,4 +1,39 @@
 {
+  "advanced_back_to_options": {"message": "← Back to Options"},
+  "wr_help_order_body": {"message": "Plain-text rules run together in one pass, preferring longer matches. Regex rules run afterward, from top to bottom. Use $$1, $$2, etc. in regex replacements for captured groups."},
+  "wr_help_patterns_body": {"message": "Ask AI for a JavaScript regex pattern for your use case, without surrounding slashes or flags. Give examples of text to match and text to keep, then try it on a short sample."},
+  "wr_help_matching_body": {"message": "Plain text matches whole words or phrases, ignoring case. Regex matches patterns and is case-sensitive. Enter patterns without surrounding /slashes/ or flags."},
+  "wr_example_capture": {"message": "$$1 kilograms"},
+  "wr_example_result": {"message": "Reads “5kg” as “5 kilograms”."},
+  "wr_example_empty": {"message": "Leave empty"},
+  "wr_example_units": {"message": "Expand a unit after a number"},
+  "wr_example_references": {"message": "Remove references such as [12]"},
+  "wr_example_abbreviation": {"message": "Expand an abbreviation"},
+  "wr_example_pronunciation": {"message": "Change pronunciation"},
+  "wr_help_examples": {"message": "Examples"},
+  "wr_help_order": {"message": "Processing order"},
+  "wr_help_patterns": {"message": "Writing patterns"},
+  "wr_help_matching": {"message": "Matching"},
+  "wr_existing_invalid": {"message": "This rule is invalid or duplicated and is ignored. Edit or delete it."},
+  "wr_remove": {"message": "(empty)"},
+  "wr_delete": {"message": "Delete rule"},
+  "wr_edit": {"message": "Edit rule"},
+  "wr_cancel": {"message": "Cancel"},
+  "wr_add": {"message": "Add"},
+  "wr_save": {"message": "Save"},
+  "wr_required": {"message": "Enter text or a pattern to find."},
+  "wr_invalid": {"message": "Invalid regular expression. Check the pattern."},
+  "wr_duplicate": {"message": "A rule with this match type and search already exists."},
+  "wr_empty": {"message": "Leave Replace with empty to remove matching text."},
+  "wr_retry": {"message": "Retry"},
+  "wr_undo": {"message": "Undo"},
+  "wr_deleted": {"message": "Rule deleted."},
+  "wr_regex": {"message": "Regex"},
+  "wr_text": {"message": "Plain text"},
+  "wr_actions": {"message": "Actions"},
+  "wr_replace": {"message": "Replace with"},
+  "wr_find": {"message": "Find"},
+  "wr_type": {"message": "Match type"},
   "extension_name": {
     "message": "Read Aloud: A Text to Speech Voice Reader"
   },
@@ -41,6 +76,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ Install Supertonic voices..."
   },
+  "options_enable_natural_voices": {
+    "message": "Enable Google Natural voices..."
+  },
   "options_enable_nghitts_voices": {
     "message": "⚡ Install NghiTTS voices..."
   },
@@ -68,6 +106,75 @@
   "options_highlighting_window": {
     "message": "Show in a separate window"
   },
+  "options_highlighting_reader": {
+    "message": "Show in reader mode"
+  },
+  "reader_play": {
+    "message": "Play"
+  },
+  "reader_pause": {
+    "message": "Pause"
+  },
+  "reader_stop": {
+    "message": "Stop"
+  },
+  "reader_forward": {
+    "message": "Forward"
+  },
+  "reader_rewind": {
+    "message": "Rewind"
+  },
+  "reader_settings": {
+    "message": "Settings"
+  },
+  "reader_display_settings": {
+    "message": "Display settings"
+  },
+  "reader_expand": {
+    "message": "Expand"
+  },
+  "reader_close": {
+    "message": "Close"
+  },
+  "reader_text_size": {
+    "message": "Text size"
+  },
+  "reader_size_small": {
+    "message": "Small"
+  },
+  "reader_size_medium": {
+    "message": "Medium"
+  },
+  "reader_size_large": {
+    "message": "Large"
+  },
+  "reader_typography": {
+    "message": "Typography"
+  },
+  "reader_serif": {
+    "message": "Serif"
+  },
+  "reader_sans": {
+    "message": "Sans"
+  },
+  "reader_theme": {
+    "message": "Theme"
+  },
+  "reader_theme_light": {
+    "message": "Light"
+  },
+  "reader_theme_dark": {
+    "message": "Dark"
+  },
+  "reader_by": {
+    "message": "By $author$",
+    "placeholders": {
+      "author": {
+        "content": "$1",
+        "example": "Jane Doe"
+      }
+    }
+  },
   "options_audio_playback": {
     "message": "Audio Playback"
   },
@@ -77,12 +184,23 @@
   "options_audio_playback_embedded": {
     "message": "In page"
   },
+  "advanced_word_replacements_help": {
+    "message": "How to use word replacements"
+  },
+
+  "advanced_word_replacements_error_regex": {
+    "message": "Line $LINE$: invalid regular expression",
+    "placeholders": {
+      "line": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
   "advanced_word_replacements_title": {
     "message": "Word replacements"
   },
-  "advanced_word_replacements_placeholder": {
-    "message": "One per line, in the form “word = replacement”, case insensitive. Leave the replacement empty to skip the word.\n\nGIF = jif\ne.g. = for example\n[citation needed] ="
-  },
+
   "advanced_word_replacements_saving": {
     "message": "Saving…"
   },
