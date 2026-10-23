@@ -262,16 +262,22 @@ var readAloudReaderCss = `
 }
 @keyframes ra-spin { to { transform: rotate(360deg); } }
 .ra-status {
+  display: flex;
+  align-items: center;
   flex: 0 1 auto;
   min-width: 0;
   max-width: 260px;
   padding: 0 10px;
-  overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
   color: #bdbdbd;
 }
-.ra-status:empty { display: none; }
+.ra-status[hidden], .ra-voice[hidden] { display: none; }
+.ra-voice {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ra-progress { flex: none; white-space: pre; }
 .ra-sep {
   flex: none;
   width: 1px;
