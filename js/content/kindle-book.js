@@ -146,7 +146,7 @@ function makeOcr() {
   const progressInd = immediate(() => {
     const $el = $(`
       <div>
-        <img style="height: 2em" src="${brapi.runtime.getURL("img/loading.gif")}">
+        <img style="height: 2em" src="${brapi.runtime.getURL("img/loading.svg")}">
         <span class="ml-3">Working...</span
       </div>
     `)
