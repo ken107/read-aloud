@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const read = file => fs.readFileSync(require.resolve('../' + file), 'utf8');
 const defaults = read('js/defaults.js');
 const context = vm.createContext({});
-vm.runInContext(defaults.slice(defaults.indexOf('function parseWordReplacements'), defaults.indexOf('function escapeHtml')), context);
+vm.runInContext(defaults.slice(defaults.indexOf('function normalizeWordReplacements'), defaults.indexOf('function escapeHtml')), context);
 const speech = read('js/speech.js');
 vm.runInContext(speech.slice(speech.indexOf('function createWordReplacer')), context);
 const parse = text => JSON.parse(JSON.stringify(context.parseWordReplacements(text)));
@@ -39,7 +39,7 @@ test('default settings load and reset include word replacements', async () => {
 
 test('speech applies replacements before chunking and highlighting', () => {
   const engine = {};
-  const environment = {crypto:require("node:crypto"), isOfflineVoice:()=>true, rxjs:require('../js/rxjs.umd.min.js'), console,
+  const environment = {crypto:require("node:crypto"), isOfflineVoice:()=>true, isUseMyPhone:()=>false, rxjs:require('../js/rxjs.umd.min.js'), console,
     parseWordReplacements:context.parseWordReplacements,
     immediate:fn=>fn(), isPiperVoice:()=>true, isSupertonicVoice:()=>false, isNghiTtsVoice:()=>false,
     isGoogleTranslate:()=>false, piperTtsEngine:engine, supertonicTtsEngine:{}, nghiTtsEngine:{}};

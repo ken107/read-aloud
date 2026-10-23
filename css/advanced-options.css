@@ -1,0 +1,238 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #212529;
+}
+
+.container-fluid {
+  padding: 1rem;
+}
+
+.advanced-navigation {
+  margin: 0 0 .75rem;
+  font-size: .875rem;
+}
+.advanced-navigation a {
+  color: #66717e;
+  text-decoration: none;
+}
+.advanced-navigation a:hover {
+  text-decoration: underline;
+}
+.advanced-navigation a:focus-visible {
+  outline: 2px solid #356fc0;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.dark-mode .advanced-navigation a {
+  color: #b9c3cf;
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+input {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+input[type=checkbox] {
+  margin-top: .5rem;
+  padding: 0;
+}
+input[type=checkbox] + label {
+  margin-left: .5em;
+}
+
+.text-muted {
+  color: #6c755d!important;
+}
+
+#advanced-options {
+  width: 500px;
+  min-width: 500px;
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: min-content auto;
+  align-items: start;
+}
+
+#word-replacements-section {
+  grid-column: 1 / -1;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+#word-replacements-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .5rem;
+}
+
+#word-replacements-section h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+#word-replacements-status {
+  font-size: .875rem;
+  opacity: 0;
+  transition: opacity .3s;
+}
+#word-replacements-status.visible {
+  opacity: 1;
+}
+
+#word-replacements {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: .875rem;
+  resize: vertical;
+  user-select: text;
+}
+.dark-mode #word-replacements {
+  background-color: #323232;
+  border-color: #555;
+  color: #ddd;
+}
+
+#word-replacements-errors {
+  list-style: none;
+  margin: .5rem 0 0;
+  padding: 0;
+  font-size: .875rem;
+  color: #b02a37;
+}
+#word-replacements-errors:empty {
+  display: none;
+}
+.dark-mode #word-replacements-errors {
+  color: #ff8a80;
+}
+
+.word-replacements-heading {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+#word-replacements-header { position: relative; }
+#word-replacements-info {
+  display: flex;
+  padding: .25rem;
+  border: 0;
+  border-radius: .25rem;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+}
+#word-replacements-info .material-icons { font-size: 20px; }
+#word-replacements-info:hover { color: #444; }
+#word-replacements-info:focus-visible {
+  outline: 2px solid #138496;
+  outline-offset: 2px;
+}
+#word-replacements-instructions {
+  position: absolute;
+  top: calc(100% + .375rem);
+  left: 0;
+  z-index: 10;
+  width: min(100%, 500px);
+  padding: .75rem;
+  border: 1px solid #ddd;
+  border-radius: .375rem;
+  background: white;
+  box-shadow: 0 4px 12px #0002;
+  font-size: .875rem;
+  white-space: pre-line;
+  user-select: text;
+}
+.dark-mode #word-replacements-info { color: #aaa; }
+.dark-mode #word-replacements-info:hover { color: #ddd; }
+.dark-mode #word-replacements-instructions {
+  background: #323232;
+  border-color: #555;
+}
+
+#word-replacements-instructions {
+  overflow-wrap: anywhere;
+}
+
+#word-replacements-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: .875rem; }
+#word-replacements-table .match-type { width: 100px; }
+#word-replacements-table .rule-actions { width: 74px; }
+#word-replacements-table th { text-align: left; font-weight: 600; }
+#word-replacements-table th, #word-replacements-table td { padding: 5px 4px; vertical-align: middle; overflow-wrap: anywhere; }
+#word-replacements-table tbody tr:not(.rule-detail) { border-top: 1px solid #ddd; }
+#word-replacements-table input, #word-replacements-table select { box-sizing: border-box; width: 100%; min-width: 0; padding: 5px 3px; color: inherit; background: inherit; border: 1px solid #aaa; border-radius: 4px; }
+#word-replacements-table button { padding: 3px; margin: 0 2px 0 0; vertical-align: top; font-size: .8rem; }
+#word-replacements-table .material-icons { font-size: 18px; }
+.rule-pattern { white-space: pre-wrap; user-select: text; }
+.rule-detail { font-size: .8rem; }
+#rule-error, .rule-invalid { color: #b02a37; }
+#word-replacements-notice { font-size: .875rem; margin-top: .5rem; }
+#word-replacements-notice:empty { display: none; }
+.rule-added { animation: rule-highlight 2s ease-out; }
+@keyframes rule-highlight { from { background: #d7f0e6; } to { background: transparent; } }
+.dark-mode #word-replacements-table tbody tr { border-color: #555; }
+.dark-mode #rule-error, .dark-mode .rule-invalid { color: #ff8a80; }
+@media (prefers-reduced-motion: reduce) { .rule-added { animation: none; } }
+
+/* Compact help and controls for the advanced-options table. */
+#word-replacements-instructions { padding: 16px; white-space: normal; line-height: 1.5; border-radius: 10px; box-shadow: 0 8px 28px #0002; }
+.rule-help-section + .rule-help-section { margin-top: 16px; }
+.rule-help-section h4 { margin: 0 0 5px; font-size: .875rem; font-weight: 650; }
+.rule-help-section p { margin: 0; color: #56616e; }
+.rule-help-examples { display: grid; gap: 8px; }
+.rule-help-example { padding: 10px 12px; border: 1px solid #e1e5e9; border-radius: 7px; background: #f7f9fb; }
+.rule-help-example h5 { margin: 0 0 7px; font-size: .875rem; font-weight: 600; }
+.rule-help-example dl { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 5px 8px; margin: 0; font-size: .8rem; }
+.rule-help-example dt { color: #66717e; font-weight: 400; }
+.rule-help-example dd { margin: 0; }
+.rule-help-example code { padding: 2px 4px; border-radius: 3px; background: #e9eef3; font-family: ui-monospace, monospace; white-space: pre-wrap; }
+.rule-help-example em { color: #66717e; font-style: normal; }
+.rule-help-example p { margin-top: 8px; font-size: .8rem; }
+#word-replacements-table input, #word-replacements-table select { min-height: 30px; border-color: #cbd2d9; background: #fff; border-radius: 5px; font: inherit; font-size: .8rem; }
+#word-replacements-table button, #word-replacements-notice button { min-height: 28px; padding: 3px 6px; border: 1px solid #cbd2d9; border-radius: 5px; background: #f8f9fa; color: #354454; cursor: pointer; }
+#word-replacements-table .existing-action { padding: 3px 4px; border-color: transparent; background: transparent; }
+#word-replacements-table button:hover:not(:disabled), #word-replacements-notice button:hover:not(:disabled) { background: #e9eef3; border-color: #b9c4cf; }
+#word-replacements-table button:disabled { opacity: .4; cursor: default; }
+#word-replacements-table input:focus-visible, #word-replacements-table select:focus-visible, #word-replacements-table button:focus-visible, #word-replacements-notice button:focus-visible { outline: 2px solid #356fc0; outline-offset: 1px; }
+#word-replacements-table input[aria-invalid=true] { border-color: #b02a37; }
+#word-replacements-table .rule-editor .rule-buttons button:first-child { background: #356fc0; border-color: #356fc0; color: white; }
+.dark-mode .rule-help-section p, .dark-mode .rule-help-example dt, .dark-mode .rule-help-example em { color: #b9c3cf; }
+.dark-mode .rule-help-example { background: #292e34; border-color: #4b535d; }
+.dark-mode .rule-help-example code { background: #3a424c; }
+.dark-mode #word-replacements-table input, .dark-mode #word-replacements-table select, .dark-mode #word-replacements-table button, .dark-mode #word-replacements-notice button { background: #32383f; color: #e0e6ed; border-color: #57616c; }
+.dark-mode #word-replacements-table button:hover:not(:disabled), .dark-mode #word-replacements-notice button:hover:not(:disabled) { background: #414b57; }
+
+#word-replacements-table { background: #f8f9fb; }
+#word-replacements-table thead { background: #edf0f4; }
+.dark-mode #word-replacements-table { background: #2b3036; }
+.dark-mode #word-replacements-table thead { background: #23272d; }
+.rule-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+#word-replacements-table .rule-detail:has(#rule-error:empty) { display: none; }

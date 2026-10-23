@@ -54,6 +54,9 @@ function Speech(texts, options) {
 
   function getChunks(text) {
     var punctuator = createPunctuator(options.lang);
+    if (isOfflineVoice(options.voice) && !isUseMyPhone(options.voice)) {
+      return punctuator.getParagraphs(text).flatMap(paragraph => punctuator.getSentences(paragraph));
+    }
     if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
     else if (isPiperVoice(options.voice) || isSupertonicVoice(options.voice) || isNghiTtsVoice(options.voice)) return [text];
     else return new CharBreaker(750, punctuator, 200).breakText(text);
@@ -623,6 +626,17 @@ function EastAsianPunctuator() {
 }
 
 function createWordReplacer(rules) {
+  const regexRules = rules.filter(rule => rule.pattern)
+  const replaceLiteralWords = createLiteralWordReplacer(rules.filter(rule => !rule.pattern))
+  return text => {
+    text = replaceLiteralWords(text)
+    for (const rule of regexRules) text = text.replace(rule.pattern, rule.to)
+    return text
+  }
+}
+
+function createLiteralWordReplacer(rules) {
+  if (!rules.length) return text => text
   const lookup = Object.create(null)
   rules.forEach(rule => lookup[rule.from.toLowerCase()] = rule.to)
 
