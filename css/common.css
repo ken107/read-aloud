@@ -3,25 +3,14 @@ body {
   font-size: 20px;
 }
 
-@font-face {
-  font-family: 'Material Icons';
-  font-style: normal;
-  font-weight: 400;
-  src: url(material-icons.woff2) format('woff2');
-}
 .material-icons {
-  font-family: 'Material Icons';
-  font-weight: normal;
-  font-style: normal;
   display: inline-block;
-  line-height: 1;
-  text-transform: none;
-  letter-spacing: normal;
-  word-wrap: normal;
-  white-space: nowrap;
-  direction: ltr;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  line-height: 0;
+}
+.material-icons svg {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
 }
 
 .dark-mode {
