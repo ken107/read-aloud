@@ -57,7 +57,7 @@ async function setupDarkMode() {
   if (typeof brapi.commands != "undefined" && typeof window != "undefined") {
     const [{darkMode}] = await Promise.all([
       getSettings(["darkMode"]),
-      new Promise(f => document.addEventListener("DOMContentLoaded", f))
+      domReady()
     ])
     if (typeof darkMode == "boolean") {
       document.body.classList.toggle("dark-mode", darkMode)
@@ -564,7 +564,8 @@ function polyfills() {
  */
 function domReady() {
   return new Promise(function(fulfill) {
-    $(fulfill);
+    if (document.readyState != "loading") fulfill();
+    else document.addEventListener("DOMContentLoaded", fulfill, {once: true});
   })
 }
 

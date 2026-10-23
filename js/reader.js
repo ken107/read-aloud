@@ -93,7 +93,7 @@ var readAloudReader = readAloudReader || immediate(() => {
           ${button("pause", "reader_pause", "ra-primary")}
           ${button("stop", "reader_stop")}
           ${button("forward", "reader_forward")}
-          <span class="ra-status"></span>
+          <span class="ra-status" hidden><span class="ra-voice"></span><span class="ra-progress"></span></span>
           <span class="ra-sep"></span>
           <button type="button" class="ra-text-button" data-action="display" title="${escapeHtml(message("reader_display_settings"))}" aria-label="${escapeHtml(message("reader_display_settings"))}">Aa</button>
           ${button("settings", "reader_settings")}
@@ -115,6 +115,8 @@ var readAloudReader = readAloudReader || immediate(() => {
       menu: $(".ra-menu"),
       loading: $(".ra-loading"),
       status: $(".ra-status"),
+      voice: $(".ra-voice"),
+      progress: $(".ra-progress"),
       buttons: Object.fromEntries(Array.from(shadow.querySelectorAll(".ra-bar button")).map(b => [b.dataset.action, b])),
     }
     root = els.root
@@ -309,20 +311,25 @@ var readAloudReader = readAloudReader || immediate(() => {
 
   function updateStatus(state, speech) {
     const estimate = playbackEstimate.update(state, speech, performance.now())
-    let text = ""
+    let voice = "", progress = ""
     if (isActive()) {
       const uiLanguage = brapi.i18n.getUILanguage()
-      const voice = speech && speech.voiceName || message("playback_status_preparing_voice")
-      let progress = estimate ? new Intl.NumberFormat(uiLanguage, {style: "percent"}).format(estimate.percent / 100) : ""
+      voice = speech && speech.voiceName || message("playback_status_preparing_voice")
+      progress = estimate ? new Intl.NumberFormat(uiLanguage, {style: "percent"}).format(estimate.percent / 100) : ""
       if (estimate && estimate.seconds != null) {
         progress = estimate.seconds < 60 ? message("playback_status_less_than_minute")
           : message("playback_status_minutes_left", new Intl.NumberFormat(uiLanguage).format(Math.ceil(estimate.seconds / 60)))
       }
       if (state == "LOADING") progress = speech && speech.engine ? message("playback_status_loading_engine", speech.engine) : message("playback_status_loading")
       else if (state == "PAUSED") progress = message("playback_status_paused") + (progress ? ` · ${progress}` : "")
-      text = state == "LOADING" ? progress : [voice, progress].filter(Boolean).join(" · ")
+      if (state == "LOADING") voice = ""
     }
-    if (els.status.textContent != text) els.status.textContent = text
+    const progressText = (voice && progress ? " · " : "") + progress
+    if (els.voice.textContent != voice) els.voice.textContent = voice
+    els.voice.title = voice
+    els.voice.hidden = !voice
+    if (els.progress.textContent != progressText) els.progress.textContent = progressText
+    els.status.hidden = !voice && !progress
   }
 
 
