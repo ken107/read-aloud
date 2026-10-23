@@ -86,7 +86,7 @@
   "background": {
     "scripts": [
       "js/rxjs.umd.min.js",
-      "js/peerjs-1.4.7.min.js",
+      "js/peerjs.min.js",
       "js/defaults.js",
       "js/messaging.js",
       "js/google-translate.js",
