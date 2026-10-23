@@ -239,7 +239,7 @@ function playText(text, opts) {
   opts = opts || {}
   playbackError = null
   if (!activeDoc) {
-    openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/), {lang: opts.lang}), function(err) {
+    openDoc(new SimpleSource(text.split(/(?:\r?\n){2,}/), {lang: opts.lang, voiceName: opts.voiceName}), function(err) {
       if (err) playbackError = err
     })
   }

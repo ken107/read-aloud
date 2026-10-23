@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Favorite Voices</title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/common.css">
+  <style>
+  .container {
+    max-width: 800px;
+    padding-bottom: 15px;
+  }
+  h2 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+  }
+  h5 {
+    margin-top: 20px;
+  }
+  .voice-group {
+    list-style: none;
+    margin: 0;
+    padding: .3em 0;
+    background-color: #f6f6f6;
+    border: 1px solid #c5c5c5;
+    border-radius: 5px;
+  }
+  .voice-group li {
+    display: flex;
+    align-items: center;
+    padding: .1em .8em;
+  }
+  .voice-group .voice-name {
+    flex: 1;
+  }
+  .star {
+    border: none;
+    background: none;
+    padding: 0 .4em 0 0;
+    font-size: 1.2em;
+    line-height: 1;
+    color: #aaa;
+    cursor: pointer;
+  }
+  .star[aria-pressed=true] {
+    color: #f5b301;
+  }
+  .sample {
+    margin-left: 1em;
+    font-size: .8em;
+  }
+  #status {
+    color: red;
+  }
+  .dark-mode .voice-group {
+    background-color: #333;
+    border: none;
+    box-shadow: 1px 1px black;
+    color: #ddd;
+  }
+  .dark-mode .close {
+    color: white;
+  }
+  </style>
+
+  <script src="js/rxjs.umd.min.js"></script>
+  <script src="js/jquery-3.7.1.min.js"></script>
+  <script src="js/aws-sdk.js"></script>
+  <script src="js/defaults.js"></script>
+  <script src="js/messaging.js"></script>
+  <script src="js/tts-engines.js"></script>
+  <script src="js/lang-list.js"></script>
+  <script src="js/favorite-voices.js"></script>
+</head>
+<body>
+  <div class="container">
+    <button type="button" class="close" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <h2 data-i18n="favorites_heading"></h2>
+    <p>
+      <span data-i18n="favorites_description"></span>
+      <a href="languages.html" data-i18n="favorites_change_languages"></a>
+    </p>
+    <p id="status" hidden></p>
+    <div id="voice-groups"></div>
+  </div>
+</body>
+</html>
