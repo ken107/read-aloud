@@ -3,6 +3,7 @@ function SimpleSource(texts, opts) {
   opts = opts || {}
   this.ready = Promise.resolve({
     lang: opts.lang,
+    voiceName: opts.voiceName,
   })
   this.isWaiting = function() {
     return false;
@@ -312,6 +313,8 @@ function Doc(source, onEnd) {
 
   async function getSpeech(texts) {
     const settings = await getSettings()
+    //the source may request a specific voice, e.g. to play a voice sample
+    if (info.voiceName) settings.voiceName = info.voiceName
     settings.rate = await getSetting("rate" + (settings.voiceName || ""))
     var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
     console.log("Declared", info.lang, "- Detected", info.detectedLang, "- Chosen", lang)
