@@ -52,6 +52,10 @@ var readAloudReaderCss = `
   background: var(--bg);
   outline: none;
 }
+.ra-root.minimized {
+  /* "all: initial" resets the host's pointer-events: none; let the page receive input around the control bar */
+  pointer-events: none;
+}
 .ra-root.minimized .ra-scroller {
   display: none;
 }
