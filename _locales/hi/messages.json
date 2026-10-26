@@ -41,6 +41,9 @@
   "options_enable_supertonic_voices": {
     "message": "Supertonic आवाज़ें इंस्टॉल करें..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "Pocket TTS आवाज़ें इंस्टॉल करें..."
+  },
   "options_rate_label": {
     "message": "गति"
   },

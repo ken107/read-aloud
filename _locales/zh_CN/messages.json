@@ -41,6 +41,9 @@
   "options_enable_supertonic_voices": {
     "message": "安装Supertonic语音..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "安装Pocket TTS语音..."
+  },
   "options_rate_label": {
     "message": "朗读速度"
   },

@@ -35,6 +35,7 @@ function Speech(texts, options) {
   function pickEngine() {
     if (isPiperVoice(options.voice)) return piperTtsEngine;
     if (isSupertonicVoice(options.voice)) return supertonicTtsEngine;
+    if (isPocketTtsVoice(options.voice)) return pocketTtsEngine;
     if (isNghiTtsVoice(options.voice)) return nghiTtsEngine;
     if (isAzure(options.voice)) return azureTtsEngine;
     if (isOpenai(options.voice)) return openaiTtsEngine;
@@ -73,7 +74,7 @@ function Speech(texts, options) {
       // Translate's jQ1olc RPC returns no audio above 200 characters in our
       // ASCII boundary probe (2026-10-10); see docs/tts-limit-verification.md.
       if (isGoogleTranslate(options.voice)) return new CharBreaker(200, punctuator).breakText(text);
-      else if (isPiperVoice(options.voice) || isSupertonicVoice(options.voice) || isNghiTtsVoice(options.voice)) return [text];
+      else if (isPiperVoice(options.voice) || isSupertonicVoice(options.voice) || isPocketTtsVoice(options.voice) || isNghiTtsVoice(options.voice)) return [text];
       // Prefer 750-character synthesis chunks; combine small paragraphs up to
       // 200 characters to reduce request overhead while retaining boundaries.
       else return new CharBreaker(750, punctuator, 200).breakText(text);
@@ -105,6 +106,7 @@ function Speech(texts, options) {
         switch (engine) {
           case piperTtsEngine: return 'Piper'
           case supertonicTtsEngine: return 'Supertonic'
+          case pocketTtsEngine: return 'PocketTTS'
           case nghiTtsEngine: return 'NghiTTS'
         }
       })

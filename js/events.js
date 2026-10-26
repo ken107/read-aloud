@@ -37,6 +37,7 @@ var handlers = {
   authWavenet: authWavenet,
   managePiperVoices,
   manageSupertonicVoices,
+  managePocketTtsVoices,
   manageNghiTtsVoices,
   activateReader,
   openPopupWindow,
@@ -442,6 +443,15 @@ async function manageSupertonicVoices() {
   }
 }
 
+async function managePocketTtsVoices() {
+  const result = await sendToPlayer({method: "managePocketTtsVoices"}).catch(err => false)
+  if (result != "OK") {
+    if (result == "POPOUT") await sendToPlayer({method: "close"})
+    await injectPlayer()
+    await sendToPlayer({method: "managePocketTtsVoices"})
+  }
+}
+
 async function manageNghiTtsVoices() {
   const result = await sendToPlayer({method: "manageNghiTtsVoices"}).catch(err => false)
   if (result != "OK") {
@@ -503,12 +513,13 @@ function injectPlayer(tab) {
 }
 
 async function createPlayer(tab) {
-  const settings = await getSettings(["useEmbeddedPlayer", "piperVoices", "supertonicVoices", "nghiTtsVoices"])
+  const settings = await getSettings(["useEmbeddedPlayer", "piperVoices", "supertonicVoices", "pocketTtsVoices", "nghiTtsVoices"])
   const promise = new Promise(f => handlers.playerCheckIn = f)
   if (tab && settings.useEmbeddedPlayer
     //don't use embedded player if there are hosted tool voices installed
     && (settings.piperVoices || []).length == 0
     && (settings.supertonicVoices || []).length == 0
+    && (settings.pocketTtsVoices || []).length == 0
     && (settings.nghiTtsVoices || []).length == 0
   ) {
     try {

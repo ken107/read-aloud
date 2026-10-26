@@ -41,6 +41,9 @@
   "options_enable_supertonic_voices": {
     "message": "Asenna Supertonic-äänet..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "Asenna Pocket-TTS-äänet..."
+  },
   "options_rate_label": {
     "message": "Nopeus"
   },

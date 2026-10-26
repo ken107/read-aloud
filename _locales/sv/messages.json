@@ -41,6 +41,9 @@
   "options_enable_supertonic_voices": {
     "message": "Installera Supertonic-röster..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "Installera Pocket-TTS-röster..."
+  },
   "options_rate_label": {
     "message": "Hastighet"
   },

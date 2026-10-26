@@ -76,6 +76,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ Install Supertonic voices..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "⚡ Install Pocket TTS voices..."
+  },
   "options_enable_natural_voices": {
     "message": "Enable Google Natural voices..."
   },
