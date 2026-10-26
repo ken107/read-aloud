@@ -140,6 +140,12 @@ var readAloudReaderCss = `
   font-size: 15px;
   color: var(--byline);
 }
+.ra-chunk, .ra-chunk mark {
+  /* vertical padding on inline boxes extends the highlight into the line gap without moving text */
+  padding: 0.14em 0;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
 .ra-chunk {
   border-radius: 3px;
   transition: background-color 150ms ease-out;
