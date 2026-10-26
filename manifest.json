@@ -28,7 +28,8 @@
     "menus",
     "identity",
     "storage",
-    "https://translate.google.com/"
+    "https://translate.google.com/",
+    "https://*.ttstool.com/*"
   ],
   "optional_permissions": [
     "webRequest",
