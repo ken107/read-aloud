@@ -15,6 +15,7 @@ async function openPopup(state, queryString) {
   const context = vm.createContext({
     getQueryString: () => queryString,
     createPlaybackEstimate: () => ({}),
+    maintainPlaybackWakeLock() {},
     $(selector) {
       if (typeof selector === 'function') { ready = selector; return }
       const chain = {

@@ -3,6 +3,8 @@ var queryString = getQueryString()
 
 const playbackEstimate = createPlaybackEstimate()
 
+maintainPlaybackWakeLock(async () => await bgPageInvoke("getPlaybackState") == "PLAYING")
+
 $(function() {
   if (queryString.isPopup) $("body").addClass("is-popup")
   else getCurrentTab().then(function(currentTab) {return updateSettings({readAloudTab: currentTab.id})})
