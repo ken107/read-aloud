@@ -57,6 +57,31 @@ const supertonicDispatcher = makeDispatcher("supertonic-host", {
 })
 
 
+const pocketTtsSubject = new rxjs.Subject()
+const pocketTts$ = rxjs.defer(() => {
+  createPocketTtsFrame()
+  return pocketTtsSubject
+}).pipe(
+  rxjs.shareReplay({bufferSize: 1, refCount: false}),
+  rxjs.tap(raisePocketTtsFrame)
+)
+const pocketTtsCallbacks = new rxjs.Subject()
+const pocketTtsDispatcher = makeDispatcher("pocket-host", {
+  advertiseVoices({voices}, sender) {
+    updateSettings({pocketTtsVoices: voices})
+    pocketTtsSubject.next(sender)
+  },
+  onStart: args => pocketTtsCallbacks.next({type: "start", ...args}),
+  onSentence: args => pocketTtsCallbacks.next({type: "sentence", ...args}),
+  onParagraph: args => pocketTtsCallbacks.next({type: "paragraph", ...args}),
+  onEnd: args => pocketTtsCallbacks.next({type: "end", ...args}),
+  onError: args => pocketTtsCallbacks.next({type: "error", ...args}),
+  audioPlay: args => audioPlayer.play(args.src, args.rate, args.volume),
+  audioPause: () => audioPlayer.pause(),
+  audioResume: () => audioPlayer.resume(),
+})
+
+
 const nghiTtsSubject = new rxjs.Subject()
 const nghiTtsObservable = rxjs.defer(() => {
   createNghiTtsFrame()
@@ -143,6 +168,14 @@ window.addEventListener("message", event => {
     }
   }, send)
 
+  pocketTtsDispatcher.dispatch(event.data, {
+    sendRequest(method, args) {
+      const id = String(Math.random())
+      send({from: "pocket-host", to: "pocket-service", type: "request", id, method, args})
+      return pocketTtsDispatcher.waitForResponse(id)
+    }
+  }, send)
+
   nghiTtsDispatcher.dispatch(event.data, {
     sendRequest(method, args) {
       const id = String(Math.random())
@@ -168,12 +201,13 @@ if (queryString.has("autoclose")) {
     idleSubject,
     piperSubject.pipe(rxjs.startWith(null)),
     supertonicSubject.pipe(rxjs.startWith(null)),
+    pocketTtsSubject.pipe(rxjs.startWith(null)),
     nghiTtsSubject.pipe(rxjs.startWith(null))
   ).pipe(
-    rxjs.switchMap(([isIdle, piper, supertonic, nghiTts]) =>
+    rxjs.switchMap(([isIdle, piper, supertonic, pocketTts, nghiTts]) =>
       rxjs.iif(
         () => isIdle,
-        rxjs.timer(queryString.get("autoclose") == "long" || piper || supertonic || nghiTts ? 15*60*1000 : 5*60*1000),
+        rxjs.timer(queryString.get("autoclose") == "long" || piper || supertonic || pocketTts || nghiTts ? 15*60*1000 : 5*60*1000),
         rxjs.EMPTY
       )
     )
@@ -197,6 +231,7 @@ var messageHandlers = {
   isPaired: () => phoneTtsEngine.isPaired(),
   managePiperVoices,
   manageSupertonicVoices,
+  managePocketTtsVoices,
   manageNghiTtsVoices,
   getLastUrl: () => lastUrlPromise,
 }
@@ -572,6 +607,41 @@ function createSupertonicFrame() {
 function raiseSupertonicFrame() {
   const maxZ = $('iframe').get().reduce((max, f) => Math.max(max, Number(f.style.zIndex) || 0), 0)
   $('#supertonic-frame').css('z-index', maxZ + 1)
+}
+
+function managePocketTtsVoices() {
+  if (isEmbedded) {
+    return "POPOUT"
+  } else {
+    rxjs.firstValueFrom(pocketTts$)
+      .catch(console.error)
+    brapi.tabs.getCurrent()
+      .then(tab => Promise.all([
+        brapi.windows.update(tab.windowId, {focused: true}),
+        brapi.tabs.update(tab.id, {active: true})
+      ]))
+      .catch(console.error)
+    return "OK"
+  }
+}
+
+function createPocketTtsFrame() {
+  const f = document.createElement("iframe")
+  f.id = "pockettts-frame"
+  f.src = "https://pocket.ttstool.com/"
+  f.allow = "cross-origin-isolated"
+  f.style.position = "absolute"
+  f.style.left =
+  f.style.top = "0"
+  f.style.width =
+  f.style.height = "100%"
+  f.style.borderWidth = "0"
+  document.body.appendChild(f)
+}
+
+function raisePocketTtsFrame() {
+  const maxZ = $('iframe').get().reduce((max, f) => Math.max(max, Number(f.style.zIndex) || 0), 0)
+  $('#pockettts-frame').css('z-index', maxZ + 1)
 }
 
 function manageNghiTtsVoices() {

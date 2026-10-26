@@ -52,7 +52,7 @@ Promise.all([getSettings(), domReady()]).then(([settings]) => {
   }
   function button(key, action, icon) {
     const result = $("<button type='button'>").attr({title: message(key), "aria-label": message(key)}).on("click", action)
-    return icon ? result.append($("<span class='material-icons' aria-hidden='true'>").text(icon)) : result.text(message(key))
+    return icon ? result.append($("<span class='material-icons' aria-hidden='true'>").html(`<svg><use href="img/icons.svg#${icon}"/></svg>`)) : result.text(message(key))
   }
   function showNotice() {
     notice.empty()

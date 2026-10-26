@@ -41,6 +41,9 @@
   "options_enable_supertonic_voices": {
     "message": "Installér Supertonic-stemmer..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "Installér Pocket-TTS-stemmer..."
+  },
   "options_rate_label": {
     "message": "Hastighed"
   },

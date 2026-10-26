@@ -41,6 +41,9 @@
   "options_enable_supertonic_voices": {
     "message": "Насб кардани овозҳои Supertonic..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "Насб кардани овозҳои Pocket TTS..."
+  },
   "options_rate_label": {
     "message": "Суръат"
   },

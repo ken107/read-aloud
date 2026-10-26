@@ -14,6 +14,7 @@ test('constructing engines and listing voices does not stop speech; first speak 
     }},
     isPiperVoice: () => false,
     isSupertonicVoice: () => false,
+    isPocketTtsVoice: () => false,
   })
   const source = fs.readFileSync('js/tts-engines.js', 'utf8')
   vm.runInContext(source.slice(source.indexOf('function BrowserTtsEngine()'), source.indexOf('function WebSpeechEngine()')), context)

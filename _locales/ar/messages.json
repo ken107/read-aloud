@@ -41,6 +41,9 @@
   "options_enable_supertonic_voices": {
     "message": "تثبيت أصوات Supertonic..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "تثبيت أصوات Pocket TTS..."
+  },
   "options_rate_label": {
     "message": "السرعة"
   },

@@ -41,6 +41,9 @@
   "options_enable_supertonic_voices": {
     "message": "ติดตั้งเสียง Supertonic..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "ติดตั้งเสียง Pocket TTS..."
+  },
   "options_rate_label": {
     "message": "ความเร็ว"
   },

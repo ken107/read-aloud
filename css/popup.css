@@ -38,6 +38,9 @@ body.is-stopped #buttons {
   padding: 3px;
   text-shadow: 1px 1px white;
 }
+.button-1 svg {
+  filter: drop-shadow(1px 1px 0 white);
+}
 .button-1:active {
   border: 2px inset;
 }

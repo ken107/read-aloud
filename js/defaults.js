@@ -159,6 +159,7 @@ const voices$ = rxjs.combineLatest({
   azureCreds: observeSetting("azureCreds"),
   piperVoices: observeSetting("piperVoices"),
   supertonicVoices: observeSetting("supertonicVoices"),
+  pocketTtsVoices: observeSetting("pocketTtsVoices"),
   nghiTtsVoices: observeSetting("nghiTtsVoices"),
   ttsVoicesChanged: brapi.tts?.onVoicesChanged
     ? rxjs.fromEventPattern(h => brapi.tts.onVoicesChanged.addListener(h), h => brapi.tts.onVoicesChanged.removeListener(h))
@@ -170,6 +171,7 @@ const voices$ = rxjs.combineLatest({
     googleTranslateTtsEngine.getVoices(),
     phoneTtsEngine.getVoices(),
     settings.supertonicVoices || [],
+    settings.pocketTtsVoices || [],
     settings.piperVoices || [],
     settings.nghiTtsVoices || [],
     settings.openaiCreds ? openaiTtsEngine.getVoices() : [],
@@ -275,6 +277,10 @@ function isPiperVoice(voice) {
 
 function isSupertonicVoice(voice) {
   return /^Supertonic /.test(voice.voiceName)
+}
+
+function isPocketTtsVoice(voice) {
+  return /^PocketTTS /.test(voice.voiceName)
 }
 
 function isNghiTtsVoice(voice) {
