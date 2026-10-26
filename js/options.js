@@ -80,6 +80,7 @@
           var voiceName = $(this).val();
           if (voiceName == "@custom") brapi.tabs.create({url: "custom-voices.html"});
           else if (voiceName == "@languages") brapi.tabs.create({url: "languages.html"});
+          else if (voiceName == "@favorites") brapi.tabs.create({url: "favorite-voices.html"});
           else if (voiceName == "@natural") brapi.tabs.create({url: "natural-voices.html"});
           else if (voiceName == "@premium") brapi.tabs.create({url: "premium-voices.html"});
           else if (voiceName == "@piper") bgPageInvoke("managePiperVoices").catch(console.error)
@@ -97,10 +98,11 @@
   const voicesPopulatedObservable = rxjs.combineLatest([
     voices$,
     observeSetting("languages"),
+    observeSetting("favoriteVoices"),
     brapi.i18n.getAcceptLanguages().catch(err => {console.error(err); return []}),
     domReadyPromise
   ]).pipe(
-      rxjs.tap(([voices, languages, acceptLangs]) => populateVoices(voices, {languages}, acceptLangs)),
+      rxjs.tap(([voices, languages, favoriteVoices, acceptLangs]) => populateVoices(voices, {languages, favoriteVoices}, acceptLangs)),
       rxjs.share()
     )
 
@@ -366,7 +368,24 @@
       }))
     for (var name in groups) groups[name].sort(voiceSorter);
 
+    //create the favorites optgroup, listing favorites regardless of selected languages
+    const favorites = $("<optgroup>")
+      .attr("label", brapi.i18n.getMessage("options_voicegroup_favorites"))
+      .appendTo($("#voices"))
+    for (const voiceName of settings.favoriteVoices || []) {
+      if (!findVoiceByName(allVoices, voiceName)) continue
+      $("<option>")
+        .val(voiceName)
+        .text(voiceName)
+        .appendTo(favorites)
+    }
+    $("<option>")
+      .val("@favorites")
+      .text(brapi.i18n.getMessage("options_manage_favorites"))
+      .appendTo(favorites)
+
     //create the offline optgroup
+    $("<optgroup>").appendTo($("#voices"))
     const offline = $("<optgroup>")
       .attr("label", brapi.i18n.getMessage("options_voicegroup_offline"))
       .appendTo($("#voices"))

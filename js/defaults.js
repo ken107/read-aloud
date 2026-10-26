@@ -110,7 +110,7 @@ const settingsChange$ = rxjs.fromEventPattern(
 
 function getSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "wordReplacements", "darkMode"], fulfill);
+    brapi.storage.local.get(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "favoriteVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "wordReplacements", "darkMode"], fulfill);
   });
 }
 
@@ -122,7 +122,7 @@ function updateSettings(items) {
 
 function clearSettings(names) {
   return new Promise(function(fulfill) {
-    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "preferredVoices", "useEmbeddedPlayer", "fixBtSilenceGap", "wordReplacements", "darkMode"], fulfill);
+    brapi.storage.local.remove(names || ["voiceName", "rate", "pitch", "volume", "showHighlighting", "languages", "highlightFontSize", "highlightWindowSize", "useEmbeddedPlayer", "fixBtSilenceGap", "wordReplacements", "darkMode"], fulfill);
   });
 }
 
@@ -319,11 +319,12 @@ async function getSpeechVoice(voiceName, lang) {
   var voice;
   //if a specific voice is indicated
   if (voiceName) voice = findVoiceByName(voices, voiceName);
-  //if no specific voice indicated, but a preferred voice was configured for the language
+  //if no specific voice indicated, prefer a favorite voice for the language
   if (!voice && lang) {
-    const preferredVoiceByLang = (await getSetting("preferredVoices")) || {}
-    voiceName = preferredVoiceByLang[parseLang(lang).lang]
-    if (voiceName) voice = findVoiceByName(voices, voiceName);
+    const favoriteVoices = ((await getSetting("favoriteVoices")) || [])
+      .map(name => findVoiceByName(voices, name))
+      .filter(voice => voice)
+    voice = findVoiceByLang(favoriteVoices, lang, {preferFemale: false})
   }
   //otherwise, auto-select in order: Google Natural, offline, native, free, any
   if (!voice && lang) {
@@ -344,12 +345,27 @@ async function getSpeechVoice(voiceName, lang) {
   return voice;
 }
 
+async function toggleFavoriteVoice(voiceName, favorite) {
+  const favoriteVoices = (await getSetting("favoriteVoices") || []).filter(name => name != voiceName)
+  if (favorite) favoriteVoices.push(voiceName)
+  await updateSetting("favoriteVoices", favoriteVoices)
+}
+
+//preferred voices by language were replaced by favorite voices
+async function migratePreferredVoices() {
+  const {preferredVoices, favoriteVoices} = await brapi.storage.local.get(["preferredVoices", "favoriteVoices"])
+  if (!preferredVoices) return
+  const names = Object.values(preferredVoices).filter(name => name)
+  await brapi.storage.local.set({favoriteVoices: [...new Set([...(favoriteVoices || []), ...names])]})
+  await brapi.storage.local.remove("preferredVoices")
+}
+
 function findVoiceByName(voices, name) {
   for (var i=0; i<voices.length; i++) if (voices[i].voiceName == name) return voices[i];
   return null;
 }
 
-function findVoiceByLang(voices, lang) {
+function findVoiceByLang(voices, lang, {preferFemale = true} = {}) {
   var speechLang = parseLang(lang);
   var match = {};
   voices.forEach(function(voice) {
@@ -360,7 +376,7 @@ function findVoiceByLang(voices, lang) {
           //language matches
           if (voiceLang.rest == speechLang.rest) {
             //dialect matches, prefer female
-            if (voice.gender == "female") match.first = match.first || voice;
+            if (voice.gender == "female" || !preferFemale) match.first = match.first || voice;
             else match.second = match.second || voice;
           }
           else if (!voiceLang.rest) {

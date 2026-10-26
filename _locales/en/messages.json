@@ -49,6 +49,12 @@
   "options_voice_label": {
     "message": "Voice"
   },
+  "options_voicegroup_favorites": {
+    "message": "Favorite Voices"
+  },
+  "options_manage_favorites": {
+    "message": "⭐ Manage favorites..."
+  },
   "options_voicegroup_offline": {
     "message": "Offline Voices"
   },
@@ -328,6 +334,33 @@
   },
   "languages_heading": {
     "message": "Language Options"
+  },
+  "favorites_heading": {
+    "message": "Favorite Voices"
+  },
+  "favorites_description": {
+    "message": "Star the voices you like. They are listed first in the voice list, and Auto select uses them before any other voice for their language."
+  },
+  "favorites_change_languages": {
+    "message": "Select languages"
+  },
+  "favorites_multilingual": {
+    "message": "Multilingual"
+  },
+  "favorites_no_voices": {
+    "message": "No voices are available for the selected languages."
+  },
+  "favorites_add": {
+    "message": "Add to favorites"
+  },
+  "favorites_remove": {
+    "message": "Remove from favorites"
+  },
+  "favorites_sample": {
+    "message": "sample"
+  },
+  "favorites_stop": {
+    "message": "stop"
   },
   "languages_back_button": {
     "message": "Back to Options"

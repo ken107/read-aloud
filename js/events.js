@@ -3,6 +3,7 @@ brapi.runtime.onInstalled.addListener(function() {
   installContentScripts()
   installContextMenus()
   syncActionPopup().catch(console.error)
+  migratePreferredVoices().catch(console.error)
 })
 
 brapi.runtime.onStartup.addListener(function() {
