@@ -1094,7 +1094,15 @@ function OpenaiTtsEngine() {
   }
   this.speak = function(utterance, options, playbackState$) {
     const urlPromise = getAudioUrl(utterance, options)
-    return playAudio(urlPromise, options, playbackState$)
+    return rxjs.from(urlPromise).pipe(
+      rxjs.switchMap(url => url != null
+        ? playAudio(Promise.resolve(url), options, playbackState$)
+        : playbackState$.pipe(
+            rxjs.filter(state => state == "resumed"),
+            rxjs.take(1),
+            rxjs.concatMap(() => rxjs.of({type: "start"}, {type: "end"}))
+          ))
+    )
   }
   this.prefetch = function(utterance, options) {
     getAudioUrl(utterance, options)
@@ -1136,10 +1144,39 @@ function OpenaiTtsEngine() {
           })
         })
         if (!res.ok) throw await res.json().then(x => x.error)
-        return URL.createObjectURL(await res.blob())
+        const audio = await res.blob()
+        return await isEmptyAudio(audio) ? null : URL.createObjectURL(audio)
       },
-      blobUrl => URL.revokeObjectURL(blobUrl)
+      blobUrl => { if (blobUrl != null) URL.revokeObjectURL(blobUrl) }
     )
+  }
+  async function isEmptyAudio(blob) {
+    if (blob.size == 0) return true
+    // Inspect WAV chunks, not a fixed header size: metadata chunks are optional.
+    // Leave malformed/unknown formats to the decoder so real errors stay visible.
+    const data = new DataView(await blob.arrayBuffer())
+    const tag = offset => data.getUint32(offset, false)
+    if (data.byteLength < 12 || tag(0) != 0x52494646 || tag(8) != 0x57415645) return false
+    let hasFormat = false
+    for (let offset = 12; offset + 8 <= data.byteLength;) {
+      const size = data.getUint32(offset + 4, true)
+      const start = offset + 8
+      if (tag(offset) == 0x64617461) {
+        // Streaming servers may use 0xFFFFFFFF until the stream ends.
+        return hasFormat && (size == 0 || size == 0xFFFFFFFF && start == data.byteLength)
+      }
+      if (start + size > data.byteLength) return false
+      if (tag(offset) == 0x666d7420 && size >= 16) {
+        const format = data.getUint16(start, true)
+        hasFormat = (format == 1 || format == 3 || format == 0xFFFE && size >= 40)
+          && data.getUint16(start + 2, true) > 0 // channels
+          && data.getUint32(start + 4, true) > 0 // sample rate
+          && data.getUint16(start + 12, true) > 0 // block alignment
+          && data.getUint16(start + 14, true) > 0 // bits per sample
+      }
+      offset = start + size + (size % 2)
+    }
+    return false
   }
 }
 
