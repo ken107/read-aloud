@@ -1,6 +1,7 @@
 
 var activeDoc;
 var playbackError = null;
+var playbackCompleted = false;
 var silenceLoop = new Audio("sound/silence.opus");
 silenceLoop.loop = true;
 const pdfViewerCheckIn$ = new rxjs.Subject()
@@ -540,6 +541,7 @@ async function startTab(task) {
 }
 
 function stop() {
+  playbackCompleted = false
   cancelStartup()
   closeDoc()
   return Promise.resolve()
@@ -570,6 +572,7 @@ async function getReaderState() {
     playingTabId: pendingStart ? pendingStart.tabId : owner,
     speechInfo: pendingStart ? null : speech && speech.getInfo(),
     playbackError: playbackError && errorToJson(playbackError),
+    playbackCompleted: state == "STOPPED" && playbackCompleted,
   }
 }
 
@@ -590,8 +593,10 @@ function getActiveSpeech() {
 }
 
 function openDoc(source, onEnd) {
+  playbackCompleted = false
   const doc = new Doc(source, function(err) {
     if (activeDoc !== doc) return
+    playbackCompleted = !err
     handleError(err)
     closeDoc()
     if (typeof onEnd == "function") onEnd(err)
