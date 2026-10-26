@@ -49,13 +49,15 @@ var readAloudDoc = new function() {
 
       //trim the head and the tail
       var head, tail;
-      for (var i=3; i<texts.length && !head; i++) {
-        var dist = getGaussian(texts, 0, i);
-        if (texts[i].length > dist.mean + 2*dist.stdev) head = i;
+      var dist = new Gaussian();
+      for (var i=0; i<texts.length && !head; i++) {
+        if (i >= 3 && dist.isOutlier(texts[i].length)) head = i;
+        else dist.add(texts[i].length);
       }
-      for (var i=texts.length-4; i>=0 && !tail; i--) {
-        var dist = getGaussian(texts, i+1, texts.length);
-        if (texts[i].length > dist.mean + 2*dist.stdev) tail = i+1;
+      dist = new Gaussian();
+      for (var i=texts.length-1; i>=0 && !tail; i--) {
+        if (i < texts.length-3 && dist.isOutlier(texts[i].length)) tail = i+1;
+        else dist.add(texts[i].length);
       }
       if (head||tail) {
         textBlocks = textBlocks.slice(head||0, tail);
@@ -126,15 +128,18 @@ var readAloudDoc = new function() {
     })
   }
 
-  function getGaussian(texts, start, end) {
-    if (start == undefined) start = 0;
-    if (end == undefined) end = texts.length;
-    var sum = 0;
-    for (var i=start; i<end; i++) sum += texts[i].length;
-    var mean = sum / (end-start);
-    var variance = 0;
-    for (var i=start; i<end; i++) variance += (texts[i].length-mean)*(texts[i].length-mean);
-    return {mean: mean, stdev: Math.sqrt(variance)};
+  function Gaussian() {
+    var count = 0, mean = 0, squaredDeviations = 0;
+    this.add = function(value) {
+      // Welford's update avoids rescanning chunks and subtracting large squares.
+      var delta = value - mean;
+      mean += delta / ++count;
+      squaredDeviations += delta * (value - mean);
+    };
+    this.isOutlier = function(value) {
+      // Preserve the original threshold: deviations are summed, not averaged.
+      return value > mean + 2*Math.sqrt(squaredDeviations);
+    };
   }
 
   function getTexts(elem) {
