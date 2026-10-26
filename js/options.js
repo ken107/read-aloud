@@ -102,6 +102,7 @@ Promise.all([
       else if (voiceName == "@languages") createTabAndClosePopup("languages.html")
       else if (voiceName == "@piper") bgPageInvoke("managePiperVoices")
       else if (voiceName == "@supertonic") bgPageInvoke("manageSupertonicVoices")
+      else if (voiceName == "@pockettts") bgPageInvoke("managePocketTtsVoices")
       else if (voiceName == "@nghitts") bgPageInvoke("manageNghiTtsVoices")
       else saveSettings({voiceName: voiceName});
     });
@@ -234,6 +235,7 @@ function populateVoices(allVoices, settings, acceptLangs) {
       return !voice.lang || selectedLangs.includes(parseLocaleCode(voice.lang).language)
           || isPiperVoice(voice)
           || isSupertonicVoice(voice)
+          || isPocketTtsVoice(voice)
           || isNghiTtsVoice(voice)
           || isOpenai(voice)
     });
@@ -248,7 +250,7 @@ function populateVoices(allVoices, settings, acceptLangs) {
     },
     voices.groupBy(function(voice) {
       if (isGoogleWavenet(voice)) return "googlecloud"
-      if (isPiperVoice(voice) || isSupertonicVoice(voice) || isNghiTtsVoice(voice)) return "experimental"
+      if (isPiperVoice(voice) || isSupertonicVoice(voice) || isPocketTtsVoice(voice) || isNghiTtsVoice(voice)) return "experimental"
       if (isOfflineVoice(voice)) return "offline"
       if (isPremiumVoice(voice)) return "premium";
       else return "standard";
@@ -285,6 +287,13 @@ function populateVoices(allVoices, settings, acceptLangs) {
     .val("@supertonic")
     .text(brapi.i18n.getMessage("options_enable_supertonic_voices"))
     .appendTo(experimental)
+
+  if (!selectedLangs || selectedLangs.includes('en')) {
+    $("<option>")
+      .val("@pockettts")
+      .text(brapi.i18n.getMessage("options_enable_pockettts_voices") || "Install Pocket TTS voices...")
+      .appendTo(experimental)
+  }
 
   if (!selectedLangs || selectedLangs.includes('vi')) {
     $("<option>")

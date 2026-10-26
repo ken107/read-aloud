@@ -50,6 +50,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ Nainstalovat hlasy Supertonic..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "⚡ Nainstalovat hlasy Pocket TTS..."
+  },
   "options_rate_label": {
     "message": "Rychlost"
   },

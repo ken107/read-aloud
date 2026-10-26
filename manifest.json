@@ -65,6 +65,17 @@
       ]
     },
     {
+      "matches": [
+        "https://pocket.ttstool.com/"
+      ],
+      "run_at": "document_start",
+      "js": [
+        "js/rxjs.umd.min.js",
+        "js/messaging.js",
+        "js/pockettts.js"
+      ]
+    },
+    {
       "matches": ["https://nghitts.ttstool.com/*"],
       "run_at": "document_start",
       "js": [

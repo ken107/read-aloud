@@ -50,6 +50,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ Gestionar Voces Supertonic"
   },
+  "options_enable_pockettts_voices": {
+    "message": "⚡ Gestionar Voces Pocket TTS"
+  },
   "options_rate_label": {
     "message": "Velocidad"
   },

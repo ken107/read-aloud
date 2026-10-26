@@ -152,6 +152,62 @@ const supertonicHost = immediate(() => {
 })
 
 
+/**
+ * Pocket TTS
+ */
+const pocketTtsHost = immediate(() => {
+  const tabSubject = new rxjs.BehaviorSubject(null)
+  return {
+    setTab(tab) {
+      const prevTab = tabSubject.getValue()
+      if (prevTab && prevTab.id != tab.id) closeStaleEngineTab(prevTab, "pocket-host")
+      tabSubject.next(tab)
+    },
+    isSuperseded(tab) {
+      const currentTab = tabSubject.getValue()
+      return currentTab != null && currentTab.id != tab.id
+    },
+    async ready({requestFocus}) {
+      if (requestFocus) {
+        const windows = brapi.extension.getViews({type: "popup"})
+        for (const w of windows) w.close()
+      }
+      try {
+        const tab = tabSubject.getValue()
+        if (!tab) throw "Absent"
+        const status = await this.sendRequest("areYouThere")
+        if (status != true) throw "Absent"
+        if (requestFocus) {
+          await Promise.all([
+            chrome.windows.update(tab.windowId, {focused: true}),
+            chrome.tabs.update(tab.id, {active: true})
+          ])
+        }
+      }
+      catch (err) {
+        const staleTab = tabSubject.getValue()
+        if (staleTab) closeStaleEngineTab(staleTab, "pocket-host")
+        tabSubject.next(null)
+        await brapi.tabs.create({url: "https://pocket.ttstool.com/", pinned: true, active: requestFocus})
+        await rxjs.firstValueFrom(tabSubject.pipe(rxjs.filter(x => x)))
+      }
+    },
+    async sendRequest(method, args) {
+      const tab = tabSubject.getValue()
+      const {error, result} = await brapi.tabs.sendMessage(tab.id, {
+        to: "pocket-host",
+        type: "request",
+        id: String(Math.random()),
+        method,
+        args
+      })
+      return error ? Promise.reject(error) : result
+    },
+    eventSubject: new rxjs.Subject()
+  }
+})
+
+
 const nghiTtsHost = immediate(() => {
   const tabSubject = new rxjs.BehaviorSubject(null)
   return {
@@ -226,6 +282,7 @@ async function closeStaleEngineTab(tab, to) {
 const engineHosts = {
   piper: piperHost,
   supertonic: supertonicHost,
+  pockettts: pocketTtsHost,
   nghitts: nghiTtsHost,
 }
 
@@ -289,6 +346,15 @@ var handlers = {
   },
   onSupertonicEvent(event) {
     supertonicHost.eventSubject.next(event)
+  },
+  managePocketTtsVoices() {
+    return pocketTtsHost.ready({requestFocus: true})
+  },
+  pocketTtsServiceReady() {
+    pocketTtsHost.setTab(this.sender.tab)
+  },
+  onPocketTtsEvent(event) {
+    pocketTtsHost.eventSubject.next(event)
   },
   manageNghiTtsVoices() {
     return nghiTtsHost.ready({requestFocus: true})

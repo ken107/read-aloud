@@ -41,8 +41,8 @@ test('speech applies replacements before chunking and highlighting', () => {
   const engine = {};
   const environment = {crypto:require("node:crypto"), isOfflineVoice:()=>true, isUseMyPhone:()=>false, rxjs:require('../js/rxjs.umd.min.js'), console,
     parseWordReplacements:context.parseWordReplacements,
-    immediate:fn=>fn(), isPiperVoice:()=>true, isSupertonicVoice:()=>false, isNghiTtsVoice:()=>false,
-    isGoogleTranslate:()=>false, piperTtsEngine:engine, supertonicTtsEngine:{}, nghiTtsEngine:{}};
+    immediate:fn=>fn(), isPiperVoice:()=>true, isSupertonicVoice:()=>false, isPocketTtsVoice:()=>false, isNghiTtsVoice:()=>false,
+    isGoogleTranslate:()=>false, piperTtsEngine:engine, supertonicTtsEngine:{}, pocketTtsEngine:{}, nghiTtsEngine:{}};
   const runtime = vm.createContext(environment);
   vm.runInContext(speech,runtime);
   const result = new runtime.Speech(['GIF'],{voice:{voiceName:'Piper Test'},lang:'en',wordReplacements:'GIF = jif'});

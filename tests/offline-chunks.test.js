@@ -6,9 +6,9 @@ const defaults = readFileSync(require.resolve('../js/defaults.js'), 'utf8');
 const context = vm.createContext({
   crypto: require('node:crypto'), rxjs: require('../js/rxjs.umd.min.js'), console,
   parseWordReplacements: () => ({rules: []}), immediate: fn => fn(),
-  isPiperVoice: () => true, isSupertonicVoice: () => false, isNghiTtsVoice: () => false,
+  isPiperVoice: () => true, isSupertonicVoice: () => false, isPocketTtsVoice: () => false, isNghiTtsVoice: () => false,
   isGoogleTranslate: () => false, isUseMyPhone: voice => !!voice.isUseMyPhone,
-  piperTtsEngine: {}, supertonicTtsEngine: {}, nghiTtsEngine: {},
+  piperTtsEngine: {}, supertonicTtsEngine: {}, pocketTtsEngine: {}, nghiTtsEngine: {},
 });
 vm.runInContext(defaults.slice(defaults.indexOf('function isOfflineVoice(')).match(/^function[\s\S]*?\n}/)[0], context);
 vm.runInContext(readFileSync(require.resolve('../js/speech.js'), 'utf8'), context);

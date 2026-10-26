@@ -50,6 +50,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ 管理Supertonic語音"
   },
+  "options_enable_pockettts_voices": {
+    "message": "⚡ 管理Pocket TTS語音"
+  },
   "options_rate_label": {
     "message": "朗讀速度"
   },

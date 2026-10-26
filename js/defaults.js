@@ -519,6 +519,7 @@ const voices$ = rxjs.combineLatest({
   azureCreds: observeSetting("azureCreds"),
   piperVoices: observeSetting("piperVoices"),
   supertonicVoices: observeSetting("supertonicVoices"),
+  pocketTtsVoices: observeSetting("pocketTtsVoices"),
   nghiTtsVoices: observeSetting("nghiTtsVoices"),
   useSpeechDispatcher: observeSetting("useSpeechDispatcher"),
 }).pipe(
@@ -540,6 +541,7 @@ const voices$ = rxjs.combineLatest({
     settings.azureCreds ? azureTtsEngine.getVoices() : [],
     settings.piperVoices || [],
     settings.supertonicVoices || [],
+    settings.pocketTtsVoices || [],
     settings.nghiTtsVoices || [],
   ])),
   rxjs.map(arr => arr.flat()),
@@ -605,6 +607,10 @@ function isPiperVoice(voice) {
 
 function isSupertonicVoice(voice) {
   return /^Supertonic /.test(voice.voiceName)
+}
+
+function isPocketTtsVoice(voice) {
+  return /^PocketTTS /.test(voice.voiceName)
 }
 
 function isNghiTtsVoice(voice) {

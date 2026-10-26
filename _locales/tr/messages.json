@@ -50,6 +50,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ Supertonic Seslerini Yönet"
   },
+  "options_enable_pockettts_voices": {
+    "message": "⚡ Pocket TTS Seslerini Yönet"
+  },
   "options_rate_label": {
     "message": "Hız"
   },

@@ -50,6 +50,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ Installer les voix Supertonic..."
   },
+  "options_enable_pockettts_voices": {
+    "message": "⚡ Installer les voix Pocket TTS..."
+  },
   "options_rate_label": {
     "message": "Vitesse"
   },

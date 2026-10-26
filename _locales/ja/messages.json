@@ -50,6 +50,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ Supertonic音声を管理する"
   },
+  "options_enable_pockettts_voices": {
+    "message": "⚡ Pocket TTS音声を管理する"
+  },
   "options_rate_label": {
     "message": "スピード"
   },

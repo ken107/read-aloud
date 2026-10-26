@@ -47,6 +47,9 @@
   "options_enable_supertonic_voices": {
     "message": "⚡ Управление голосами Supertonic"
   },
+  "options_enable_pockettts_voices": {
+    "message": "⚡ Управление голосами Pocket TTS"
+  },
   "options_rate_label": {
     "message": "Скорость"
   },
