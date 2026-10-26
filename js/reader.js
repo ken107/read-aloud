@@ -272,6 +272,10 @@ var readAloudReader = readAloudReader || immediate(() => {
     if (isSource && stateInfo.playbackError) showError(stateInfo.playbackError)
     current.state = state
     current.isSource = isSource
+    if (isSource && state == "STOPPED" && stateInfo.playbackCompleted && !stateInfo.playbackError) {
+      setMode("closed")
+      return
+    }
     root.classList.toggle("is-source", isActive())
     if (speech && speech.texts && speech.texts.length) {
       if (!current.texts || current.texts.length != speech.texts.length || current.texts.some((text, i) => text != speech.texts[i])) {

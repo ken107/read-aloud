@@ -3,6 +3,7 @@ const isEmbedded = top != self
 var queryString = new URLSearchParams(location.search)
 var activeDoc;
 var playbackError = null;
+var playbackCompleted = false;
 var lastUrlPromise = Promise.resolve(null)
 
 maintainPlaybackWakeLock(async () => {
@@ -313,6 +314,7 @@ function playTab() {
 }
 
 function stop() {
+  playbackCompleted = false
   if (activeDoc) {
     activeDoc.stop();
     closeDoc();
@@ -347,17 +349,22 @@ function getPlaybackState() {
   else {
     return {
       state: "STOPPED",
+      playbackCompleted,
       playbackError: errorToJson(playbackError),
     }
   }
 }
 
 function openDoc(source, onEnd) {
-  activeDoc = new Doc(source, function(err) {
+  playbackCompleted = false
+  const doc = new Doc(source, function(err) {
+    if (activeDoc !== doc) return
+    playbackCompleted = !err
     handleError(err);
     closeDoc();
     if (typeof onEnd == "function") onEnd(err);
   })
+  activeDoc = doc
   idleSubject.next(false)
   lastUrlPromise = Promise.resolve(source.getUri())
 }
