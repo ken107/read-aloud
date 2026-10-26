@@ -34,8 +34,8 @@ var readAloudReaderCss = `
   --byline: #aaaaaa;
   --divider: #555555;
   --rule: #373737;
-  --chunk: rgba(255, 196, 0, 0.24);
-  --mark: rgba(255, 196, 0, 0.62);
+  --chunk: rgba(255, 196, 0, 0.14);
+  --mark: rgba(255, 170, 0, 0.35);
   --chunk-hover: rgba(255, 255, 255, 0.05);
   color-scheme: dark;
 }
