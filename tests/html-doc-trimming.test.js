@@ -9,14 +9,14 @@ const trimming = source.slice(source.indexOf('      var head, tail;'), source.in
 const gaussian = source.slice(source.indexOf('  function Gaussian()'), source.indexOf('  function getTexts(elem)'));
 const trim = vm.runInNewContext(`(function(texts) { ${gaussian} ${trimming} return [head, tail]; })`);
 
-function original(texts) {
+function reference(texts) {
   function threshold(start, end) {
     let sum = 0;
     for (let i = start; i < end; i++) sum += texts[i].length;
     const mean = sum / (end - start);
     let deviations = 0;
     for (let i = start; i < end; i++) deviations += (texts[i].length - mean) ** 2;
-    return mean + 2 * Math.sqrt(deviations);
+    return mean + 2 * Math.sqrt(deviations / (end - start));
   }
   let head, tail;
   for (let i = 3; i < texts.length && !head; i++) {
@@ -34,16 +34,16 @@ test('trimming preserves boundaries for short, uniform, and outlier inputs', () 
     [3, 3, 3, 100, 3, 3, 3], [100, 3, 3, 3], [3, 3, 3, 100],
     [3, 4, 5, 8, 9, 10, 100, 10, 9, 8, 5, 4, 3],
     [100000000, 100000001, 100000002, 100000004]]) {
-    assert.deepEqual(Array.from(trim(chunks(lengths))), original(chunks(lengths)));
+    assert.deepEqual(Array.from(trim(chunks(lengths))), reference(chunks(lengths)));
   }
 });
 
-test('trimming agrees with the original across deterministic varied inputs', () => {
+test('trimming agrees with the population-variance reference across deterministic varied inputs', () => {
   let seed = 12345;
   const random = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0);
   for (let trial = 0; trial < 2000; trial++) {
     const texts = chunks(Array.from({length: random() % 150}, () => 3 + random() % 1000));
-    assert.deepEqual(Array.from(trim(texts)), original(texts), `trial ${trial}`);
+    assert.deepEqual(Array.from(trim(texts)), reference(texts), `trial ${trial}`);
   }
 });
 
@@ -52,4 +52,10 @@ test('a large no-outlier input requires only linear chunk reads', () => {
   const texts = Array.from({length: 100000}, () => ({get length() { reads++; return 10; }}));
   assert.deepEqual(Array.from(trim(texts)), [undefined, undefined]);
   assert.ok(reads <= 4 * texts.length, `${reads} length reads`);
+});
+
+// For [3, 6, 9], mean = 6 and population variance = 6. A length of 12
+// exceeds the corrected threshold (~10.90), but not the old one (~14.49).
+test('population variance detects content from both ends', () => {
+  assert.deepEqual(Array.from(trim(chunks([3, 6, 9, 12, 9, 6, 3]))), [3, 4]);
 });

@@ -116,8 +116,8 @@ var readAloudDoc = new function() {
       squaredDeviations += delta * (value - mean);
     };
     this.isOutlier = function(value) {
-      // Preserve the original threshold: deviations are summed, not averaged.
-      return value > mean + 2*Math.sqrt(squaredDeviations);
+      // Population variance measures the spread of the chunks scanned so far.
+      return value > mean + 2*Math.sqrt(squaredDeviations / count);
     };
   }
 
