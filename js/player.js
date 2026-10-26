@@ -5,6 +5,11 @@ var activeDoc;
 var playbackError = null;
 var lastUrlPromise = Promise.resolve(null)
 
+maintainPlaybackWakeLock(async () => {
+  const doc = activeDoc
+  return !!doc && await doc.getState() == "PLAYING" && doc == activeDoc
+})
+
 
 const piperSubject = new rxjs.Subject()
 const piperObservable = rxjs.defer(() => {

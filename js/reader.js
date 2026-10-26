@@ -29,6 +29,7 @@ var readAloudReader = readAloudReader || immediate(() => {
   let lastUserScroll = 0
   const loadedFontSubsets = new Set()
   const playbackEstimate = createPlaybackEstimate()
+  maintainPlaybackWakeLock(() => mode != "closed" && current.isSource && current.state == "PLAYING")
 
   registerMessageListener("readerOverlay", {
     show,
