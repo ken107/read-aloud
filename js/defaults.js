@@ -681,6 +681,56 @@ function isMobileOS() {
   return check;
 }
 
+// Keep a visible mobile page awake only while its playback is speaking.
+function maintainPlaybackWakeLock(isSpeaking) {
+  if (!isMobileOS() || !navigator.wakeLock) return
+  let sentinel, checking = false, revision = 0, suspended = false
+
+  function release() {
+    const lock = sentinel
+    sentinel = null
+    if (lock) lock.release().catch(() => {})
+  }
+
+  async function update() {
+    if (document.hidden || suspended) {
+      revision++
+      release()
+      return
+    }
+    if (checking) return
+    checking = true
+    const request = revision
+    try {
+      const speaking = await isSpeaking()
+      if (request != revision || document.hidden || suspended) return
+      if (!speaking) release()
+      else if (!sentinel) {
+        const lock = await navigator.wakeLock.request("screen")
+        // Visibility or playback can change while the browser grants the lock.
+        sentinel = lock
+        lock.addEventListener("release", () => {
+          if (sentinel == lock) sentinel = null
+        })
+        if (request != revision || document.hidden || suspended || !await isSpeaking()) release()
+      }
+    }
+    catch (err) {
+      // Unsupported contexts, power saving, and permission policies may deny it.
+      release()
+    }
+    finally {
+      checking = false
+    }
+  }
+
+  document.addEventListener("visibilitychange", update)
+  window.addEventListener("pagehide", () => { suspended = true; update() })
+  window.addEventListener("pageshow", () => { suspended = false; update() })
+  setInterval(update, 500)
+  update()
+}
+
 function getHotkeySettingsUrl() {
   return "edge://extensions/shortcuts"
 }

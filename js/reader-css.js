@@ -34,8 +34,8 @@ var readAloudReaderCss = `
   --byline: #aaaaaa;
   --divider: #555555;
   --rule: #373737;
-  --chunk: rgba(255, 196, 0, 0.24);
-  --mark: rgba(255, 196, 0, 0.62);
+  --chunk: rgba(255, 196, 0, 0.14);
+  --mark: rgba(255, 170, 0, 0.35);
   --chunk-hover: rgba(255, 255, 255, 0.05);
   color-scheme: dark;
 }
@@ -139,6 +139,12 @@ var readAloudReaderCss = `
   font-family: var(--sans);
   font-size: 15px;
   color: var(--byline);
+}
+.ra-chunk, .ra-chunk mark {
+  /* vertical padding on inline boxes extends the highlight into the line gap without moving text */
+  padding: 0.14em 0;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 .ra-chunk {
   border-radius: 3px;
